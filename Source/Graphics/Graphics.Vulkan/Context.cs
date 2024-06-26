@@ -1,5 +1,6 @@
 ﻿using Graphics.Core;
 using Silk.NET.Core;
+using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
@@ -20,6 +21,8 @@ public unsafe partial class Context : DisposableObject
 
     private readonly Vk _vk;
     private readonly Instance _instance;
+    private readonly ExtDebugUtils? _debugUtils;
+    private readonly KhrSwapchain _khrSwapchain;
 
     public Context()
     {
@@ -27,6 +30,10 @@ public unsafe partial class Context : DisposableObject
 
         // Create instance
         _instance = CreateInstance();
+
+        // Load instance extensions
+        _debugUtils = EnableValidationLayers ? CreateInstanceExtension<ExtDebugUtils>() : null;
+        _khrSwapchain = CreateInstanceExtension<KhrSwapchain>()!;
     }
 
     internal Vk Vk => _vk;
@@ -38,6 +45,11 @@ public unsafe partial class Context : DisposableObject
         _stringAlloter.Dispose();
     }
 
+    /// <summary>
+    /// Create instance.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException">InvalidOperationException</exception>
     private Instance CreateInstance()
     {
         ApplicationInfo applicationInfo = new()
@@ -88,6 +100,26 @@ public unsafe partial class Context : DisposableObject
         return instance;
     }
 
+    /// <summary>
+    /// Create instance extension.
+    /// </summary>
+    /// <typeparam name="T">T</typeparam>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException">InvalidOperationException</exception>
+    private T? CreateInstanceExtension<T>() where T : NativeExtension<Vk>
+    {
+        if (!_vk.TryGetInstanceExtension(_instance, out T ext))
+        {
+            throw new InvalidOperationException($"Failed to load extension {typeof(T).Name}!");
+        }
+
+        return ext;
+    }
+
+    /// <summary>
+    /// Check validation layer support.
+    /// </summary>
+    /// <returns></returns>
     private bool CheckValidationLayerSupport()
     {
         uint layerCount = 0;
