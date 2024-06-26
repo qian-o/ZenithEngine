@@ -11,18 +11,21 @@ public unsafe partial class Context : DisposableObject
 {
     public const string ValidationLayerName = "VK_LAYER_KHRONOS_validation";
 
-#if DEBUG
-    public const bool EnableValidationLayers = true;
-#else
-    public const bool EnableValidationLayers = false;
-#endif
-
     private readonly StringAlloter _stringAlloter = new();
 
     private readonly Vk _vk;
     private readonly Instance _instance;
     private readonly ExtDebugUtils? _debugUtils;
-    private readonly KhrSwapchain _khrSwapchain;
+    private readonly KhrSurface _surface;
+
+    static Context()
+    {
+#if DEBUG
+        Debugging = true;
+#else
+        Debugging = false;
+#endif
+    }
 
     public Context()
     {
@@ -32,14 +35,25 @@ public unsafe partial class Context : DisposableObject
         _instance = CreateInstance();
 
         // Load instance extensions
-        _debugUtils = EnableValidationLayers ? CreateInstanceExtension<ExtDebugUtils>() : null;
-        _khrSwapchain = CreateInstanceExtension<KhrSwapchain>()!;
+        _debugUtils = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
+        _surface = CreateInstanceExtension<KhrSurface>()!;
+
+        // Clear string alloter
+        _stringAlloter.Clear();
     }
+
+    public static bool Debugging { get; }
 
     internal Vk Vk => _vk;
 
+    internal Instance Instance => _instance;
+
+    internal KhrSurface Surface => _surface;
+
     protected override void Destroy()
     {
+        _surface.Dispose();
+        _debugUtils?.Dispose();
         _vk.Dispose();
 
         _stringAlloter.Dispose();
@@ -68,20 +82,20 @@ public unsafe partial class Context : DisposableObject
             PApplicationInfo = &applicationInfo
         };
 
-        if (EnableValidationLayers && !CheckValidationLayerSupport())
+        if (Debugging && !CheckValidationLayerSupport())
         {
             throw new InvalidOperationException("Validation layers requested, but not available!");
         }
 
-        if (EnableValidationLayers)
+        if (Debugging)
         {
             instanceCreateInfo.EnabledLayerCount = 1;
             instanceCreateInfo.PpEnabledLayerNames = (byte**)_stringAlloter.Allocate([ValidationLayerName]);
         }
 
-        string[] extensions = [KhrSwapchain.ExtensionName];
+        string[] extensions = [KhrSurface.ExtensionName];
 
-        if (EnableValidationLayers)
+        if (Debugging)
         {
             extensions = [.. extensions, ExtDebugUtils.ExtensionName];
         }
@@ -91,8 +105,7 @@ public unsafe partial class Context : DisposableObject
 
         Instance instance;
 
-        Result result = _vk.CreateInstance(&instanceCreateInfo, null, &instance);
-        if (result != Result.Success)
+        if (_vk.CreateInstance(&instanceCreateInfo, null, &instance) != Result.Success)
         {
             throw new InvalidOperationException("Failed to create instance!");
         }

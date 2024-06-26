@@ -31,6 +31,16 @@ public class StringAlloter : DisposableObject
         return ptr;
     }
 
+    public void Clear()
+    {
+        foreach (nint ptr in _allocated)
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
+
+        _allocated.Clear();
+    }
+
     protected override void Destroy()
     {
         foreach (nint ptr in _allocated)

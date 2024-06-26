@@ -1,4 +1,5 @@
-﻿using Graphics.Vulkan;
+﻿using Graphics.Core;
+using Graphics.Vulkan;
 
 internal sealed class Program
 {
@@ -6,6 +7,13 @@ internal sealed class Program
     {
         using Window window = new();
 
+        window.Load += Window_Load;
+
         window.Run();
+    }
+
+    private static void Window_Load(object? sender, LoadEventArgs e)
+    {
+        using Context context = new();
     }
 }
