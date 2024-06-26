@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35004.147
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Graphics", "Graphics", "{9E94EF5D-C75E-4E3D-B482-8E1A0B425DB4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.Vulkan", "Source\Graphics\Graphics.Vulkan\Graphics.Vulkan.csproj", "{15ED5062-6D58-4C7D-B658-50DACD2D9DE2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Renderer", "Source\Renderer\Renderer.csproj", "{89A0A77F-139C-4F9C-9236-82144B93BFAE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{15ED5062-6D58-4C7D-B658-50DACD2D9DE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15ED5062-6D58-4C7D-B658-50DACD2D9DE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15ED5062-6D58-4C7D-B658-50DACD2D9DE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15ED5062-6D58-4C7D-B658-50DACD2D9DE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89A0A77F-139C-4F9C-9236-82144B93BFAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89A0A77F-139C-4F9C-9236-82144B93BFAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89A0A77F-139C-4F9C-9236-82144B93BFAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89A0A77F-139C-4F9C-9236-82144B93BFAE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{15ED5062-6D58-4C7D-B658-50DACD2D9DE2} = {9E94EF5D-C75E-4E3D-B482-8E1A0B425DB4}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BE26C755-BB43-4FB4-9DA4-9EE88FC2ADD5}
+	EndGlobalSection
+EndGlobal
