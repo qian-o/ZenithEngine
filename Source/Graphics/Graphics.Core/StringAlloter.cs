@@ -38,4 +38,21 @@ public class StringAlloter : DisposableObject
             Marshal.FreeHGlobal(ptr);
         }
     }
+
+    public static unsafe string GetString(void* stringPtr)
+    {
+        return Marshal.PtrToStringAnsi((nint)stringPtr) ?? string.Empty;
+    }
+
+    public static unsafe string[] GetStrings(void* stringsPtr, int count)
+    {
+        string[] strings = new string[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            strings[i] = GetString((void*)Marshal.ReadIntPtr((nint)stringsPtr, i * nint.Size));
+        }
+
+        return strings;
+    }
 }

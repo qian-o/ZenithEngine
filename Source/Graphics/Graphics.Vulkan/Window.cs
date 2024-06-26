@@ -9,6 +9,7 @@ public class Window : DisposableObject
 {
     private readonly IWindow _window;
 
+    private IInputContext? inputContext;
     private IMouse? mouse;
     private IKeyboard? keyboard;
     private bool isInitialized;
@@ -63,8 +64,7 @@ public class Window : DisposableObject
         {
             _window.Center();
 
-            IInputContext inputContext = _window.CreateInput();
-
+            inputContext = _window.CreateInput();
             mouse = inputContext.Mice[0];
             keyboard = inputContext.Keyboards[0];
 
@@ -81,6 +81,7 @@ public class Window : DisposableObject
 
     protected override void Destroy()
     {
+        _window.Dispose();
     }
 
     private T ThrowIfNotInitialized<T>(T? value)
