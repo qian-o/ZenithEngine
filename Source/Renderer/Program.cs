@@ -1,7 +1,11 @@
-﻿internal sealed class Program
+﻿using Graphics.Vulkan;
+
+internal sealed class Program
 {
     private static void Main(string[] _)
     {
-        Console.WriteLine("Hello, World!");
+        using Window window = new();
+
+        window.Run();
     }
 }

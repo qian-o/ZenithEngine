@@ -13,4 +13,12 @@
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Silk.NET.Vulkan" Version="2.21.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Graphics.Core\Graphics.Core.csproj" />
+	</ItemGroup>
+
 </Project>

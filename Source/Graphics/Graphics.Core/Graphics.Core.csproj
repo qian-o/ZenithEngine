@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<AnalysisLevel>latest-Recommended</AnalysisLevel>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Hexa.NET.ImGui" Version="1.0.3" />
+		<PackageReference Include="Hexa.NET.ImGuizmo" Version="1.0.3" />
+		<PackageReference Include="Silk.NET.Input" Version="2.21.0" />
+		<PackageReference Include="Silk.NET.Maths" Version="2.21.0" />
+		<PackageReference Include="Silk.NET.Shaderc" Version="2.21.0" />
+		<PackageReference Include="Silk.NET.Shaderc.Native" Version="2.21.0" />
+		<PackageReference Include="Silk.NET.Windowing" Version="2.21.0" />
+		<PackageReference Include="StbiSharp" Version="1.2.1" />
+	</ItemGroup>
+
+</Project>
