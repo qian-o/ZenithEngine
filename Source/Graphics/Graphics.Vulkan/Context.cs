@@ -38,17 +38,39 @@ public unsafe partial class Context : DisposableObject
         _debugUtils = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
         _surface = CreateInstanceExtension<KhrSurface>()!;
 
+        // Debug message callback
+        if (Debugging)
+        {
+            DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo = new()
+            {
+                SType = StructureType.DebugUtilsMessengerCreateInfoExt,
+                MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt
+                                  | DebugUtilsMessageSeverityFlagsEXT.InfoBitExt
+                                  | DebugUtilsMessageSeverityFlagsEXT.WarningBitExt
+                                  | DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
+                MessageType = DebugUtilsMessageTypeFlagsEXT.GeneralBitExt
+                              | DebugUtilsMessageTypeFlagsEXT.ValidationBitExt
+                              | DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt,
+                PfnUserCallback = (PfnDebugUtilsMessengerCallbackEXT)DebugMessageCallback
+            };
+
+            if (_debugUtils!.CreateDebugUtilsMessenger(_instance, &debugUtilsMessengerCreateInfo, null, out _) != Result.Success)
+            {
+                throw new InvalidOperationException("Failed to set up debug messenger!");
+            }
+        }
+
         // Clear string alloter
         _stringAlloter.Clear();
     }
-
-    public static bool Debugging { get; }
 
     internal Vk Vk => _vk;
 
     internal Instance Instance => _instance;
 
     internal KhrSurface Surface => _surface;
+
+    public static bool Debugging { get; }
 
     protected override void Destroy()
     {
@@ -57,6 +79,29 @@ public unsafe partial class Context : DisposableObject
         _vk.Dispose();
 
         _stringAlloter.Dispose();
+    }
+
+    /// <summary>
+    /// Check validation layer support.
+    /// </summary>
+    /// <returns></returns>
+    private bool CheckValidationLayerSupport()
+    {
+        uint layerCount = 0;
+        _vk.EnumerateInstanceLayerProperties(&layerCount, null);
+
+        LayerProperties* availableLayers = stackalloc LayerProperties[(int)layerCount];
+        _vk.EnumerateInstanceLayerProperties(&layerCount, availableLayers);
+
+        for (int i = 0; i < layerCount; i++)
+        {
+            if (StringAlloter.GetString(availableLayers[i].LayerName) == ValidationLayerName)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -129,26 +174,15 @@ public unsafe partial class Context : DisposableObject
         return ext;
     }
 
-    /// <summary>
-    /// Check validation layer support.
-    /// </summary>
-    /// <returns></returns>
-    private bool CheckValidationLayerSupport()
+    private uint DebugMessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
+                                      DebugUtilsMessageTypeFlagsEXT messageTypes,
+                                      DebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                      void* pUserData)
     {
-        uint layerCount = 0;
-        _vk.EnumerateInstanceLayerProperties(&layerCount, null);
+        string message = StringAlloter.GetString(pCallbackData->PMessage);
 
-        LayerProperties* availableLayers = stackalloc LayerProperties[(int)layerCount];
-        _vk.EnumerateInstanceLayerProperties(&layerCount, availableLayers);
+        Console.WriteLine($"[{messageSeverity}] {message}");
 
-        for (int i = 0; i < layerCount; i++)
-        {
-            if (StringAlloter.GetString(availableLayers[i].LayerName) == ValidationLayerName)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return Vk.False;
     }
 }

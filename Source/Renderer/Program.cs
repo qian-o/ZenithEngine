@@ -15,5 +15,10 @@ internal sealed class Program
     private static void Window_Load(object? sender, LoadEventArgs e)
     {
         using Context context = new();
+
+        foreach (PhysicalDevice item in context.GetPhysicalDevices())
+        {
+            Console.WriteLine(item.Name);
+        }
     }
 }
