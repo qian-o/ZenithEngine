@@ -11,4 +11,8 @@ public class GraphicsDevice : DisposableObject
 
 public unsafe partial class Context
 {
+    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice, Window window)
+    {
+        throw new NotImplementedException();
+    }
 }
