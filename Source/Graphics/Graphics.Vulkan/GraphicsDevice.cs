@@ -6,6 +6,7 @@ namespace Graphics.Vulkan;
 
 public unsafe class GraphicsDevice : ContextObject
 {
+    private readonly ResourceFactory _resourceFactory;
     private readonly PhysicalDevice _physicalDevice;
     private readonly Device _device;
     private readonly KhrSwapchain _swapchainExt;
@@ -27,22 +28,14 @@ public unsafe class GraphicsDevice : ContextObject
                             uint computeQueueFamilyIndex,
                             uint transferQueueFamilyIndex) : base(context)
     {
-        _physicalDevice = physicalDevice;
-        _device = device;
-        _swapchainExt = swapchainExt;
-        _windowSurface = windowSurface;
-
         Queue graphicsQueue;
         Vk.GetDeviceQueue(device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
-        _graphicsQueue = graphicsQueue;
 
         Queue computeQueue;
         Vk.GetDeviceQueue(device, computeQueueFamilyIndex, 0, &computeQueue);
-        _computeQueue = computeQueue;
 
         Queue transferQueue;
         Vk.GetDeviceQueue(device, transferQueueFamilyIndex, 0, &transferQueue);
-        _transferQueue = transferQueue;
 
         CommandPool graphicsCommandPool;
         {
@@ -55,7 +48,6 @@ public unsafe class GraphicsDevice : ContextObject
 
             Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &graphicsCommandPool);
         }
-        _graphicsCommandPool = graphicsCommandPool;
 
         CommandPool computeCommandPool;
         {
@@ -68,7 +60,6 @@ public unsafe class GraphicsDevice : ContextObject
 
             Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &computeCommandPool);
         }
-        _computeCommandPool = computeCommandPool;
 
         CommandPool transferCommandPool;
         {
@@ -81,14 +72,24 @@ public unsafe class GraphicsDevice : ContextObject
 
             Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &transferCommandPool);
         }
-        _transferCommandPool = transferCommandPool;
 
+        _resourceFactory = new ResourceFactory(context, this);
+        _physicalDevice = physicalDevice;
+        _device = device;
+        _swapchainExt = swapchainExt;
+        _windowSurface = windowSurface;
+        _graphicsQueue = graphicsQueue;
+        _computeQueue = computeQueue;
+        _transferQueue = transferQueue;
+        _graphicsCommandPool = graphicsCommandPool;
+        _computeCommandPool = computeCommandPool;
+        _transferCommandPool = transferCommandPool;
         _swapChain = new SwapChain(context, this);
     }
 
-    public PhysicalDevice PhysicalDevice => _physicalDevice;
+    public ResourceFactory ResourceFactory => _resourceFactory;
 
-    public SwapChain SwapChain => _swapChain;
+    internal PhysicalDevice PhysicalDevice => _physicalDevice;
 
     internal Device Device => _device;
 
@@ -108,13 +109,24 @@ public unsafe class GraphicsDevice : ContextObject
 
     internal CommandPool TransferCommandPool => _transferCommandPool;
 
+    internal SwapChain SwapChain => _swapChain;
+
+    public void Resize(uint width, uint height)
+    {
+        _swapChain.Initialize(width, height);
+    }
+
     protected override void Destroy()
     {
+        _swapChain.Dispose();
+
         Vk.DestroyCommandPool(_device, _transferCommandPool, null);
         Vk.DestroyCommandPool(_device, _computeCommandPool, null);
         Vk.DestroyCommandPool(_device, _graphicsCommandPool, null);
 
         _swapchainExt.Dispose();
+
+        _resourceFactory.Dispose();
 
         Vk.DestroyDevice(_device, null);
     }

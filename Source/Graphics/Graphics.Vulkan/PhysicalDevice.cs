@@ -11,6 +11,7 @@ public unsafe class PhysicalDevice : ContextObject
     private readonly PhysicalDeviceMemoryProperties _memoryProperties;
     private readonly QueueFamilyProperties[] _queueFamilyProperties;
     private readonly ExtensionProperties[] _extensionProperties;
+    private readonly string _name;
 
     internal PhysicalDevice(Context context, VkPhysicalDevice vkPhysicalDevice) : base(context)
     {
@@ -40,10 +41,10 @@ public unsafe class PhysicalDevice : ContextObject
         _extensionProperties = new ExtensionProperties[(int)extensionPropertyCount];
         Vk.EnumerateDeviceExtensionProperties(_vkPhysicalDevice, string.Empty, &extensionPropertyCount, _extensionProperties);
 
-        Name = Alloter.GetString(properties.DeviceName);
+        _name = Alloter.GetString(properties.DeviceName);
     }
 
-    public string Name { get; }
+    public string Name => _name;
 
     internal VkPhysicalDevice VkPhysicalDevice => _vkPhysicalDevice;
 
