@@ -1,17 +1,15 @@
-﻿using Graphics.Core;
-using Silk.NET.Core.Native;
+﻿using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Graphics.Vulkan;
 
-public unsafe class GraphicsDevice : DisposableObject
+public unsafe class GraphicsDevice : ContextObject
 {
-    private readonly Context _context;
     private readonly PhysicalDevice _physicalDevice;
     private readonly Device _device;
-    private readonly KhrSwapchain _swapchain;
-    private readonly SurfaceKHR _surface;
+    private readonly KhrSwapchain _swapchainExt;
+    private readonly SurfaceKHR _windowSurface;
     private readonly Queue _graphicsQueue;
     private readonly Queue _computeQueue;
     private readonly Queue _transferQueue;
@@ -23,28 +21,27 @@ public unsafe class GraphicsDevice : DisposableObject
     internal GraphicsDevice(Context context,
                             PhysicalDevice physicalDevice,
                             Device device,
-                            KhrSwapchain swapchain,
-                            SurfaceKHR surface,
+                            KhrSwapchain swapchainExt,
+                            SurfaceKHR windowSurface,
                             uint graphicsQueueFamilyIndex,
                             uint computeQueueFamilyIndex,
-                            uint transferQueueFamilyIndex)
+                            uint transferQueueFamilyIndex) : base(context)
     {
-        _context = context;
         _physicalDevice = physicalDevice;
         _device = device;
-        _swapchain = swapchain;
-        _surface = surface;
+        _swapchainExt = swapchainExt;
+        _windowSurface = windowSurface;
 
         Queue graphicsQueue;
-        _context.Vk.GetDeviceQueue(device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
+        Vk.GetDeviceQueue(device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
         _graphicsQueue = graphicsQueue;
 
         Queue computeQueue;
-        _context.Vk.GetDeviceQueue(device, computeQueueFamilyIndex, 0, &computeQueue);
+        Vk.GetDeviceQueue(device, computeQueueFamilyIndex, 0, &computeQueue);
         _computeQueue = computeQueue;
 
         Queue transferQueue;
-        _context.Vk.GetDeviceQueue(device, transferQueueFamilyIndex, 0, &transferQueue);
+        Vk.GetDeviceQueue(device, transferQueueFamilyIndex, 0, &transferQueue);
         _transferQueue = transferQueue;
 
         CommandPool graphicsCommandPool;
@@ -56,7 +53,7 @@ public unsafe class GraphicsDevice : DisposableObject
                 Flags = CommandPoolCreateFlags.ResetCommandBufferBit
             };
 
-            _context.Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &graphicsCommandPool);
+            Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &graphicsCommandPool);
         }
         _graphicsCommandPool = graphicsCommandPool;
 
@@ -69,7 +66,7 @@ public unsafe class GraphicsDevice : DisposableObject
                 Flags = CommandPoolCreateFlags.ResetCommandBufferBit
             };
 
-            _context.Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &computeCommandPool);
+            Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &computeCommandPool);
         }
         _computeCommandPool = computeCommandPool;
 
@@ -82,20 +79,22 @@ public unsafe class GraphicsDevice : DisposableObject
                 Flags = CommandPoolCreateFlags.ResetCommandBufferBit
             };
 
-            _context.Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &transferCommandPool);
+            Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &transferCommandPool);
         }
         _transferCommandPool = transferCommandPool;
 
-        _swapChain = new SwapChain(_context, this);
+        _swapChain = new SwapChain(context, this);
     }
 
     public PhysicalDevice PhysicalDevice => _physicalDevice;
 
+    public SwapChain SwapChain => _swapChain;
+
     internal Device Device => _device;
 
-    internal KhrSwapchain Swapchain => _swapchain;
+    internal KhrSwapchain SwapchainExt => _swapchainExt;
 
-    internal SurfaceKHR Surface => _surface;
+    internal SurfaceKHR WindowSurface => _windowSurface;
 
     internal Queue GraphicsQueue => _graphicsQueue;
 
@@ -111,13 +110,13 @@ public unsafe class GraphicsDevice : DisposableObject
 
     protected override void Destroy()
     {
-        _context.Vk.DestroyCommandPool(_device, _transferCommandPool, null);
-        _context.Vk.DestroyCommandPool(_device, _computeCommandPool, null);
-        _context.Vk.DestroyCommandPool(_device, _graphicsCommandPool, null);
+        Vk.DestroyCommandPool(_device, _transferCommandPool, null);
+        Vk.DestroyCommandPool(_device, _computeCommandPool, null);
+        Vk.DestroyCommandPool(_device, _graphicsCommandPool, null);
 
-        _swapchain.Dispose();
+        _swapchainExt.Dispose();
 
-        _context.Vk.DestroyDevice(_device, null);
+        Vk.DestroyDevice(_device, null);
     }
 }
 
@@ -174,17 +173,17 @@ public unsafe partial class Context
             throw new InvalidOperationException("Failed to create device.");
         }
 
-        KhrSwapchain swapchain = CreateDeviceExtension<KhrSwapchain>(device)!;
+        KhrSwapchain swapchainExt = CreateDeviceExtension<KhrSwapchain>(device)!;
 
-        SurfaceKHR surface = window.IWindow.VkSurface!.Create<AllocationCallbacks>(_instance.ToHandle(), null).ToSurface();
+        SurfaceKHR windowSurface = window.IWindow.VkSurface!.Create<AllocationCallbacks>(_instance.ToHandle(), null).ToSurface();
 
         _alloter.Clear();
 
         return new GraphicsDevice(this,
                                   physicalDevice,
                                   device,
-                                  swapchain,
-                                  surface,
+                                  swapchainExt,
+                                  windowSurface,
                                   graphicsQueueFamilyIndex,
                                   computeQueueFamilyIndex,
                                   transferQueueFamilyIndex);

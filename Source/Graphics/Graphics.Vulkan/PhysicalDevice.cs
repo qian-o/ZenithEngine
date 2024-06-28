@@ -3,9 +3,8 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class PhysicalDevice : DisposableObject
+public unsafe class PhysicalDevice : ContextObject
 {
-    private readonly Context _context;
     private readonly VkPhysicalDevice _vkPhysicalDevice;
     private readonly PhysicalDeviceProperties _properties;
     private readonly PhysicalDeviceFeatures _features;
@@ -13,34 +12,33 @@ public unsafe class PhysicalDevice : DisposableObject
     private readonly QueueFamilyProperties[] _queueFamilyProperties;
     private readonly ExtensionProperties[] _extensionProperties;
 
-    internal PhysicalDevice(Context context, VkPhysicalDevice vkPhysicalDevice)
+    internal PhysicalDevice(Context context, VkPhysicalDevice vkPhysicalDevice) : base(context)
     {
-        _context = context;
         _vkPhysicalDevice = vkPhysicalDevice;
 
         PhysicalDeviceProperties properties;
-        _context.Vk.GetPhysicalDeviceProperties(_vkPhysicalDevice, &properties);
+        Vk.GetPhysicalDeviceProperties(_vkPhysicalDevice, &properties);
         _properties = properties;
 
         PhysicalDeviceFeatures features;
-        _context.Vk.GetPhysicalDeviceFeatures(_vkPhysicalDevice, &features);
+        Vk.GetPhysicalDeviceFeatures(_vkPhysicalDevice, &features);
         _features = features;
 
         PhysicalDeviceMemoryProperties memoryProperties;
-        _context.Vk.GetPhysicalDeviceMemoryProperties(_vkPhysicalDevice, &memoryProperties);
+        Vk.GetPhysicalDeviceMemoryProperties(_vkPhysicalDevice, &memoryProperties);
         _memoryProperties = memoryProperties;
 
         uint queueFamilyPropertyCount = 0;
-        _context.Vk.GetPhysicalDeviceQueueFamilyProperties(_vkPhysicalDevice, &queueFamilyPropertyCount, null);
+        Vk.GetPhysicalDeviceQueueFamilyProperties(_vkPhysicalDevice, &queueFamilyPropertyCount, null);
 
         _queueFamilyProperties = new QueueFamilyProperties[(int)queueFamilyPropertyCount];
-        _context.Vk.GetPhysicalDeviceQueueFamilyProperties(_vkPhysicalDevice, &queueFamilyPropertyCount, _queueFamilyProperties);
+        Vk.GetPhysicalDeviceQueueFamilyProperties(_vkPhysicalDevice, &queueFamilyPropertyCount, _queueFamilyProperties);
 
         uint extensionPropertyCount = 0;
-        _context.Vk.EnumerateDeviceExtensionProperties(_vkPhysicalDevice, string.Empty, &extensionPropertyCount, null);
+        Vk.EnumerateDeviceExtensionProperties(_vkPhysicalDevice, string.Empty, &extensionPropertyCount, null);
 
         _extensionProperties = new ExtensionProperties[(int)extensionPropertyCount];
-        _context.Vk.EnumerateDeviceExtensionProperties(_vkPhysicalDevice, string.Empty, &extensionPropertyCount, _extensionProperties);
+        Vk.EnumerateDeviceExtensionProperties(_vkPhysicalDevice, string.Empty, &extensionPropertyCount, _extensionProperties);
 
         Name = Alloter.GetString(properties.DeviceName);
     }

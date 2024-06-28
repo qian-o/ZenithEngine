@@ -1,17 +1,15 @@
-﻿using Graphics.Core;
+﻿namespace Graphics.Vulkan;
 
-namespace Graphics.Vulkan;
-
-public class SwapChain : DisposableObject
+public class SwapChain : ContextObject
 {
-    private readonly Context _context;
     private readonly GraphicsDevice _graphicsDevice;
 
-    internal SwapChain(Context context, GraphicsDevice graphicsDevice)
+    internal SwapChain(Context context, GraphicsDevice graphicsDevice) : base(context)
     {
-        _context = context;
         _graphicsDevice = graphicsDevice;
     }
+
+    internal GraphicsDevice GraphicsDevice => _graphicsDevice;
 
     protected override void Destroy()
     {

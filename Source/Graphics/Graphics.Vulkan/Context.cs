@@ -16,8 +16,8 @@ public unsafe partial class Context : DisposableObject
 
     private readonly Vk _vk;
     private readonly Instance _instance;
-    private readonly ExtDebugUtils? _debugUtils;
-    private readonly KhrSurface _surface;
+    private readonly ExtDebugUtils? _debugUtilsExt;
+    private readonly KhrSurface _surfaceExt;
 
     static Context()
     {
@@ -36,8 +36,8 @@ public unsafe partial class Context : DisposableObject
         _instance = CreateInstance();
 
         // Load instance extensions
-        _debugUtils = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
-        _surface = CreateInstanceExtension<KhrSurface>()!;
+        _debugUtilsExt = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
+        _surfaceExt = CreateInstanceExtension<KhrSurface>()!;
 
         // Debug message callback
         if (Debugging)
@@ -54,7 +54,7 @@ public unsafe partial class Context : DisposableObject
                 PfnUserCallback = (PfnDebugUtilsMessengerCallbackEXT)DebugMessageCallback
             };
 
-            if (_debugUtils!.CreateDebugUtilsMessenger(_instance, &debugUtilsMessengerCreateInfo, null, out _) != Result.Success)
+            if (_debugUtilsExt!.CreateDebugUtilsMessenger(_instance, &debugUtilsMessengerCreateInfo, null, out _) != Result.Success)
             {
                 throw new InvalidOperationException("Failed to set up debug messenger!");
             }
@@ -67,14 +67,14 @@ public unsafe partial class Context : DisposableObject
 
     internal Instance Instance => _instance;
 
-    internal KhrSurface Surface => _surface;
+    internal KhrSurface SurfaceExt => _surfaceExt;
 
     public static bool Debugging { get; }
 
     protected override void Destroy()
     {
-        _surface.Dispose();
-        _debugUtils?.Dispose();
+        _surfaceExt.Dispose();
+        _debugUtilsExt?.Dispose();
         _vk.Dispose();
 
         _alloter.Dispose();
