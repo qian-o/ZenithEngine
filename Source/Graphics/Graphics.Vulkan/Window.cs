@@ -54,6 +54,8 @@ public class Window : DisposableObject
         set => _window.Size = new Vector2D<int>(Width, value);
     }
 
+    public IWindow IWindow => _window;
+
     public IMouse Mouse => ThrowIfNotInitialized(mouse);
 
     public IKeyboard Keyboard => ThrowIfNotInitialized(keyboard);

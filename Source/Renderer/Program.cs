@@ -16,9 +16,13 @@ internal sealed class Program
     {
         using Context context = new();
 
-        foreach (PhysicalDevice item in context.GetPhysicalDevices())
+        foreach (PhysicalDevice physicalDevice in context.EnumeratePhysicalDevices())
         {
-            Console.WriteLine(item.Name);
+            Console.WriteLine(physicalDevice.Name);
+
+            GraphicsDevice graphicsDevice = context.CreateGraphicsDevice(physicalDevice, (Window)sender!);
+
+            Console.WriteLine(graphicsDevice);
         }
     }
 }

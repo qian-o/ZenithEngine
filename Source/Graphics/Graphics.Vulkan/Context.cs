@@ -1,4 +1,5 @@
-﻿using Graphics.Core;
+﻿using System.Runtime.InteropServices;
+using Graphics.Core;
 using Silk.NET.Core;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
@@ -11,7 +12,7 @@ public unsafe partial class Context : DisposableObject
 {
     public const string ValidationLayerName = "VK_LAYER_KHRONOS_validation";
 
-    private readonly StringAlloter _stringAlloter = new();
+    private readonly Alloter _alloter = new();
 
     private readonly Vk _vk;
     private readonly Instance _instance;
@@ -45,7 +46,6 @@ public unsafe partial class Context : DisposableObject
             {
                 SType = StructureType.DebugUtilsMessengerCreateInfoExt,
                 MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt
-                                  | DebugUtilsMessageSeverityFlagsEXT.InfoBitExt
                                   | DebugUtilsMessageSeverityFlagsEXT.WarningBitExt
                                   | DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
                 MessageType = DebugUtilsMessageTypeFlagsEXT.GeneralBitExt
@@ -59,10 +59,9 @@ public unsafe partial class Context : DisposableObject
                 throw new InvalidOperationException("Failed to set up debug messenger!");
             }
         }
-
-        // Clear string alloter
-        _stringAlloter.Clear();
     }
+
+    internal Alloter Alloter => _alloter;
 
     internal Vk Vk => _vk;
 
@@ -78,7 +77,7 @@ public unsafe partial class Context : DisposableObject
         _debugUtils?.Dispose();
         _vk.Dispose();
 
-        _stringAlloter.Dispose();
+        _alloter.Dispose();
     }
 
     /// <summary>
@@ -90,12 +89,14 @@ public unsafe partial class Context : DisposableObject
         uint layerCount = 0;
         _vk.EnumerateInstanceLayerProperties(&layerCount, null);
 
-        LayerProperties* availableLayers = stackalloc LayerProperties[(int)layerCount];
+        LayerProperties[] availableLayers = new LayerProperties[(int)layerCount];
         _vk.EnumerateInstanceLayerProperties(&layerCount, availableLayers);
 
         for (int i = 0; i < layerCount; i++)
         {
-            if (StringAlloter.GetString(availableLayers[i].LayerName) == ValidationLayerName)
+            LayerProperties layer = availableLayers[i];
+
+            if (Alloter.GetString(layer.LayerName) == ValidationLayerName)
             {
                 return true;
             }
@@ -114,9 +115,9 @@ public unsafe partial class Context : DisposableObject
         ApplicationInfo applicationInfo = new()
         {
             SType = StructureType.ApplicationInfo,
-            PApplicationName = (byte*)_stringAlloter.Allocate("Graphics"),
+            PApplicationName = _alloter.Allocate("Graphics"),
             ApplicationVersion = new Version32(1, 0, 0),
-            PEngineName = (byte*)_stringAlloter.Allocate("Graphics"),
+            PEngineName = _alloter.Allocate("Graphics"),
             EngineVersion = new Version32(1, 0, 0),
             ApiVersion = Vk.Version13
         };
@@ -135,10 +136,19 @@ public unsafe partial class Context : DisposableObject
         if (Debugging)
         {
             instanceCreateInfo.EnabledLayerCount = 1;
-            instanceCreateInfo.PpEnabledLayerNames = (byte**)_stringAlloter.Allocate([ValidationLayerName]);
+            instanceCreateInfo.PpEnabledLayerNames = _alloter.Allocate([ValidationLayerName]);
         }
 
         string[] extensions = [KhrSurface.ExtensionName];
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            extensions = [.. extensions, KhrWin32Surface.ExtensionName];
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            extensions = [.. extensions, KhrXlibSurface.ExtensionName];
+        }
 
         if (Debugging)
         {
@@ -146,14 +156,15 @@ public unsafe partial class Context : DisposableObject
         }
 
         instanceCreateInfo.EnabledExtensionCount = (uint)extensions.Length;
-        instanceCreateInfo.PpEnabledExtensionNames = (byte**)_stringAlloter.Allocate(extensions);
+        instanceCreateInfo.PpEnabledExtensionNames = _alloter.Allocate(extensions);
 
         Instance instance;
-
         if (_vk.CreateInstance(&instanceCreateInfo, null, &instance) != Result.Success)
         {
             throw new InvalidOperationException("Failed to create instance!");
         }
+
+        _alloter.Clear();
 
         return instance;
     }
@@ -179,7 +190,7 @@ public unsafe partial class Context : DisposableObject
                                       DebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                       void* pUserData)
     {
-        string message = StringAlloter.GetString(pCallbackData->PMessage);
+        string message = Alloter.GetString(pCallbackData->PMessage);
 
         Console.WriteLine($"[{messageSeverity}] {message}");
 
