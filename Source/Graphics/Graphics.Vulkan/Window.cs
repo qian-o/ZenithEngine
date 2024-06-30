@@ -34,6 +34,8 @@ public class Window : DisposableObject
 
     public event EventHandler<RenderEventArgs>? Render;
 
+    public event EventHandler<ResizeEventArgs>? Resize;
+
     public event EventHandler<CloseEventArgs>? Close;
 
     public string Title
@@ -73,9 +75,11 @@ public class Window : DisposableObject
             isInitialized = true;
 
             Load?.Invoke(this, new LoadEventArgs());
+            Resize?.Invoke(this, new ResizeEventArgs((uint)_window.Size.X, (uint)_window.Size.Y));
         };
         _window.Update += (d) => Update?.Invoke(this, new UpdateEventArgs((float)d));
         _window.Render += (d) => Render?.Invoke(this, new RenderEventArgs((float)d));
+        _window.Resize += (v) => Resize?.Invoke(this, new ResizeEventArgs((uint)v.X, (uint)v.Y));
         _window.Closing += () => Close?.Invoke(this, new CloseEventArgs());
 
         _window.Run();

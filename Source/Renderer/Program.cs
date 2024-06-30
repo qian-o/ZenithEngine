@@ -3,11 +3,14 @@ using Graphics.Vulkan;
 
 internal sealed class Program
 {
+    private static GraphicsDevice _graphicsDevice = null!;
+
     private static void Main(string[] _)
     {
         using Window window = new();
 
         window.Load += Window_Load;
+        window.Resize += Window_Resize;
 
         window.Run();
     }
@@ -20,9 +23,14 @@ internal sealed class Program
         {
             Console.WriteLine(physicalDevice.Name);
 
-            GraphicsDevice graphicsDevice = context.CreateGraphicsDevice(physicalDevice, (Window)sender!);
+            _graphicsDevice = context.CreateGraphicsDevice(physicalDevice, (Window)sender!);
 
-            Console.WriteLine(graphicsDevice);
+            break;
         }
+    }
+
+    private static void Window_Resize(object? sender, ResizeEventArgs e)
+    {
+        _graphicsDevice.Resize(e.Width, e.Height);
     }
 }
