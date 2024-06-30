@@ -12,7 +12,6 @@ public unsafe class SwapChain : ContextObject
     private readonly uint _minImageCount;
 
     private SwapchainKHR? _swapchain;
-    private uint _imageCount;
     private VkImage[]? _images;
     private VkImageView[]? _imageViews;
 
@@ -89,7 +88,6 @@ public unsafe class SwapChain : ContextObject
 
         uint imageCount;
         _graphicsDevice.SwapchainExt.GetSwapchainImages(_graphicsDevice.Device, swapchain, &imageCount, null);
-        _imageCount = imageCount;
 
         _images = new VkImage[imageCount];
         _graphicsDevice.SwapchainExt.GetSwapchainImages(_graphicsDevice.Device,
@@ -139,7 +137,6 @@ public unsafe class SwapChain : ContextObject
 
         _imageViews = null;
         _images = null;
-        _imageCount = 0;
         _swapchain = null;
     }
 
