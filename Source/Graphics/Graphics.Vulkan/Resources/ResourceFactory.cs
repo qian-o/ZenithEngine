@@ -9,6 +9,11 @@ public class ResourceFactory : ContextObject
         _graphicsDevice = graphicsDevice;
     }
 
+    public Buffer CreateBuffer(in BufferDescription description)
+    {
+        return new Buffer(_graphicsDevice, description);
+    }
+
     public Texture CreateTexture(in TextureDescription description)
     {
         return new Texture(_graphicsDevice, description);

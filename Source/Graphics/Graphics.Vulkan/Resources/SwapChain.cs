@@ -12,30 +12,30 @@ public unsafe class SwapChain : DeviceResource
     internal SwapChain(GraphicsDevice graphicsDevice, uint width, uint height) : base(graphicsDevice)
     {
         SurfaceCapabilitiesKHR surfaceCapabilities;
-        SurfaceExt.GetPhysicalDeviceSurfaceCapabilities(PhysicalDevice,
+        SurfaceExt.GetPhysicalDeviceSurfaceCapabilities(VkPhysicalDevice,
                                                         WindowSurface,
                                                         &surfaceCapabilities);
 
         uint surfaceFormatCount;
-        SurfaceExt.GetPhysicalDeviceSurfaceFormats(PhysicalDevice,
+        SurfaceExt.GetPhysicalDeviceSurfaceFormats(VkPhysicalDevice,
                                                    WindowSurface,
                                                    &surfaceFormatCount,
                                                    null);
 
         SurfaceFormatKHR[] surfaceFormats = new SurfaceFormatKHR[surfaceFormatCount];
-        SurfaceExt.GetPhysicalDeviceSurfaceFormats(PhysicalDevice,
+        SurfaceExt.GetPhysicalDeviceSurfaceFormats(VkPhysicalDevice,
                                                    WindowSurface,
                                                    &surfaceFormatCount,
                                                    (SurfaceFormatKHR*)Unsafe.AsPointer(ref surfaceFormats[0]));
 
         uint presentModeCount;
-        SurfaceExt.GetPhysicalDeviceSurfacePresentModes(PhysicalDevice,
+        SurfaceExt.GetPhysicalDeviceSurfacePresentModes(VkPhysicalDevice,
                                                         WindowSurface,
                                                         &presentModeCount,
                                                         null);
 
         PresentModeKHR[] presentModes = new PresentModeKHR[presentModeCount];
-        SurfaceExt.GetPhysicalDeviceSurfacePresentModes(PhysicalDevice,
+        SurfaceExt.GetPhysicalDeviceSurfacePresentModes(VkPhysicalDevice,
                                                         WindowSurface,
                                                         &presentModeCount,
                                                         (PresentModeKHR*)Unsafe.AsPointer(ref presentModes[0]));

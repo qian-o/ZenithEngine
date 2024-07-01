@@ -59,6 +59,19 @@ public unsafe class PhysicalDevice : ContextObject
 
     internal ExtensionProperties[] ExtensionProperties => _extensionProperties;
 
+    public uint FindMemoryTypeIndex(uint memoryTypeBits, MemoryPropertyFlags memoryPropertyFlags)
+    {
+        for (uint i = 0; i < _memoryProperties.MemoryTypeCount; i++)
+        {
+            if ((memoryTypeBits & (1 << (int)i)) != 0 && (_memoryProperties.MemoryTypes[(int)i].PropertyFlags & memoryPropertyFlags) == memoryPropertyFlags)
+            {
+                return i;
+            }
+        }
+
+        throw new InvalidOperationException("Failed to find memory type index!");
+    }
+
     protected override void Destroy()
     {
     }

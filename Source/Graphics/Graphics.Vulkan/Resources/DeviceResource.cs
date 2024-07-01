@@ -5,11 +5,13 @@ namespace Graphics.Vulkan;
 
 public abstract class DeviceResource(GraphicsDevice graphicsDevice) : ContextObject(graphicsDevice.Context)
 {
+    internal PhysicalDevice PhysicalDevice => graphicsDevice.PhysicalDevice;
+
+    internal VkPhysicalDevice VkPhysicalDevice => graphicsDevice.PhysicalDevice.VkPhysicalDevice;
+
     internal GraphicsDevice GraphicsDevice => graphicsDevice;
 
     internal ResourceFactory ResourceFactory => graphicsDevice.ResourceFactory;
-
-    internal VkPhysicalDevice PhysicalDevice => graphicsDevice.PhysicalDevice.VkPhysicalDevice;
 
     internal Device Device => graphicsDevice.Device;
 

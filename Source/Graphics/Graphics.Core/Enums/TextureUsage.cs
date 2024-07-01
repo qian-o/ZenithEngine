@@ -1,4 +1,4 @@
-﻿namespace Graphics.Vulkan;
+﻿namespace Graphics.Core;
 
 [Flags]
 public enum TextureUsage : byte
