@@ -1,4 +1,6 @@
-﻿namespace Graphics.Core;
+﻿using Graphics.Core;
+
+namespace Graphics.Vulkan;
 
 public struct TextureDescription(uint width,
                                  uint height,

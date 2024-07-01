@@ -1,4 +1,4 @@
-﻿namespace Graphics.Core;
+﻿namespace Graphics.Vulkan;
 
 public enum TextureSampleCount : byte
 {

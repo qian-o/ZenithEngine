@@ -1,4 +1,4 @@
-﻿namespace Graphics.Core;
+﻿namespace Graphics.Vulkan;
 
 [Flags]
 public enum BufferUsage : byte
