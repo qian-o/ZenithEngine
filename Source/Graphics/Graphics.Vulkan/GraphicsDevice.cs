@@ -17,7 +17,8 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly CommandPool _graphicsCommandPool;
     private readonly CommandPool _computeCommandPool;
     private readonly CommandPool _transferCommandPool;
-    private readonly SwapChain _swapChain;
+
+    private SwapChain? swapChain;
 
     internal GraphicsDevice(Context context,
                             PhysicalDevice physicalDevice,
@@ -84,7 +85,6 @@ public unsafe class GraphicsDevice : ContextObject
         _graphicsCommandPool = graphicsCommandPool;
         _computeCommandPool = computeCommandPool;
         _transferCommandPool = transferCommandPool;
-        _swapChain = new SwapChain(context, this);
     }
 
     public ResourceFactory ResourceFactory => _resourceFactory;
@@ -109,16 +109,15 @@ public unsafe class GraphicsDevice : ContextObject
 
     internal CommandPool TransferCommandPool => _transferCommandPool;
 
-    internal SwapChain SwapChain => _swapChain;
-
     public void Resize(uint width, uint height)
     {
-        _swapChain.Initialize(width, height);
+        swapChain?.Dispose();
+        swapChain = new SwapChain(this, width, height);
     }
 
     protected override void Destroy()
     {
-        _swapChain.Dispose();
+        swapChain?.Dispose();
 
         Vk.DestroyCommandPool(_device, _transferCommandPool, null);
         Vk.DestroyCommandPool(_device, _computeCommandPool, null);

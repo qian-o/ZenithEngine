@@ -3,97 +3,78 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class SwapChain : ContextObject
+public unsafe class SwapChain : DeviceObject
 {
-    private readonly GraphicsDevice _graphicsDevice;
-    private readonly SurfaceCapabilitiesKHR _surfaceCapabilities;
-    private readonly SurfaceFormatKHR _surfaceFormat;
-    private readonly PresentModeKHR _presentMode;
-    private readonly uint _minImageCount;
+    private readonly SwapchainKHR? _swapchain;
+    private readonly VkImage[]? _images;
+    private readonly VkImageView[]? _imageViews;
 
-    private SwapchainKHR? _swapchain;
-    private VkImage[]? _images;
-    private VkImageView[]? _imageViews;
-
-    internal SwapChain(Context context, GraphicsDevice graphicsDevice) : base(context)
+    internal SwapChain(GraphicsDevice graphicsDevice, uint width, uint height) : base(graphicsDevice)
     {
         SurfaceCapabilitiesKHR surfaceCapabilities;
-        SurfaceExt.GetPhysicalDeviceSurfaceCapabilities(graphicsDevice.PhysicalDevice.VkPhysicalDevice,
-                                                        graphicsDevice.WindowSurface,
+        SurfaceExt.GetPhysicalDeviceSurfaceCapabilities(PhysicalDevice,
+                                                        WindowSurface,
                                                         &surfaceCapabilities);
 
         uint surfaceFormatCount;
-        SurfaceExt.GetPhysicalDeviceSurfaceFormats(graphicsDevice.PhysicalDevice.VkPhysicalDevice,
-                                                   graphicsDevice.WindowSurface,
+        SurfaceExt.GetPhysicalDeviceSurfaceFormats(PhysicalDevice,
+                                                   WindowSurface,
                                                    &surfaceFormatCount,
                                                    null);
 
         SurfaceFormatKHR[] surfaceFormats = new SurfaceFormatKHR[surfaceFormatCount];
-        SurfaceExt.GetPhysicalDeviceSurfaceFormats(graphicsDevice.PhysicalDevice.VkPhysicalDevice,
-                                                   graphicsDevice.WindowSurface,
+        SurfaceExt.GetPhysicalDeviceSurfaceFormats(PhysicalDevice,
+                                                   WindowSurface,
                                                    &surfaceFormatCount,
                                                    (SurfaceFormatKHR*)Unsafe.AsPointer(ref surfaceFormats[0]));
 
         uint presentModeCount;
-        SurfaceExt.GetPhysicalDeviceSurfacePresentModes(graphicsDevice.PhysicalDevice.VkPhysicalDevice,
-                                                        graphicsDevice.WindowSurface,
+        SurfaceExt.GetPhysicalDeviceSurfacePresentModes(PhysicalDevice,
+                                                        WindowSurface,
                                                         &presentModeCount,
                                                         null);
 
         PresentModeKHR[] presentModes = new PresentModeKHR[presentModeCount];
-        SurfaceExt.GetPhysicalDeviceSurfacePresentModes(graphicsDevice.PhysicalDevice.VkPhysicalDevice,
-                                                        graphicsDevice.WindowSurface,
+        SurfaceExt.GetPhysicalDeviceSurfacePresentModes(PhysicalDevice,
+                                                        WindowSurface,
                                                         &presentModeCount,
                                                         (PresentModeKHR*)Unsafe.AsPointer(ref presentModes[0]));
-
-        _graphicsDevice = graphicsDevice;
-        _surfaceCapabilities = surfaceCapabilities;
-        _surfaceFormat = ChooseSwapSurfaceFormat(surfaceFormats);
-        _presentMode = ChooseSwapPresentMode(presentModes);
-        _minImageCount = Math.Min(surfaceCapabilities.MinImageCount + 1, surfaceCapabilities.MaxImageCount);
-    }
-
-    internal void Initialize(uint width, uint height)
-    {
-        Cleanup();
 
         if (width == 0 || height == 0)
         {
             return;
         }
 
-        Extent2D extent = ChooseSwapExtent(_surfaceCapabilities, width, height);
-
         SwapchainCreateInfoKHR swapchainCreateInfo = new()
         {
             SType = StructureType.SwapchainCreateInfoKhr,
-            Surface = _graphicsDevice.WindowSurface,
-            MinImageCount = _minImageCount,
-            ImageFormat = _surfaceFormat.Format,
-            ImageColorSpace = _surfaceFormat.ColorSpace,
-            ImageExtent = extent,
+            Surface = WindowSurface,
+            MinImageCount = Math.Min(surfaceCapabilities.MinImageCount + 1, surfaceCapabilities.MaxImageCount),
+            ImageFormat = ChooseSwapSurfaceFormat(surfaceFormats).Format,
+            ImageColorSpace = ChooseSwapSurfaceFormat(surfaceFormats).ColorSpace,
+            ImageExtent = ChooseSwapExtent(surfaceCapabilities, width, height),
             ImageArrayLayers = 1,
             ImageUsage = ImageUsageFlags.ColorAttachmentBit,
             PreTransform = SurfaceTransformFlagsKHR.IdentityBitKhr,
             CompositeAlpha = CompositeAlphaFlagsKHR.OpaqueBitKhr,
-            PresentMode = _presentMode,
+            PresentMode = ChooseSwapPresentMode(presentModes),
             ImageSharingMode = SharingMode.Exclusive,
             Clipped = true,
             OldSwapchain = default
         };
 
         SwapchainKHR swapchain;
-        _graphicsDevice.SwapchainExt.CreateSwapchain(_graphicsDevice.Device, &swapchainCreateInfo, null, &swapchain);
+        SwapchainExt.CreateSwapchain(Device, &swapchainCreateInfo, null, &swapchain);
         _swapchain = swapchain;
 
         uint imageCount;
-        _graphicsDevice.SwapchainExt.GetSwapchainImages(_graphicsDevice.Device, swapchain, &imageCount, null);
+        SwapchainExt.GetSwapchainImages(Device, swapchain, &imageCount, null);
 
         _images = new VkImage[imageCount];
-        _graphicsDevice.SwapchainExt.GetSwapchainImages(_graphicsDevice.Device,
-                                                        swapchain,
-                                                        &imageCount,
-                                                        (VkImage*)Unsafe.AsPointer(ref _images[0]));
+        SwapchainExt.GetSwapchainImages(Device,
+                                        swapchain,
+                                        &imageCount,
+                                        (VkImage*)Unsafe.AsPointer(ref _images[0]));
 
         _imageViews = new VkImageView[imageCount];
         for (int i = 0; i < imageCount; i++)
@@ -103,7 +84,7 @@ public unsafe class SwapChain : ContextObject
                 SType = StructureType.ImageViewCreateInfo,
                 Image = _images[i],
                 ViewType = ImageViewType.Type2D,
-                Format = _surfaceFormat.Format,
+                Format = ChooseSwapSurfaceFormat(surfaceFormats).Format,
                 SubresourceRange = new ImageSubresourceRange
                 {
                     AspectMask = ImageAspectFlags.ColorBit,
@@ -115,33 +96,25 @@ public unsafe class SwapChain : ContextObject
             };
 
             VkImageView imageView;
-            Vk.CreateImageView(_graphicsDevice.Device, &imageViewCreateInfo, null, &imageView);
+            Vk.CreateImageView(Device, &imageViewCreateInfo, null, &imageView);
             _imageViews[i] = imageView;
         }
     }
 
-    internal void Cleanup()
+    protected override void Destroy()
     {
         if (_imageViews != null)
         {
             foreach (VkImageView imageView in _imageViews)
             {
-                Vk.DestroyImageView(_graphicsDevice.Device, imageView, null);
+                Vk.DestroyImageView(Device, imageView, null);
             }
         }
 
         if (_swapchain != null)
         {
-            _graphicsDevice.SwapchainExt.DestroySwapchain(_graphicsDevice.Device, _swapchain.Value, null);
+            SwapchainExt.DestroySwapchain(Device, _swapchain.Value, null);
         }
-
-        _imageViews = null;
-        _images = null;
-        _swapchain = null;
-    }
-
-    protected override void Destroy()
-    {
     }
 
     private static SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] surfaceFormats)
