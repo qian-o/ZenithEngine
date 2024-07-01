@@ -3,7 +3,7 @@ using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Graphics.Vulkan;
 
-public abstract class DeviceObject(GraphicsDevice graphicsDevice) : ContextObject(graphicsDevice.Context)
+public abstract class Resource(GraphicsDevice graphicsDevice) : ContextObject(graphicsDevice.Context)
 {
     internal GraphicsDevice GraphicsDevice => graphicsDevice;
 

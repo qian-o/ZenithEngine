@@ -3,7 +3,7 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class SwapChain : DeviceObject
+public unsafe class SwapChain : Resource
 {
     private readonly SwapchainKHR? _swapchain;
     private readonly VkImage[]? _images;
