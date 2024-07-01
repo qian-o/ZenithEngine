@@ -9,6 +9,11 @@ public class ResourceFactory : ContextObject
         _graphicsDevice = graphicsDevice;
     }
 
+    public Texture CreateTexture(in TextureDescription description)
+    {
+        return new Texture(_graphicsDevice, description);
+    }
+
     protected override void Destroy()
     {
     }

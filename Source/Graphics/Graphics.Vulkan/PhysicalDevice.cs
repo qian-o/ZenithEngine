@@ -15,32 +15,33 @@ public unsafe class PhysicalDevice : ContextObject
 
     internal PhysicalDevice(Context context, VkPhysicalDevice vkPhysicalDevice) : base(context)
     {
-        _vkPhysicalDevice = vkPhysicalDevice;
-
         PhysicalDeviceProperties properties;
-        Vk.GetPhysicalDeviceProperties(_vkPhysicalDevice, &properties);
-        _properties = properties;
+        Vk.GetPhysicalDeviceProperties(vkPhysicalDevice, &properties);
 
         PhysicalDeviceFeatures features;
-        Vk.GetPhysicalDeviceFeatures(_vkPhysicalDevice, &features);
-        _features = features;
+        Vk.GetPhysicalDeviceFeatures(vkPhysicalDevice, &features);
 
         PhysicalDeviceMemoryProperties memoryProperties;
-        Vk.GetPhysicalDeviceMemoryProperties(_vkPhysicalDevice, &memoryProperties);
-        _memoryProperties = memoryProperties;
+        Vk.GetPhysicalDeviceMemoryProperties(vkPhysicalDevice, &memoryProperties);
 
         uint queueFamilyPropertyCount = 0;
-        Vk.GetPhysicalDeviceQueueFamilyProperties(_vkPhysicalDevice, &queueFamilyPropertyCount, null);
+        Vk.GetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyPropertyCount, null);
 
-        _queueFamilyProperties = new QueueFamilyProperties[(int)queueFamilyPropertyCount];
-        Vk.GetPhysicalDeviceQueueFamilyProperties(_vkPhysicalDevice, &queueFamilyPropertyCount, _queueFamilyProperties);
+        QueueFamilyProperties[] queueFamilyProperties = new QueueFamilyProperties[(int)queueFamilyPropertyCount];
+        Vk.GetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyPropertyCount, queueFamilyProperties);
 
         uint extensionPropertyCount = 0;
-        Vk.EnumerateDeviceExtensionProperties(_vkPhysicalDevice, string.Empty, &extensionPropertyCount, null);
+        Vk.EnumerateDeviceExtensionProperties(vkPhysicalDevice, string.Empty, &extensionPropertyCount, null);
 
-        _extensionProperties = new ExtensionProperties[(int)extensionPropertyCount];
-        Vk.EnumerateDeviceExtensionProperties(_vkPhysicalDevice, string.Empty, &extensionPropertyCount, _extensionProperties);
+        ExtensionProperties[] extensionProperties = new ExtensionProperties[(int)extensionPropertyCount];
+        Vk.EnumerateDeviceExtensionProperties(vkPhysicalDevice, string.Empty, &extensionPropertyCount, extensionProperties);
 
+        _vkPhysicalDevice = vkPhysicalDevice;
+        _properties = properties;
+        _features = features;
+        _memoryProperties = memoryProperties;
+        _queueFamilyProperties = queueFamilyProperties;
+        _extensionProperties = extensionProperties;
         _name = Alloter.GetString(properties.DeviceName);
     }
 
