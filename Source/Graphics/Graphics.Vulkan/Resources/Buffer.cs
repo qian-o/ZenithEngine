@@ -55,16 +55,22 @@ public unsafe class Buffer : DeviceResource
         bool isStaging = description.Usage.HasFlag(BufferUsage.Staging);
         bool hostVisible = isStaging || description.Usage.HasFlag(BufferUsage.Dynamic);
 
+        DeviceMemory deviceMemory = new(graphicsDevice,
+                                        in memoryRequirements,
+                                        hostVisible ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit);
+
+        Vk.BindBufferMemory(Device, buffer, deviceMemory.Handle, 0);
+
         _buffer = buffer;
-        _deviceMemory = new(graphicsDevice,
-                            in memoryRequirements,
-                            hostVisible ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit);
+        _deviceMemory = deviceMemory;
     }
+
+    internal VkBuffer Handle => _buffer;
 
     protected override void Destroy()
     {
-        _deviceMemory.Dispose();
-
         Vk.DestroyBuffer(Device, _buffer, null);
+
+        _deviceMemory.Dispose();
     }
 }

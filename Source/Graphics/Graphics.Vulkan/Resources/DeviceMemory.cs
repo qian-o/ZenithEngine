@@ -21,6 +21,8 @@ internal sealed unsafe class DeviceMemory : DeviceResource
         _deviceMemory = deviceMemory;
     }
 
+    internal VkDeviceMemory Handle => _deviceMemory;
+
     protected override void Destroy()
     {
         Vk.FreeMemory(Device, _deviceMemory, null);

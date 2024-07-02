@@ -6,7 +6,6 @@ public struct TextureDescription(uint width,
                                  uint height,
                                  uint depth,
                                  uint mipLevels,
-                                 uint arrayLayers,
                                  PixelFormat format,
                                  TextureUsage usage,
                                  TextureType type,
@@ -31,11 +30,6 @@ public struct TextureDescription(uint width,
     /// The number of mipmap levels.
     /// </summary>
     public uint MipLevels { get; set; } = mipLevels;
-
-    /// <summary>
-    /// The number of array layers.
-    /// </summary>
-    public uint ArrayLayers { get; set; } = arrayLayers;
 
     /// <summary>
     /// The format of individual texture elements.
@@ -63,7 +57,6 @@ public struct TextureDescription(uint width,
                Height == other.Height &&
                Depth == other.Depth &&
                MipLevels == other.MipLevels &&
-               ArrayLayers == other.ArrayLayers &&
                Format == other.Format &&
                Usage == other.Usage &&
                Type == other.Type &&
@@ -76,7 +69,6 @@ public struct TextureDescription(uint width,
                                   Height.GetHashCode(),
                                   Depth.GetHashCode(),
                                   MipLevels.GetHashCode(),
-                                  ArrayLayers.GetHashCode(),
                                   (int)Format,
                                   (int)Usage,
                                   (int)Type,
@@ -90,7 +82,7 @@ public struct TextureDescription(uint width,
 
     public override readonly string ToString()
     {
-        return $"Width: {Width}, Height: {Height}, Depth: {Depth}, MipLevels: {MipLevels}, ArrayLayers: {ArrayLayers}, Format: {Format}, Usage: {Usage}, Type: {Type}, SampleCount: {SampleCount}";
+        return $"Width: {Width}, Height: {Height}, Depth: {Depth}, MipLevels: {MipLevels}, Format: {Format}, Usage: {Usage}, Type: {Type}, SampleCount: {SampleCount}";
     }
 
     public static bool operator ==(TextureDescription left, TextureDescription right)
@@ -105,7 +97,6 @@ public struct TextureDescription(uint width,
 
     public static TextureDescription Texture1D(uint width,
                                                uint mipLevels,
-                                               uint arrayLayers,
                                                PixelFormat format,
                                                TextureUsage usage)
     {
@@ -113,7 +104,6 @@ public struct TextureDescription(uint width,
                                       1,
                                       1,
                                       mipLevels,
-                                      arrayLayers,
                                       format,
                                       usage,
                                       TextureType.Texture1D,
@@ -123,7 +113,6 @@ public struct TextureDescription(uint width,
     public static TextureDescription Texture2D(uint width,
                                                uint height,
                                                uint mipLevels,
-                                               uint arrayLayers,
                                                PixelFormat format,
                                                TextureUsage usage)
     {
@@ -131,7 +120,6 @@ public struct TextureDescription(uint width,
                                       height,
                                       1,
                                       mipLevels,
-                                      arrayLayers,
                                       format,
                                       usage,
                                       TextureType.Texture2D,
@@ -141,7 +129,6 @@ public struct TextureDescription(uint width,
     public static TextureDescription Texture2D(uint width,
                                                uint height,
                                                uint mipLevels,
-                                               uint arrayLayers,
                                                PixelFormat format,
                                                TextureUsage usage,
                                                TextureSampleCount sampleCount)
@@ -150,7 +137,6 @@ public struct TextureDescription(uint width,
                                       height,
                                       1,
                                       mipLevels,
-                                      arrayLayers,
                                       format,
                                       usage,
                                       TextureType.Texture2D,
@@ -168,7 +154,6 @@ public struct TextureDescription(uint width,
                                       height,
                                       depth,
                                       mipLevels,
-                                      1,
                                       format,
                                       usage,
                                       TextureType.Texture3D,

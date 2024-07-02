@@ -109,6 +109,48 @@ public unsafe class GraphicsDevice : ContextObject
 
     internal CommandPool TransferCommandPool => _transferCommandPool;
 
+    internal CommandBuffer BeginSingleTimeCommands()
+    {
+        CommandBufferAllocateInfo allocateInfo = new()
+        {
+            SType = StructureType.CommandBufferAllocateInfo,
+            CommandPool = _transferCommandPool,
+            Level = CommandBufferLevel.Primary,
+            CommandBufferCount = 1
+        };
+
+        CommandBuffer commandBuffer;
+        Vk.AllocateCommandBuffers(_device, &allocateInfo, &commandBuffer);
+
+        CommandBufferBeginInfo beginInfo = new()
+        {
+            SType = StructureType.CommandBufferBeginInfo,
+            Flags = CommandBufferUsageFlags.OneTimeSubmitBit
+        };
+
+        Vk.BeginCommandBuffer(commandBuffer, &beginInfo);
+
+        return commandBuffer;
+    }
+
+    internal void EndSingleTimeCommands(CommandBuffer commandBuffer)
+    {
+        Vk.EndCommandBuffer(commandBuffer);
+
+        SubmitInfo submitInfo = new()
+        {
+            SType = StructureType.SubmitInfo,
+            CommandBufferCount = 1,
+            PCommandBuffers = &commandBuffer
+        };
+
+        Vk.QueueSubmit(_transferQueue, 1, &submitInfo, default);
+
+        Vk.QueueWaitIdle(_transferQueue);
+
+        Vk.FreeCommandBuffers(_device, _transferCommandPool, 1, &commandBuffer);
+    }
+
     public void Resize(uint width, uint height)
     {
         swapChain?.Dispose();
