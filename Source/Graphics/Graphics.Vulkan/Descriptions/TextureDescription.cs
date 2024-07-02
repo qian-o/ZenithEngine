@@ -69,10 +69,10 @@ public struct TextureDescription(uint width,
                                   Height.GetHashCode(),
                                   Depth.GetHashCode(),
                                   MipLevels.GetHashCode(),
-                                  (int)Format,
-                                  (int)Usage,
-                                  (int)Type,
-                                  (int)SampleCount);
+                                  Format.GetHashCode(),
+                                  Usage.GetHashCode(),
+                                  Type.GetHashCode(),
+                                  SampleCount.GetHashCode());
     }
 
     public override readonly bool Equals(object? obj)

@@ -72,6 +72,27 @@ public unsafe class PhysicalDevice : ContextObject
         throw new InvalidOperationException("Failed to find memory type index!");
     }
 
+    public Format FindSupportedFormat(Format[] candidates, ImageTiling tiling, FormatFeatureFlags features)
+    {
+        foreach (Format format in candidates)
+        {
+            FormatProperties formatProperties;
+            Vk.GetPhysicalDeviceFormatProperties(_vkPhysicalDevice, format, &formatProperties);
+
+            if (tiling == ImageTiling.Linear && formatProperties.LinearTilingFeatures.HasFlag(features))
+            {
+                return format;
+            }
+
+            if (tiling == ImageTiling.Optimal && formatProperties.OptimalTilingFeatures.HasFlag(features))
+            {
+                return format;
+            }
+        }
+
+        throw new InvalidOperationException("Failed to find supported format!");
+    }
+
     protected override void Destroy()
     {
     }

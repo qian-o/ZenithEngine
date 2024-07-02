@@ -29,6 +29,16 @@ public class ResourceFactory : ContextObject
         return new TextureView(_graphicsDevice, description);
     }
 
+    public Framebuffer CreateFramebuffer(in FramebufferDescription description)
+    {
+        return new Framebuffer(_graphicsDevice, description);
+    }
+
+    public Swapchain CreateSwapchain(in SwapchainDescription description)
+    {
+        return new Swapchain(_graphicsDevice, description);
+    }
+
     protected override void Destroy()
     {
     }

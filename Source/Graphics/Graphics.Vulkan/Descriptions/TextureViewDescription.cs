@@ -64,7 +64,7 @@ public struct TextureViewDescription(Texture target,
                                   MipLevels.GetHashCode(),
                                   BaseArrayLayer.GetHashCode(),
                                   ArrayLayers.GetHashCode(),
-                                  Format?.GetHashCode() ?? 0);
+                                  Format.GetHashCode());
     }
 
     public override readonly bool Equals(object? obj)
@@ -74,7 +74,7 @@ public struct TextureViewDescription(Texture target,
 
     public override readonly string ToString()
     {
-        return $"TextureViewDescription: Target = {Target}, BaseMipLevel = {BaseMipLevel}, MipLevels = {MipLevels}, BaseArrayLayer = {BaseArrayLayer}, ArrayLayers = {ArrayLayers}, Format = {Format}";
+        return $"Target = {Target}, BaseMipLevel = {BaseMipLevel}, MipLevels = {MipLevels}, BaseArrayLayer = {BaseArrayLayer}, ArrayLayers = {ArrayLayers}, Format = {Format}";
     }
 
     public static bool operator ==(TextureViewDescription left, TextureViewDescription right)

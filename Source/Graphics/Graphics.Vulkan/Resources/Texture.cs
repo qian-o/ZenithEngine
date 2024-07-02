@@ -13,7 +13,8 @@ public unsafe class Texture : DeviceResource
     private readonly uint _height;
     private readonly uint _mipLevels;
     private readonly uint _arrayLayers;
-    private readonly DeviceMemory _deviceMemory;
+    private readonly DeviceMemory? _deviceMemory;
+    private readonly bool isSwapchainImage;
 
     private ImageLayout _layout;
 
@@ -70,6 +71,21 @@ public unsafe class Texture : DeviceResource
         _mipLevels = description.MipLevels;
         _arrayLayers = imageCreateInfo.ArrayLayers;
         _deviceMemory = deviceMemory;
+        isSwapchainImage = false;
+    }
+
+    internal Texture(GraphicsDevice graphicsDevice, VkImage image, Format format, uint width, uint height) : base(graphicsDevice)
+    {
+        _image = image;
+        _type = TextureType.Texture2D;
+        _format = Formats.GetPixelFormat(format);
+        _usage = TextureUsage.RenderTarget;
+        _width = width;
+        _height = height;
+        _mipLevels = 1;
+        _arrayLayers = 1;
+        _deviceMemory = null;
+        isSwapchainImage = true;
     }
 
     internal VkImage Handle => _image;
@@ -411,9 +427,12 @@ public unsafe class Texture : DeviceResource
 
     protected override void Destroy()
     {
-        Vk.DestroyImage(Device, _image, null);
+        if (!isSwapchainImage)
+        {
+            Vk.DestroyImage(Device, _image, null);
 
-        _deviceMemory.Dispose();
+            _deviceMemory!.Dispose();
+        }
     }
 
     private static bool HasStencilComponent(PixelFormat format)

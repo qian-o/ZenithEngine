@@ -1,4 +1,5 @@
-﻿using Silk.NET.Core.Native;
+﻿using Graphics.Core;
+using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 
@@ -10,15 +11,16 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly PhysicalDevice _physicalDevice;
     private readonly Device _device;
     private readonly KhrSwapchain _swapchainExt;
-    private readonly SurfaceKHR _windowSurface;
     private readonly Queue _graphicsQueue;
     private readonly Queue _computeQueue;
     private readonly Queue _transferQueue;
     private readonly CommandPool _graphicsCommandPool;
     private readonly CommandPool _computeCommandPool;
     private readonly CommandPool _transferCommandPool;
+    private readonly SurfaceKHR _windowSurface;
+    private readonly PixelFormat _depthFormat;
 
-    private SwapChain? swapChain;
+    private Swapchain? swapChain;
 
     internal GraphicsDevice(Context context,
                             PhysicalDevice physicalDevice,
@@ -74,17 +76,22 @@ public unsafe class GraphicsDevice : ContextObject
             Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &transferCommandPool);
         }
 
+        Format depthFormat = physicalDevice.FindSupportedFormat([Format.D32Sfloat, Format.D32SfloatS8Uint, Format.D24UnormS8Uint],
+                                                                ImageTiling.Optimal,
+                                                                FormatFeatureFlags.DepthStencilAttachmentBit);
+
         _resourceFactory = new ResourceFactory(context, this);
         _physicalDevice = physicalDevice;
         _device = device;
         _swapchainExt = swapchainExt;
-        _windowSurface = windowSurface;
         _graphicsQueue = graphicsQueue;
         _computeQueue = computeQueue;
         _transferQueue = transferQueue;
         _graphicsCommandPool = graphicsCommandPool;
         _computeCommandPool = computeCommandPool;
         _transferCommandPool = transferCommandPool;
+        _windowSurface = windowSurface;
+        _depthFormat = Formats.GetPixelFormat(depthFormat);
     }
 
     public ResourceFactory ResourceFactory => _resourceFactory;
@@ -94,8 +101,6 @@ public unsafe class GraphicsDevice : ContextObject
     internal Device Device => _device;
 
     internal KhrSwapchain SwapchainExt => _swapchainExt;
-
-    internal SurfaceKHR WindowSurface => _windowSurface;
 
     internal Queue GraphicsQueue => _graphicsQueue;
 
@@ -154,7 +159,10 @@ public unsafe class GraphicsDevice : ContextObject
     public void Resize(uint width, uint height)
     {
         swapChain?.Dispose();
-        swapChain = new SwapChain(this, width, height);
+
+        SwapchainDescription swapchainDescription = new(_windowSurface, width, height, _depthFormat, TextureSampleCount.Count4);
+
+        swapChain = new Swapchain(this, swapchainDescription);
     }
 
     protected override void Destroy()

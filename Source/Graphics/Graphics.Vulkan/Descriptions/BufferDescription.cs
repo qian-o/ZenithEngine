@@ -21,7 +21,7 @@ public struct BufferDescription(uint sizeInBytes, BufferUsage usage) : IEquatabl
 
     public override readonly int GetHashCode()
     {
-        return HashHelper.Combine(SizeInBytes.GetHashCode(), (int)Usage);
+        return HashHelper.Combine(SizeInBytes.GetHashCode(), Usage.GetHashCode());
     }
 
     public override readonly bool Equals(object? obj)

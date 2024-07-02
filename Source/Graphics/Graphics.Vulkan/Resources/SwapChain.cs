@@ -1,58 +1,60 @@
 ﻿using System.Runtime.CompilerServices;
+using Graphics.Core;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class SwapChain : DeviceResource
+public unsafe class Swapchain : DeviceResource
 {
     private readonly SwapchainKHR? _swapchain;
-    private readonly VkImage[]? _images;
-    private readonly VkImageView[]? _imageViews;
+    private readonly Texture? _colorBuffer;
+    private readonly Texture? _depthBuffer;
+    private readonly Framebuffer[]? _framebuffers;
 
-    internal SwapChain(GraphicsDevice graphicsDevice, uint width, uint height) : base(graphicsDevice)
+    internal Swapchain(GraphicsDevice graphicsDevice, in SwapchainDescription description) : base(graphicsDevice)
     {
+        if (description.Width == 0 || description.Height == 0)
+        {
+            return;
+        }
+
         SurfaceCapabilitiesKHR surfaceCapabilities;
         SurfaceExt.GetPhysicalDeviceSurfaceCapabilities(VkPhysicalDevice,
-                                                        WindowSurface,
+                                                        description.Target,
                                                         &surfaceCapabilities);
 
         uint surfaceFormatCount;
         SurfaceExt.GetPhysicalDeviceSurfaceFormats(VkPhysicalDevice,
-                                                   WindowSurface,
+                                                   description.Target,
                                                    &surfaceFormatCount,
                                                    null);
 
         SurfaceFormatKHR[] surfaceFormats = new SurfaceFormatKHR[surfaceFormatCount];
         SurfaceExt.GetPhysicalDeviceSurfaceFormats(VkPhysicalDevice,
-                                                   WindowSurface,
+                                                   description.Target,
                                                    &surfaceFormatCount,
                                                    (SurfaceFormatKHR*)Unsafe.AsPointer(ref surfaceFormats[0]));
 
         uint presentModeCount;
         SurfaceExt.GetPhysicalDeviceSurfacePresentModes(VkPhysicalDevice,
-                                                        WindowSurface,
+                                                        description.Target,
                                                         &presentModeCount,
                                                         null);
 
         PresentModeKHR[] presentModes = new PresentModeKHR[presentModeCount];
         SurfaceExt.GetPhysicalDeviceSurfacePresentModes(VkPhysicalDevice,
-                                                        WindowSurface,
+                                                        description.Target,
                                                         &presentModeCount,
                                                         (PresentModeKHR*)Unsafe.AsPointer(ref presentModes[0]));
-
-        if (width == 0 || height == 0)
-        {
-            return;
-        }
 
         SwapchainCreateInfoKHR swapchainCreateInfo = new()
         {
             SType = StructureType.SwapchainCreateInfoKhr,
-            Surface = WindowSurface,
+            Surface = description.Target,
             MinImageCount = Math.Min(surfaceCapabilities.MinImageCount + 1, surfaceCapabilities.MaxImageCount),
             ImageFormat = ChooseSwapSurfaceFormat(surfaceFormats).Format,
             ImageColorSpace = ChooseSwapSurfaceFormat(surfaceFormats).ColorSpace,
-            ImageExtent = ChooseSwapExtent(surfaceCapabilities, width, height),
+            ImageExtent = ChooseSwapExtent(surfaceCapabilities, description.Width, description.Height),
             ImageArrayLayers = 1,
             ImageUsage = ImageUsageFlags.ColorAttachmentBit,
             PreTransform = SurfaceTransformFlagsKHR.IdentityBitKhr,
@@ -65,54 +67,79 @@ public unsafe class SwapChain : DeviceResource
 
         SwapchainKHR swapchain;
         SwapchainExt.CreateSwapchain(Device, &swapchainCreateInfo, null, &swapchain);
-        _swapchain = swapchain;
 
         uint imageCount;
         SwapchainExt.GetSwapchainImages(Device, swapchain, &imageCount, null);
 
-        _images = new VkImage[imageCount];
+        VkImage[] images = new VkImage[imageCount];
         SwapchainExt.GetSwapchainImages(Device,
                                         swapchain,
                                         &imageCount,
-                                        (VkImage*)Unsafe.AsPointer(ref _images[0]));
+                                        (VkImage*)Unsafe.AsPointer(ref images[0]));
 
-        _imageViews = new VkImageView[imageCount];
-        for (int i = 0; i < imageCount; i++)
+        TextureDescription colorBufferDescription = new()
         {
-            ImageViewCreateInfo imageViewCreateInfo = new()
+            Width = description.Width,
+            Height = description.Height,
+            Depth = 1,
+            MipLevels = 1,
+            Format = Formats.GetPixelFormat(swapchainCreateInfo.ImageFormat),
+            Usage = TextureUsage.Staging | TextureUsage.RenderTarget,
+            Type = TextureType.Texture2D,
+            SampleCount = description.SampleCount
+        };
+        Texture colorBuffer = new(graphicsDevice, colorBufferDescription);
+
+        Texture? depthBuffer = null;
+        if (description.DepthFormat != null)
+        {
+            TextureDescription depthBufferDescription = new()
             {
-                SType = StructureType.ImageViewCreateInfo,
-                Image = _images[i],
-                ViewType = ImageViewType.Type2D,
-                Format = ChooseSwapSurfaceFormat(surfaceFormats).Format,
-                SubresourceRange = new ImageSubresourceRange
-                {
-                    AspectMask = ImageAspectFlags.ColorBit,
-                    BaseMipLevel = 0,
-                    LevelCount = 1,
-                    BaseArrayLayer = 0,
-                    LayerCount = 1
-                }
+                Width = description.Width,
+                Height = description.Height,
+                Depth = 1,
+                MipLevels = 1,
+                Format = description.DepthFormat.Value,
+                Usage = TextureUsage.Staging | TextureUsage.DepthStencil,
+                Type = TextureType.Texture2D,
+                SampleCount = description.SampleCount
             };
 
-            VkImageView imageView;
-            Vk.CreateImageView(Device, &imageViewCreateInfo, null, &imageView);
-            _imageViews[i] = imageView;
+            depthBuffer = new Texture(graphicsDevice, depthBufferDescription);
         }
+
+        Framebuffer[] framebuffers = new Framebuffer[imageCount];
+        for (int i = 0; i < imageCount; i++)
+        {
+            Texture resolveBuffer = new(graphicsDevice,
+                                        images[i],
+                                        swapchainCreateInfo.ImageFormat,
+                                        description.Width,
+                                        description.Height);
+
+            FramebufferDescription framebufferDescription = new(colorBuffer, resolveBuffer, depthBuffer);
+
+            framebuffers[i] = new Framebuffer(graphicsDevice, framebufferDescription);
+        }
+
+        _swapchain = swapchain;
+        _colorBuffer = colorBuffer;
+        _depthBuffer = depthBuffer;
+        _framebuffers = framebuffers;
     }
 
     protected override void Destroy()
     {
-        if (_imageViews != null)
-        {
-            foreach (VkImageView imageView in _imageViews)
-            {
-                Vk.DestroyImageView(Device, imageView, null);
-            }
-        }
-
         if (_swapchain != null)
         {
+            foreach (Framebuffer framebuffer in _framebuffers!)
+            {
+                framebuffer.Dispose();
+            }
+
+            _colorBuffer!.Dispose();
+            _depthBuffer?.Dispose();
+
             SwapchainExt.DestroySwapchain(Device, _swapchain.Value, null);
         }
     }

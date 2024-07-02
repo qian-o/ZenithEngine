@@ -17,8 +17,6 @@ public abstract class DeviceResource(GraphicsDevice graphicsDevice) : ContextObj
 
     internal KhrSwapchain SwapchainExt => graphicsDevice.SwapchainExt;
 
-    internal SurfaceKHR WindowSurface => graphicsDevice.WindowSurface;
-
     internal Queue GraphicsQueue => graphicsDevice.GraphicsQueue;
 
     internal Queue ComputeQueue => graphicsDevice.ComputeQueue;

@@ -1,8 +1,9 @@
 ﻿namespace Graphics.Vulkan;
 
-public unsafe class Framebuffer : DeviceResource
+public class Framebuffer : DeviceResource
 {
     private readonly TextureView _colorAttachment;
+    private readonly TextureView _resolveColorAttachment;
     private readonly TextureView? _depthAttachment;
 
     public Framebuffer(GraphicsDevice graphicsDevice, in FramebufferDescription description) : base(graphicsDevice)
@@ -14,6 +15,14 @@ public unsafe class Framebuffer : DeviceResource
         };
 
         _colorAttachment = new TextureView(graphicsDevice, colorDescription);
+
+        TextureViewDescription resolveColorDescription = new(description.ResolveColorTarget.Target)
+        {
+            BaseMipLevel = description.ResolveColorTarget.MipLevel,
+            BaseArrayLayer = description.ResolveColorTarget.ArrayLayer
+        };
+
+        _resolveColorAttachment = new TextureView(graphicsDevice, resolveColorDescription);
 
         if (description.DepthTarget != null)
         {
@@ -29,11 +38,14 @@ public unsafe class Framebuffer : DeviceResource
 
     internal TextureView ColorAttachment => _colorAttachment;
 
+    internal TextureView ResolveColorAttachment => _resolveColorAttachment;
+
     internal TextureView? DepthAttachment => _depthAttachment;
 
     protected override void Destroy()
     {
         _colorAttachment.Dispose();
+        _resolveColorAttachment.Dispose();
         _depthAttachment?.Dispose();
     }
 }
