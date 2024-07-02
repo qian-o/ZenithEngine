@@ -3,13 +3,13 @@
 namespace Graphics.Vulkan;
 
 public struct FramebufferDescription(FramebufferAttachmentDescription colorTarget,
-                                     FramebufferAttachmentDescription resolveColorTarget,
+                                     FramebufferAttachmentDescription? resolveColorTarget,
                                      FramebufferAttachmentDescription? depthTarget) : IEquatable<FramebufferDescription>
 {
     public FramebufferDescription(Texture colorTarget,
-                                  Texture resolveColorTarget,
+                                  Texture? resolveColorTarget,
                                   Texture? depthTarget) : this(new FramebufferAttachmentDescription(colorTarget),
-                                                               new FramebufferAttachmentDescription(resolveColorTarget),
+                                                               resolveColorTarget != null ? new FramebufferAttachmentDescription(resolveColorTarget) : null,
                                                                depthTarget != null ? new FramebufferAttachmentDescription(depthTarget) : null)
     {
     }
@@ -22,7 +22,7 @@ public struct FramebufferDescription(FramebufferAttachmentDescription colorTarge
     /// <summary>
     /// The color target to resolve into.
     /// </summary>
-    public FramebufferAttachmentDescription ResolveColorTarget { get; set; } = resolveColorTarget;
+    public FramebufferAttachmentDescription? ResolveColorTarget { get; set; } = resolveColorTarget;
 
     /// <summary>
     /// The depth target to render into.

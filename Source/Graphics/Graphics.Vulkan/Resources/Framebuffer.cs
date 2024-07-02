@@ -3,7 +3,7 @@
 public class Framebuffer : DeviceResource
 {
     private readonly TextureView _colorAttachment;
-    private readonly TextureView _resolveColorAttachment;
+    private readonly TextureView? _resolveColorAttachment;
     private readonly TextureView? _depthAttachment;
 
     public Framebuffer(GraphicsDevice graphicsDevice, in FramebufferDescription description) : base(graphicsDevice)
@@ -16,13 +16,16 @@ public class Framebuffer : DeviceResource
 
         _colorAttachment = new TextureView(graphicsDevice, colorDescription);
 
-        TextureViewDescription resolveColorDescription = new(description.ResolveColorTarget.Target)
+        if (description.ResolveColorTarget != null)
         {
-            BaseMipLevel = description.ResolveColorTarget.MipLevel,
-            BaseArrayLayer = description.ResolveColorTarget.ArrayLayer
-        };
+            TextureViewDescription resolveColorDescription = new(description.ResolveColorTarget.Value.Target)
+            {
+                BaseMipLevel = description.ResolveColorTarget.Value.MipLevel,
+                BaseArrayLayer = description.ResolveColorTarget.Value.ArrayLayer
+            };
 
-        _resolveColorAttachment = new TextureView(graphicsDevice, resolveColorDescription);
+            _resolveColorAttachment = new TextureView(graphicsDevice, resolveColorDescription);
+        }
 
         if (description.DepthTarget != null)
         {
@@ -38,14 +41,14 @@ public class Framebuffer : DeviceResource
 
     internal TextureView ColorAttachment => _colorAttachment;
 
-    internal TextureView ResolveColorAttachment => _resolveColorAttachment;
+    internal TextureView? ResolveColorAttachment => _resolveColorAttachment;
 
     internal TextureView? DepthAttachment => _depthAttachment;
 
     protected override void Destroy()
     {
         _colorAttachment.Dispose();
-        _resolveColorAttachment.Dispose();
+        _resolveColorAttachment?.Dispose();
         _depthAttachment?.Dispose();
     }
 }
