@@ -55,7 +55,7 @@ public unsafe class Texture : DeviceResource
         bool isStaging = description.Usage.HasFlag(TextureUsage.Staging);
 
         DeviceMemory deviceMemory = new(graphicsDevice,
-                                        in memoryRequirements,
+                                        memoryRequirements,
                                         isStaging ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit);
 
         Vk.BindImageMemory(Device, image, deviceMemory.Handle, 0);

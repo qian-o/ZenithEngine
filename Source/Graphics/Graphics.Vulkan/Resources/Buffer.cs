@@ -56,7 +56,7 @@ public unsafe class Buffer : DeviceResource
         bool hostVisible = isStaging || description.Usage.HasFlag(BufferUsage.Dynamic);
 
         DeviceMemory deviceMemory = new(graphicsDevice,
-                                        in memoryRequirements,
+                                        memoryRequirements,
                                         hostVisible ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit);
 
         Vk.BindBufferMemory(Device, buffer, deviceMemory.Handle, 0);
