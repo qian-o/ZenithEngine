@@ -47,7 +47,7 @@ public unsafe class Buffer : DeviceResource
         };
 
         VkBuffer buffer;
-        Vk.CreateBuffer(Device, in bufferCreateInfo, null, &buffer);
+        Vk.CreateBuffer(Device, &bufferCreateInfo, null, &buffer);
 
         MemoryRequirements memoryRequirements;
         Vk.GetBufferMemoryRequirements(Device, buffer, &memoryRequirements);

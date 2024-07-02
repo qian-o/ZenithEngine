@@ -19,6 +19,16 @@ public class ResourceFactory : ContextObject
         return new Texture(_graphicsDevice, description);
     }
 
+    public TextureView CreateTextureView(Texture target)
+    {
+        return CreateTextureView(new TextureViewDescription(target));
+    }
+
+    public TextureView CreateTextureView(in TextureViewDescription description)
+    {
+        return new TextureView(_graphicsDevice, description);
+    }
+
     protected override void Destroy()
     {
     }

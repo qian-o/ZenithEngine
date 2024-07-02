@@ -16,7 +16,7 @@ internal sealed unsafe class DeviceMemory : DeviceResource
         };
 
         VkDeviceMemory deviceMemory;
-        Vk.AllocateMemory(Device, in memoryAllocateInfo, null, &deviceMemory);
+        Vk.AllocateMemory(Device, &memoryAllocateInfo, null, &deviceMemory);
 
         _deviceMemory = deviceMemory;
     }

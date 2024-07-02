@@ -6,7 +6,9 @@ namespace Graphics.Vulkan;
 public unsafe class Texture : DeviceResource
 {
     private readonly VkImage _image;
+    private readonly TextureType _type;
     private readonly PixelFormat _format;
+    private readonly TextureUsage _usage;
     private readonly uint _width;
     private readonly uint _height;
     private readonly uint _mipLevels;
@@ -45,10 +47,10 @@ public unsafe class Texture : DeviceResource
         }
 
         VkImage image;
-        Vk.CreateImage(graphicsDevice.Device, in imageCreateInfo, null, &image);
+        Vk.CreateImage(Device, &imageCreateInfo, null, &image);
 
         MemoryRequirements memoryRequirements;
-        Vk.GetImageMemoryRequirements(graphicsDevice.Device, image, &memoryRequirements);
+        Vk.GetImageMemoryRequirements(Device, image, &memoryRequirements);
 
         bool isStaging = description.Usage.HasFlag(TextureUsage.Staging);
 
@@ -56,10 +58,12 @@ public unsafe class Texture : DeviceResource
                                         in memoryRequirements,
                                         isStaging ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit);
 
-        Vk.BindImageMemory(graphicsDevice.Device, image, deviceMemory.Handle, 0);
+        Vk.BindImageMemory(Device, image, deviceMemory.Handle, 0);
 
         _image = image;
+        _type = description.Type;
         _format = description.Format;
+        _usage = description.Usage;
         _width = description.Width;
         _height = description.Height;
         _layout = ImageLayout.Preinitialized;
@@ -70,7 +74,11 @@ public unsafe class Texture : DeviceResource
 
     internal VkImage Handle => _image;
 
+    internal TextureType Type => _type;
+
     internal PixelFormat Format => _format;
+
+    internal TextureUsage Usage => _usage;
 
     internal uint Width => _width;
 
@@ -403,7 +411,7 @@ public unsafe class Texture : DeviceResource
 
     protected override void Destroy()
     {
-        Vk.DestroyImage(GraphicsDevice.Device, _image, null);
+        Vk.DestroyImage(Device, _image, null);
 
         _deviceMemory.Dispose();
     }
