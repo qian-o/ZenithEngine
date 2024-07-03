@@ -36,7 +36,7 @@ public unsafe class Texture : DeviceResource
             ArrayLayers = isCube ? 6u : 1u,
             InitialLayout = ImageLayout.Preinitialized,
             Usage = Formats.GetImageUsageFlags(description.Usage),
-            Tiling = description.Usage.HasFlag(TextureUsage.Staging) ? ImageTiling.Linear : ImageTiling.Optimal,
+            Tiling = ImageTiling.Optimal,
             Format = Formats.GetPixelFormat(description.Format, description.Usage.HasFlag(TextureUsage.DepthStencil)),
             Flags = ImageCreateFlags.CreateMutableFormatBit,
             Samples = Formats.GetSampleCount(description.SampleCount)

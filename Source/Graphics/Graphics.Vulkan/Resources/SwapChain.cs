@@ -61,7 +61,7 @@ public unsafe class Swapchain : DeviceResource
             CompositeAlpha = CompositeAlphaFlagsKHR.OpaqueBitKhr,
             PresentMode = ChooseSwapPresentMode(presentModes),
             ImageSharingMode = SharingMode.Exclusive,
-            Clipped = true,
+            Clipped = Vk.True,
             OldSwapchain = default
         };
 
@@ -84,7 +84,7 @@ public unsafe class Swapchain : DeviceResource
             Depth = 1,
             MipLevels = 1,
             Format = Formats.GetPixelFormat(swapchainCreateInfo.ImageFormat),
-            Usage = TextureUsage.Staging | TextureUsage.RenderTarget,
+            Usage = TextureUsage.RenderTarget,
             Type = TextureType.Texture2D,
             SampleCount = description.SampleCount
         };
@@ -100,7 +100,7 @@ public unsafe class Swapchain : DeviceResource
                 Depth = 1,
                 MipLevels = 1,
                 Format = description.DepthFormat.Value,
-                Usage = TextureUsage.Staging | TextureUsage.DepthStencil,
+                Usage = TextureUsage.DepthStencil,
                 Type = TextureType.Texture2D,
                 SampleCount = description.SampleCount
             };
