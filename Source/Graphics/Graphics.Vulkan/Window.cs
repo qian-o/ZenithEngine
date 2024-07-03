@@ -79,7 +79,7 @@ public class Window : DisposableObject
         };
         _window.Update += (d) => Update?.Invoke(this, new UpdateEventArgs((float)d));
         _window.Render += (d) => Render?.Invoke(this, new RenderEventArgs((float)d));
-        _window.Resize += (v) => Resize?.Invoke(this, new ResizeEventArgs((uint)v.X, (uint)v.Y));
+        _window.FramebufferResize += (v) => Resize?.Invoke(this, new ResizeEventArgs((uint)v.X, (uint)v.Y));
         _window.Closing += () => Close?.Invoke(this, new CloseEventArgs());
 
         _window.Run();
