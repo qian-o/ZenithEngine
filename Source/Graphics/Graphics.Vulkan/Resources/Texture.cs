@@ -18,7 +18,7 @@ public unsafe class Texture : DeviceResource
 
     private ImageLayout _layout;
 
-    internal Texture(GraphicsDevice graphicsDevice, in TextureDescription description) : base(graphicsDevice)
+    internal Texture(GraphicsDevice graphicsDevice, ref readonly TextureDescription description) : base(graphicsDevice)
     {
         bool isCube = description.Usage.HasFlag(TextureUsage.Cubemap);
 
@@ -56,7 +56,7 @@ public unsafe class Texture : DeviceResource
         bool isStaging = description.Usage.HasFlag(TextureUsage.Staging);
 
         DeviceMemory deviceMemory = new(graphicsDevice,
-                                        memoryRequirements,
+                                        in memoryRequirements,
                                         isStaging ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit);
 
         Vk.BindImageMemory(Device, image, deviceMemory.Handle, 0);

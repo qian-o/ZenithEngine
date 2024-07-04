@@ -162,7 +162,7 @@ public unsafe class GraphicsDevice : ContextObject
 
         SwapchainDescription swapchainDescription = new(_windowSurface, width, height, _depthFormat, TextureSampleCount.Count8);
 
-        swapChain = new Swapchain(this, swapchainDescription);
+        swapChain = new Swapchain(this, in swapchainDescription);
     }
 
     protected override void Destroy()

@@ -9,34 +9,36 @@ public class ResourceFactory : ContextObject
         _graphicsDevice = graphicsDevice;
     }
 
-    public Buffer CreateBuffer(in BufferDescription description)
+    public Buffer CreateBuffer(ref readonly BufferDescription description)
     {
-        return new Buffer(_graphicsDevice, description);
+        return new Buffer(_graphicsDevice, in description);
     }
 
-    public Texture CreateTexture(in TextureDescription description)
+    public Texture CreateTexture(ref readonly TextureDescription description)
     {
-        return new Texture(_graphicsDevice, description);
+        return new Texture(_graphicsDevice, in description);
     }
 
     public TextureView CreateTextureView(Texture target)
     {
-        return CreateTextureView(new TextureViewDescription(target));
+        TextureViewDescription description = new(target);
+
+        return CreateTextureView(in description);
     }
 
-    public TextureView CreateTextureView(in TextureViewDescription description)
+    public TextureView CreateTextureView(ref readonly TextureViewDescription description)
     {
-        return new TextureView(_graphicsDevice, description);
+        return new TextureView(_graphicsDevice, in description);
     }
 
-    public Framebuffer CreateFramebuffer(in FramebufferDescription description)
+    public Framebuffer CreateFramebuffer(ref readonly FramebufferDescription description)
     {
-        return new Framebuffer(_graphicsDevice, description);
+        return new Framebuffer(_graphicsDevice, in description);
     }
 
-    public Swapchain CreateSwapchain(in SwapchainDescription description)
+    public Swapchain CreateSwapchain(ref readonly SwapchainDescription description)
     {
-        return new Swapchain(_graphicsDevice, description);
+        return new Swapchain(_graphicsDevice, in description);
     }
 
     protected override void Destroy()

@@ -7,7 +7,7 @@ public unsafe class TextureView : DeviceResource
 {
     private readonly VkImageView _imageView;
 
-    public TextureView(GraphicsDevice graphicsDevice, in TextureViewDescription description) : base(graphicsDevice)
+    public TextureView(GraphicsDevice graphicsDevice, ref readonly TextureViewDescription description) : base(graphicsDevice)
     {
         ImageViewCreateInfo imageViewCreateInfo = new()
         {

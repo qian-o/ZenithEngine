@@ -8,7 +8,7 @@ public unsafe class Buffer : DeviceResource
     private readonly VkBuffer _buffer;
     private readonly DeviceMemory _deviceMemory;
 
-    internal Buffer(GraphicsDevice graphicsDevice, in BufferDescription description) : base(graphicsDevice)
+    internal Buffer(GraphicsDevice graphicsDevice, ref readonly BufferDescription description) : base(graphicsDevice)
     {
         BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferSrcBit | BufferUsageFlags.TransferDstBit;
 
@@ -56,7 +56,7 @@ public unsafe class Buffer : DeviceResource
         bool hostVisible = isStaging || description.Usage.HasFlag(BufferUsage.Dynamic);
 
         DeviceMemory deviceMemory = new(graphicsDevice,
-                                        memoryRequirements,
+                                        in memoryRequirements,
                                         hostVisible ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit);
 
         Vk.BindBufferMemory(Device, buffer, deviceMemory.Handle, 0);

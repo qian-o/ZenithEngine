@@ -11,7 +11,7 @@ public unsafe class Swapchain : DeviceResource
     private readonly Texture? _depthBuffer;
     private readonly Framebuffer[]? _framebuffers;
 
-    internal Swapchain(GraphicsDevice graphicsDevice, in SwapchainDescription description) : base(graphicsDevice)
+    internal Swapchain(GraphicsDevice graphicsDevice, ref readonly SwapchainDescription description) : base(graphicsDevice)
     {
         if (description.Width == 0 || description.Height == 0)
         {
@@ -88,7 +88,7 @@ public unsafe class Swapchain : DeviceResource
             Type = TextureType.Texture2D,
             SampleCount = description.SampleCount
         };
-        Texture colorBuffer = new(graphicsDevice, colorBufferDescription);
+        Texture colorBuffer = new(graphicsDevice, in colorBufferDescription);
 
         Texture? depthBuffer = null;
         if (description.DepthFormat != null)
@@ -105,7 +105,7 @@ public unsafe class Swapchain : DeviceResource
                 SampleCount = description.SampleCount
             };
 
-            depthBuffer = new Texture(graphicsDevice, depthBufferDescription);
+            depthBuffer = new Texture(graphicsDevice, in depthBufferDescription);
         }
 
         Framebuffer[] framebuffers = new Framebuffer[imageCount];
@@ -119,7 +119,7 @@ public unsafe class Swapchain : DeviceResource
 
             FramebufferDescription framebufferDescription = new(colorBuffer, resolveBuffer, depthBuffer);
 
-            framebuffers[i] = new Framebuffer(graphicsDevice, framebufferDescription);
+            framebuffers[i] = new Framebuffer(graphicsDevice, in framebufferDescription);
         }
 
         _swapchain = swapchain;

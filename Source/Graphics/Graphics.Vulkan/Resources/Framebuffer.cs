@@ -6,7 +6,7 @@ public class Framebuffer : DeviceResource
     private readonly TextureView? _resolveColorAttachment;
     private readonly TextureView? _depthAttachment;
 
-    public Framebuffer(GraphicsDevice graphicsDevice, in FramebufferDescription description) : base(graphicsDevice)
+    public Framebuffer(GraphicsDevice graphicsDevice, ref readonly FramebufferDescription description) : base(graphicsDevice)
     {
         TextureViewDescription colorDescription = new(description.ColorTarget.Target)
         {
@@ -14,7 +14,7 @@ public class Framebuffer : DeviceResource
             BaseArrayLayer = description.ColorTarget.ArrayLayer
         };
 
-        _colorAttachment = new TextureView(graphicsDevice, colorDescription);
+        _colorAttachment = new TextureView(graphicsDevice, in colorDescription);
 
         if (description.ResolveColorTarget != null)
         {
@@ -24,7 +24,7 @@ public class Framebuffer : DeviceResource
                 BaseArrayLayer = description.ResolveColorTarget.Value.ArrayLayer
             };
 
-            _resolveColorAttachment = new TextureView(graphicsDevice, resolveColorDescription);
+            _resolveColorAttachment = new TextureView(graphicsDevice, in resolveColorDescription);
         }
 
         if (description.DepthTarget != null)
@@ -35,7 +35,7 @@ public class Framebuffer : DeviceResource
                 BaseArrayLayer = description.DepthTarget.Value.ArrayLayer
             };
 
-            _depthAttachment = new TextureView(graphicsDevice, depthDescription);
+            _depthAttachment = new TextureView(graphicsDevice, in depthDescription);
         }
     }
 
