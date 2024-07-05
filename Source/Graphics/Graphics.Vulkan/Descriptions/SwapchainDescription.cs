@@ -6,8 +6,7 @@ namespace Graphics.Vulkan;
 public struct SwapchainDescription(SurfaceKHR target,
                                    uint width,
                                    uint height,
-                                   PixelFormat? depthFormat,
-                                   TextureSampleCount sampleCount) : IEquatable<SwapchainDescription>
+                                   PixelFormat? depthFormat) : IEquatable<SwapchainDescription>
 {
     /// <summary>
     /// The render target.
@@ -30,18 +29,12 @@ public struct SwapchainDescription(SurfaceKHR target,
     /// </summary>
     public PixelFormat? DepthFormat { get; set; } = depthFormat;
 
-    /// <summary>
-    /// The number of samples.
-    /// </summary>
-    public TextureSampleCount SampleCount { get; set; } = sampleCount;
-
     public readonly bool Equals(SwapchainDescription other)
     {
         return Target.Handle == other.Target.Handle &&
                Width == other.Width &&
                Height == other.Height &&
-               DepthFormat == other.DepthFormat &&
-               SampleCount == other.SampleCount;
+               DepthFormat == other.DepthFormat;
     }
 
     public override readonly int GetHashCode()
@@ -49,8 +42,7 @@ public struct SwapchainDescription(SurfaceKHR target,
         return HashHelper.Combine(Target.GetHashCode(),
                                   Width.GetHashCode(),
                                   Height.GetHashCode(),
-                                  DepthFormat.GetHashCode(),
-                                  SampleCount.GetHashCode());
+                                  DepthFormat.GetHashCode());
     }
 
     public override readonly bool Equals(object? obj)
@@ -60,7 +52,7 @@ public struct SwapchainDescription(SurfaceKHR target,
 
     public override readonly string ToString()
     {
-        return $"Target: {Target}, Width: {Width}, Height: {Height}, DepthFormat: {DepthFormat}, SampleCount: {SampleCount}";
+        return $"Target: {Target}, Width: {Width}, Height: {Height}, DepthFormat: {DepthFormat}";
     }
 
     public static bool operator ==(SwapchainDescription left, SwapchainDescription right)

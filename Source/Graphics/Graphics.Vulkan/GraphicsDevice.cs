@@ -160,7 +160,7 @@ public unsafe class GraphicsDevice : ContextObject
     {
         swapChain?.Dispose();
 
-        SwapchainDescription swapchainDescription = new(_windowSurface, width, height, _depthFormat, TextureSampleCount.Count8);
+        SwapchainDescription swapchainDescription = new(_windowSurface, width, height, _depthFormat);
 
         swapChain = new Swapchain(this, in swapchainDescription);
     }

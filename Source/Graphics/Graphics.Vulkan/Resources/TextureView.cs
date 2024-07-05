@@ -3,7 +3,7 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class TextureView : DeviceResource
+public unsafe class TextureView : DeviceResource, IBindableResource
 {
     private readonly VkImageView _imageView;
 

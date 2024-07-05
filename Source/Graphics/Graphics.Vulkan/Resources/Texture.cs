@@ -3,11 +3,14 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class Texture : DeviceResource
+public unsafe class Texture : DeviceResource, IBindableResource
 {
     private readonly VkImage _image;
     private readonly TextureType _type;
     private readonly PixelFormat _format;
+    private readonly Format _vkFormat;
+    private readonly TextureSampleCount _sampleCount;
+    private readonly SampleCountFlags _vkSampleCount;
     private readonly TextureUsage _usage;
     private readonly uint _width;
     private readonly uint _height;
@@ -64,6 +67,9 @@ public unsafe class Texture : DeviceResource
         _image = image;
         _type = description.Type;
         _format = description.Format;
+        _vkFormat = createInfo.Format;
+        _sampleCount = description.SampleCount;
+        _vkSampleCount = createInfo.Samples;
         _usage = description.Usage;
         _width = description.Width;
         _height = description.Height;
@@ -79,6 +85,9 @@ public unsafe class Texture : DeviceResource
         _image = image;
         _type = TextureType.Texture2D;
         _format = Formats.GetPixelFormat(format);
+        _vkFormat = format;
+        _sampleCount = TextureSampleCount.Count1;
+        _vkSampleCount = SampleCountFlags.Count1Bit;
         _usage = TextureUsage.RenderTarget;
         _width = width;
         _height = height;
@@ -93,6 +102,12 @@ public unsafe class Texture : DeviceResource
     internal TextureType Type => _type;
 
     internal PixelFormat Format => _format;
+
+    internal Format VkFormat => _vkFormat;
+
+    internal TextureSampleCount SampleCount => _sampleCount;
+
+    internal SampleCountFlags VkSampleCount => _vkSampleCount;
 
     internal TextureUsage Usage => _usage;
 

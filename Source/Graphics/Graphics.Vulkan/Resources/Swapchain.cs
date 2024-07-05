@@ -7,7 +7,6 @@ namespace Graphics.Vulkan;
 public unsafe class Swapchain : DeviceResource
 {
     private readonly SwapchainKHR? _swapchain;
-    private readonly Texture? _colorBuffer;
     private readonly Texture? _depthBuffer;
     private readonly Framebuffer[]? _framebuffers;
 
@@ -77,19 +76,6 @@ public unsafe class Swapchain : DeviceResource
                                         &imageCount,
                                         (VkImage*)Unsafe.AsPointer(ref images[0])).ThrowCode();
 
-        TextureDescription colorBufferDescription = new()
-        {
-            Width = description.Width,
-            Height = description.Height,
-            Depth = 1,
-            MipLevels = 1,
-            Format = Formats.GetPixelFormat(createInfo.ImageFormat),
-            Usage = TextureUsage.RenderTarget,
-            Type = TextureType.Texture2D,
-            SampleCount = description.SampleCount
-        };
-        Texture colorBuffer = new(graphicsDevice, in colorBufferDescription);
-
         Texture? depthBuffer = null;
         if (description.DepthFormat != null)
         {
@@ -102,7 +88,7 @@ public unsafe class Swapchain : DeviceResource
                 Format = description.DepthFormat.Value,
                 Usage = TextureUsage.DepthStencil,
                 Type = TextureType.Texture2D,
-                SampleCount = description.SampleCount
+                SampleCount = TextureSampleCount.Count1
             };
 
             depthBuffer = new Texture(graphicsDevice, in depthBufferDescription);
@@ -111,19 +97,18 @@ public unsafe class Swapchain : DeviceResource
         Framebuffer[] framebuffers = new Framebuffer[imageCount];
         for (int i = 0; i < imageCount; i++)
         {
-            Texture resolveBuffer = new(graphicsDevice,
-                                        images[i],
-                                        createInfo.ImageFormat,
-                                        description.Width,
-                                        description.Height);
+            Texture colorBuffer = new(graphicsDevice,
+                                      images[i],
+                                      createInfo.ImageFormat,
+                                      description.Width,
+                                      description.Height);
 
-            FramebufferDescription framebufferDescription = new(colorBuffer, resolveBuffer, depthBuffer);
+            FramebufferDescription framebufferDescription = new(depthBuffer, colorBuffer);
 
-            framebuffers[i] = new Framebuffer(graphicsDevice, in framebufferDescription);
+            framebuffers[i] = new Framebuffer(graphicsDevice, in framebufferDescription, true);
         }
 
         _swapchain = swapchain;
-        _colorBuffer = colorBuffer;
         _depthBuffer = depthBuffer;
         _framebuffers = framebuffers;
     }
@@ -137,7 +122,6 @@ public unsafe class Swapchain : DeviceResource
                 framebuffer.Dispose();
             }
 
-            _colorBuffer!.Dispose();
             _depthBuffer?.Dispose();
 
             SwapchainExt.DestroySwapchain(Device, _swapchain.Value, null);

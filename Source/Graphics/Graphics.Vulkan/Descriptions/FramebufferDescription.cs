@@ -2,45 +2,33 @@
 
 namespace Graphics.Vulkan;
 
-public struct FramebufferDescription(FramebufferAttachmentDescription colorTarget,
-                                     FramebufferAttachmentDescription? resolveColorTarget,
-                                     FramebufferAttachmentDescription? depthTarget) : IEquatable<FramebufferDescription>
+public struct FramebufferDescription(FramebufferAttachmentDescription? depthTarget,
+                                     params FramebufferAttachmentDescription[] colorTargets) : IEquatable<FramebufferDescription>
 {
-    public FramebufferDescription(Texture colorTarget,
-                                  Texture? resolveColorTarget,
-                                  Texture? depthTarget) : this(new FramebufferAttachmentDescription(colorTarget),
-                                                               resolveColorTarget != null ? new FramebufferAttachmentDescription(resolveColorTarget) : null,
-                                                               depthTarget != null ? new FramebufferAttachmentDescription(depthTarget) : null)
+    public FramebufferDescription(Texture? depthTarget,
+                                  params Texture[] colorTargets) : this(depthTarget != null ? new FramebufferAttachmentDescription(depthTarget) : null,
+                                                                        colorTargets.Select(item => new FramebufferAttachmentDescription(item)).ToArray())
     {
     }
 
     /// <summary>
-    /// The color target to render into.
-    /// </summary>
-    public FramebufferAttachmentDescription ColorTarget { get; set; } = colorTarget;
-
-    /// <summary>
-    /// The color target to resolve into.
-    /// </summary>
-    public FramebufferAttachmentDescription? ResolveColorTarget { get; set; } = resolveColorTarget;
-
-    /// <summary>
-    /// The depth target to render into.
+    /// The depth texture attachment.
     /// </summary>
     public FramebufferAttachmentDescription? DepthTarget { get; set; } = depthTarget;
 
+    /// <summary>
+    /// An array of color texture attachments.
+    /// </summary>
+    public FramebufferAttachmentDescription[] ColorTargets { get; set; } = colorTargets;
+
     public readonly bool Equals(FramebufferDescription other)
     {
-        return ColorTarget == other.ColorTarget &&
-               ResolveColorTarget == other.ResolveColorTarget &&
-               DepthTarget == other.DepthTarget;
+        return DepthTarget == other.DepthTarget && ColorTargets.SequenceEqual(other.ColorTargets);
     }
 
     public override readonly int GetHashCode()
     {
-        return HashHelper.Combine(ColorTarget.GetHashCode(),
-                                  ResolveColorTarget.GetHashCode(),
-                                  DepthTarget.GetHashCode());
+        return HashHelper.Combine(DepthTarget.GetHashCode(), ColorTargets.GetHashCode());
     }
 
     public override readonly bool Equals(object? obj)
@@ -50,7 +38,7 @@ public struct FramebufferDescription(FramebufferAttachmentDescription colorTarge
 
     public override readonly string ToString()
     {
-        return $"ColorTarget: {ColorTarget}, ResolveColorTarget: {ResolveColorTarget}, DepthTarget: {DepthTarget}";
+        return $"DepthTarget: {DepthTarget}, ColorTargets: {ColorTargets}";
     }
 
     public static bool operator ==(FramebufferDescription left, FramebufferDescription right)

@@ -3,7 +3,7 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class Buffer : DeviceResource
+public unsafe class Buffer : DeviceResource, IBindableResource
 {
     private readonly VkBuffer _buffer;
     private readonly DeviceMemory _deviceMemory;

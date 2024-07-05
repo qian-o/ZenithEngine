@@ -33,7 +33,7 @@ public class ResourceFactory : ContextObject
 
     public Framebuffer CreateFramebuffer(ref readonly FramebufferDescription description)
     {
-        return new Framebuffer(_graphicsDevice, in description);
+        return new Framebuffer(_graphicsDevice, in description, false);
     }
 
     public Swapchain CreateSwapchain(ref readonly SwapchainDescription description)
