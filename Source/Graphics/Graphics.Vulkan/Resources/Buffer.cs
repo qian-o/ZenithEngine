@@ -38,7 +38,7 @@ public unsafe class Buffer : DeviceResource
             bufferUsageFlags |= BufferUsageFlags.IndirectBufferBit;
         }
 
-        BufferCreateInfo bufferCreateInfo = new()
+        BufferCreateInfo createInfo = new()
         {
             SType = StructureType.BufferCreateInfo,
             Size = description.SizeInBytes,
@@ -47,7 +47,7 @@ public unsafe class Buffer : DeviceResource
         };
 
         VkBuffer buffer;
-        Vk.CreateBuffer(Device, &bufferCreateInfo, null, &buffer);
+        Vk.CreateBuffer(Device, &createInfo, null, &buffer);
 
         MemoryRequirements memoryRequirements;
         Vk.GetBufferMemoryRequirements(Device, buffer, &memoryRequirements);

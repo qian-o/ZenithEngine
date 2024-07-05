@@ -9,7 +9,7 @@ public unsafe class TextureView : DeviceResource
 
     public TextureView(GraphicsDevice graphicsDevice, ref readonly TextureViewDescription description) : base(graphicsDevice)
     {
-        ImageViewCreateInfo imageViewCreateInfo = new()
+        ImageViewCreateInfo createInfo = new()
         {
             SType = StructureType.ImageViewCreateInfo,
             Image = description.Target.Handle,
@@ -18,7 +18,7 @@ public unsafe class TextureView : DeviceResource
 
         ImageAspectFlags aspectFlags = description.Target.Usage.HasFlag(TextureUsage.DepthStencil) ? ImageAspectFlags.DepthBit : ImageAspectFlags.ColorBit;
 
-        imageViewCreateInfo.SubresourceRange = new ImageSubresourceRange
+        createInfo.SubresourceRange = new ImageSubresourceRange
         {
             AspectMask = aspectFlags,
             BaseMipLevel = description.BaseMipLevel,
@@ -29,26 +29,26 @@ public unsafe class TextureView : DeviceResource
 
         if (description.Target.Usage.HasFlag(TextureUsage.Cubemap))
         {
-            imageViewCreateInfo.ViewType = ImageViewType.TypeCube;
+            createInfo.ViewType = ImageViewType.TypeCube;
         }
         else
         {
             switch (description.Target.Type)
             {
                 case TextureType.Texture1D:
-                    imageViewCreateInfo.ViewType = ImageViewType.Type1D;
+                    createInfo.ViewType = ImageViewType.Type1D;
                     break;
                 case TextureType.Texture2D:
-                    imageViewCreateInfo.ViewType = ImageViewType.Type2D;
+                    createInfo.ViewType = ImageViewType.Type2D;
                     break;
                 case TextureType.Texture3D:
-                    imageViewCreateInfo.ViewType = ImageViewType.Type3D;
+                    createInfo.ViewType = ImageViewType.Type3D;
                     break;
             }
         }
 
         VkImageView imageView;
-        Vk.CreateImageView(Device, &imageViewCreateInfo, null, &imageView);
+        Vk.CreateImageView(Device, &createInfo, null, &imageView);
 
         _imageView = imageView;
     }

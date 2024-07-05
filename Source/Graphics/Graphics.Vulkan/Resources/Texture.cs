@@ -22,7 +22,7 @@ public unsafe class Texture : DeviceResource
     {
         bool isCube = description.Usage.HasFlag(TextureUsage.Cubemap);
 
-        ImageCreateInfo imageCreateInfo = new()
+        ImageCreateInfo createInfo = new()
         {
             SType = StructureType.ImageCreateInfo,
             ImageType = Formats.GetImageType(description.Type),
@@ -44,11 +44,11 @@ public unsafe class Texture : DeviceResource
 
         if (isCube)
         {
-            imageCreateInfo.Flags |= ImageCreateFlags.CreateCubeCompatibleBit;
+            createInfo.Flags |= ImageCreateFlags.CreateCubeCompatibleBit;
         }
 
         VkImage image;
-        Vk.CreateImage(Device, &imageCreateInfo, null, &image);
+        Vk.CreateImage(Device, &createInfo, null, &image);
 
         MemoryRequirements memoryRequirements;
         Vk.GetImageMemoryRequirements(Device, image, &memoryRequirements);
@@ -69,7 +69,7 @@ public unsafe class Texture : DeviceResource
         _height = description.Height;
         _layout = ImageLayout.Preinitialized;
         _mipLevels = description.MipLevels;
-        _arrayLayers = imageCreateInfo.ArrayLayers;
+        _arrayLayers = createInfo.ArrayLayers;
         _deviceMemory = deviceMemory;
         isSwapchainImage = false;
     }

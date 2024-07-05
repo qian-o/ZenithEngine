@@ -42,7 +42,7 @@ public unsafe partial class Context : DisposableObject
         // Debug message callback
         if (Debugging)
         {
-            DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo = new()
+            DebugUtilsMessengerCreateInfoEXT createInfo = new()
             {
                 SType = StructureType.DebugUtilsMessengerCreateInfoExt,
                 MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt
@@ -54,7 +54,7 @@ public unsafe partial class Context : DisposableObject
                 PfnUserCallback = (PfnDebugUtilsMessengerCallbackEXT)DebugMessageCallback
             };
 
-            if (_debugUtilsExt!.CreateDebugUtilsMessenger(_instance, &debugUtilsMessengerCreateInfo, null, out _) != Result.Success)
+            if (_debugUtilsExt!.CreateDebugUtilsMessenger(_instance, &createInfo, null, out _) != Result.Success)
             {
                 throw new InvalidOperationException("Failed to set up debug messenger!");
             }
@@ -122,7 +122,7 @@ public unsafe partial class Context : DisposableObject
             ApiVersion = Vk.Version13
         };
 
-        InstanceCreateInfo instanceCreateInfo = new()
+        InstanceCreateInfo createInfo = new()
         {
             SType = StructureType.InstanceCreateInfo,
             PApplicationInfo = &applicationInfo
@@ -135,8 +135,8 @@ public unsafe partial class Context : DisposableObject
 
         if (Debugging)
         {
-            instanceCreateInfo.EnabledLayerCount = 1;
-            instanceCreateInfo.PpEnabledLayerNames = _alloter.Allocate([ValidationLayerName]);
+            createInfo.EnabledLayerCount = 1;
+            createInfo.PpEnabledLayerNames = _alloter.Allocate([ValidationLayerName]);
         }
 
         string[] extensions = [KhrSurface.ExtensionName];
@@ -155,11 +155,11 @@ public unsafe partial class Context : DisposableObject
             extensions = [.. extensions, ExtDebugUtils.ExtensionName];
         }
 
-        instanceCreateInfo.EnabledExtensionCount = (uint)extensions.Length;
-        instanceCreateInfo.PpEnabledExtensionNames = _alloter.Allocate(extensions);
+        createInfo.EnabledExtensionCount = (uint)extensions.Length;
+        createInfo.PpEnabledExtensionNames = _alloter.Allocate(extensions);
 
         Instance instance;
-        if (_vk.CreateInstance(&instanceCreateInfo, null, &instance) != Result.Success)
+        if (_vk.CreateInstance(&createInfo, null, &instance) != Result.Success)
         {
             throw new InvalidOperationException("Failed to create instance!");
         }

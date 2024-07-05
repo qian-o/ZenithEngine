@@ -41,6 +41,11 @@ public class ResourceFactory : ContextObject
         return new Swapchain(_graphicsDevice, in description);
     }
 
+    public ResourceLayout CreateResourceLayout(ref readonly ResourceLayoutDescription description)
+    {
+        return new ResourceLayout(_graphicsDevice, in description);
+    }
+
     protected override void Destroy()
     {
     }

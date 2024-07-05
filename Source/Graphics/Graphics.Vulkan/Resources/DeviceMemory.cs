@@ -8,7 +8,7 @@ internal sealed unsafe class DeviceMemory : DeviceResource
 
     public DeviceMemory(GraphicsDevice graphicsDevice, ref readonly MemoryRequirements requirements, MemoryPropertyFlags flags) : base(graphicsDevice)
     {
-        MemoryAllocateInfo memoryAllocateInfo = new()
+        MemoryAllocateInfo allocateInfo = new()
         {
             SType = StructureType.MemoryAllocateInfo,
             AllocationSize = requirements.Size,
@@ -16,7 +16,7 @@ internal sealed unsafe class DeviceMemory : DeviceResource
         };
 
         VkDeviceMemory deviceMemory;
-        Vk.AllocateMemory(Device, &memoryAllocateInfo, null, &deviceMemory);
+        Vk.AllocateMemory(Device, &allocateInfo, null, &deviceMemory);
 
         _deviceMemory = deviceMemory;
     }

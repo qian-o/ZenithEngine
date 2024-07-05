@@ -47,7 +47,7 @@ public unsafe class Swapchain : DeviceResource
                                                         &presentModeCount,
                                                         (PresentModeKHR*)Unsafe.AsPointer(ref presentModes[0]));
 
-        SwapchainCreateInfoKHR swapchainCreateInfo = new()
+        SwapchainCreateInfoKHR createInfo = new()
         {
             SType = StructureType.SwapchainCreateInfoKhr,
             Surface = description.Target,
@@ -66,7 +66,7 @@ public unsafe class Swapchain : DeviceResource
         };
 
         SwapchainKHR swapchain;
-        SwapchainExt.CreateSwapchain(Device, &swapchainCreateInfo, null, &swapchain);
+        SwapchainExt.CreateSwapchain(Device, &createInfo, null, &swapchain);
 
         uint imageCount;
         SwapchainExt.GetSwapchainImages(Device, swapchain, &imageCount, null);
@@ -83,7 +83,7 @@ public unsafe class Swapchain : DeviceResource
             Height = description.Height,
             Depth = 1,
             MipLevels = 1,
-            Format = Formats.GetPixelFormat(swapchainCreateInfo.ImageFormat),
+            Format = Formats.GetPixelFormat(createInfo.ImageFormat),
             Usage = TextureUsage.RenderTarget,
             Type = TextureType.Texture2D,
             SampleCount = description.SampleCount
@@ -113,7 +113,7 @@ public unsafe class Swapchain : DeviceResource
         {
             Texture resolveBuffer = new(graphicsDevice,
                                         images[i],
-                                        swapchainCreateInfo.ImageFormat,
+                                        createInfo.ImageFormat,
                                         description.Width,
                                         description.Height);
 

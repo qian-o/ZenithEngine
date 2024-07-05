@@ -138,6 +138,56 @@ internal static class Formats
             _ => throw new ArgumentOutOfRangeException(nameof(sampleCount))
         };
     }
+
+    public static DescriptorType GetDescriptorType(ResourceKind kind)
+    {
+        return kind switch
+        {
+            ResourceKind.UniformBuffer => DescriptorType.UniformBuffer,
+            ResourceKind.StructuredBufferReadOnly or ResourceKind.StructuredBufferReadWrite => DescriptorType.StorageBuffer,
+            ResourceKind.TextureReadOnly => DescriptorType.SampledImage,
+            ResourceKind.TextureReadWrite => DescriptorType.StorageImage,
+            ResourceKind.Sampler => DescriptorType.Sampler,
+            _ => throw new ArgumentOutOfRangeException(nameof(kind))
+        };
+    }
+
+    public static ShaderStageFlags GetShaderStageFlags(ShaderStages stages)
+    {
+        ShaderStageFlags shaderStageFlags = ShaderStageFlags.None;
+
+        if (stages.HasFlag(ShaderStages.Vertex))
+        {
+            shaderStageFlags |= ShaderStageFlags.VertexBit;
+        }
+
+        if (stages.HasFlag(ShaderStages.TessellationControl))
+        {
+            shaderStageFlags |= ShaderStageFlags.TessellationControlBit;
+        }
+
+        if (stages.HasFlag(ShaderStages.TessellationEvaluation))
+        {
+            shaderStageFlags |= ShaderStageFlags.TessellationEvaluationBit;
+        }
+
+        if (stages.HasFlag(ShaderStages.Geometry))
+        {
+            shaderStageFlags |= ShaderStageFlags.GeometryBit;
+        }
+
+        if (stages.HasFlag(ShaderStages.Fragment))
+        {
+            shaderStageFlags |= ShaderStageFlags.FragmentBit;
+        }
+
+        if (stages.HasFlag(ShaderStages.Compute))
+        {
+            shaderStageFlags |= ShaderStageFlags.ComputeBit;
+        }
+
+        return shaderStageFlags;
+    }
     #endregion
 
     #region From Vulkan Format

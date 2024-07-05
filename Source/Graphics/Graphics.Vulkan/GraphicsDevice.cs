@@ -42,38 +42,38 @@ public unsafe class GraphicsDevice : ContextObject
 
         CommandPool graphicsCommandPool;
         {
-            CommandPoolCreateInfo commandPoolCreateInfo = new()
+            CommandPoolCreateInfo createInfo = new()
             {
                 SType = StructureType.CommandPoolCreateInfo,
                 QueueFamilyIndex = graphicsQueueFamilyIndex,
                 Flags = CommandPoolCreateFlags.ResetCommandBufferBit
             };
 
-            Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &graphicsCommandPool);
+            Vk.CreateCommandPool(device, &createInfo, null, &graphicsCommandPool);
         }
 
         CommandPool computeCommandPool;
         {
-            CommandPoolCreateInfo commandPoolCreateInfo = new()
+            CommandPoolCreateInfo createInfo = new()
             {
                 SType = StructureType.CommandPoolCreateInfo,
                 QueueFamilyIndex = computeQueueFamilyIndex,
                 Flags = CommandPoolCreateFlags.ResetCommandBufferBit
             };
 
-            Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &computeCommandPool);
+            Vk.CreateCommandPool(device, &createInfo, null, &computeCommandPool);
         }
 
         CommandPool transferCommandPool;
         {
-            CommandPoolCreateInfo commandPoolCreateInfo = new()
+            CommandPoolCreateInfo createInfo = new()
             {
                 SType = StructureType.CommandPoolCreateInfo,
                 QueueFamilyIndex = transferQueueFamilyIndex,
                 Flags = CommandPoolCreateFlags.ResetCommandBufferBit
             };
 
-            Vk.CreateCommandPool(device, &commandPoolCreateInfo, null, &transferCommandPool);
+            Vk.CreateCommandPool(device, &createInfo, null, &transferCommandPool);
         }
 
         Format depthFormat = physicalDevice.FindSupportedFormat([Format.D32Sfloat, Format.D32SfloatS8Uint, Format.D24UnormS8Uint],
@@ -198,11 +198,11 @@ public unsafe partial class Context
             transferQueueFamilyIndex
         ];
 
-        DeviceQueueCreateInfo[] deviceQueueCreateInfos = new DeviceQueueCreateInfo[uniqueQueueFamilyIndices.Count];
+        DeviceQueueCreateInfo[] createInfos = new DeviceQueueCreateInfo[uniqueQueueFamilyIndices.Count];
 
-        for (int i = 0; i < deviceQueueCreateInfos.Length; i++)
+        for (int i = 0; i < createInfos.Length; i++)
         {
-            deviceQueueCreateInfos[i] = new DeviceQueueCreateInfo
+            createInfos[i] = new DeviceQueueCreateInfo
             {
                 SType = StructureType.DeviceQueueCreateInfo,
                 QueueFamilyIndex = uniqueQueueFamilyIndices.ElementAt(i),
@@ -218,18 +218,18 @@ public unsafe partial class Context
             SampleRateShading = Vk.True
         };
 
-        DeviceCreateInfo deviceCreateInfo = new()
+        DeviceCreateInfo createInfo = new()
         {
             SType = StructureType.DeviceCreateInfo,
-            QueueCreateInfoCount = (uint)deviceQueueCreateInfos.Length,
-            PQueueCreateInfos = _alloter.Allocate(deviceQueueCreateInfos),
+            QueueCreateInfoCount = (uint)createInfos.Length,
+            PQueueCreateInfos = _alloter.Allocate(createInfos),
             EnabledExtensionCount = (uint)deviceExtensions.Length,
             PpEnabledExtensionNames = _alloter.Allocate(deviceExtensions),
             PEnabledFeatures = &physicalDeviceFeatures
         };
 
         Device device;
-        if (_vk.CreateDevice(physicalDevice.VkPhysicalDevice, &deviceCreateInfo, null, &device) != Result.Success)
+        if (_vk.CreateDevice(physicalDevice.VkPhysicalDevice, &createInfo, null, &device) != Result.Success)
         {
             throw new InvalidOperationException("Failed to create device.");
         }
