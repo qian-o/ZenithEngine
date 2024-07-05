@@ -7,6 +7,9 @@ namespace Graphics.Vulkan;
 public unsafe class Framebuffer : DeviceResource
 {
     private readonly RenderPass _renderPass;
+    private readonly TextureView[] _colorViews;
+    private readonly TextureView? _depthView;
+    private readonly VkFramebuffer _framebuffer;
 
     public Framebuffer(GraphicsDevice graphicsDevice, ref readonly FramebufferDescription description, bool isPresented) : base(graphicsDevice)
     {
@@ -23,7 +26,7 @@ public unsafe class Framebuffer : DeviceResource
         {
             Texture colorTarget = description.ColorTargets[i].Target;
 
-            ImageLayout initialLayout = isPresented
+            ImageLayout finalLayout = isPresented
                 ? ImageLayout.PresentSrcKhr
                 : colorTarget.Usage.HasFlag(TextureUsage.Sampled) ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.ColorAttachmentOptimal;
 
@@ -35,8 +38,8 @@ public unsafe class Framebuffer : DeviceResource
                 StoreOp = AttachmentStoreOp.Store,
                 StencilLoadOp = AttachmentLoadOp.DontCare,
                 StencilStoreOp = AttachmentStoreOp.DontCare,
-                InitialLayout = initialLayout,
-                FinalLayout = ImageLayout.ColorAttachmentOptimal
+                InitialLayout = ImageLayout.Undefined,
+                FinalLayout = finalLayout
             };
 
             references[i] = new AttachmentReference
@@ -52,7 +55,7 @@ public unsafe class Framebuffer : DeviceResource
 
             bool hasStencil = FormatHelpers.IsStencilFormat(depthTarget.Format);
 
-            ImageLayout initialLayout = depthTarget.Usage.HasFlag(TextureUsage.Sampled)
+            ImageLayout finalLayout = depthTarget.Usage.HasFlag(TextureUsage.Sampled)
                 ? ImageLayout.DepthStencilReadOnlyOptimal
                 : ImageLayout.DepthStencilAttachmentOptimal;
 
@@ -60,12 +63,12 @@ public unsafe class Framebuffer : DeviceResource
             {
                 Format = depthTarget.VkFormat,
                 Samples = depthTarget.VkSampleCount,
-                LoadOp = AttachmentLoadOp.Load,
+                LoadOp = AttachmentLoadOp.Clear,
                 StoreOp = AttachmentStoreOp.Store,
                 StencilLoadOp = AttachmentLoadOp.DontCare,
                 StencilStoreOp = hasStencil ? AttachmentStoreOp.Store : AttachmentStoreOp.DontCare,
-                InitialLayout = initialLayout,
-                FinalLayout = ImageLayout.DepthStencilAttachmentOptimal
+                InitialLayout = ImageLayout.Undefined,
+                FinalLayout = finalLayout
             };
 
             references[^1] = new AttachmentReference
@@ -115,11 +118,90 @@ public unsafe class Framebuffer : DeviceResource
         RenderPass renderPass;
         Vk.CreateRenderPass(graphicsDevice.Device, &createInfo, null, &renderPass).ThrowCode();
 
+        TextureView[] colorViews = new TextureView[description.ColorTargets.Length];
+        for (int i = 0; i < description.ColorTargets.Length; i++)
+        {
+            FramebufferAttachmentDescription attachmentDescription = description.ColorTargets[i];
+
+            TextureViewDescription colorDescription = new(attachmentDescription.Target,
+                                                          attachmentDescription.MipLevel,
+                                                          attachmentDescription.ArrayLayer);
+
+            colorViews[i] = new TextureView(graphicsDevice, in colorDescription);
+        }
+
+        TextureView? depthView = null;
+        if (hasDepth)
+        {
+            FramebufferAttachmentDescription attachmentDescription = description.DepthTarget!.Value;
+
+            TextureViewDescription depthDescription = new(attachmentDescription.Target,
+                                                          attachmentDescription.MipLevel,
+                                                          attachmentDescription.ArrayLayer);
+
+            depthView = new TextureView(graphicsDevice, in depthDescription);
+        }
+
+        VkImageView[] imageViews = new VkImageView[attachmentCount];
+        for (int i = 0; i < colorViews.Length; i++)
+        {
+            imageViews[i] = colorViews[i].Handle;
+        }
+
+        if (hasDepth)
+        {
+            imageViews[^1] = depthView!.Handle;
+        }
+
+        FramebufferAttachmentDescription framebufferAttachment;
+        if (description.ColorTargets.Length > 0)
+        {
+            framebufferAttachment = description.ColorTargets[0];
+        }
+        else
+        {
+            framebufferAttachment = description.DepthTarget!.Value;
+        }
+
+        Util.GetMipDimensions(framebufferAttachment.Target,
+                              framebufferAttachment.MipLevel,
+                              out uint width,
+                              out uint height,
+                              out uint _);
+
+        FramebufferCreateInfo framebufferCreateInfo = new()
+        {
+            SType = StructureType.FramebufferCreateInfo,
+            RenderPass = renderPass,
+            AttachmentCount = attachmentCount,
+            PAttachments = (VkImageView*)Unsafe.AsPointer(ref imageViews[0]),
+            Width = width,
+            Height = height,
+            Layers = 1
+        };
+
+        VkFramebuffer framebuffer;
+        Vk.CreateFramebuffer(graphicsDevice.Device, &framebufferCreateInfo, null, &framebuffer).ThrowCode();
+
         _renderPass = renderPass;
+        _colorViews = colorViews;
+        _depthView = depthView;
+        _framebuffer = framebuffer;
     }
+
+    internal VkFramebuffer Handle => _framebuffer;
 
     protected override void Destroy()
     {
+        Vk.DestroyFramebuffer(GraphicsDevice.Device, _framebuffer, null);
+
+        _depthView?.Dispose();
+
+        foreach (TextureView colorView in _colorViews)
+        {
+            colorView.Dispose();
+        }
+
         Vk.DestroyRenderPass(GraphicsDevice.Device, _renderPass, null);
     }
 }

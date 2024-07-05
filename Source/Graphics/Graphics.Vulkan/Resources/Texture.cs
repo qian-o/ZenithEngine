@@ -14,6 +14,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
     private readonly TextureUsage _usage;
     private readonly uint _width;
     private readonly uint _height;
+    private readonly uint _depth;
     private readonly uint _mipLevels;
     private readonly uint _arrayLayers;
     private readonly DeviceMemory? _deviceMemory;
@@ -36,7 +37,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
                 Depth = description.Depth
             },
             MipLevels = description.MipLevels,
-            ArrayLayers = isCube ? 6u : 1u,
+            ArrayLayers = (isCube ? 6u : 1u) * description.Depth,
             InitialLayout = ImageLayout.Preinitialized,
             Usage = Formats.GetImageUsageFlags(description.Usage),
             Tiling = ImageTiling.Optimal,
@@ -73,6 +74,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
         _usage = description.Usage;
         _width = description.Width;
         _height = description.Height;
+        _depth = description.Depth;
         _layout = ImageLayout.Preinitialized;
         _mipLevels = description.MipLevels;
         _arrayLayers = createInfo.ArrayLayers;
@@ -114,6 +116,8 @@ public unsafe class Texture : DeviceResource, IBindableResource
     internal uint Width => _width;
 
     internal uint Height => _height;
+
+    internal uint Depth => _depth;
 
     internal uint MipLevels => _mipLevels;
 

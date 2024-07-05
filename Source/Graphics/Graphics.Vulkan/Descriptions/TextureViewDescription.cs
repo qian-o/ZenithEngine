@@ -9,11 +9,30 @@ public struct TextureViewDescription(Texture target,
                                      uint arrayLayers,
                                      PixelFormat? format) : IEquatable<TextureViewDescription>
 {
-    public TextureViewDescription(Texture target) : this(target, 0, target.MipLevels, 0, target.ArrayLayers, target.Format)
+    public TextureViewDescription(Texture target) : this(target,
+                                                         0,
+                                                         target.MipLevels,
+                                                         0,
+                                                         target.ArrayLayers,
+                                                         target.Format)
     {
     }
 
-    public TextureViewDescription(Texture target, PixelFormat format) : this(target, 0, target.MipLevels, 0, target.ArrayLayers, format)
+    public TextureViewDescription(Texture target, uint baseMipLevel, uint baseArrayLayer) : this(target,
+                                                                                                 baseMipLevel,
+                                                                                                 target.MipLevels,
+                                                                                                 baseArrayLayer,
+                                                                                                 target.ArrayLayers,
+                                                                                                 target.Format)
+    {
+    }
+
+    public TextureViewDescription(Texture target, PixelFormat format) : this(target,
+                                                                             0,
+                                                                             target.MipLevels,
+                                                                             0,
+                                                                             target.ArrayLayers,
+                                                                             format)
     {
     }
 

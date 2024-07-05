@@ -76,7 +76,7 @@ public unsafe class GraphicsDevice : ContextObject
             Vk.CreateCommandPool(device, &createInfo, null, &transferCommandPool);
         }
 
-        Format depthFormat = physicalDevice.FindSupportedFormat([Format.D32Sfloat, Format.D32SfloatS8Uint, Format.D24UnormS8Uint],
+        Format depthFormat = physicalDevice.FindSupportedFormat([Format.D32SfloatS8Uint, Format.D24UnormS8Uint, Format.D32Sfloat],
                                                                 ImageTiling.Optimal,
                                                                 FormatFeatureFlags.DepthStencilAttachmentBit);
 
