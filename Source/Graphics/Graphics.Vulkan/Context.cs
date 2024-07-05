@@ -17,6 +17,7 @@ public unsafe partial class Context : DisposableObject
     private readonly Vk _vk;
     private readonly Instance _instance;
     private readonly ExtDebugUtils? _debugUtilsExt;
+    private readonly DebugUtilsMessengerEXT? _debugUtilsMessenger;
     private readonly KhrSurface _surfaceExt;
 
     static Context()
@@ -54,8 +55,11 @@ public unsafe partial class Context : DisposableObject
                 PfnUserCallback = (PfnDebugUtilsMessengerCallbackEXT)DebugMessageCallback
             };
 
-            _debugUtilsExt!.CreateDebugUtilsMessenger(_instance, &createInfo, null, out _)
+            DebugUtilsMessengerEXT debugUtilsMessenger;
+            _debugUtilsExt!.CreateDebugUtilsMessenger(_instance, &createInfo, null, &debugUtilsMessenger)
                            .ThrowCode("Failed to create debug messenger!");
+
+            _debugUtilsMessenger = debugUtilsMessenger;
         }
     }
 
@@ -72,7 +76,11 @@ public unsafe partial class Context : DisposableObject
     protected override void Destroy()
     {
         _surfaceExt.Dispose();
+
+        _debugUtilsExt?.DestroyDebugUtilsMessenger(_instance, _debugUtilsMessenger!.Value, null);
         _debugUtilsExt?.Dispose();
+
+        _vk.DestroyInstance(_instance, null);
         _vk.Dispose();
 
         _alloter.Dispose();

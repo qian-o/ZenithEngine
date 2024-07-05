@@ -3,12 +3,12 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class Buffer : DeviceResource, IBindableResource
+public unsafe class DeviceBuffer : DeviceResource, IBindableResource
 {
     private readonly VkBuffer _buffer;
     private readonly DeviceMemory _deviceMemory;
 
-    internal Buffer(GraphicsDevice graphicsDevice, ref readonly BufferDescription description) : base(graphicsDevice)
+    internal DeviceBuffer(GraphicsDevice graphicsDevice, ref readonly BufferDescription description) : base(graphicsDevice)
     {
         BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferSrcBit | BufferUsageFlags.TransferDstBit;
 
