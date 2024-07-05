@@ -17,8 +17,8 @@ public struct ResourceSetDescription(ResourceLayout layout, params IBindableReso
 
     public readonly bool Equals(ResourceSetDescription other)
     {
-        return Layout == other.Layout &&
-               BoundResources.SequenceEqual(other.BoundResources);
+        return Layout == other.Layout
+               && BoundResources.SequenceEqual(other.BoundResources);
     }
 
     public override readonly int GetHashCode()

@@ -21,7 +21,9 @@ public struct ResourceLayoutElementDescription(string name, ResourceKind kind, S
 
     public readonly bool Equals(ResourceLayoutElementDescription other)
     {
-        return Name == other.Name && Kind == other.Kind && Stages == other.Stages;
+        return Name == other.Name
+               && Kind == other.Kind
+               && Stages == other.Stages;
     }
 
     public override readonly int GetHashCode()

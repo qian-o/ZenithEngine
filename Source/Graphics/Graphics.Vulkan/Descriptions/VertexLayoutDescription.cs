@@ -38,9 +38,9 @@ public struct VertexLayoutDescription(uint stride, VertexElementDescription[] el
 
     public readonly bool Equals(VertexLayoutDescription other)
     {
-        return Stride == other.Stride &&
-               Elements.SequenceEqual(other.Elements) &&
-               InstanceStepRate == other.InstanceStepRate;
+        return Stride == other.Stride
+               && Elements.SequenceEqual(other.Elements)
+               && InstanceStepRate == other.InstanceStepRate;
     }
 
     public override readonly int GetHashCode()

@@ -53,14 +53,14 @@ public struct TextureDescription(uint width,
 
     public readonly bool Equals(TextureDescription other)
     {
-        return Width == other.Width &&
-               Height == other.Height &&
-               Depth == other.Depth &&
-               MipLevels == other.MipLevels &&
-               Format == other.Format &&
-               Usage == other.Usage &&
-               Type == other.Type &&
-               SampleCount == other.SampleCount;
+        return Width == other.Width
+               && Height == other.Height
+               && Depth == other.Depth
+               && MipLevels == other.MipLevels
+               && Format == other.Format
+               && Usage == other.Usage
+               && Type == other.Type
+               && SampleCount == other.SampleCount;
     }
 
     public override readonly int GetHashCode()

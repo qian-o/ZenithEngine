@@ -23,7 +23,8 @@ public struct FramebufferDescription(FramebufferAttachmentDescription? depthTarg
 
     public readonly bool Equals(FramebufferDescription other)
     {
-        return DepthTarget == other.DepthTarget && ColorTargets.SequenceEqual(other.ColorTargets);
+        return DepthTarget == other.DepthTarget
+               && ColorTargets.SequenceEqual(other.ColorTargets);
     }
 
     public override readonly int GetHashCode()

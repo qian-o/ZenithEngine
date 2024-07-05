@@ -42,9 +42,9 @@ public struct FramebufferAttachmentDescription : IEquatable<FramebufferAttachmen
 
     public readonly bool Equals(FramebufferAttachmentDescription other)
     {
-        return Target == other.Target &&
-               ArrayLayer == other.ArrayLayer &&
-               MipLevel == other.MipLevel;
+        return Target == other.Target
+               && ArrayLayer == other.ArrayLayer
+               && MipLevel == other.MipLevel;
     }
 
     public override readonly int GetHashCode()

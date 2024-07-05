@@ -16,7 +16,8 @@ public struct BufferDescription(uint sizeInBytes, BufferUsage usage) : IEquatabl
 
     public readonly bool Equals(BufferDescription other)
     {
-        return SizeInBytes == other.SizeInBytes && Usage == other.Usage;
+        return SizeInBytes == other.SizeInBytes
+               && Usage == other.Usage;
     }
 
     public override readonly int GetHashCode()

@@ -31,10 +31,10 @@ public struct SwapchainDescription(SurfaceKHR target,
 
     public readonly bool Equals(SwapchainDescription other)
     {
-        return Target.Handle == other.Target.Handle &&
-               Width == other.Width &&
-               Height == other.Height &&
-               DepthFormat == other.DepthFormat;
+        return Target.Handle == other.Target.Handle
+               && Width == other.Width
+               && Height == other.Height
+               && DepthFormat == other.DepthFormat;
     }
 
     public override readonly int GetHashCode()

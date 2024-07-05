@@ -25,9 +25,9 @@ public struct VertexElementDescription(string name, VertexElementFormat format, 
 
     public readonly bool Equals(VertexElementDescription other)
     {
-        return Name == other.Name &&
-               Format == other.Format &&
-               Offset == other.Offset;
+        return Name == other.Name
+               && Format == other.Format
+               && Offset == other.Offset;
     }
 
     public override readonly int GetHashCode()

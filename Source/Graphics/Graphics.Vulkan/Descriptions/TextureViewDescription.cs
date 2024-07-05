@@ -68,12 +68,12 @@ public struct TextureViewDescription(Texture target,
 
     public readonly bool Equals(TextureViewDescription other)
     {
-        return Target == other.Target &&
-               BaseMipLevel == other.BaseMipLevel &&
-               MipLevels == other.MipLevels &&
-               BaseArrayLayer == other.BaseArrayLayer &&
-               ArrayLayers == other.ArrayLayers &&
-               Format == other.Format;
+        return Target == other.Target
+               && BaseMipLevel == other.BaseMipLevel
+               && MipLevels == other.MipLevels
+               && BaseArrayLayer == other.BaseArrayLayer
+               && ArrayLayers == other.ArrayLayers
+               && Format == other.Format;
     }
 
     public override readonly int GetHashCode()
