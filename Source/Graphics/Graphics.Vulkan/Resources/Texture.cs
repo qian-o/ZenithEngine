@@ -48,7 +48,7 @@ public unsafe class Texture : DeviceResource
         }
 
         VkImage image;
-        Vk.CreateImage(Device, &createInfo, null, &image);
+        Vk.CreateImage(Device, &createInfo, null, &image).ThrowCode();
 
         MemoryRequirements memoryRequirements;
         Vk.GetImageMemoryRequirements(Device, image, &memoryRequirements);
@@ -59,7 +59,7 @@ public unsafe class Texture : DeviceResource
                                         in memoryRequirements,
                                         isStaging ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit);
 
-        Vk.BindImageMemory(Device, image, deviceMemory.Handle, 0);
+        Vk.BindImageMemory(Device, image, deviceMemory.Handle, 0).ThrowCode();
 
         _image = image;
         _type = description.Type;

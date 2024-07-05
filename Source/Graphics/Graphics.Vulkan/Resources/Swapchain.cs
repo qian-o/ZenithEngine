@@ -21,31 +21,31 @@ public unsafe class Swapchain : DeviceResource
         SurfaceCapabilitiesKHR surfaceCapabilities;
         SurfaceExt.GetPhysicalDeviceSurfaceCapabilities(VkPhysicalDevice,
                                                         description.Target,
-                                                        &surfaceCapabilities);
+                                                        &surfaceCapabilities).ThrowCode();
 
         uint surfaceFormatCount;
         SurfaceExt.GetPhysicalDeviceSurfaceFormats(VkPhysicalDevice,
                                                    description.Target,
                                                    &surfaceFormatCount,
-                                                   null);
+                                                   null).ThrowCode();
 
         SurfaceFormatKHR[] surfaceFormats = new SurfaceFormatKHR[surfaceFormatCount];
         SurfaceExt.GetPhysicalDeviceSurfaceFormats(VkPhysicalDevice,
                                                    description.Target,
                                                    &surfaceFormatCount,
-                                                   (SurfaceFormatKHR*)Unsafe.AsPointer(ref surfaceFormats[0]));
+                                                   (SurfaceFormatKHR*)Unsafe.AsPointer(ref surfaceFormats[0])).ThrowCode();
 
         uint presentModeCount;
         SurfaceExt.GetPhysicalDeviceSurfacePresentModes(VkPhysicalDevice,
                                                         description.Target,
                                                         &presentModeCount,
-                                                        null);
+                                                        null).ThrowCode();
 
         PresentModeKHR[] presentModes = new PresentModeKHR[presentModeCount];
         SurfaceExt.GetPhysicalDeviceSurfacePresentModes(VkPhysicalDevice,
                                                         description.Target,
                                                         &presentModeCount,
-                                                        (PresentModeKHR*)Unsafe.AsPointer(ref presentModes[0]));
+                                                        (PresentModeKHR*)Unsafe.AsPointer(ref presentModes[0])).ThrowCode();
 
         SwapchainCreateInfoKHR createInfo = new()
         {
@@ -66,16 +66,16 @@ public unsafe class Swapchain : DeviceResource
         };
 
         SwapchainKHR swapchain;
-        SwapchainExt.CreateSwapchain(Device, &createInfo, null, &swapchain);
+        SwapchainExt.CreateSwapchain(Device, &createInfo, null, &swapchain).ThrowCode();
 
         uint imageCount;
-        SwapchainExt.GetSwapchainImages(Device, swapchain, &imageCount, null);
+        SwapchainExt.GetSwapchainImages(Device, swapchain, &imageCount, null).ThrowCode();
 
         VkImage[] images = new VkImage[imageCount];
         SwapchainExt.GetSwapchainImages(Device,
                                         swapchain,
                                         &imageCount,
-                                        (VkImage*)Unsafe.AsPointer(ref images[0]));
+                                        (VkImage*)Unsafe.AsPointer(ref images[0])).ThrowCode();
 
         TextureDescription colorBufferDescription = new()
         {

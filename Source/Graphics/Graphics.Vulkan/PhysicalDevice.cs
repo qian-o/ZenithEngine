@@ -102,16 +102,9 @@ public unsafe partial class Context
 {
     public PhysicalDevice[] EnumeratePhysicalDevices()
     {
-        Result result;
-
         // Physical device
         uint physicalDeviceCount = 0;
-        result = _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, null);
-
-        if (result != Result.Success)
-        {
-            throw new InvalidOperationException("Failed to enumerate physical devices!");
-        }
+        _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, null).ThrowCode("Failed to enumerate physical devices!");
 
         if (physicalDeviceCount == 0)
         {
@@ -120,12 +113,7 @@ public unsafe partial class Context
 
         // Enumerate physical devices
         VkPhysicalDevice[] physicalDevices = new VkPhysicalDevice[(int)physicalDeviceCount];
-        result = _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices);
-
-        if (result != Result.Success)
-        {
-            throw new InvalidOperationException("Failed to enumerate physical devices!");
-        }
+        _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices).ThrowCode("Failed to enumerate physical devices!");
 
         return physicalDevices.Select(item => new PhysicalDevice(this, item)).ToArray();
     }

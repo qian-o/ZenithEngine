@@ -229,10 +229,7 @@ public unsafe partial class Context
         };
 
         Device device;
-        if (_vk.CreateDevice(physicalDevice.VkPhysicalDevice, &createInfo, null, &device) != Result.Success)
-        {
-            throw new InvalidOperationException("Failed to create device.");
-        }
+        _vk.CreateDevice(physicalDevice.VkPhysicalDevice, &createInfo, null, &device).ThrowCode("Failed to create device.");
 
         KhrSwapchain swapchainExt = CreateDeviceExtension<KhrSwapchain>(device)!;
 

@@ -47,7 +47,7 @@ public unsafe class Buffer : DeviceResource
         };
 
         VkBuffer buffer;
-        Vk.CreateBuffer(Device, &createInfo, null, &buffer);
+        Vk.CreateBuffer(Device, &createInfo, null, &buffer).ThrowCode();
 
         MemoryRequirements memoryRequirements;
         Vk.GetBufferMemoryRequirements(Device, buffer, &memoryRequirements);
@@ -59,7 +59,7 @@ public unsafe class Buffer : DeviceResource
                                         in memoryRequirements,
                                         hostVisible ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit);
 
-        Vk.BindBufferMemory(Device, buffer, deviceMemory.Handle, 0);
+        Vk.BindBufferMemory(Device, buffer, deviceMemory.Handle, 0).ThrowCode();
 
         _buffer = buffer;
         _deviceMemory = deviceMemory;

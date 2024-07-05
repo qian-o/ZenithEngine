@@ -48,7 +48,7 @@ public unsafe class TextureView : DeviceResource
         }
 
         VkImageView imageView;
-        Vk.CreateImageView(Device, &createInfo, null, &imageView);
+        Vk.CreateImageView(Device, &createInfo, null, &imageView).ThrowCode();
 
         _imageView = imageView;
     }

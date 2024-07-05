@@ -54,10 +54,8 @@ public unsafe partial class Context : DisposableObject
                 PfnUserCallback = (PfnDebugUtilsMessengerCallbackEXT)DebugMessageCallback
             };
 
-            if (_debugUtilsExt!.CreateDebugUtilsMessenger(_instance, &createInfo, null, out _) != Result.Success)
-            {
-                throw new InvalidOperationException("Failed to set up debug messenger!");
-            }
+            _debugUtilsExt!.CreateDebugUtilsMessenger(_instance, &createInfo, null, out _)
+                           .ThrowCode("Failed to create debug messenger!");
         }
     }
 
@@ -159,10 +157,7 @@ public unsafe partial class Context : DisposableObject
         createInfo.PpEnabledExtensionNames = _alloter.Allocate(extensions);
 
         Instance instance;
-        if (_vk.CreateInstance(&createInfo, null, &instance) != Result.Success)
-        {
-            throw new InvalidOperationException("Failed to create instance!");
-        }
+        _vk.CreateInstance(&createInfo, null, &instance).ThrowCode("Failed to create instance!");
 
         _alloter.Clear();
 
