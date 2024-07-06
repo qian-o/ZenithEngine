@@ -7,6 +7,7 @@ public unsafe class ResourceLayout : DeviceResource
 {
     private readonly VkDescriptorSetLayout _descriptorSetLayout;
     private readonly DescriptorResourceCounts _counts;
+    private readonly DescriptorType[] _descriptorTypes;
 
     internal ResourceLayout(GraphicsDevice graphicsDevice, ref readonly ResourceLayoutDescription description) : base(graphicsDevice)
     {
@@ -19,6 +20,7 @@ public unsafe class ResourceLayout : DeviceResource
         uint storageBufferCount = 0;
         uint storageBufferDynamicCount = 0;
         uint storageImageCount = 0;
+        DescriptorType[] descriptorTypes = new DescriptorType[description.Elements.Length];
 
         for (uint i = 0; i < description.Elements.Length; i++)
         {
@@ -58,6 +60,8 @@ public unsafe class ResourceLayout : DeviceResource
                     storageBufferDynamicCount++;
                     break;
             }
+
+            descriptorTypes[i] = binding.DescriptorType;
         }
 
         DescriptorSetLayoutCreateInfo createInfo = new()
@@ -78,11 +82,14 @@ public unsafe class ResourceLayout : DeviceResource
                                                storageBufferCount,
                                                storageBufferDynamicCount,
                                                storageImageCount);
+        _descriptorTypes = descriptorTypes;
     }
 
     internal VkDescriptorSetLayout Handle => _descriptorSetLayout;
 
     internal DescriptorResourceCounts Counts => _counts;
+
+    internal DescriptorType[] DescriptorTypes => _descriptorTypes;
 
     protected override void Destroy()
     {

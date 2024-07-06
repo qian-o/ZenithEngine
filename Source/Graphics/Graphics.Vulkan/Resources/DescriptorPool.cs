@@ -86,7 +86,7 @@ internal sealed unsafe class DescriptorPool : DeviceResource
 
     public bool TryAllocate(ResourceLayout layout, out DescriptorAllocationToken token)
     {
-        VkDescriptorSetLayout descriptorSetLayout = layout.Handle;
+        VkDescriptorSetLayout setLayout = layout.Handle;
         DescriptorResourceCounts counts = layout.Counts;
 
         if (remainingSets > 0
@@ -112,7 +112,7 @@ internal sealed unsafe class DescriptorPool : DeviceResource
                 SType = StructureType.DescriptorSetAllocateInfo,
                 DescriptorPool = _descriptorPool,
                 DescriptorSetCount = 1,
-                PSetLayouts = &descriptorSetLayout
+                PSetLayouts = &setLayout
             };
 
             VkDescriptorSet descriptorSet;

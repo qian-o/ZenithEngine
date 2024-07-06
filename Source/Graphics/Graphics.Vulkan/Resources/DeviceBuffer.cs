@@ -7,6 +7,7 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
 {
     private readonly VkBuffer _buffer;
     private readonly DeviceMemory _deviceMemory;
+    private readonly uint _sizeInBytes;
 
     internal DeviceBuffer(GraphicsDevice graphicsDevice, ref readonly BufferDescription description) : base(graphicsDevice)
     {
@@ -63,9 +64,12 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
 
         _buffer = buffer;
         _deviceMemory = deviceMemory;
+        _sizeInBytes = description.SizeInBytes;
     }
 
     internal VkBuffer Handle => _buffer;
+
+    public uint SizeInBytes => _sizeInBytes;
 
     protected override void Destroy()
     {

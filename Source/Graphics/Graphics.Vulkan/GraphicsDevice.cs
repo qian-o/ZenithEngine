@@ -8,7 +8,6 @@ namespace Graphics.Vulkan;
 public unsafe class GraphicsDevice : ContextObject
 {
     private readonly ResourceFactory _resourceFactory;
-    private readonly DescriptorPoolManager _descriptorPoolManager;
     private readonly PhysicalDevice _physicalDevice;
     private readonly Device _device;
     private readonly KhrSwapchain _swapchainExt;
@@ -18,6 +17,7 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly CommandPool _graphicsCommandPool;
     private readonly CommandPool _computeCommandPool;
     private readonly CommandPool _transferCommandPool;
+    private readonly DescriptorPoolManager _descriptorPoolManager;
     private readonly SurfaceKHR _windowSurface;
     private readonly PixelFormat _depthFormat;
 
@@ -82,7 +82,6 @@ public unsafe class GraphicsDevice : ContextObject
                                                                 FormatFeatureFlags.DepthStencilAttachmentBit);
 
         _resourceFactory = new ResourceFactory(context, this);
-        _descriptorPoolManager = new DescriptorPoolManager(this);
         _physicalDevice = physicalDevice;
         _device = device;
         _swapchainExt = swapchainExt;
@@ -92,13 +91,12 @@ public unsafe class GraphicsDevice : ContextObject
         _graphicsCommandPool = graphicsCommandPool;
         _computeCommandPool = computeCommandPool;
         _transferCommandPool = transferCommandPool;
+        _descriptorPoolManager = new DescriptorPoolManager(this);
         _windowSurface = windowSurface;
         _depthFormat = Formats.GetPixelFormat(depthFormat);
     }
 
     public ResourceFactory ResourceFactory => _resourceFactory;
-
-    internal DescriptorPoolManager DescriptorPoolManager => _descriptorPoolManager;
 
     internal PhysicalDevice PhysicalDevice => _physicalDevice;
 
@@ -117,6 +115,8 @@ public unsafe class GraphicsDevice : ContextObject
     internal CommandPool ComputeCommandPool => _computeCommandPool;
 
     internal CommandPool TransferCommandPool => _transferCommandPool;
+
+    internal DescriptorPoolManager DescriptorPoolManager => _descriptorPoolManager;
 
     internal CommandBuffer BeginSingleTimeCommands()
     {
@@ -172,6 +172,8 @@ public unsafe class GraphicsDevice : ContextObject
     protected override void Destroy()
     {
         swapChain?.Dispose();
+
+        _descriptorPoolManager.Dispose();
 
         Vk.DestroyCommandPool(_device, _transferCommandPool, null);
         Vk.DestroyCommandPool(_device, _computeCommandPool, null);
