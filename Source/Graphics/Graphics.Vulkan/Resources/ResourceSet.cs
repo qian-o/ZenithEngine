@@ -2,7 +2,7 @@
 
 public unsafe class ResourceSet : DeviceResource
 {
-    public ResourceSet(GraphicsDevice graphicsDevice, ref readonly ResourceSetDescription description) : base(graphicsDevice)
+    internal ResourceSet(GraphicsDevice graphicsDevice, ref readonly ResourceSetDescription description) : base(graphicsDevice)
     {
     }
 

@@ -11,7 +11,7 @@ public unsafe class Framebuffer : DeviceResource
     private readonly TextureView? _depthView;
     private readonly VkFramebuffer _framebuffer;
 
-    public Framebuffer(GraphicsDevice graphicsDevice, ref readonly FramebufferDescription description, bool isPresented) : base(graphicsDevice)
+    internal Framebuffer(GraphicsDevice graphicsDevice, ref readonly FramebufferDescription description, bool isPresented) : base(graphicsDevice)
     {
         bool hasDepth = description.DepthTarget.HasValue;
 

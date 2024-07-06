@@ -139,12 +139,14 @@ internal static class Formats
         };
     }
 
-    public static DescriptorType GetDescriptorType(ResourceKind kind)
+    public static DescriptorType GetDescriptorType(ResourceKind kind, ResourceLayoutElementOptions options)
     {
+        bool dynamic = options.HasFlag(ResourceLayoutElementOptions.DynamicBinding);
+
         return kind switch
         {
-            ResourceKind.UniformBuffer => DescriptorType.UniformBuffer,
-            ResourceKind.StructuredBufferReadOnly or ResourceKind.StructuredBufferReadWrite => DescriptorType.StorageBuffer,
+            ResourceKind.UniformBuffer => dynamic ? DescriptorType.UniformBufferDynamic : DescriptorType.UniformBuffer,
+            ResourceKind.StructuredBufferReadOnly or ResourceKind.StructuredBufferReadWrite => dynamic ? DescriptorType.StorageBufferDynamic : DescriptorType.StorageBuffer,
             ResourceKind.TextureReadOnly => DescriptorType.SampledImage,
             ResourceKind.TextureReadWrite => DescriptorType.StorageImage,
             ResourceKind.Sampler => DescriptorType.Sampler,

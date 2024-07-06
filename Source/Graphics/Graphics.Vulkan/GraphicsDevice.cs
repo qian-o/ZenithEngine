@@ -8,6 +8,7 @@ namespace Graphics.Vulkan;
 public unsafe class GraphicsDevice : ContextObject
 {
     private readonly ResourceFactory _resourceFactory;
+    private readonly DescriptorPoolManager _descriptorPoolManager;
     private readonly PhysicalDevice _physicalDevice;
     private readonly Device _device;
     private readonly KhrSwapchain _swapchainExt;
@@ -81,6 +82,7 @@ public unsafe class GraphicsDevice : ContextObject
                                                                 FormatFeatureFlags.DepthStencilAttachmentBit);
 
         _resourceFactory = new ResourceFactory(context, this);
+        _descriptorPoolManager = new DescriptorPoolManager(this);
         _physicalDevice = physicalDevice;
         _device = device;
         _swapchainExt = swapchainExt;
@@ -95,6 +97,8 @@ public unsafe class GraphicsDevice : ContextObject
     }
 
     public ResourceFactory ResourceFactory => _resourceFactory;
+
+    internal DescriptorPoolManager DescriptorPoolManager => _descriptorPoolManager;
 
     internal PhysicalDevice PhysicalDevice => _physicalDevice;
 

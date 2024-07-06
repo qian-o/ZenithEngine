@@ -6,7 +6,7 @@ internal sealed unsafe class DeviceMemory : DeviceResource
 {
     private readonly VkDeviceMemory _deviceMemory;
 
-    public DeviceMemory(GraphicsDevice graphicsDevice, ref readonly MemoryRequirements requirements, MemoryPropertyFlags flags) : base(graphicsDevice)
+    internal DeviceMemory(GraphicsDevice graphicsDevice, ref readonly MemoryRequirements requirements, MemoryPropertyFlags flags) : base(graphicsDevice)
     {
         MemoryAllocateInfo allocateInfo = new()
         {

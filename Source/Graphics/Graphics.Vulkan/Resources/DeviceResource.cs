@@ -13,6 +13,8 @@ public abstract class DeviceResource(GraphicsDevice graphicsDevice) : ContextObj
 
     internal ResourceFactory ResourceFactory => graphicsDevice.ResourceFactory;
 
+    internal DescriptorPoolManager DescriptorPoolManager => graphicsDevice.DescriptorPoolManager;
+
     internal Device Device => graphicsDevice.Device;
 
     internal KhrSwapchain SwapchainExt => graphicsDevice.SwapchainExt;

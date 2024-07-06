@@ -1,5 +1,8 @@
 ﻿global using SilkWindow = Silk.NET.Windowing.Window;
 global using VkBuffer = Silk.NET.Vulkan.Buffer;
+global using VkDescriptorPool = Silk.NET.Vulkan.DescriptorPool;
+global using VkDescriptorSet = Silk.NET.Vulkan.DescriptorSet;
+global using VkDescriptorSetLayout = Silk.NET.Vulkan.DescriptorSetLayout;
 global using VkDeviceMemory = Silk.NET.Vulkan.DeviceMemory;
 global using VkFramebuffer = Silk.NET.Vulkan.Framebuffer;
 global using VkImage = Silk.NET.Vulkan.Image;
