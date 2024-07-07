@@ -65,6 +65,20 @@ public class ResourceFactory : ContextObject
 
     public ResourceSet CreateResourceSet(ResourceSetDescription description) => CreateResourceSet(in description);
 
+    public Sampler CreateSampler(ref readonly SamplerDescription description)
+    {
+        return new Sampler(_graphicsDevice, in description);
+    }
+
+    public Sampler CreateSampler(SamplerDescription description) => CreateSampler(in description);
+
+    public Shader CreateShader(ref readonly ShaderDescription description)
+    {
+        return new Shader(_graphicsDevice, in description);
+    }
+
+    public Shader CreateShader(ShaderDescription description) => CreateShader(in description);
+
     protected override void Destroy()
     {
     }

@@ -1,14 +1,9 @@
 ﻿namespace Graphics.Vulkan;
 
-internal sealed class DescriptorPoolManager : DeviceResource
+internal sealed class DescriptorPoolManager(GraphicsDevice graphicsDevice) : DeviceResource(graphicsDevice)
 {
     private readonly List<DescriptorPool> pools = [];
     private readonly object _locker = new();
-
-    internal DescriptorPoolManager(GraphicsDevice graphicsDevice) : base(graphicsDevice)
-    {
-        pools.Add(new DescriptorPool(graphicsDevice));
-    }
 
     public DescriptorAllocationToken Allocate(ResourceLayout layout)
     {

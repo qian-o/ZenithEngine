@@ -8,4 +8,6 @@ global using VkFramebuffer = Silk.NET.Vulkan.Framebuffer;
 global using VkImage = Silk.NET.Vulkan.Image;
 global using VkImageView = Silk.NET.Vulkan.ImageView;
 global using VkPhysicalDevice = Silk.NET.Vulkan.PhysicalDevice;
+global using VkSampler = Silk.NET.Vulkan.Sampler;
+global using VkShaderModule = Silk.NET.Vulkan.ShaderModule;
 global using VkWriteDescriptorSet = Silk.NET.Vulkan.WriteDescriptorSet;
