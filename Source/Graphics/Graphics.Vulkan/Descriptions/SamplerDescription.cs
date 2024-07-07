@@ -2,9 +2,9 @@
 
 namespace Graphics.Vulkan;
 
-public struct SamplerDescription(SamplerAddressMode addressModeU,
-                                 SamplerAddressMode addressModeV,
-                                 SamplerAddressMode addressModeW,
+public struct SamplerDescription(AddressMode addressModeU,
+                                 AddressMode addressModeV,
+                                 AddressMode addressModeW,
                                  SamplerFilter filter,
                                  ComparisonKind? comparisonKind,
                                  uint maximumAnisotropy,
@@ -13,9 +13,9 @@ public struct SamplerDescription(SamplerAddressMode addressModeU,
                                  int lodBias,
                                  SamplerBorderColor borderColor) : IEquatable<SamplerDescription>
 {
-    public static readonly SamplerDescription Point = new(SamplerAddressMode.Wrap,
-                                                          SamplerAddressMode.Wrap,
-                                                          SamplerAddressMode.Wrap,
+    public static readonly SamplerDescription Point = new(AddressMode.Wrap,
+                                                          AddressMode.Wrap,
+                                                          AddressMode.Wrap,
                                                           SamplerFilter.MinPointMagPointMipPoint,
                                                           null,
                                                           0,
@@ -24,9 +24,9 @@ public struct SamplerDescription(SamplerAddressMode addressModeU,
                                                           0,
                                                           SamplerBorderColor.TransparentBlack);
 
-    public static readonly SamplerDescription Linear = new(SamplerAddressMode.Wrap,
-                                                           SamplerAddressMode.Wrap,
-                                                           SamplerAddressMode.Wrap,
+    public static readonly SamplerDescription Linear = new(AddressMode.Wrap,
+                                                           AddressMode.Wrap,
+                                                           AddressMode.Wrap,
                                                            SamplerFilter.MinLinearMagLinearMipLinear,
                                                            null,
                                                            0,
@@ -35,9 +35,9 @@ public struct SamplerDescription(SamplerAddressMode addressModeU,
                                                            0,
                                                            SamplerBorderColor.TransparentBlack);
 
-    public static readonly SamplerDescription Aniso4x = new(SamplerAddressMode.Wrap,
-                                                            SamplerAddressMode.Wrap,
-                                                            SamplerAddressMode.Wrap,
+    public static readonly SamplerDescription Aniso4x = new(AddressMode.Wrap,
+                                                            AddressMode.Wrap,
+                                                            AddressMode.Wrap,
                                                             SamplerFilter.Anisotropic,
                                                             null,
                                                             4,
@@ -49,17 +49,17 @@ public struct SamplerDescription(SamplerAddressMode addressModeU,
     /// <summary>
     /// Mode to use for the U (or S) coordinate.
     /// </summary>
-    public SamplerAddressMode AddressModeU { get; set; } = addressModeU;
+    public AddressMode AddressModeU { get; set; } = addressModeU;
 
     /// <summary>
     /// Mode to use for the V (or T) coordinate.
     /// </summary>
-    public SamplerAddressMode AddressModeV { get; set; } = addressModeV;
+    public AddressMode AddressModeV { get; set; } = addressModeV;
 
     /// <summary>
     /// Mode to use for the W (or R) coordinate.
     /// </summary>
-    public SamplerAddressMode AddressModeW { get; set; } = addressModeW;
+    public AddressMode AddressModeW { get; set; } = addressModeW;
 
     /// <summary>
     /// The filter used when sampling.

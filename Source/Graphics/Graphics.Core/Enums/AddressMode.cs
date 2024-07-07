@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Core;
 
-public enum SamplerAddressMode : byte
+public enum AddressMode : byte
 {
     /// <summary>
     /// Texture coordinates are wrapped upon overflow.

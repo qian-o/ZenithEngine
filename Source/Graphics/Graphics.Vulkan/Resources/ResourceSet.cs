@@ -70,7 +70,14 @@ public unsafe class ResourceSet : DeviceResource
             }
             else if (type == DescriptorType.Sampler)
             {
-                // TODO: Implement
+                Sampler sampler = (Sampler)description.BoundResources[i];
+
+                imageInfos[i] = new DescriptorImageInfo
+                {
+                    Sampler = sampler.Handle
+                };
+
+                set.PImageInfo = (DescriptorImageInfo*)Unsafe.AsPointer(ref imageInfos[i]);
             }
             else
             {
