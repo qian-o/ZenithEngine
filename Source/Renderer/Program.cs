@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
 
@@ -69,6 +70,7 @@ void main()
     private static DeviceBuffer _stepBuffer = null!;
     private static ResourceLayout _resourceLayout = null!;
     private static ResourceSet _resourceSet = null!;
+    private static Shader[] _shaders = null!;
 
     private static void Main(string[] _)
     {
@@ -120,6 +122,9 @@ void main()
         ResourceSetDescription resourceSetDescription = new(_resourceLayout, _beginBuffer, _endBuffer, _stepBuffer);
 
         _resourceSet = factory.CreateResourceSet(resourceSetDescription);
+
+        _shaders = factory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(VertexCode), "main"),
+                                           new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(FragmentCode), "main"));
     }
 
     private static void Window_Resize(object? sender, ResizeEventArgs e)
@@ -129,6 +134,10 @@ void main()
 
     private static void Window_Close(object? sender, CloseEventArgs e)
     {
+        foreach (Shader shader in _shaders)
+        {
+            shader.Dispose();
+        }
         _resourceSet.Dispose();
         _resourceLayout.Dispose();
         _stepBuffer.Dispose();
