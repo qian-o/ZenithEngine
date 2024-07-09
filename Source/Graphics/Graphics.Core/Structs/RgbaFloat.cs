@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Core;
 
-public struct RgbaFloat(float r, float g, float b, float a) : IEquatable<RgbaFloat>
+public record struct RgbaFloat
 {
     public static readonly RgbaFloat Red = new(1.0f, 0.0f, 0.0f, 1.0f);
 
@@ -30,47 +30,19 @@ public struct RgbaFloat(float r, float g, float b, float a) : IEquatable<RgbaFlo
 
     public static readonly RgbaFloat Orange = new(1.0f, 0.36f, 0.0f, 1.0f);
 
-    public float R { get; set; } = r;
-
-    public float G { get; set; } = g;
-
-    public float B { get; set; } = b;
-
-    public float A { get; set; } = a;
-
-    public readonly bool Equals(RgbaFloat other)
+    public RgbaFloat(float r, float g, float b, float a)
     {
-        return R == other.R
-               && G == other.G
-               && B == other.B
-               && A == other.A;
+        R = r;
+        G = g;
+        B = b;
+        A = a;
     }
 
-    public override readonly int GetHashCode()
-    {
-        return HashHelper.Combine(R.GetHashCode(),
-                                  G.GetHashCode(),
-                                  B.GetHashCode(),
-                                  A.GetHashCode());
-    }
+    public float R { get; set; }
 
-    public override readonly bool Equals(object? obj)
-    {
-        return obj is RgbaFloat rgbaFloat && Equals(rgbaFloat);
-    }
+    public float G { get; set; }
 
-    public override readonly string ToString()
-    {
-        return $"R: {R}, G: {G}, B: {B}, A: {A}";
-    }
+    public float B { get; set; }
 
-    public static bool operator ==(RgbaFloat left, RgbaFloat right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(RgbaFloat left, RgbaFloat right)
-    {
-        return !(left == right);
-    }
+    public float A { get; set; }
 }

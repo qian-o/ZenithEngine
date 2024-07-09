@@ -1,9 +1,14 @@
-﻿using Graphics.Core;
+﻿namespace Graphics.Vulkan;
 
-namespace Graphics.Vulkan;
-
-public struct VertexLayoutDescription(uint stride, VertexElementDescription[] elements, uint instanceStepRate) : IEquatable<VertexLayoutDescription>
+public record struct VertexLayoutDescription
 {
+    public VertexLayoutDescription(uint stride, VertexElementDescription[] elements, uint instanceStepRate)
+    {
+        Stride = stride;
+        Elements = elements;
+        InstanceStepRate = instanceStepRate;
+    }
+
     public VertexLayoutDescription(uint stride, params VertexElementDescription[] elements) : this(stride, elements, 0)
     {
     }
@@ -21,12 +26,12 @@ public struct VertexLayoutDescription(uint stride, VertexElementDescription[] el
     /// <summary>
     /// The number of bytes in between successive elements in the buffer.
     /// </summary>
-    public uint Stride { get; set; } = stride;
+    public uint Stride { get; set; }
 
     /// <summary>
     /// The vertex elements that make up this layout.
     /// </summary>
-    public VertexElementDescription[] Elements { get; set; } = elements;
+    public VertexElementDescription[] Elements { get; set; }
 
     /// <summary>
     /// A value controlling how often data for instances is advanced for this layout. For per-vertex elements, this value
@@ -34,41 +39,7 @@ public struct VertexLayoutDescription(uint stride, VertexElementDescription[] el
     /// For example, an InstanceStepRate of 3 indicates that 3 instances will be drawn with the same value for this layout. The
     /// next 3 instances will be drawn with the next value, and so on.
     /// </summary>
-    public uint InstanceStepRate { get; set; } = instanceStepRate;
-
-    public readonly bool Equals(VertexLayoutDescription other)
-    {
-        return Stride == other.Stride
-               && Elements.SequenceEqual(other.Elements)
-               && InstanceStepRate == other.InstanceStepRate;
-    }
-
-    public override readonly int GetHashCode()
-    {
-        return HashHelper.Combine(Stride.GetHashCode(),
-                                  Elements.GetHashCode(),
-                                  InstanceStepRate.GetHashCode());
-    }
-
-    public override readonly bool Equals(object? obj)
-    {
-        return obj is VertexLayoutDescription description && Equals(description);
-    }
-
-    public override readonly string ToString()
-    {
-        return $"Stride: {Stride}, Elements: {string.Join(", ", Elements)}, InstanceStepRate: {InstanceStepRate}";
-    }
-
-    public static bool operator ==(VertexLayoutDescription left, VertexLayoutDescription right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(VertexLayoutDescription left, VertexLayoutDescription right)
-    {
-        return !(left == right);
-    }
+    public uint InstanceStepRate { get; set; }
 
     private static uint CalculateStride(VertexElementDescription[] elements)
     {

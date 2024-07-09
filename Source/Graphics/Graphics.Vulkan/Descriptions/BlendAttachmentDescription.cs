@@ -2,14 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public struct BlendAttachmentDescription(bool blendEnabled,
-                                         ColorWriteMask colorWriteMask,
-                                         BlendFactor sourceColorFactor,
-                                         BlendFactor destinationColorFactor,
-                                         BlendFunction colorFunction,
-                                         BlendFactor sourceAlphaFactor,
-                                         BlendFactor destinationAlphaFactor,
-                                         BlendFunction alphaFunction) : IEquatable<BlendAttachmentDescription>
+public record struct BlendAttachmentDescription
 {
     public static readonly BlendAttachmentDescription OverrideBlend = new(false,
                                                                           BlendFactor.One,
@@ -44,6 +37,25 @@ public struct BlendAttachmentDescription(bool blendEnabled,
                                                                      BlendFunction.Add);
 
     public BlendAttachmentDescription(bool blendEnabled,
+                                      ColorWriteMask colorWriteMask,
+                                      BlendFactor sourceColorFactor,
+                                      BlendFactor destinationColorFactor,
+                                      BlendFunction colorFunction,
+                                      BlendFactor sourceAlphaFactor,
+                                      BlendFactor destinationAlphaFactor,
+                                      BlendFunction alphaFunction)
+    {
+        BlendEnabled = blendEnabled;
+        ColorWriteMask = colorWriteMask;
+        SourceColorFactor = sourceColorFactor;
+        DestinationColorFactor = destinationColorFactor;
+        ColorFunction = colorFunction;
+        SourceAlphaFactor = sourceAlphaFactor;
+        DestinationAlphaFactor = destinationAlphaFactor;
+        AlphaFunction = alphaFunction;
+    }
+
+    public BlendAttachmentDescription(bool blendEnabled,
                                       BlendFactor sourceColorFactor,
                                       BlendFactor destinationColorFactor,
                                       BlendFunction colorFunction,
@@ -63,84 +75,40 @@ public struct BlendAttachmentDescription(bool blendEnabled,
     /// <summary>
     /// Controls whether blending is enabled for the color attachment.
     /// </summary>
-    public bool BlendEnabled { get; set; } = blendEnabled;
+    public bool BlendEnabled { get; set; }
 
     /// <summary>
     /// Controls which components of the color will be written to the framebuffer.
     /// </summary>
-    public ColorWriteMask ColorWriteMask { get; set; } = colorWriteMask;
+    public ColorWriteMask ColorWriteMask { get; set; }
 
     /// <summary>
     /// Controls the source color's influence on the blend result.
     /// </summary>
-    public BlendFactor SourceColorFactor { get; set; } = sourceColorFactor;
+    public BlendFactor SourceColorFactor { get; set; }
 
     /// <summary>
     /// Controls the destination color's influence on the blend result.
     /// </summary>
-    public BlendFactor DestinationColorFactor { get; set; } = destinationColorFactor;
+    public BlendFactor DestinationColorFactor { get; set; }
 
     /// <summary>
     /// Controls the function used to combine the source and destination color factors.
     /// </summary>
-    public BlendFunction ColorFunction { get; set; } = colorFunction;
+    public BlendFunction ColorFunction { get; set; }
 
     /// <summary>
     /// Controls the source alpha's influence on the blend result.
     /// </summary>
-    public BlendFactor SourceAlphaFactor { get; set; } = sourceAlphaFactor;
+    public BlendFactor SourceAlphaFactor { get; set; }
 
     /// <summary>
     /// Controls the destination alpha's influence on the blend result.
     /// </summary>
-    public BlendFactor DestinationAlphaFactor { get; set; } = destinationAlphaFactor;
+    public BlendFactor DestinationAlphaFactor { get; set; }
 
     /// <summary>
     /// Controls the function used to combine the source and destination alpha factors.
     /// </summary>
-    public BlendFunction AlphaFunction { get; set; } = alphaFunction;
-
-    public readonly bool Equals(BlendAttachmentDescription other)
-    {
-        return BlendEnabled == other.BlendEnabled
-               && ColorWriteMask == other.ColorWriteMask
-               && SourceColorFactor == other.SourceColorFactor
-               && DestinationColorFactor == other.DestinationColorFactor
-               && ColorFunction == other.ColorFunction
-               && SourceAlphaFactor == other.SourceAlphaFactor
-               && DestinationAlphaFactor == other.DestinationAlphaFactor
-               && AlphaFunction == other.AlphaFunction;
-    }
-
-    public override readonly int GetHashCode()
-    {
-        return HashHelper.Combine(BlendEnabled.GetHashCode(),
-                                  ColorWriteMask.GetHashCode(),
-                                  SourceColorFactor.GetHashCode(),
-                                  DestinationColorFactor.GetHashCode(),
-                                  ColorFunction.GetHashCode(),
-                                  SourceAlphaFactor.GetHashCode(),
-                                  DestinationAlphaFactor.GetHashCode(),
-                                  AlphaFunction.GetHashCode());
-    }
-
-    public override readonly bool Equals(object? obj)
-    {
-        return obj is BlendAttachmentDescription description && Equals(description);
-    }
-
-    public override readonly string ToString()
-    {
-        return $"BlendEnabled: {BlendEnabled}, ColorWriteMask: {ColorWriteMask}, SourceColorFactor: {SourceColorFactor}, DestinationColorFactor: {DestinationColorFactor}, ColorFunction: {ColorFunction}, SourceAlphaFactor: {SourceAlphaFactor}, DestinationAlphaFactor: {DestinationAlphaFactor}, AlphaFunction: {AlphaFunction}";
-    }
-
-    public static bool operator ==(BlendAttachmentDescription left, BlendAttachmentDescription right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(BlendAttachmentDescription left, BlendAttachmentDescription right)
-    {
-        return !(left == right);
-    }
+    public BlendFunction AlphaFunction { get; set; }
 }

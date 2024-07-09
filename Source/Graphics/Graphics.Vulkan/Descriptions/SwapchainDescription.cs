@@ -3,65 +3,37 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public struct SwapchainDescription(SurfaceKHR target,
-                                   uint width,
-                                   uint height,
-                                   PixelFormat? depthFormat) : IEquatable<SwapchainDescription>
+public record struct SwapchainDescription
 {
+    public SwapchainDescription(SurfaceKHR target,
+                                uint width,
+                                uint height,
+                                PixelFormat? depthFormat)
+    {
+        Target = target;
+        Width = width;
+        Height = height;
+        DepthFormat = depthFormat;
+    }
+
     /// <summary>
     /// The render target.
     /// </summary>
-    public SurfaceKHR Target { get; set; } = target;
+    public SurfaceKHR Target { get; set; }
 
     /// <summary>
     /// The width of the swapchain surface.
     /// </summary>
-    public uint Width { get; set; } = width;
+    public uint Width { get; set; }
 
     /// <summary>
     /// The height of the swapchain surface.
     /// </summary>
-    public uint Height { get; set; } = height;
+    public uint Height { get; set; }
 
     /// <summary>
     /// The optional format of the depth target of the Swapchain's Framebuffer.
     /// If null, the Swapchain will not have a depth target.
     /// </summary>
-    public PixelFormat? DepthFormat { get; set; } = depthFormat;
-
-    public readonly bool Equals(SwapchainDescription other)
-    {
-        return Target.Handle == other.Target.Handle
-               && Width == other.Width
-               && Height == other.Height
-               && DepthFormat == other.DepthFormat;
-    }
-
-    public override readonly int GetHashCode()
-    {
-        return HashHelper.Combine(Target.GetHashCode(),
-                                  Width.GetHashCode(),
-                                  Height.GetHashCode(),
-                                  DepthFormat.GetHashCode());
-    }
-
-    public override readonly bool Equals(object? obj)
-    {
-        return obj is SwapchainDescription description && Equals(description);
-    }
-
-    public override readonly string ToString()
-    {
-        return $"Target: {Target}, Width: {Width}, Height: {Height}, DepthFormat: {DepthFormat}";
-    }
-
-    public static bool operator ==(SwapchainDescription left, SwapchainDescription right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(SwapchainDescription left, SwapchainDescription right)
-    {
-        return !(left == right);
-    }
+    public PixelFormat? DepthFormat { get; set; }
 }

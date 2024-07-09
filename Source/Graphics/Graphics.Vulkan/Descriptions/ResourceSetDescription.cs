@@ -1,48 +1,21 @@
-﻿using Graphics.Core;
+﻿namespace Graphics.Vulkan;
 
-namespace Graphics.Vulkan;
-
-public struct ResourceSetDescription(ResourceLayout layout, params IBindableResource[] boundResources) : IEquatable<ResourceSetDescription>
+public record struct ResourceSetDescription
 {
+    public ResourceSetDescription(ResourceLayout layout, params IBindableResource[] boundResources)
+    {
+        Layout = layout;
+        BoundResources = boundResources;
+    }
+
     /// <summary>
     /// Describes the number of resources and the layout.
     /// </summary>
-    public ResourceLayout Layout { get; set; } = layout;
+    public ResourceLayout Layout { get; set; }
 
     /// <summary>
     /// Bound resources.
     /// Resource count and types must match the descriptions in Layout.
     /// </summary>
-    public IBindableResource[] BoundResources { get; set; } = boundResources;
-
-    public readonly bool Equals(ResourceSetDescription other)
-    {
-        return Layout == other.Layout
-               && BoundResources.SequenceEqual(other.BoundResources);
-    }
-
-    public override readonly int GetHashCode()
-    {
-        return HashHelper.Combine(Layout.GetHashCode(), BoundResources.GetHashCode());
-    }
-
-    public override readonly bool Equals(object? obj)
-    {
-        return obj is ResourceSetDescription description && Equals(description);
-    }
-
-    public override readonly string ToString()
-    {
-        return $"Layout: {Layout}, BoundResources: {BoundResources}";
-    }
-
-    public static bool operator ==(ResourceSetDescription left, ResourceSetDescription right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(ResourceSetDescription left, ResourceSetDescription right)
-    {
-        return !(left == right);
-    }
+    public IBindableResource[] BoundResources { get; set; }
 }

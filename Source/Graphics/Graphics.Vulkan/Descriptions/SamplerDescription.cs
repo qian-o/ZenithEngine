@@ -2,16 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public struct SamplerDescription(AddressMode addressModeU,
-                                 AddressMode addressModeV,
-                                 AddressMode addressModeW,
-                                 SamplerFilter filter,
-                                 ComparisonKind? comparisonKind,
-                                 uint maximumAnisotropy,
-                                 uint minimumLod,
-                                 uint maximumLod,
-                                 int lodBias,
-                                 SamplerBorderColor borderColor) : IEquatable<SamplerDescription>
+public record struct SamplerDescription
 {
     public static readonly SamplerDescription Point = new(AddressMode.Wrap,
                                                           AddressMode.Wrap,
@@ -46,101 +37,76 @@ public struct SamplerDescription(AddressMode addressModeU,
                                                             0,
                                                             SamplerBorderColor.TransparentBlack);
 
+    public SamplerDescription(AddressMode addressModeU,
+                              AddressMode addressModeV,
+                              AddressMode addressModeW,
+                              SamplerFilter filter,
+                              ComparisonKind? comparisonKind,
+                              uint maximumAnisotropy,
+                              uint minimumLod,
+                              uint maximumLod,
+                              int lodBias,
+                              SamplerBorderColor borderColor)
+    {
+        AddressModeU = addressModeU;
+        AddressModeV = addressModeV;
+        AddressModeW = addressModeW;
+        Filter = filter;
+        ComparisonKind = comparisonKind;
+        MaximumAnisotropy = maximumAnisotropy;
+        MinimumLod = minimumLod;
+        MaximumLod = maximumLod;
+        LodBias = lodBias;
+        BorderColor = borderColor;
+    }
+
     /// <summary>
     /// Mode to use for the U (or S) coordinate.
     /// </summary>
-    public AddressMode AddressModeU { get; set; } = addressModeU;
+    public AddressMode AddressModeU { get; set; }
 
     /// <summary>
     /// Mode to use for the V (or T) coordinate.
     /// </summary>
-    public AddressMode AddressModeV { get; set; } = addressModeV;
+    public AddressMode AddressModeV { get; set; }
 
     /// <summary>
     /// Mode to use for the W (or R) coordinate.
     /// </summary>
-    public AddressMode AddressModeW { get; set; } = addressModeW;
+    public AddressMode AddressModeW { get; set; }
 
     /// <summary>
     /// The filter used when sampling.
     /// </summary>
-    public SamplerFilter Filter { get; set; } = filter;
+    public SamplerFilter Filter { get; set; }
 
     /// <summary>
     /// An optional value controlling the kind of comparison to use when sampling. If null, comparison sampling is not used.
     /// </summary>
-    public ComparisonKind? ComparisonKind { get; set; } = comparisonKind;
+    public ComparisonKind? ComparisonKind { get; set; }
 
     /// <summary>
     /// The maximum anisotropy of the filter.
     /// </summary>
-    public uint MaximumAnisotropy { get; set; } = maximumAnisotropy;
+    public uint MaximumAnisotropy { get; set; }
 
     /// <summary>
     /// The minimum level of detail.
     /// </summary>
-    public uint MinimumLod { get; set; } = minimumLod;
+    public uint MinimumLod { get; set; }
 
     /// <summary>
     /// The maximum level of detail.
     /// </summary>
-    public uint MaximumLod { get; set; } = maximumLod;
+    public uint MaximumLod { get; set; }
 
     /// <summary>
     /// The level of detail bias.
     /// </summary>
-    public int LodBias { get; set; } = lodBias;
+    public int LodBias { get; set; }
 
     /// <summary>
     /// The border color to use when sampling outside the texture.
     /// </summary>
-    public SamplerBorderColor BorderColor { get; set; } = borderColor;
-
-    public readonly bool Equals(SamplerDescription other)
-    {
-        return AddressModeU == other.AddressModeU
-               && AddressModeV == other.AddressModeV
-               && AddressModeW == other.AddressModeW
-               && Filter == other.Filter
-               && ComparisonKind == other.ComparisonKind
-               && MaximumAnisotropy == other.MaximumAnisotropy
-               && MinimumLod == other.MinimumLod
-               && MaximumLod == other.MaximumLod
-               && LodBias == other.LodBias
-               && BorderColor == other.BorderColor;
-    }
-
-    public override readonly int GetHashCode()
-    {
-        return HashHelper.Combine(AddressModeU.GetHashCode(),
-                                  AddressModeV.GetHashCode(),
-                                  AddressModeW.GetHashCode(),
-                                  Filter.GetHashCode(),
-                                  ComparisonKind.GetHashCode(),
-                                  MaximumAnisotropy.GetHashCode(),
-                                  MinimumLod.GetHashCode(),
-                                  MaximumLod.GetHashCode(),
-                                  LodBias.GetHashCode(),
-                                  BorderColor.GetHashCode());
-    }
-
-    public override readonly bool Equals(object? obj)
-    {
-        return obj is SamplerDescription description && Equals(description);
-    }
-
-    public override readonly string ToString()
-    {
-        return $"AddressModeU: {AddressModeU}, AddressModeV: {AddressModeV}, AddressModeW: {AddressModeW}, Filter: {Filter}, ComparisonKind: {ComparisonKind}, MaximumAnisotropy: {MaximumAnisotropy}, MinimumLod: {MinimumLod}, MaximumLod: {MaximumLod}, LodBias: {LodBias}, BorderColor: {BorderColor}";
-    }
-
-    public static bool operator ==(SamplerDescription left, SamplerDescription right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(SamplerDescription left, SamplerDescription right)
-    {
-        return !(left == right);
-    }
+    public SamplerBorderColor BorderColor { get; set; }
 }

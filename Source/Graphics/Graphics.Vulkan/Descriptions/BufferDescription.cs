@@ -2,46 +2,21 @@
 
 namespace Graphics.Vulkan;
 
-public struct BufferDescription(uint sizeInBytes, BufferUsage usage) : IEquatable<BufferDescription>
+public record struct BufferDescription
 {
+    public BufferDescription(uint sizeInBytes, BufferUsage usage)
+    {
+        SizeInBytes = sizeInBytes;
+        Usage = usage;
+    }
+
     /// <summary>
     /// The desired capacity, in bytes.
     /// </summary>
-    public uint SizeInBytes { get; set; } = sizeInBytes;
+    public uint SizeInBytes { get; set; }
 
     /// <summary>
     /// Indicates the intended use of the buffer.
     /// </summary>
-    public BufferUsage Usage { get; set; } = usage;
-
-    public readonly bool Equals(BufferDescription other)
-    {
-        return SizeInBytes == other.SizeInBytes
-               && Usage == other.Usage;
-    }
-
-    public override readonly int GetHashCode()
-    {
-        return HashHelper.Combine(SizeInBytes.GetHashCode(), Usage.GetHashCode());
-    }
-
-    public override readonly bool Equals(object? obj)
-    {
-        return obj is BufferDescription description && Equals(description);
-    }
-
-    public override readonly string ToString()
-    {
-        return $"SizeInBytes: {SizeInBytes}, Usage: {Usage}";
-    }
-
-    public static bool operator ==(BufferDescription left, BufferDescription right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(BufferDescription left, BufferDescription right)
-    {
-        return !(left == right);
-    }
+    public BufferUsage Usage { get; set; }
 }

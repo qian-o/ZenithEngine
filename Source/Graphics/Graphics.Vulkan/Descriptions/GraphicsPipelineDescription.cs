@@ -1,5 +1,5 @@
 ﻿namespace Graphics.Vulkan;
 
-public struct GraphicsPipelineDescription
+public record struct GraphicsPipelineDescription
 {
 }

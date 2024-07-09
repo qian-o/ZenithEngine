@@ -2,98 +2,66 @@
 
 namespace Graphics.Vulkan;
 
-public struct TextureDescription(uint width,
-                                 uint height,
-                                 uint depth,
-                                 uint mipLevels,
-                                 PixelFormat format,
-                                 TextureUsage usage,
-                                 TextureType type,
-                                 TextureSampleCount sampleCount) : IEquatable<TextureDescription>
+public record struct TextureDescription
 {
+    public TextureDescription(uint width,
+                              uint height,
+                              uint depth,
+                              uint mipLevels,
+                              PixelFormat format,
+                              TextureUsage usage,
+                              TextureType type,
+                              TextureSampleCount sampleCount)
+    {
+        Width = width;
+        Height = height;
+        Depth = depth;
+        MipLevels = mipLevels;
+        Format = format;
+        Usage = usage;
+        Type = type;
+        SampleCount = sampleCount;
+    }
+
     /// <summary>
     /// The total width, in texels.
     /// </summary>
-    public uint Width { get; set; } = width;
+    public uint Width { get; set; }
 
     /// <summary>
     /// The total height, in texels.
     /// </summary>
-    public uint Height { get; set; } = height;
+    public uint Height { get; set; }
 
     /// <summary>
     /// The total depth, in texels.
     /// </summary>
-    public uint Depth { get; set; } = depth;
+    public uint Depth { get; set; }
 
     /// <summary>
     /// The number of mipmap levels.
     /// </summary>
-    public uint MipLevels { get; set; } = mipLevels;
+    public uint MipLevels { get; set; }
 
     /// <summary>
     /// The format of individual texture elements.
     /// </summary>
-    public PixelFormat Format { get; set; } = format;
+    public PixelFormat Format { get; set; }
 
     /// <summary>
     /// Controls how the Texture is permitted to be used. If the Texture will be sampled from a shader.
     /// </summary>
-    public TextureUsage Usage { get; set; } = usage;
+    public TextureUsage Usage { get; set; }
 
     /// <summary>
     /// The type of the texture.
     /// </summary>
-    public TextureType Type { get; set; } = type;
+    public TextureType Type { get; set; }
 
     /// <summary>
     /// The number of samples.
     /// </summary>
-    public TextureSampleCount SampleCount { get; set; } = sampleCount;
-
-    public readonly bool Equals(TextureDescription other)
-    {
-        return Width == other.Width
-               && Height == other.Height
-               && Depth == other.Depth
-               && MipLevels == other.MipLevels
-               && Format == other.Format
-               && Usage == other.Usage
-               && Type == other.Type
-               && SampleCount == other.SampleCount;
-    }
-
-    public override readonly int GetHashCode()
-    {
-        return HashHelper.Combine(Width.GetHashCode(),
-                                  Height.GetHashCode(),
-                                  Depth.GetHashCode(),
-                                  MipLevels.GetHashCode(),
-                                  Format.GetHashCode(),
-                                  Usage.GetHashCode(),
-                                  Type.GetHashCode(),
-                                  SampleCount.GetHashCode());
-    }
-
-    public override readonly bool Equals(object? obj)
-    {
-        return obj is TextureDescription description && Equals(description);
-    }
-
-    public override readonly string ToString()
-    {
-        return $"Width: {Width}, Height: {Height}, Depth: {Depth}, MipLevels: {MipLevels}, Format: {Format}, Usage: {Usage}, Type: {Type}, SampleCount: {SampleCount}";
-    }
-
-    public static bool operator ==(TextureDescription left, TextureDescription right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(TextureDescription left, TextureDescription right)
-    {
-        return !(left == right);
-    }
+    public TextureSampleCount SampleCount { get; set; }
 
     public static TextureDescription Texture1D(uint width,
                                                uint mipLevels,
