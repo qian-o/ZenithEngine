@@ -1,7 +1,7 @@
 ﻿namespace Graphics.Core;
 
 [Flags]
-public enum ResourceLayoutElementOptions
+public enum ResourceLayoutElementOptions : byte
 {
     /// <summary>
     /// No special options.

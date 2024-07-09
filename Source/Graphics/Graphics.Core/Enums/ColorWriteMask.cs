@@ -1,7 +1,7 @@
 ﻿namespace Graphics.Core;
 
 [Flags]
-public enum ColorWriteMask
+public enum ColorWriteMask : byte
 {
     /// <summary>
     /// No color component will be written to.

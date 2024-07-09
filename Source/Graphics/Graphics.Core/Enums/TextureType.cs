@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Core;
 
-public enum TextureType
+public enum TextureType : byte
 {
     /// <summary>
     ///  A one-dimensional Texture.

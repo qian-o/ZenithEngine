@@ -6,7 +6,7 @@ public enum ShaderStages : byte
     /// <summary>
     /// No stages.
     /// </summary>
-    None = 0,
+    None,
 
     /// <summary>
     /// The vertex shader stage.

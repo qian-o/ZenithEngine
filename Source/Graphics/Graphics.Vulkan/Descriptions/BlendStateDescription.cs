@@ -1,6 +1,4 @@
-﻿using Graphics.Core;
-
-namespace Graphics.Vulkan;
+﻿namespace Graphics.Vulkan;
 
 public record struct BlendStateDescription
 {

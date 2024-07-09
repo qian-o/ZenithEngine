@@ -1,4 +1,4 @@
-﻿namespace Graphics.Core;
+﻿namespace Graphics.Vulkan;
 
 public record struct RgbaFloat
 {

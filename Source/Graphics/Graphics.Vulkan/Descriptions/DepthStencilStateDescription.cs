@@ -4,6 +4,51 @@ namespace Graphics.Vulkan;
 
 public record struct DepthStencilStateDescription
 {
+    public static readonly DepthStencilStateDescription DepthOnlyLessEqual = new(true, true, ComparisonKind.LessEqual);
+
+    public static readonly DepthStencilStateDescription DepthOnlyLessEqualRead = new(true, false, ComparisonKind.LessEqual);
+
+    public static readonly DepthStencilStateDescription DepthOnlyGreaterEqual = new(true, true, ComparisonKind.GreaterEqual);
+
+    public static readonly DepthStencilStateDescription DepthOnlyGreaterEqualRead = new(true, false, ComparisonKind.GreaterEqual);
+
+    public static readonly DepthStencilStateDescription Disabled = new(false, false, ComparisonKind.Always);
+
+    public DepthStencilStateDescription(bool depthTestEnabled,
+                                        bool depthWriteEnabled,
+                                        ComparisonKind depthComparison,
+                                        bool stencilTestEnabled,
+                                        StencilBehaviorDescription stencilFront,
+                                        StencilBehaviorDescription stencilBack,
+                                        byte stencilReadMask,
+                                        byte stencilWriteMask,
+                                        uint stencilReference)
+    {
+        DepthTestEnabled = depthTestEnabled;
+        DepthWriteEnabled = depthWriteEnabled;
+        DepthComparison = depthComparison;
+        StencilTestEnabled = stencilTestEnabled;
+        StencilFront = stencilFront;
+        StencilBack = stencilBack;
+        StencilReadMask = stencilReadMask;
+        StencilWriteMask = stencilWriteMask;
+        StencilReference = stencilReference;
+    }
+
+    public DepthStencilStateDescription(bool depthTestEnabled,
+                                        bool depthWriteEnabled,
+                                        ComparisonKind depthComparison) : this(depthTestEnabled,
+                                                                               depthWriteEnabled,
+                                                                               depthComparison,
+                                                                               false,
+                                                                               default,
+                                                                               default,
+                                                                               0,
+                                                                               0,
+                                                                               0)
+    {
+    }
+
     /// <summary>
     /// Controls whether depth testing is enabled.
     /// </summary>
