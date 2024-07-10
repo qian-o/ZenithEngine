@@ -10,5 +10,5 @@ public readonly record struct ResourceLayoutDescription
     /// <summary>
     /// The array describes the elements in the resource layout.
     /// </summary>
-    public ResourceLayoutElementDescription[] Elements { get; }
+    public ResourceLayoutElementDescription[] Elements { get; } = [];
 }

@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public record struct SamplerDescription
+public readonly record struct SamplerDescription
 {
     public static readonly SamplerDescription Point = new(AddressMode.Wrap,
                                                           AddressMode.Wrap,
@@ -63,50 +63,50 @@ public record struct SamplerDescription
     /// <summary>
     /// Mode to use for the U (or S) coordinate.
     /// </summary>
-    public AddressMode AddressModeU { get; set; }
+    public AddressMode AddressModeU { get; }
 
     /// <summary>
     /// Mode to use for the V (or T) coordinate.
     /// </summary>
-    public AddressMode AddressModeV { get; set; }
+    public AddressMode AddressModeV { get; }
 
     /// <summary>
     /// Mode to use for the W (or R) coordinate.
     /// </summary>
-    public AddressMode AddressModeW { get; set; }
+    public AddressMode AddressModeW { get; }
 
     /// <summary>
     /// The filter used when sampling.
     /// </summary>
-    public SamplerFilter Filter { get; set; }
+    public SamplerFilter Filter { get; }
 
     /// <summary>
     /// An optional value controlling the kind of comparison to use when sampling. If null, comparison sampling is not used.
     /// </summary>
-    public ComparisonKind? ComparisonKind { get; set; }
+    public ComparisonKind? ComparisonKind { get; }
 
     /// <summary>
     /// The maximum anisotropy of the filter.
     /// </summary>
-    public uint MaximumAnisotropy { get; set; }
+    public uint MaximumAnisotropy { get; }
 
     /// <summary>
     /// The minimum level of detail.
     /// </summary>
-    public uint MinimumLod { get; set; }
+    public uint MinimumLod { get; }
 
     /// <summary>
     /// The maximum level of detail.
     /// </summary>
-    public uint MaximumLod { get; set; }
+    public uint MaximumLod { get; }
 
     /// <summary>
     /// The level of detail bias.
     /// </summary>
-    public int LodBias { get; set; }
+    public int LodBias { get; }
 
     /// <summary>
     /// The border color to use when sampling outside the texture.
     /// </summary>
-    public SamplerBorderColor BorderColor { get; set; }
+    public SamplerBorderColor BorderColor { get; }
 }

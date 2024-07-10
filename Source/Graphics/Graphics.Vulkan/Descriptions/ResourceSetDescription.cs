@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Vulkan;
 
-public record struct ResourceSetDescription
+public readonly record struct ResourceSetDescription
 {
     public ResourceSetDescription(ResourceLayout layout, params IBindableResource[] boundResources)
     {
@@ -11,11 +11,11 @@ public record struct ResourceSetDescription
     /// <summary>
     /// Describes the number of resources and the layout.
     /// </summary>
-    public ResourceLayout Layout { get; set; }
+    public ResourceLayout Layout { get; }
 
     /// <summary>
     /// Bound resources.
     /// Resource count and types must match the descriptions in Layout.
     /// </summary>
-    public IBindableResource[] BoundResources { get; set; }
+    public IBindableResource[] BoundResources { get; } = [];
 }

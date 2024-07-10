@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public record struct RasterizerStateDescription
+public readonly record struct RasterizerStateDescription
 {
     public static readonly RasterizerStateDescription Default = new(FaceCullMode.Back,
                                                                     PolygonFillMode.Solid,
@@ -32,25 +32,25 @@ public record struct RasterizerStateDescription
     /// <summary>
     /// Controls which face will be culled.
     /// </summary>
-    public FaceCullMode CullMode { get; set; }
+    public FaceCullMode CullMode { get; }
 
     /// <summary>
     /// Controls how the rasterizer fills polygons.
     /// </summary>
-    public PolygonFillMode FillMode { get; set; }
+    public PolygonFillMode FillMode { get; }
 
     /// <summary>
     /// Controls the winding order used to determine the front face of primitives.
     /// </summary>
-    public FrontFace FrontFace { get; set; }
+    public FrontFace FrontFace { get; }
 
     /// <summary>
     /// Controls whether depth clipping is enabled.
     /// </summary>
-    public bool DepthClipEnabled { get; set; }
+    public bool DepthClipEnabled { get; }
 
     /// <summary>
     /// Controls whether the scissor test is enabled.
     /// </summary>
-    public bool ScissorTestEnabled { get; set; }
+    public bool ScissorTestEnabled { get; }
 }

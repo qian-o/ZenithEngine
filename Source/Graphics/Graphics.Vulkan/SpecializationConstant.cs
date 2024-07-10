@@ -3,7 +3,7 @@ using Graphics.Core;
 
 namespace Graphics.Vulkan;
 
-public record struct SpecializationConstant
+public readonly record struct SpecializationConstant
 {
     public SpecializationConstant(uint id, ShaderConstantType type, ulong data)
     {
@@ -51,17 +51,17 @@ public record struct SpecializationConstant
     /// <summary>
     /// The constant variable ID.
     /// </summary>
-    public uint ID { get; set; }
+    public uint ID { get; }
 
     /// <summary>
     /// The type of data stored in this instance. Must be a scalar numeric type.
     /// </summary>
-    public ShaderConstantType Type { get; set; }
+    public ShaderConstantType Type { get; }
 
     /// <summary>
     /// An 8-byte block storing the contents of the specialization value.
     /// </summary>
-    public ulong Data { get; set; }
+    public ulong Data { get; }
 
     private static unsafe ulong Store<T>(T value)
     {

@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public record struct DepthStencilStateDescription
+public readonly record struct DepthStencilStateDescription
 {
     public static readonly DepthStencilStateDescription DepthOnlyLessEqual = new(true, true, ComparisonKind.LessEqual);
 
@@ -52,45 +52,45 @@ public record struct DepthStencilStateDescription
     /// <summary>
     /// Controls whether depth testing is enabled.
     /// </summary>
-    public bool DepthTestEnabled { get; set; }
+    public bool DepthTestEnabled { get; }
 
     /// <summary>
     /// Controls whether new depth values are written to the depth buffer.
     /// </summary>
-    public bool DepthWriteEnabled { get; set; }
+    public bool DepthWriteEnabled { get; }
 
     /// <summary>
     /// The comparison function used to determine whether a new depth value should be written to the depth buffer.
     /// </summary>
-    public ComparisonKind DepthComparison { get; set; }
+    public ComparisonKind DepthComparison { get; }
 
     /// <summary>
     /// Controls whether the stencil test is enabled.
     /// </summary>
-    public bool StencilTestEnabled { get; set; }
+    public bool StencilTestEnabled { get; }
 
     /// <summary>
     /// Controls how stencil tests are handled for pixels whose surface faces towards the camera.
     /// </summary>
-    public StencilBehaviorDescription StencilFront { get; set; }
+    public StencilBehaviorDescription StencilFront { get; }
 
     /// <summary>
     /// Controls how stencil tests are handled for pixels whose surface faces away from the camera.
     /// </summary>
-    public StencilBehaviorDescription StencilBack { get; set; }
+    public StencilBehaviorDescription StencilBack { get; }
 
     /// <summary>
     /// Controls the portion of the stencil buffer used for reading.
     /// </summary>
-    public byte StencilReadMask { get; set; }
+    public byte StencilReadMask { get; }
 
     /// <summary>
     /// Controls the portion of the stencil buffer used for writing.
     /// </summary>
-    public byte StencilWriteMask { get; set; }
+    public byte StencilWriteMask { get; }
 
     /// <summary>
     /// The reference value to use when doing a stencil test.
     /// </summary>
-    public uint StencilReference { get; set; }
+    public uint StencilReference { get; }
 }

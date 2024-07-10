@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public record struct VertexElementDescription
+public readonly record struct VertexElementDescription
 {
     public VertexElementDescription(string name, VertexElementFormat format, uint offset)
     {
@@ -18,15 +18,15 @@ public record struct VertexElementDescription
     /// <summary>
     /// The name of the element.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; } = string.Empty;
 
     /// <summary>
     /// The format of the element.
     /// </summary>
-    public VertexElementFormat Format { get; set; }
+    public VertexElementFormat Format { get; }
 
     /// <summary>
     /// The offset in bytes from the beginning of the vertex.
     /// </summary>
-    public uint Offset { get; set; }
+    public uint Offset { get; }
 }

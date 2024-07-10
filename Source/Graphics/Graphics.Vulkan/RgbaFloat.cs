@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Vulkan;
 
-public record struct RgbaFloat
+public readonly record struct RgbaFloat
 {
     public static readonly RgbaFloat Red = new(1.0f, 0.0f, 0.0f, 1.0f);
 
@@ -38,11 +38,11 @@ public record struct RgbaFloat
         A = a;
     }
 
-    public float R { get; set; }
+    public float R { get; }
 
-    public float G { get; set; }
+    public float G { get; }
 
-    public float B { get; set; }
+    public float B { get; }
 
-    public float A { get; set; }
+    public float A { get; }
 }

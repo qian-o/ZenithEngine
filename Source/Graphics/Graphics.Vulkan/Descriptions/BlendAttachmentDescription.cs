@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public record struct BlendAttachmentDescription
+public readonly record struct BlendAttachmentDescription
 {
     public static readonly BlendAttachmentDescription OverrideBlend = new(false,
                                                                           BlendFactor.One,
@@ -75,40 +75,40 @@ public record struct BlendAttachmentDescription
     /// <summary>
     /// Controls whether blending is enabled for the color attachment.
     /// </summary>
-    public bool BlendEnabled { get; set; }
+    public bool BlendEnabled { get; }
 
     /// <summary>
     /// Controls which components of the color will be written to the framebuffer.
     /// </summary>
-    public ColorWriteMask ColorWriteMask { get; set; }
+    public ColorWriteMask ColorWriteMask { get; }
 
     /// <summary>
     /// Controls the source color's influence on the blend result.
     /// </summary>
-    public BlendFactor SourceColorFactor { get; set; }
+    public BlendFactor SourceColorFactor { get; }
 
     /// <summary>
     /// Controls the destination color's influence on the blend result.
     /// </summary>
-    public BlendFactor DestinationColorFactor { get; set; }
+    public BlendFactor DestinationColorFactor { get; }
 
     /// <summary>
     /// Controls the function used to combine the source and destination color factors.
     /// </summary>
-    public BlendFunction ColorFunction { get; set; }
+    public BlendFunction ColorFunction { get; }
 
     /// <summary>
     /// Controls the source alpha's influence on the blend result.
     /// </summary>
-    public BlendFactor SourceAlphaFactor { get; set; }
+    public BlendFactor SourceAlphaFactor { get; }
 
     /// <summary>
     /// Controls the destination alpha's influence on the blend result.
     /// </summary>
-    public BlendFactor DestinationAlphaFactor { get; set; }
+    public BlendFactor DestinationAlphaFactor { get; }
 
     /// <summary>
     /// Controls the function used to combine the source and destination alpha factors.
     /// </summary>
-    public BlendFunction AlphaFunction { get; set; }
+    public BlendFunction AlphaFunction { get; }
 }

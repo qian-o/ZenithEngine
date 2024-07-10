@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Vulkan;
 
-public record struct ShaderSetDescription
+public readonly record struct ShaderSetDescription
 {
     public ShaderSetDescription(VertexLayoutDescription[] vertexLayouts, Shader[] shaders, SpecializationConstant[] specializations)
     {
@@ -17,16 +17,16 @@ public record struct ShaderSetDescription
     /// An array describing the layout of each vertex buffer.
     /// Each element describes the layout of a buffer, including a description of each vertex attribute.
     /// </summary>
-    public VertexLayoutDescription[] VertexLayouts { get; set; }
+    public VertexLayoutDescription[] VertexLayouts { get; } = [];
 
     /// <summary>
     /// An array describing the layout of each shader.
     /// Each element describes the layout of a shader, including the inputs and outputs of each shader.
     /// </summary>
-    public Shader[] Shaders { get; set; }
+    public Shader[] Shaders { get; } = [];
 
     /// <summary>
     /// An array describing the value of each specialization constant.
     /// </summary>
-    public SpecializationConstant[] Specializations { get; set; }
+    public SpecializationConstant[] Specializations { get; } = [];
 }

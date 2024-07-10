@@ -79,17 +79,14 @@ public unsafe class Swapchain : DeviceResource
         Texture? depthBuffer = null;
         if (description.DepthFormat != null)
         {
-            TextureDescription depthBufferDescription = new()
-            {
-                Width = description.Width,
-                Height = description.Height,
-                Depth = 1,
-                MipLevels = 1,
-                Format = description.DepthFormat.Value,
-                Usage = TextureUsage.DepthStencil,
-                Type = TextureType.Texture2D,
-                SampleCount = TextureSampleCount.Count1
-            };
+            TextureDescription depthBufferDescription = new(description.Width,
+                                                            description.Height,
+                                                            1,
+                                                            1,
+                                                            description.DepthFormat.Value,
+                                                            TextureUsage.DepthStencil,
+                                                            TextureType.Texture2D,
+                                                            TextureSampleCount.Count1);
 
             depthBuffer = new Texture(graphicsDevice, in depthBufferDescription);
         }

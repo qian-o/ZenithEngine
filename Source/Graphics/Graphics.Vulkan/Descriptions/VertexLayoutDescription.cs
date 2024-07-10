@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Vulkan;
 
-public record struct VertexLayoutDescription
+public readonly record struct VertexLayoutDescription
 {
     public VertexLayoutDescription(uint stride, VertexElementDescription[] elements, uint instanceStepRate)
     {
@@ -26,12 +26,12 @@ public record struct VertexLayoutDescription
     /// <summary>
     /// The number of bytes in between successive elements in the buffer.
     /// </summary>
-    public uint Stride { get; set; }
+    public uint Stride { get; }
 
     /// <summary>
     /// The vertex elements that make up this layout.
     /// </summary>
-    public VertexElementDescription[] Elements { get; set; }
+    public VertexElementDescription[] Elements { get; }
 
     /// <summary>
     /// A value controlling how often data for instances is advanced for this layout. For per-vertex elements, this value
@@ -39,7 +39,7 @@ public record struct VertexLayoutDescription
     /// For example, an InstanceStepRate of 3 indicates that 3 instances will be drawn with the same value for this layout. The
     /// next 3 instances will be drawn with the next value, and so on.
     /// </summary>
-    public uint InstanceStepRate { get; set; }
+    public uint InstanceStepRate { get; }
 
     private static uint CalculateStride(VertexElementDescription[] elements)
     {
