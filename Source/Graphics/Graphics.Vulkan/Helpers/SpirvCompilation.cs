@@ -4,7 +4,7 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-internal unsafe static class SpirvCompilation
+internal static unsafe class SpirvCompilation
 {
     private static readonly Shaderc _shaderc;
 
