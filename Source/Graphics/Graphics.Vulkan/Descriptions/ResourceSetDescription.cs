@@ -11,11 +11,11 @@ public readonly record struct ResourceSetDescription
     /// <summary>
     /// Describes the number of resources and the layout.
     /// </summary>
-    public ResourceLayout Layout { get; }
+    public ResourceLayout Layout { get; init; }
 
     /// <summary>
     /// Bound resources.
     /// Resource count and types must match the descriptions in Layout.
     /// </summary>
-    public IBindableResource[] BoundResources { get; } = [];
+    public IBindableResource[] BoundResources { get; init; } = [];
 }

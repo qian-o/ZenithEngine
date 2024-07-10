@@ -18,10 +18,10 @@ public readonly record struct FramebufferDescription
     /// <summary>
     /// The depth texture attachment.
     /// </summary>
-    public FramebufferAttachmentDescription? DepthTarget { get; }
+    public FramebufferAttachmentDescription? DepthTarget { get; init; }
 
     /// <summary>
     /// An array of color texture attachments.
     /// </summary>
-    public FramebufferAttachmentDescription[] ColorTargets { get; } = [];
+    public FramebufferAttachmentDescription[] ColorTargets { get; init; } = [];
 }

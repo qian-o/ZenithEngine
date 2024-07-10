@@ -26,12 +26,12 @@ public readonly record struct VertexLayoutDescription
     /// <summary>
     /// The number of bytes in between successive elements in the buffer.
     /// </summary>
-    public uint Stride { get; }
+    public uint Stride { get; init; }
 
     /// <summary>
     /// The vertex elements that make up this layout.
     /// </summary>
-    public VertexElementDescription[] Elements { get; }
+    public VertexElementDescription[] Elements { get; init; }
 
     /// <summary>
     /// A value controlling how often data for instances is advanced for this layout. For per-vertex elements, this value
@@ -39,7 +39,7 @@ public readonly record struct VertexLayoutDescription
     /// For example, an InstanceStepRate of 3 indicates that 3 instances will be drawn with the same value for this layout. The
     /// next 3 instances will be drawn with the next value, and so on.
     /// </summary>
-    public uint InstanceStepRate { get; }
+    public uint InstanceStepRate { get; init; }
 
     private static uint CalculateStride(VertexElementDescription[] elements)
     {

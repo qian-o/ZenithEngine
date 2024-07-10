@@ -51,17 +51,17 @@ public readonly record struct SpecializationConstant
     /// <summary>
     /// The constant variable ID.
     /// </summary>
-    public uint ID { get; }
+    public uint ID { get; init; }
 
     /// <summary>
     /// The type of data stored in this instance. Must be a scalar numeric type.
     /// </summary>
-    public ShaderConstantType Type { get; }
+    public ShaderConstantType Type { get; init; }
 
     /// <summary>
     /// An 8-byte block storing the contents of the specialization value.
     /// </summary>
-    public ulong Data { get; }
+    public ulong Data { get; init; }
 
     private static unsafe ulong Store<T>(T value)
     {

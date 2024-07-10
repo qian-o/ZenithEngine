@@ -24,20 +24,20 @@ public readonly record struct ResourceLayoutElementDescription
     /// <summary>
     /// The name of the element.
     /// </summary>
-    public string Name { get; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
 
     /// <summary>
     /// The kind of resource.
     /// </summary>
-    public ResourceKind Kind { get; }
+    public ResourceKind Kind { get; init; }
 
     /// <summary>
     /// Use the resource of the shader stage.
     /// </summary>
-    public ShaderStages Stages { get; }
+    public ShaderStages Stages { get; init; }
 
     /// <summary>
     /// Miscellaneous resource options for this element.
     /// </summary>
-    public ResourceLayoutElementOptions Options { get; }
+    public ResourceLayoutElementOptions Options { get; init; }
 }

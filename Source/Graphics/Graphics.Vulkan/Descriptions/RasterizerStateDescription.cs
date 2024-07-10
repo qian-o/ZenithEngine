@@ -32,25 +32,25 @@ public readonly record struct RasterizerStateDescription
     /// <summary>
     /// Controls which face will be culled.
     /// </summary>
-    public FaceCullMode CullMode { get; }
+    public FaceCullMode CullMode { get; init; }
 
     /// <summary>
     /// Controls how the rasterizer fills polygons.
     /// </summary>
-    public PolygonFillMode FillMode { get; }
+    public PolygonFillMode FillMode { get; init; }
 
     /// <summary>
     /// Controls the winding order used to determine the front face of primitives.
     /// </summary>
-    public FrontFace FrontFace { get; }
+    public FrontFace FrontFace { get; init; }
 
     /// <summary>
     /// Controls whether depth clipping is enabled.
     /// </summary>
-    public bool DepthClipEnabled { get; }
+    public bool DepthClipEnabled { get; init; }
 
     /// <summary>
     /// Controls whether the scissor test is enabled.
     /// </summary>
-    public bool ScissorTestEnabled { get; }
+    public bool ScissorTestEnabled { get; init; }
 }

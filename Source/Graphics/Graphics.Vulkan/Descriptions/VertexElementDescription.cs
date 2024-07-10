@@ -18,15 +18,15 @@ public readonly record struct VertexElementDescription
     /// <summary>
     /// The name of the element.
     /// </summary>
-    public string Name { get; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
 
     /// <summary>
     /// The format of the element.
     /// </summary>
-    public VertexElementFormat Format { get; }
+    public VertexElementFormat Format { get; init; }
 
     /// <summary>
     /// The offset in bytes from the beginning of the vertex.
     /// </summary>
-    public uint Offset { get; }
+    public uint Offset { get; init; }
 }

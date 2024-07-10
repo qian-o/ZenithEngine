@@ -49,30 +49,30 @@ public readonly record struct TextureViewDescription
     /// <summary>
     /// The desired target.
     /// </summary>
-    public Texture Target { get; }
+    public Texture Target { get; init; }
 
     /// <summary>
     /// The base mip level visible in the view. Must be less than the number of mip levels in the target Texture.
     /// </summary>
-    public uint BaseMipLevel { get; }
+    public uint BaseMipLevel { get; init; }
 
     /// <summary>
     /// The number of mip levels visible in the view.
     /// </summary>
-    public uint MipLevels { get; }
+    public uint MipLevels { get; init; }
 
     /// <summary>
     /// The base array layer visible in the view.
     /// </summary>
-    public uint BaseArrayLayer { get; }
+    public uint BaseArrayLayer { get; init; }
 
     /// <summary>
     /// The number of array layers visible in the view.
     /// </summary>
-    public uint ArrayLayers { get; }
+    public uint ArrayLayers { get; init; }
 
     /// <summary>
     /// The format of the view.
     /// </summary>
-    public PixelFormat? Format { get; }
+    public PixelFormat? Format { get; init; }
 }

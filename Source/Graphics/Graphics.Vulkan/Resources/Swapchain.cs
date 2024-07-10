@@ -9,6 +9,7 @@ public unsafe class Swapchain : DeviceResource
     private readonly SwapchainKHR? _swapchain;
     private readonly Texture? _depthBuffer;
     private readonly Framebuffer[]? _framebuffers;
+    private readonly OutputDescription _outputDescription;
 
     internal Swapchain(GraphicsDevice graphicsDevice, ref readonly SwapchainDescription description) : base(graphicsDevice)
     {
@@ -92,6 +93,7 @@ public unsafe class Swapchain : DeviceResource
         }
 
         Framebuffer[] framebuffers = new Framebuffer[imageCount];
+        OutputDescription outputDescription = new();
         for (int i = 0; i < imageCount; i++)
         {
             Texture colorBuffer = new(graphicsDevice,
@@ -103,12 +105,16 @@ public unsafe class Swapchain : DeviceResource
             FramebufferDescription framebufferDescription = new(depthBuffer, colorBuffer);
 
             framebuffers[i] = new Framebuffer(graphicsDevice, in framebufferDescription, true);
+            outputDescription = OutputDescription.CreateFromFramebufferDescription(framebufferDescription);
         }
 
         _swapchain = swapchain;
         _depthBuffer = depthBuffer;
         _framebuffers = framebuffers;
+        _outputDescription = outputDescription;
     }
+
+    public OutputDescription OutputDescription => _outputDescription;
 
     protected override void Destroy()
     {

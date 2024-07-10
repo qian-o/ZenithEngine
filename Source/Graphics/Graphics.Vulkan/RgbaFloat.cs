@@ -38,11 +38,11 @@ public readonly record struct RgbaFloat
         A = a;
     }
 
-    public float R { get; }
+    public float R { get; init; }
 
-    public float G { get; }
+    public float G { get; init; }
 
-    public float B { get; }
+    public float B { get; init; }
 
-    public float A { get; }
+    public float A { get; init; }
 }

@@ -52,45 +52,45 @@ public readonly record struct DepthStencilStateDescription
     /// <summary>
     /// Controls whether depth testing is enabled.
     /// </summary>
-    public bool DepthTestEnabled { get; }
+    public bool DepthTestEnabled { get; init; }
 
     /// <summary>
     /// Controls whether new depth values are written to the depth buffer.
     /// </summary>
-    public bool DepthWriteEnabled { get; }
+    public bool DepthWriteEnabled { get; init; }
 
     /// <summary>
     /// The comparison function used to determine whether a new depth value should be written to the depth buffer.
     /// </summary>
-    public ComparisonKind DepthComparison { get; }
+    public ComparisonKind DepthComparison { get; init; }
 
     /// <summary>
     /// Controls whether the stencil test is enabled.
     /// </summary>
-    public bool StencilTestEnabled { get; }
+    public bool StencilTestEnabled { get; init; }
 
     /// <summary>
     /// Controls how stencil tests are handled for pixels whose surface faces towards the camera.
     /// </summary>
-    public StencilBehaviorDescription StencilFront { get; }
+    public StencilBehaviorDescription StencilFront { get; init; }
 
     /// <summary>
     /// Controls how stencil tests are handled for pixels whose surface faces away from the camera.
     /// </summary>
-    public StencilBehaviorDescription StencilBack { get; }
+    public StencilBehaviorDescription StencilBack { get; init; }
 
     /// <summary>
     /// Controls the portion of the stencil buffer used for reading.
     /// </summary>
-    public byte StencilReadMask { get; }
+    public byte StencilReadMask { get; init; }
 
     /// <summary>
     /// Controls the portion of the stencil buffer used for writing.
     /// </summary>
-    public byte StencilWriteMask { get; }
+    public byte StencilWriteMask { get; init; }
 
     /// <summary>
     /// The reference value to use when doing a stencil test.
     /// </summary>
-    public uint StencilReference { get; }
+    public uint StencilReference { get; init; }
 }

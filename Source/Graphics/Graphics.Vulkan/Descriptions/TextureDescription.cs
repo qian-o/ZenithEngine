@@ -26,42 +26,42 @@ public readonly record struct TextureDescription
     /// <summary>
     /// The total width, in texels.
     /// </summary>
-    public uint Width { get; }
+    public uint Width { get; init; }
 
     /// <summary>
     /// The total height, in texels.
     /// </summary>
-    public uint Height { get; }
+    public uint Height { get; init; }
 
     /// <summary>
     /// The total depth, in texels.
     /// </summary>
-    public uint Depth { get; }
+    public uint Depth { get; init; }
 
     /// <summary>
     /// The number of mipmap levels.
     /// </summary>
-    public uint MipLevels { get; }
+    public uint MipLevels { get; init; }
 
     /// <summary>
     /// The format of individual texture elements.
     /// </summary>
-    public PixelFormat Format { get; }
+    public PixelFormat Format { get; init; }
 
     /// <summary>
     /// Controls how the Texture is permitted to be used. If the Texture will be sampled from a shader.
     /// </summary>
-    public TextureUsage Usage { get; }
+    public TextureUsage Usage { get; init; }
 
     /// <summary>
     /// The type of the texture.
     /// </summary>
-    public TextureType Type { get; }
+    public TextureType Type { get; init; }
 
     /// <summary>
     /// The number of samples.
     /// </summary>
-    public TextureSampleCount SampleCount { get; }
+    public TextureSampleCount SampleCount { get; init; }
 
     public static TextureDescription Texture1D(uint width,
                                                uint mipLevels,

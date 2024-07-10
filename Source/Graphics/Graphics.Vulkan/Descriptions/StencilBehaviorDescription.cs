@@ -18,20 +18,20 @@ public readonly record struct StencilBehaviorDescription
     /// <summary>
     /// The operation performed on samples that fail the stencil test.
     /// </summary>
-    public StencilOperation Fail { get; }
+    public StencilOperation Fail { get; init; }
 
     /// <summary>
     /// The operation performed on samples that pass the stencil test.
     /// </summary>
-    public StencilOperation Pass { get; }
+    public StencilOperation Pass { get; init; }
 
     /// <summary>
     /// The operation performed on samples that pass the stencil test but fail the depth test.
     /// </summary>
-    public StencilOperation DepthFail { get; }
+    public StencilOperation DepthFail { get; init; }
 
     /// <summary>
     /// The comparison operator used in the stencil test.
     /// </summary>
-    public ComparisonKind Comparison { get; }
+    public ComparisonKind Comparison { get; init; }
 }

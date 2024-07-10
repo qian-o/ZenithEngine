@@ -26,15 +26,15 @@ public readonly record struct FramebufferAttachmentDescription
     /// <summary>
     /// The target texture to render into.
     /// </summary>
-    public Texture Target { get; }
+    public Texture Target { get; init; }
 
     /// <summary>
     /// The array layer to render to.
     /// </summary>
-    public uint ArrayLayer { get; }
+    public uint ArrayLayer { get; init; }
 
     /// <summary>
     /// The mip level to render to.
     /// </summary>
-    public uint MipLevel { get; }
+    public uint MipLevel { get; init; }
 }

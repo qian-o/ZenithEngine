@@ -12,5 +12,5 @@ public readonly record struct OutputAttachmentDescription
     /// <summary>
     /// The format of the attachment.
     /// </summary>
-    public PixelFormat Format { get; }
+    public PixelFormat Format { get; init; }
 }

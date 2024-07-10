@@ -75,40 +75,40 @@ public readonly record struct BlendAttachmentDescription
     /// <summary>
     /// Controls whether blending is enabled for the color attachment.
     /// </summary>
-    public bool BlendEnabled { get; }
+    public bool BlendEnabled { get; init; }
 
     /// <summary>
     /// Controls which components of the color will be written to the framebuffer.
     /// </summary>
-    public ColorWriteMask ColorWriteMask { get; }
+    public ColorWriteMask ColorWriteMask { get; init; }
 
     /// <summary>
     /// Controls the source color's influence on the blend result.
     /// </summary>
-    public BlendFactor SourceColorFactor { get; }
+    public BlendFactor SourceColorFactor { get; init; }
 
     /// <summary>
     /// Controls the destination color's influence on the blend result.
     /// </summary>
-    public BlendFactor DestinationColorFactor { get; }
+    public BlendFactor DestinationColorFactor { get; init; }
 
     /// <summary>
     /// Controls the function used to combine the source and destination color factors.
     /// </summary>
-    public BlendFunction ColorFunction { get; }
+    public BlendFunction ColorFunction { get; init; }
 
     /// <summary>
     /// Controls the source alpha's influence on the blend result.
     /// </summary>
-    public BlendFactor SourceAlphaFactor { get; }
+    public BlendFactor SourceAlphaFactor { get; init; }
 
     /// <summary>
     /// Controls the destination alpha's influence on the blend result.
     /// </summary>
-    public BlendFactor DestinationAlphaFactor { get; }
+    public BlendFactor DestinationAlphaFactor { get; init; }
 
     /// <summary>
     /// Controls the function used to combine the source and destination alpha factors.
     /// </summary>
-    public BlendFunction AlphaFunction { get; }
+    public BlendFunction AlphaFunction { get; init; }
 }

@@ -43,15 +43,15 @@ public readonly record struct BlendStateDescription
     /// <summary>
     /// A constant blend color used by all blend operations.
     /// </summary>
-    public RgbaFloat BlendFactor { get; }
+    public RgbaFloat BlendFactor { get; init; }
 
     /// <summary>
     /// The Array describes the blend state for each render target.
     /// </summary>
-    public BlendAttachmentDescription[] AttachmentStates { get; } = [];
+    public BlendAttachmentDescription[] AttachmentStates { get; init; } = [];
 
     /// <summary>
     /// Enables alpha-to-coverage, which causes a fragment's alpha value to be used when determining multi-sample coverage.
     /// </summary>
-    public bool AlphaToCoverageEnabled { get; }
+    public bool AlphaToCoverageEnabled { get; init; }
 }
