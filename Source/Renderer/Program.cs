@@ -114,6 +114,12 @@ void main()
         _endBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
         _stepBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
 
+        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, triangleVertices);
+        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, triangleIndices);
+        _graphicsDevice.UpdateBuffer(_beginBuffer, 0, new Ubo { Value = new Vector4(1.0f, 0.0f, 0.0f, 1.0f) });
+        _graphicsDevice.UpdateBuffer(_endBuffer, 0, new Ubo { Value = new Vector4(0.0f, 0.0f, 1.0f, 1.0f) });
+        _graphicsDevice.UpdateBuffer(_stepBuffer, 0, new Ubo { Value = new Vector4(0.2f) });
+
         ResourceLayoutDescription resourceLayoutDescription = new(new ResourceLayoutElementDescription("Begin", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                                                                   new ResourceLayoutElementDescription("End", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                                                                   new ResourceLayoutElementDescription("Step", ResourceKind.UniformBuffer, ShaderStages.Fragment));

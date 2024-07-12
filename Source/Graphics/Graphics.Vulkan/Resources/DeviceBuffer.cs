@@ -69,6 +69,8 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
 
     internal VkBuffer Handle => _buffer;
 
+    internal DeviceMemory DeviceMemory => _deviceMemory;
+
     public uint SizeInBytes => _sizeInBytes;
 
     protected override void Destroy()

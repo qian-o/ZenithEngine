@@ -1,4 +1,5 @@
-﻿using Graphics.Core;
+﻿using System.Runtime.CompilerServices;
+using Graphics.Core;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
@@ -7,6 +8,10 @@ namespace Graphics.Vulkan;
 
 public unsafe class GraphicsDevice : ContextObject
 {
+    // Staging Resources
+    private const uint MinStagingBufferSize = 64;
+    private const uint MaxStagingBufferSize = 512;
+
     private readonly ResourceFactory _resourceFactory;
     private readonly PhysicalDevice _physicalDevice;
     private readonly Device _device;
@@ -20,6 +25,8 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly DescriptorPoolManager _descriptorPoolManager;
     private readonly SurfaceKHR _windowSurface;
     private readonly PixelFormat _depthFormat;
+    private readonly object _stagingResourcesLock;
+    private readonly List<DeviceBuffer> _availableStagingBuffers;
 
     private Swapchain? swapChain;
 
@@ -94,6 +101,8 @@ public unsafe class GraphicsDevice : ContextObject
         _descriptorPoolManager = new DescriptorPoolManager(this);
         _windowSurface = windowSurface;
         _depthFormat = Formats.GetPixelFormat(depthFormat);
+        _stagingResourcesLock = new object();
+        _availableStagingBuffers = [];
     }
 
     public ResourceFactory ResourceFactory => _resourceFactory;
@@ -171,8 +180,69 @@ public unsafe class GraphicsDevice : ContextObject
         swapChain = new Swapchain(this, in swapchainDescription);
     }
 
+    public void UpdateBuffer(DeviceBuffer buffer, uint bufferOffsetInBytes, void* source, uint sizeInBytes)
+    {
+        if (bufferOffsetInBytes + sizeInBytes > buffer.SizeInBytes)
+        {
+            throw new ArgumentOutOfRangeException(nameof(sizeInBytes), "The buffer offset and size exceed the buffer size.");
+        }
+
+        if (sizeInBytes == 0)
+        {
+            return;
+        }
+
+        DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
+
+        void* stagingBufferPointer = stagingBuffer.DeviceMemory.Map(sizeInBytes);
+
+        Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
+
+        stagingBuffer.DeviceMemory.Unmap();
+
+        CommandBuffer commandBuffer = BeginSingleTimeCommands();
+
+        BufferCopy bufferCopy = new()
+        {
+            SrcOffset = 0,
+            DstOffset = bufferOffsetInBytes,
+            Size = sizeInBytes
+        };
+
+        Vk.CmdCopyBuffer(commandBuffer, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
+
+        EndSingleTimeCommands(commandBuffer);
+
+        lock (_stagingResourcesLock)
+        {
+            if (stagingBuffer.SizeInBytes > MaxStagingBufferSize)
+            {
+                stagingBuffer.Dispose();
+            }
+            else
+            {
+                _availableStagingBuffers.Add(stagingBuffer);
+            }
+        }
+    }
+
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T source) where T : unmanaged
+    {
+        UpdateBuffer(buffer, bufferOffsetInBytes, &source, (uint)sizeof(T));
+    }
+
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
+    {
+        UpdateBuffer(buffer, bufferOffsetInBytes, Unsafe.AsPointer(ref source), (uint)(sizeof(T) * source.Length));
+    }
+
     protected override void Destroy()
     {
+        foreach (DeviceBuffer deviceBuffer in _availableStagingBuffers)
+        {
+            deviceBuffer.Dispose();
+        }
+
         swapChain?.Dispose();
 
         _descriptorPoolManager.Dispose();
@@ -186,6 +256,26 @@ public unsafe class GraphicsDevice : ContextObject
         _resourceFactory.Dispose();
 
         Vk.DestroyDevice(_device, null);
+    }
+
+    private DeviceBuffer GetStagingBuffer(uint sizeInBytes)
+    {
+        lock (_stagingResourcesLock)
+        {
+            foreach (DeviceBuffer deviceBuffer in _availableStagingBuffers)
+            {
+                if (deviceBuffer.SizeInBytes >= sizeInBytes)
+                {
+                    _availableStagingBuffers.Remove(deviceBuffer);
+
+                    return deviceBuffer;
+                }
+            }
+        }
+
+        uint bufferSize = Math.Max(MinStagingBufferSize, sizeInBytes);
+
+        return ResourceFactory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
     }
 }
 
