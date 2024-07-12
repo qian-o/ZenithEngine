@@ -10,6 +10,11 @@ public unsafe class Framebuffer : DeviceResource
     private readonly TextureView[] _colorViews;
     private readonly TextureView? _depthView;
     private readonly VkFramebuffer _framebuffer;
+    private readonly uint _colorAttachmentCount;
+    private readonly uint _depthAttachmentCount;
+    private readonly uint _attachmentCount;
+    private readonly uint _width;
+    private readonly uint _height;
 
     internal Framebuffer(GraphicsDevice graphicsDevice, ref readonly FramebufferDescription description, bool isPresented) : base(graphicsDevice)
     {
@@ -187,9 +192,27 @@ public unsafe class Framebuffer : DeviceResource
         _colorViews = colorViews;
         _depthView = depthView;
         _framebuffer = framebuffer;
+        _colorAttachmentCount = colorAttachmentCount;
+        _depthAttachmentCount = depthAttachmentCount;
+        _attachmentCount = attachmentCount;
+        _width = width;
+        _height = height;
+
     }
 
     internal VkFramebuffer Handle => _framebuffer;
+
+    internal VkRenderPass RenderPass => _renderPass;
+
+    internal uint ColorAttachmentCount => _colorAttachmentCount;
+
+    internal uint DepthAttachmentCount => _depthAttachmentCount;
+
+    internal uint AttachmentCount => _attachmentCount;
+
+    public uint Width => _width;
+
+    public uint Height => _height;
 
     protected override void Destroy()
     {

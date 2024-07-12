@@ -72,12 +72,15 @@ void main()
     private static ResourceSet _resourceSet = null!;
     private static Shader[] _shaders = null!;
     private static Pipeline _pipeline = null!;
+    private static CommandList _commandList = null!;
 
     private static void Main(string[] _)
     {
         using Window window = new();
 
         window.Load += Window_Load;
+        window.Update += Window_Update;
+        window.Render += Window_Render;
         window.Resize += Window_Resize;
         window.Close += Window_Close;
 
@@ -149,7 +152,27 @@ void main()
             Outputs = _graphicsDevice.Swapchain.OutputDescription
         };
 
-        _pipeline = factory.CreatePipeline(graphicsPipelineDescription);
+        _pipeline = factory.CreateGraphicsPipeline(graphicsPipelineDescription);
+        _commandList = factory.CreateGraphicsCommandList();
+    }
+
+    private static void Window_Update(object? sender, UpdateEventArgs e)
+    {
+    }
+
+    private static void Window_Render(object? sender, RenderEventArgs e)
+    {
+        _commandList.Begin();
+
+        _commandList.SetFramebuffer(_graphicsDevice.Swapchain.Framebuffer);
+
+        _commandList.ClearColorTarget(0, RgbaFloat.CornflowerBlue);
+
+        _commandList.End();
+
+        _graphicsDevice.SubmitCommands(_commandList);
+
+        _graphicsDevice.SwapBuffers();
     }
 
     private static void Window_Resize(object? sender, ResizeEventArgs e)
@@ -159,6 +182,7 @@ void main()
 
     private static void Window_Close(object? sender, CloseEventArgs e)
     {
+        _commandList.Dispose();
         _pipeline.Dispose();
         foreach (Shader shader in _shaders)
         {

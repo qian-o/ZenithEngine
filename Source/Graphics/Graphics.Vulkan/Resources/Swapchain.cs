@@ -7,9 +7,12 @@ namespace Graphics.Vulkan;
 public unsafe class Swapchain : DeviceResource
 {
     private readonly SwapchainKHR? _swapchain;
+    private readonly Fence _imageAvailableFence;
     private readonly Texture? _depthBuffer;
     private readonly Framebuffer[]? _framebuffers;
     private readonly OutputDescription _outputDescription;
+
+    private uint _currentImageIndex;
 
     internal Swapchain(GraphicsDevice graphicsDevice, ref readonly SwapchainDescription description) : base(graphicsDevice)
     {
@@ -68,6 +71,16 @@ public unsafe class Swapchain : DeviceResource
         SwapchainKHR swapchain;
         SwapchainExt.CreateSwapchain(Device, &createInfo, null, &swapchain).ThrowCode();
 
+        FenceCreateInfo fenceCreateInfo = new()
+        {
+            SType = StructureType.FenceCreateInfo,
+            Flags = FenceCreateFlags.SignaledBit
+        };
+
+        Fence imageAvailableFence;
+        Vk.CreateFence(Device, &fenceCreateInfo, null, &imageAvailableFence).ThrowCode();
+        Vk.ResetFences(Device, 1, &imageAvailableFence).ThrowCode();
+
         uint imageCount;
         SwapchainExt.GetSwapchainImages(Device, swapchain, &imageCount, null).ThrowCode();
 
@@ -109,17 +122,49 @@ public unsafe class Swapchain : DeviceResource
         }
 
         _swapchain = swapchain;
+        _imageAvailableFence = imageAvailableFence;
         _depthBuffer = depthBuffer;
         _framebuffers = framebuffers;
         _outputDescription = outputDescription;
+
+        AcquireNextImage();
     }
 
+    internal SwapchainKHR Handle => _swapchain ?? throw new InvalidOperationException("Swapchain is not initialized");
+
+    internal uint CurrentImageIndex => _currentImageIndex;
+
     public OutputDescription OutputDescription => _outputDescription;
+
+    public Framebuffer Framebuffer => _framebuffers != null ? _framebuffers[_currentImageIndex] : throw new InvalidOperationException("Swapchain is not initialized");
+
+    public void AcquireNextImage()
+    {
+        if (_swapchain == null)
+        {
+            throw new InvalidOperationException("Swapchain is not initialized");
+        }
+
+        uint currentImageIndex;
+        SwapchainExt.AcquireNextImage(Device,
+                                      _swapchain.Value,
+                                      ulong.MaxValue,
+                                      default,
+                                      _imageAvailableFence,
+                                      &currentImageIndex).ThrowCode();
+
+        Vk.WaitForFences(Device, 1, in _imageAvailableFence, Vk.True, ulong.MaxValue).ThrowCode();
+        Vk.ResetFences(Device, 1, in _imageAvailableFence).ThrowCode();
+
+        _currentImageIndex = currentImageIndex;
+    }
 
     protected override void Destroy()
     {
         if (_swapchain != null)
         {
+            Vk.DestroyFence(Device, _imageAvailableFence, null);
+
             foreach (Framebuffer framebuffer in _framebuffers!)
             {
                 framebuffer.Dispose();

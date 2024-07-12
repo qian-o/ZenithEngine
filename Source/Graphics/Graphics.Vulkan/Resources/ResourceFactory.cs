@@ -79,12 +79,20 @@ public class ResourceFactory : ContextObject
 
     public Shader CreateShader(ShaderDescription description) => CreateShader(in description);
 
-    public Pipeline CreatePipeline(ref readonly GraphicsPipelineDescription description)
+    public Pipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDescription description)
     {
         return new Pipeline(_graphicsDevice, in description);
     }
 
-    public Pipeline CreatePipeline(GraphicsPipelineDescription description) => CreatePipeline(in description);
+    public Pipeline CreateGraphicsPipeline(GraphicsPipelineDescription description) => CreateGraphicsPipeline(in description);
+
+    public CommandList CreateGraphicsCommandList()
+    {
+        return new CommandList(_graphicsDevice,
+                               _graphicsDevice.GraphicsQueue,
+                               _graphicsDevice.GraphicsFence,
+                               _graphicsDevice.GraphicsCommandPool);
+    }
 
     protected override void Destroy()
     {

@@ -19,6 +19,9 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly Queue _graphicsQueue;
     private readonly Queue _computeQueue;
     private readonly Queue _transferQueue;
+    private readonly Fence _graphicsFence;
+    private readonly Fence _computeFence;
+    private readonly Fence _transferFence;
     private readonly CommandPool _graphicsCommandPool;
     private readonly CommandPool _computeCommandPool;
     private readonly CommandPool _transferCommandPool;
@@ -48,6 +51,24 @@ public unsafe class GraphicsDevice : ContextObject
         Queue transferQueue;
         Vk.GetDeviceQueue(device, transferQueueFamilyIndex, 0, &transferQueue);
 
+        FenceCreateInfo fenceCreateInfo = new()
+        {
+            SType = StructureType.FenceCreateInfo,
+            Flags = FenceCreateFlags.SignaledBit
+        };
+
+        Fence graphicsFence;
+        Vk.CreateFence(device, &fenceCreateInfo, null, &graphicsFence).ThrowCode();
+        Vk.ResetFences(device, 1, &graphicsFence).ThrowCode();
+
+        Fence computeFence;
+        Vk.CreateFence(device, &fenceCreateInfo, null, &computeFence).ThrowCode();
+        Vk.ResetFences(device, 1, &computeFence).ThrowCode();
+
+        Fence transferFence;
+        Vk.CreateFence(device, &fenceCreateInfo, null, &transferFence).ThrowCode();
+        Vk.ResetFences(device, 1, &transferFence).ThrowCode();
+
         CommandPool graphicsCommandPool;
         {
             CommandPoolCreateInfo createInfo = new()
@@ -57,7 +78,7 @@ public unsafe class GraphicsDevice : ContextObject
                 Flags = CommandPoolCreateFlags.ResetCommandBufferBit
             };
 
-            Vk.CreateCommandPool(device, &createInfo, null, &graphicsCommandPool);
+            Vk.CreateCommandPool(device, &createInfo, null, &graphicsCommandPool).ThrowCode();
         }
 
         CommandPool computeCommandPool;
@@ -69,7 +90,7 @@ public unsafe class GraphicsDevice : ContextObject
                 Flags = CommandPoolCreateFlags.ResetCommandBufferBit
             };
 
-            Vk.CreateCommandPool(device, &createInfo, null, &computeCommandPool);
+            Vk.CreateCommandPool(device, &createInfo, null, &computeCommandPool).ThrowCode();
         }
 
         CommandPool transferCommandPool;
@@ -81,7 +102,7 @@ public unsafe class GraphicsDevice : ContextObject
                 Flags = CommandPoolCreateFlags.ResetCommandBufferBit
             };
 
-            Vk.CreateCommandPool(device, &createInfo, null, &transferCommandPool);
+            Vk.CreateCommandPool(device, &createInfo, null, &transferCommandPool).ThrowCode();
         }
 
         Format depthFormat = physicalDevice.FindSupportedFormat([Format.D32SfloatS8Uint, Format.D24UnormS8Uint, Format.D32Sfloat],
@@ -95,6 +116,9 @@ public unsafe class GraphicsDevice : ContextObject
         _graphicsQueue = graphicsQueue;
         _computeQueue = computeQueue;
         _transferQueue = transferQueue;
+        _graphicsFence = graphicsFence;
+        _computeFence = computeFence;
+        _transferFence = transferFence;
         _graphicsCommandPool = graphicsCommandPool;
         _computeCommandPool = computeCommandPool;
         _transferCommandPool = transferCommandPool;
@@ -120,6 +144,12 @@ public unsafe class GraphicsDevice : ContextObject
     internal Queue ComputeQueue => _computeQueue;
 
     internal Queue TransferQueue => _transferQueue;
+
+    internal Fence GraphicsFence => _graphicsFence;
+
+    internal Fence ComputeFence => _computeFence;
+
+    internal Fence TransferFence => _transferFence;
 
     internal CommandPool GraphicsCommandPool => _graphicsCommandPool;
 
@@ -164,9 +194,10 @@ public unsafe class GraphicsDevice : ContextObject
             PCommandBuffers = &commandBuffer
         };
 
-        Vk.QueueSubmit(_transferQueue, 1, &submitInfo, default);
+        Vk.QueueSubmit(_transferQueue, 1, &submitInfo, _transferFence);
 
-        Vk.QueueWaitIdle(_transferQueue);
+        Vk.WaitForFences(_device, 1, in _transferFence, Vk.True, ulong.MaxValue);
+        Vk.ResetFences(_device, 1, in _transferFence);
 
         Vk.FreeCommandBuffers(_device, _transferCommandPool, 1, &commandBuffer);
     }
@@ -236,6 +267,48 @@ public unsafe class GraphicsDevice : ContextObject
         UpdateBuffer(buffer, bufferOffsetInBytes, Unsafe.AsPointer(ref source), (uint)(sizeof(T) * source.Length));
     }
 
+    public void SubmitCommands(CommandList commandList)
+    {
+        CommandBuffer commandBuffer = commandList.Handle;
+        Queue queue = commandList.Queue;
+        Fence fence = commandList.Fence;
+
+        SubmitInfo submitInfo = new()
+        {
+            SType = StructureType.SubmitInfo,
+            CommandBufferCount = 1,
+            PCommandBuffers = &commandBuffer
+        };
+
+        Vk.QueueSubmit(queue, 1, &submitInfo, fence);
+
+        Vk.WaitForFences(_device, 1, &fence, Vk.True, ulong.MaxValue);
+        Vk.ResetFences(_device, 1, &fence);
+    }
+
+    public void SwapBuffers()
+    {
+        if (swapChain == null)
+        {
+            throw new InvalidOperationException("The swap chain is not initialized.");
+        }
+
+        SwapchainKHR swapchainKHR = swapChain.Handle;
+        uint imageIndex = swapChain.CurrentImageIndex;
+
+        PresentInfoKHR presentInfo = new()
+        {
+            SType = StructureType.PresentInfoKhr,
+            SwapchainCount = 1,
+            PSwapchains = &swapchainKHR,
+            PImageIndices = &imageIndex
+        };
+
+        _swapchainExt.QueuePresent(_graphicsQueue, &presentInfo).ThrowCode("Failed to present the swap chain.");
+
+        swapChain.AcquireNextImage();
+    }
+
     protected override void Destroy()
     {
         foreach (DeviceBuffer deviceBuffer in _availableStagingBuffers)
@@ -246,6 +319,10 @@ public unsafe class GraphicsDevice : ContextObject
         swapChain?.Dispose();
 
         _descriptorPoolManager.Dispose();
+
+        Vk.DestroyFence(_device, _transferFence, null);
+        Vk.DestroyFence(_device, _computeFence, null);
+        Vk.DestroyFence(_device, _graphicsFence, null);
 
         Vk.DestroyCommandPool(_device, _transferCommandPool, null);
         Vk.DestroyCommandPool(_device, _computeCommandPool, null);
