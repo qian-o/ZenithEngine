@@ -58,7 +58,7 @@ layout(std140, binding = 2) uniform Step
 
 void main()
 {
-    fsout_Color = mix(begin.Color, end.Color, step.Value);
+    fsout_Color = mix(fsin_Color, mix(begin.Color, end.Color, step.Value), 0.5);
 }";
 
     private static Context _context = null!;
@@ -158,6 +158,7 @@ void main()
 
     private static void Window_Update(object? sender, UpdateEventArgs e)
     {
+        _graphicsDevice.UpdateBuffer(_stepBuffer, 0, new Ubo { Value = new Vector4((float)Math.Sin(e.TotalTime) * 0.5f + 0.5f) });
     }
 
     private static void Window_Render(object? sender, RenderEventArgs e)
