@@ -98,6 +98,8 @@ public unsafe class GraphicsDevice : ContextObject
 
     public ResourceFactory ResourceFactory => _resourceFactory;
 
+    public Swapchain Swapchain => swapChain!;
+
     internal PhysicalDevice PhysicalDevice => _physicalDevice;
 
     internal Device Device => _device;
@@ -243,14 +245,18 @@ public unsafe partial class Context
 
         _alloter.Clear();
 
-        return new GraphicsDevice(this,
-                                  physicalDevice,
-                                  device,
-                                  swapchainExt,
-                                  windowSurface,
-                                  graphicsQueueFamilyIndex,
-                                  computeQueueFamilyIndex,
-                                  transferQueueFamilyIndex);
+        GraphicsDevice graphicsDevice = new(this,
+                                            physicalDevice,
+                                            device,
+                                            swapchainExt,
+                                            windowSurface,
+                                            graphicsQueueFamilyIndex,
+                                            computeQueueFamilyIndex,
+                                            transferQueueFamilyIndex);
+
+        graphicsDevice.Resize((uint)window.Width, (uint)window.Height);
+
+        return graphicsDevice;
     }
 
     private T? CreateDeviceExtension<T>(Device device) where T : NativeExtension<Vk>

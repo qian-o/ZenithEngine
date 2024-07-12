@@ -79,6 +79,13 @@ public class ResourceFactory : ContextObject
 
     public Shader CreateShader(ShaderDescription description) => CreateShader(in description);
 
+    public Pipeline CreatePipeline(ref readonly GraphicsPipelineDescription description)
+    {
+        return new Pipeline(_graphicsDevice, in description);
+    }
+
+    public Pipeline CreatePipeline(GraphicsPipelineDescription description) => CreatePipeline(in description);
+
     protected override void Destroy()
     {
     }

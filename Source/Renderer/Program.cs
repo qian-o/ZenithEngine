@@ -125,6 +125,22 @@ void main()
 
         _shaders = factory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(VertexCode), "main"),
                                            new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(FragmentCode), "main"));
+
+        VertexElementDescription positionDescription = new("Position", VertexElementFormat.Float2);
+        VertexElementDescription colorDescription = new("Color", VertexElementFormat.Float4);
+
+        VertexLayoutDescription vertexLayoutDescription = new(positionDescription, colorDescription);
+
+        GraphicsPipelineDescription graphicsPipelineDescription = new()
+        {
+            BlendState = BlendStateDescription.SingleOverrideBlend,
+            DepthStencilState = DepthStencilStateDescription.DepthOnlyLessEqual,
+            RasterizerState = RasterizerStateDescription.Default,
+            PrimitiveTopology = PrimitiveTopology.TriangleList,
+            ResourceLayouts = [_resourceLayout],
+            ShaderSet = new ShaderSetDescription([vertexLayoutDescription], _shaders),
+            Outputs = _graphicsDevice.Swapchain.OutputDescription
+        };
     }
 
     private static void Window_Resize(object? sender, ResizeEventArgs e)
