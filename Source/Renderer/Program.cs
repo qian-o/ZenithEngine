@@ -168,6 +168,19 @@ void main()
 
         _commandList.ClearColorTarget(0, RgbaFloat.CornflowerBlue);
 
+        _commandList.SetVertexBuffer(0, _vertexBuffer);
+        _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U16);
+
+        _commandList.SetPipeline(_pipeline);
+
+        _commandList.SetGraphicsResourceSet(0, _resourceSet);
+
+        _commandList.DrawIndexed(indexCount: 3,
+                                 instanceCount: 1,
+                                 indexStart: 0,
+                                 vertexOffset: 0,
+                                 instanceStart: 0);
+
         _commandList.End();
 
         _graphicsDevice.SubmitCommands(_commandList);

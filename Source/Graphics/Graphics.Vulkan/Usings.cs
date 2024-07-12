@@ -16,4 +16,5 @@ global using VkPrimitiveTopology = Silk.NET.Vulkan.PrimitiveTopology;
 global using VkRenderPass = Silk.NET.Vulkan.RenderPass;
 global using VkSampler = Silk.NET.Vulkan.Sampler;
 global using VkShaderModule = Silk.NET.Vulkan.ShaderModule;
+global using VkViewport = Silk.NET.Vulkan.Viewport;
 global using VkWriteDescriptorSet = Silk.NET.Vulkan.WriteDescriptorSet;

@@ -96,6 +96,8 @@ public unsafe class ResourceSet : DeviceResource
         _token = token;
     }
 
+    public VkDescriptorSet Handle => _token.Set;
+
     protected override void Destroy()
     {
         DescriptorPoolManager.Free(_token);

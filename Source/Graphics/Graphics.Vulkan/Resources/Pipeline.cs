@@ -9,6 +9,7 @@ public unsafe class Pipeline : DeviceResource
     private readonly VkPipelineLayout _pipelineLayout;
     private readonly VkRenderPass _renderPass;
     private readonly VkPipeline _pipeline;
+    private readonly bool _isGraphics;
 
     internal Pipeline(GraphicsDevice graphicsDevice, ref readonly GraphicsPipelineDescription description) : base(graphicsDevice)
     {
@@ -395,7 +396,14 @@ public unsafe class Pipeline : DeviceResource
         _pipelineLayout = createInfo.Layout;
         _renderPass = createInfo.RenderPass;
         _pipeline = pipeline;
+        _isGraphics = true;
     }
+
+    public VkPipeline Handle => _pipeline;
+
+    public VkPipelineLayout Layout => _pipelineLayout;
+
+    public bool IsGraphics => _isGraphics;
 
     protected override void Destroy()
     {

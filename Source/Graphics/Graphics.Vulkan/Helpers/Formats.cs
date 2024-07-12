@@ -485,6 +485,16 @@ internal static class Formats
 
         return shaderStageFlags;
     }
+
+    public static IndexType GetIndexType(IndexFormat indexFormat)
+    {
+        return indexFormat switch
+        {
+            IndexFormat.U16 => IndexType.Uint16,
+            IndexFormat.U32 => IndexType.Uint32,
+            _ => throw new ArgumentOutOfRangeException(nameof(indexFormat))
+        };
+    }
     #endregion
 
     #region From Vulkan Format

@@ -264,7 +264,7 @@ public unsafe class GraphicsDevice : ContextObject
 
     public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
     {
-        UpdateBuffer(buffer, bufferOffsetInBytes, Unsafe.AsPointer(ref source), (uint)(sizeof(T) * source.Length));
+        UpdateBuffer(buffer, bufferOffsetInBytes, Unsafe.AsPointer(ref source[0]), (uint)(sizeof(T) * source.Length));
     }
 
     public void SubmitCommands(CommandList commandList)

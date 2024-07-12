@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Graphics.Core;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
@@ -12,6 +13,7 @@ public unsafe class CommandList : DeviceResource
 
     private bool _isRecording;
     private Framebuffer? _currentFramebuffer;
+    private Pipeline? _currentPipeline;
 
     internal CommandList(GraphicsDevice graphicsDevice, Queue queue, Fence fence, CommandPool commandPool) : base(graphicsDevice)
     {
@@ -65,6 +67,64 @@ public unsafe class CommandList : DeviceResource
         _currentFramebuffer = framebuffer;
 
         BeginCurrentRenderPass();
+
+        SetFullViewports();
+        SetFullScissorRects();
+    }
+
+    public void SetViewport(uint index, Viewport viewport)
+    {
+        float y = viewport.Y + viewport.Height;
+        float height = -viewport.Height;
+
+        VkViewport vkViewport = new()
+        {
+            X = viewport.X,
+            Y = y,
+            Width = viewport.Width,
+            Height = height,
+            MinDepth = viewport.MinDepth,
+            MaxDepth = viewport.MaxDepth
+        };
+
+        Vk.CmdSetViewport(_commandBuffer, index, 1, &vkViewport);
+    }
+
+    public void SetScissorRect(uint index, uint x, uint y, uint width, uint height)
+    {
+        Rect2D scissor = new()
+        {
+            Offset = new Offset2D { X = (int)x, Y = (int)y },
+            Extent = new Extent2D { Width = width, Height = height }
+        };
+
+        Vk.CmdSetScissor(_commandBuffer, index, 1, &scissor);
+    }
+
+    public void SetFullViewports()
+    {
+        if (_currentFramebuffer == null)
+        {
+            throw new InvalidOperationException("No framebuffer set");
+        }
+
+        for (uint i = 0; i < _currentFramebuffer.ColorAttachmentCount; i++)
+        {
+            SetViewport(i, new Viewport(0, 0, _currentFramebuffer.Width, _currentFramebuffer.Height, 0, 1));
+        }
+    }
+
+    public void SetFullScissorRects()
+    {
+        if (_currentFramebuffer == null)
+        {
+            throw new InvalidOperationException("No framebuffer set");
+        }
+
+        for (uint i = 0; i < _currentFramebuffer.ColorAttachmentCount; i++)
+        {
+            SetScissorRect(i, 0, 0, _currentFramebuffer.Width, _currentFramebuffer.Height);
+        }
     }
 
     public void ClearColorTarget(uint index, RgbaFloat clearColor)
@@ -140,6 +200,73 @@ public unsafe class CommandList : DeviceResource
     public void ClearDepthStencil(float depth)
     {
         ClearDepthStencil(depth, 0);
+    }
+
+    public void SetVertexBuffer(uint index, DeviceBuffer buffer, uint offset)
+    {
+        VkBuffer vkBuffer = buffer.Handle;
+        ulong vkOffset = offset;
+
+        Vk.CmdBindVertexBuffers(_commandBuffer, index, 1, &vkBuffer, &vkOffset);
+    }
+
+    public void SetVertexBuffer(uint index, DeviceBuffer buffer)
+    {
+        SetVertexBuffer(index, buffer, 0);
+    }
+
+    public void SetIndexBuffer(DeviceBuffer buffer, IndexFormat format, uint offset)
+    {
+        Vk.CmdBindIndexBuffer(_commandBuffer, buffer.Handle, offset, Formats.GetIndexType(format));
+    }
+
+    public void SetIndexBuffer(DeviceBuffer buffer, IndexFormat format)
+    {
+        SetIndexBuffer(buffer, format, 0);
+    }
+
+    public void SetPipeline(Pipeline pipeline)
+    {
+        if (pipeline.IsGraphics)
+        {
+            Vk.CmdBindPipeline(_commandBuffer, PipelineBindPoint.Graphics, pipeline.Handle);
+        }
+
+        _currentPipeline = pipeline;
+    }
+
+    public void SetGraphicsResourceSet(uint slot, ResourceSet resourceSet, uint dynamicOffsetsCount, ref uint dynamicOffsets)
+    {
+        if (_currentPipeline == null)
+        {
+            throw new InvalidOperationException("No pipeline set");
+        }
+
+        VkDescriptorSet descriptorSet = resourceSet.Handle;
+
+        Vk.CmdBindDescriptorSets(_commandBuffer,
+                                 PipelineBindPoint.Graphics,
+                                 _currentPipeline.Layout,
+                                 slot,
+                                 1,
+                                 &descriptorSet,
+                                 dynamicOffsetsCount,
+                                 ref dynamicOffsets);
+    }
+
+    public void SetGraphicsResourceSet(uint slot, ResourceSet resourceSet)
+    {
+        SetGraphicsResourceSet(slot, resourceSet, 0, ref Unsafe.AsRef<uint>(null));
+    }
+
+    public void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart)
+    {
+        Vk.CmdDrawIndexed(_commandBuffer, indexCount, instanceCount, indexStart, vertexOffset, instanceStart);
+    }
+
+    public void DrawIndexed(uint indexCount)
+    {
+        DrawIndexed(indexCount, 1, 0, 0, 0);
     }
 
     public void End()
