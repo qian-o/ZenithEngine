@@ -18,7 +18,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
     private readonly uint _mipLevels;
     private readonly uint _arrayLayers;
     private readonly DeviceMemory? _deviceMemory;
-    private readonly bool isSwapchainImage;
+    private readonly bool _isSwapchainImage;
 
     private ImageLayout _layout;
 
@@ -79,7 +79,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
         _mipLevels = description.MipLevels;
         _arrayLayers = createInfo.ArrayLayers;
         _deviceMemory = deviceMemory;
-        isSwapchainImage = false;
+        _isSwapchainImage = false;
     }
 
     internal Texture(GraphicsDevice graphicsDevice, VkImage image, Format format, uint width, uint height) : base(graphicsDevice)
@@ -96,7 +96,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
         _mipLevels = 1;
         _arrayLayers = 1;
         _deviceMemory = null;
-        isSwapchainImage = true;
+        _isSwapchainImage = true;
     }
 
     internal VkImage Handle => _image;
@@ -446,7 +446,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
     protected override void Destroy()
     {
-        if (!isSwapchainImage)
+        if (!_isSwapchainImage)
         {
             Vk.DestroyImage(Device, _image, null);
 

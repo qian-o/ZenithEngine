@@ -71,6 +71,7 @@ void main()
     private static ResourceLayout _resourceLayout = null!;
     private static ResourceSet _resourceSet = null!;
     private static Shader[] _shaders = null!;
+    private static Pipeline _pipeline = null!;
 
     private static void Main(string[] _)
     {
@@ -141,6 +142,8 @@ void main()
             ShaderSet = new ShaderSetDescription([vertexLayoutDescription], _shaders),
             Outputs = _graphicsDevice.Swapchain.OutputDescription
         };
+
+        _pipeline = factory.CreatePipeline(graphicsPipelineDescription);
     }
 
     private static void Window_Resize(object? sender, ResizeEventArgs e)
@@ -150,6 +153,7 @@ void main()
 
     private static void Window_Close(object? sender, CloseEventArgs e)
     {
+        _pipeline.Dispose();
         foreach (Shader shader in _shaders)
         {
             shader.Dispose();

@@ -1,5 +1,8 @@
 ﻿using Graphics.Core;
 using Silk.NET.Vulkan;
+using BlendFactor = Graphics.Core.BlendFactor;
+using FrontFace = Graphics.Core.FrontFace;
+using PrimitiveTopology = Graphics.Core.PrimitiveTopology;
 
 namespace Graphics.Vulkan;
 
@@ -285,6 +288,202 @@ internal static class Formats
             SamplerBorderColor.OpaqueWhite => BorderColor.FloatOpaqueWhite,
             _ => throw new ArgumentOutOfRangeException(nameof(borderColor))
         };
+    }
+
+    public static VkBlendFactor GetBlendFactor(BlendFactor blendFactor)
+    {
+        return blendFactor switch
+        {
+            BlendFactor.Zero => VkBlendFactor.Zero,
+            BlendFactor.One => VkBlendFactor.One,
+            BlendFactor.SourceAlpha => VkBlendFactor.SrcAlpha,
+            BlendFactor.InverseSourceAlpha => VkBlendFactor.OneMinusSrcAlpha,
+            BlendFactor.DestinationAlpha => VkBlendFactor.DstAlpha,
+            BlendFactor.InverseDestinationAlpha => VkBlendFactor.OneMinusDstAlpha,
+            BlendFactor.SourceColor => VkBlendFactor.SrcColor,
+            BlendFactor.InverseSourceColor => VkBlendFactor.OneMinusSrcColor,
+            BlendFactor.DestinationColor => VkBlendFactor.DstColor,
+            BlendFactor.InverseDestinationColor => VkBlendFactor.OneMinusDstColor,
+            BlendFactor.BlendFactor => VkBlendFactor.ConstantColor,
+            BlendFactor.InverseBlendFactor => VkBlendFactor.OneMinusConstantColor,
+            _ => throw new ArgumentOutOfRangeException(nameof(blendFactor))
+        };
+    }
+
+    public static BlendOp GetBlendOp(BlendFunction blendFunction)
+    {
+        return blendFunction switch
+        {
+            BlendFunction.Add => BlendOp.Add,
+            BlendFunction.Subtract => BlendOp.Subtract,
+            BlendFunction.ReverseSubtract => BlendOp.ReverseSubtract,
+            BlendFunction.Minimum => BlendOp.Min,
+            BlendFunction.Maximum => BlendOp.Max,
+            _ => throw new ArgumentOutOfRangeException(nameof(blendFunction))
+        };
+    }
+
+    public static ColorComponentFlags GetColorWriteMask(ColorWriteMask colorWriteMask)
+    {
+        ColorComponentFlags colorComponentFlags = ColorComponentFlags.None;
+
+        if (colorWriteMask.HasFlag(ColorWriteMask.Red))
+        {
+            colorComponentFlags |= ColorComponentFlags.RBit;
+        }
+
+        if (colorWriteMask.HasFlag(ColorWriteMask.Green))
+        {
+            colorComponentFlags |= ColorComponentFlags.GBit;
+        }
+
+        if (colorWriteMask.HasFlag(ColorWriteMask.Blue))
+        {
+            colorComponentFlags |= ColorComponentFlags.BBit;
+        }
+
+        if (colorWriteMask.HasFlag(ColorWriteMask.Alpha))
+        {
+            colorComponentFlags |= ColorComponentFlags.ABit;
+        }
+
+        return colorComponentFlags;
+    }
+
+    public static PolygonMode GetPolygonMode(PolygonFillMode fillMode)
+    {
+        return fillMode switch
+        {
+            PolygonFillMode.Solid => PolygonMode.Fill,
+            PolygonFillMode.Wireframe => PolygonMode.Line,
+            _ => throw new ArgumentOutOfRangeException(nameof(fillMode))
+        };
+    }
+
+    public static CullModeFlags GetCullMode(FaceCullMode cullMode)
+    {
+        return cullMode switch
+        {
+            FaceCullMode.None => CullModeFlags.None,
+            FaceCullMode.Back => CullModeFlags.BackBit,
+            FaceCullMode.Front => CullModeFlags.FrontBit,
+            _ => throw new ArgumentOutOfRangeException(nameof(cullMode))
+        };
+    }
+
+    public static VkFrontFace GetFrontFace(FrontFace frontFace)
+    {
+        return frontFace switch
+        {
+            FrontFace.Clockwise => VkFrontFace.Clockwise,
+            FrontFace.CounterClockwise => VkFrontFace.CounterClockwise,
+            _ => throw new ArgumentOutOfRangeException(nameof(frontFace))
+        };
+    }
+
+    public static StencilOp GetStencilOp(StencilOperation fail)
+    {
+        return fail switch
+        {
+            StencilOperation.Keep => StencilOp.Keep,
+            StencilOperation.Zero => StencilOp.Zero,
+            StencilOperation.Replace => StencilOp.Replace,
+            StencilOperation.IncrementAndClamp => StencilOp.IncrementAndClamp,
+            StencilOperation.IncrementAndWrap => StencilOp.IncrementAndWrap,
+            StencilOperation.DecrementAndClamp => StencilOp.DecrementAndClamp,
+            StencilOperation.DecrementAndWrap => StencilOp.DecrementAndWrap,
+            StencilOperation.Invert => StencilOp.Invert,
+            _ => throw new ArgumentOutOfRangeException(nameof(fail))
+        };
+    }
+
+    public static VkPrimitiveTopology GetPrimitiveTopology(PrimitiveTopology primitiveTopology)
+    {
+        return primitiveTopology switch
+        {
+            PrimitiveTopology.PointList => VkPrimitiveTopology.PointList,
+            PrimitiveTopology.LineList => VkPrimitiveTopology.LineList,
+            PrimitiveTopology.LineStrip => VkPrimitiveTopology.LineStrip,
+            PrimitiveTopology.TriangleList => VkPrimitiveTopology.TriangleList,
+            PrimitiveTopology.TriangleStrip => VkPrimitiveTopology.TriangleStrip,
+            _ => throw new ArgumentOutOfRangeException(nameof(primitiveTopology))
+        };
+    }
+
+    public static Format GetVertexElementFormat(VertexElementFormat format)
+    {
+        return format switch
+        {
+            VertexElementFormat.Float1 => Format.R32Sfloat,
+            VertexElementFormat.Float2 => Format.R32G32Sfloat,
+            VertexElementFormat.Float3 => Format.R32G32B32Sfloat,
+            VertexElementFormat.Float4 => Format.R32G32B32A32Sfloat,
+            VertexElementFormat.Byte2Norm => Format.R8G8Unorm,
+            VertexElementFormat.Byte2 => Format.R8G8Uint,
+            VertexElementFormat.Byte4Norm => Format.R8G8B8A8Unorm,
+            VertexElementFormat.Byte4 => Format.R8G8B8A8Uint,
+            VertexElementFormat.SByte2Norm => Format.R8G8SNorm,
+            VertexElementFormat.SByte2 => Format.R8G8Sint,
+            VertexElementFormat.SByte4Norm => Format.R8G8B8A8SNorm,
+            VertexElementFormat.SByte4 => Format.R8G8B8A8Sint,
+            VertexElementFormat.UShort2Norm => Format.R16G16Unorm,
+            VertexElementFormat.UShort2 => Format.R16G16Uint,
+            VertexElementFormat.UShort4Norm => Format.R16G16B16A16Unorm,
+            VertexElementFormat.UShort4 => Format.R16G16B16A16Uint,
+            VertexElementFormat.Short2Norm => Format.R16G16SNorm,
+            VertexElementFormat.Short2 => Format.R16G16Sint,
+            VertexElementFormat.Short4Norm => Format.R16G16B16A16SNorm,
+            VertexElementFormat.Short4 => Format.R16G16B16A16Sint,
+            VertexElementFormat.UInt1 => Format.R32Uint,
+            VertexElementFormat.UInt2 => Format.R32G32Uint,
+            VertexElementFormat.UInt3 => Format.R32G32B32Uint,
+            VertexElementFormat.UInt4 => Format.R32G32B32A32Uint,
+            VertexElementFormat.Int1 => Format.R32Sint,
+            VertexElementFormat.Int2 => Format.R32G32Sint,
+            VertexElementFormat.Int3 => Format.R32G32B32Sint,
+            VertexElementFormat.Int4 => Format.R32G32B32A32Sint,
+            VertexElementFormat.Half1 => Format.R16Sfloat,
+            VertexElementFormat.Half2 => Format.R16G16Sfloat,
+            VertexElementFormat.Half4 => Format.R16G16B16A16Sfloat,
+            _ => throw new ArgumentOutOfRangeException(nameof(format))
+        };
+    }
+
+    public static ShaderStageFlags GetShaderStage(ShaderStages stage)
+    {
+        ShaderStageFlags shaderStageFlags = ShaderStageFlags.None;
+
+        if (stage.HasFlag(ShaderStages.Vertex))
+        {
+            shaderStageFlags |= ShaderStageFlags.VertexBit;
+        }
+
+        if (stage.HasFlag(ShaderStages.TessellationControl))
+        {
+            shaderStageFlags |= ShaderStageFlags.TessellationControlBit;
+        }
+
+        if (stage.HasFlag(ShaderStages.TessellationEvaluation))
+        {
+            shaderStageFlags |= ShaderStageFlags.TessellationEvaluationBit;
+        }
+
+        if (stage.HasFlag(ShaderStages.Geometry))
+        {
+            shaderStageFlags |= ShaderStageFlags.GeometryBit;
+        }
+
+        if (stage.HasFlag(ShaderStages.Fragment))
+        {
+            shaderStageFlags |= ShaderStageFlags.FragmentBit;
+        }
+
+        if (stage.HasFlag(ShaderStages.Compute))
+        {
+            shaderStageFlags |= ShaderStageFlags.ComputeBit;
+        }
+
+        return shaderStageFlags;
     }
     #endregion
 

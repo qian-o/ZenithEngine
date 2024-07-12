@@ -105,4 +105,21 @@ internal static class FormatSizeHelpers
             _ => throw new NotSupportedException("Unsupported vertex element format.")
         };
     }
+
+    public static uint GetSizeInBytes(ShaderConstantType type)
+    {
+        return type switch
+        {
+            ShaderConstantType.ConstBool => 4,
+            ShaderConstantType.ConstInt16 => 2,
+            ShaderConstantType.ConstUInt16 => 2,
+            ShaderConstantType.ConstInt32 => 4,
+            ShaderConstantType.ConstUInt32 => 4,
+            ShaderConstantType.ConstInt64 => 8,
+            ShaderConstantType.ConstUInt64 => 8,
+            ShaderConstantType.ConstFloat => 4,
+            ShaderConstantType.ConstDouble => 8,
+            _ => throw new NotSupportedException("Unsupported shader constant type.")
+        };
+    }
 }

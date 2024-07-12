@@ -6,7 +6,7 @@ namespace Graphics.Vulkan;
 
 public unsafe class Framebuffer : DeviceResource
 {
-    private readonly RenderPass _renderPass;
+    private readonly VkRenderPass _renderPass;
     private readonly TextureView[] _colorViews;
     private readonly TextureView? _depthView;
     private readonly VkFramebuffer _framebuffer;
@@ -22,7 +22,7 @@ public unsafe class Framebuffer : DeviceResource
         AttachmentDescription[] attachments = new AttachmentDescription[attachmentCount];
         AttachmentReference[] references = new AttachmentReference[attachmentCount];
 
-        for (uint i = 0; i < description.ColorTargets.Length; i++)
+        for (uint i = 0; i < colorAttachmentCount; i++)
         {
             Texture colorTarget = description.ColorTargets[i].Target;
 
@@ -115,7 +115,7 @@ public unsafe class Framebuffer : DeviceResource
             PDependencies = &subpassDependency
         };
 
-        RenderPass renderPass;
+        VkRenderPass renderPass;
         Vk.CreateRenderPass(graphicsDevice.Device, &createInfo, null, &renderPass).ThrowCode();
 
         TextureView[] colorViews = new TextureView[description.ColorTargets.Length];
