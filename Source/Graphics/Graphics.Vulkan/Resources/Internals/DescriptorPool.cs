@@ -64,7 +64,8 @@ internal sealed unsafe class DescriptorPool : DeviceResource
             SType = StructureType.DescriptorPoolCreateInfo,
             MaxSets = maxSets,
             PoolSizeCount = poolSizeCount,
-            PPoolSizes = (DescriptorPoolSize*)Unsafe.AsPointer(ref sizes[0])
+            PPoolSizes = (DescriptorPoolSize*)Unsafe.AsPointer(ref sizes[0]),
+            Flags = DescriptorPoolCreateFlags.FreeDescriptorSetBit
         };
 
         VkDescriptorPool descriptorPool;

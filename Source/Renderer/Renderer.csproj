@@ -17,4 +17,10 @@
 		<ProjectReference Include="..\Graphics\Graphics.Vulkan\Graphics.Vulkan.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<None Include="Resources\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
 </Project>

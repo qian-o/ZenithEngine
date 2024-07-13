@@ -8,7 +8,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class GraphicsDevice : ContextObject
 {
-    // Staging Resources
     private const uint MinStagingBufferSize = 64;
     private const uint MaxStagingBufferSize = 512;
 
@@ -403,6 +402,9 @@ public unsafe class GraphicsDevice : ContextObject
         }
 
         swapChain?.Dispose();
+
+        _pointSampler.Dispose();
+        _linearSampler.Dispose();
 
         _descriptorPoolManager.Dispose();
 

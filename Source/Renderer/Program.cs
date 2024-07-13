@@ -3,10 +3,11 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
+using Hexa.NET.ImGui;
 
 namespace Renderer;
 
-internal sealed class Program
+internal sealed unsafe class Program
 {
     #region Structs
     private struct Vertex(Vector2 position, Vector4 color)
@@ -105,7 +106,7 @@ void main()
             break;
         }
 
-        _imGuiController = new(_graphicsDevice, window.IWindow, window.InputContext);
+        _imGuiController = new(_graphicsDevice, window.IWindow, window.InputContext, new ImGuiFontConfig("Resources/Fonts/MSYH.TTC", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
 
         ResourceFactory factory = _graphicsDevice.ResourceFactory;
 
@@ -165,11 +166,15 @@ void main()
 
     private static void Window_Update(object? sender, UpdateEventArgs e)
     {
-        _graphicsDevice.UpdateBuffer(_stepBuffer, 0, new Ubo { Value = new Vector4((float)Math.Sin(e.TotalTime) * 0.5f + 0.5f) });
+        _graphicsDevice.UpdateBuffer(_stepBuffer, 0, new Ubo { Value = new Vector4(((float)Math.Sin(e.TotalTime) * 0.5f) + 0.5f) });
     }
 
     private static void Window_Render(object? sender, RenderEventArgs e)
     {
+        _imGuiController.Update(e.DeltaTime);
+
+        ImGui.ShowDemoWindow();
+
         _commandList.Begin();
 
         _commandList.SetFramebuffer(_graphicsDevice.Swapchain.Framebuffer);
@@ -188,6 +193,8 @@ void main()
                                  indexStart: 0,
                                  vertexOffset: 0,
                                  instanceStart: 0);
+
+        _imGuiController.Render(_commandList);
 
         _commandList.End();
 
