@@ -13,8 +13,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Hexa.NET.ImGui" Version="1.0.3" />
-		<PackageReference Include="Hexa.NET.ImGuizmo" Version="1.0.3" />
+		<PackageReference Include="Hexa.NET.ImGui" Version="1.0.4" />
+		<PackageReference Include="Hexa.NET.ImGuizmo" Version="1.0.4" />
 		<PackageReference Include="Silk.NET.Input" Version="2.21.0" />
 		<PackageReference Include="Silk.NET.Maths" Version="2.21.0" />
 		<PackageReference Include="Silk.NET.Shaderc" Version="2.21.0" />
