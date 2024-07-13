@@ -330,7 +330,6 @@ void main()
             return;
         }
 
-
         uint totalVBSize = (uint)(drawDataPtr.TotalVtxCount * sizeof(ImDrawVert));
         if (totalVBSize > _vertexBuffer.SizeInBytes)
         {
@@ -392,21 +391,13 @@ void main()
             {
                 ImDrawCmd imDrawCmd = imDrawListPtr.CmdBuffer.Data[j];
 
-                if (imDrawCmd.UserCallback != null)
+                if (imDrawCmd.TextureId == FontTextureID)
                 {
-                    throw new NotImplementedException();
+                    commandList.SetGraphicsResourceSet(1, _fontTextureResourceSet);
                 }
-
-                if (imDrawCmd.TextureId != nint.Zero)
+                else
                 {
-                    if (imDrawCmd.TextureId == FontTextureID)
-                    {
-                        commandList.SetGraphicsResourceSet(1, _fontTextureResourceSet);
-                    }
-                    else
-                    {
 
-                    }
                 }
 
                 commandList.SetScissorRect(0,
@@ -415,7 +406,11 @@ void main()
                                            (uint)(imDrawCmd.ClipRect.Z - imDrawCmd.ClipRect.X),
                                            (uint)(imDrawCmd.ClipRect.W - imDrawCmd.ClipRect.Y));
 
-                commandList.DrawIndexed(imDrawCmd.ElemCount, 1, imDrawCmd.IdxOffset + (uint)indexOffset, (int)imDrawCmd.VtxOffset + vertexOffset, 0);
+                commandList.DrawIndexed(imDrawCmd.ElemCount,
+                                        1,
+                                        imDrawCmd.IdxOffset + (uint)indexOffset,
+                                        (int)imDrawCmd.VtxOffset + vertexOffset,
+                                        0);
             }
 
             vertexOffset += imDrawListPtr.VtxBuffer.Size;
