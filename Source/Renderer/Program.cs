@@ -4,6 +4,8 @@ using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
 
+namespace Renderer;
+
 internal sealed class Program
 {
     #region Structs
@@ -63,6 +65,7 @@ void main()
 
     private static Context _context = null!;
     private static GraphicsDevice _graphicsDevice = null!;
+    private static ImGuiController _imGuiController = null!;
     private static DeviceBuffer _vertexBuffer = null!;
     private static DeviceBuffer _indexBuffer = null!;
     private static DeviceBuffer _beginBuffer = null!;
@@ -89,16 +92,20 @@ void main()
 
     private static void Window_Load(object? sender, LoadEventArgs e)
     {
+        Window window = (Window)sender!;
+
         _context = new();
 
         foreach (PhysicalDevice physicalDevice in _context.EnumeratePhysicalDevices())
         {
             Console.WriteLine(physicalDevice.Name);
 
-            _graphicsDevice = _context.CreateGraphicsDevice(physicalDevice, (Window)sender!);
+            _graphicsDevice = _context.CreateGraphicsDevice(physicalDevice, window);
 
             break;
         }
+
+        _imGuiController = new(_graphicsDevice, window.IWindow, window.InputContext);
 
         ResourceFactory factory = _graphicsDevice.ResourceFactory;
 
@@ -196,6 +203,7 @@ void main()
 
     private static void Window_Close(object? sender, CloseEventArgs e)
     {
+        _imGuiController.Dispose();
         _commandList.Dispose();
         _pipeline.Dispose();
         foreach (Shader shader in _shaders)

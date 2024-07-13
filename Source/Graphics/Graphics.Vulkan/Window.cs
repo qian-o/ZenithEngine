@@ -58,6 +58,8 @@ public class Window : DisposableObject
 
     public IWindow IWindow => _window;
 
+    public IInputContext InputContext => ThrowIfNotInitialized(inputContext);
+
     public IMouse Mouse => ThrowIfNotInitialized(mouse);
 
     public IKeyboard Keyboard => ThrowIfNotInitialized(keyboard);

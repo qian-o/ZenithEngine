@@ -113,15 +113,29 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
     internal TextureUsage Usage => _usage;
 
-    internal uint Width => _width;
+    public uint Width => _width;
 
-    internal uint Height => _height;
+    public uint Height => _height;
 
-    internal uint Depth => _depth;
+    public uint Depth => _depth;
 
-    internal uint MipLevels => _mipLevels;
+    public uint MipLevels => _mipLevels;
 
-    internal uint ArrayLayers => _arrayLayers;
+    public uint ArrayLayers => _arrayLayers;
+
+    internal void TransitionToBestLayout()
+    {
+        ImageLayout newLayout = _usage switch
+        {
+            TextureUsage.DepthStencil => ImageLayout.DepthStencilAttachmentOptimal,
+            TextureUsage.RenderTarget => ImageLayout.ColorAttachmentOptimal,
+            TextureUsage.Sampled => ImageLayout.ShaderReadOnlyOptimal,
+            TextureUsage.Staging => ImageLayout.General,
+            _ => throw new InvalidOperationException("Unsupported texture usage!")
+        };
+
+        TransitionImageLayout(newLayout);
+    }
 
     internal void TransitionImageLayout(ImageLayout newLayout)
     {
@@ -137,7 +151,9 @@ public unsafe class Texture : DeviceResource, IBindableResource
                 LevelCount = _mipLevels,
                 BaseArrayLayer = 0,
                 LayerCount = _arrayLayers
-            }
+            },
+            OldLayout = _layout,
+            NewLayout = newLayout,
         };
 
         if (newLayout == ImageLayout.DepthStencilAttachmentOptimal)
