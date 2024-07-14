@@ -8,8 +8,8 @@ namespace Graphics.Vulkan;
 
 public unsafe class GraphicsDevice : ContextObject
 {
-    private const uint MinStagingBufferSize = 4096;
-    private const uint MaxStagingBufferSize = 40960;
+    private const uint MinStagingBufferSize = 1024 * 4;
+    private const uint MaxStagingBufferSize = 1024 * 1024 * 4;
 
     private readonly ResourceFactory _resourceFactory;
     private readonly PhysicalDevice _physicalDevice;
