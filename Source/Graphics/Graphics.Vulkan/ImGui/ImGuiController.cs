@@ -1,14 +1,13 @@
 ﻿using System.Numerics;
 using System.Text;
 using Graphics.Core;
-using Graphics.Vulkan;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
-namespace Renderer;
+namespace Graphics.Vulkan;
 
 public unsafe class ImGuiController : DisposableObject
 {
