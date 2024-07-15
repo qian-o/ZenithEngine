@@ -71,8 +71,6 @@ void main()
     fsout_Color = fsin.Color * texture(sampler2D(FontTexture, FontSampler), fsin.UV.st);
 }";
 
-    private const nint FontTextureID = 9999;
-
     private static readonly Key[] _keyEnumArr = (Key[])Enum.GetValues(typeof(Key));
 
     private readonly GraphicsDevice _graphicsDevice;
@@ -82,6 +80,12 @@ void main()
     private readonly ColorSpaceHandling _colorSpaceHandling;
     private readonly ImGuiContextPtr _imGuiContext;
     private readonly List<char> _pressedChars = [];
+
+    #region Resource Management
+    private readonly Dictionary<TextureView, nint> _mapped = [];
+    private readonly Dictionary<nint, ResourceSet> _sets = [];
+    private readonly List<DeviceResource> _resources = [];
+    #endregion
 
     private int _windowWidth;
     private int _windowHeight;
@@ -94,8 +98,6 @@ void main()
     private ResourceSet _resourceSet = null!;
     private Pipeline _pipeline = null!;
     private Texture _fontTexture = null!;
-    private TextureView _fontTextureView = null!;
-    private ResourceSet _fontTextureResourceSet = null!;
 
     private bool _frameBegun;
     private IKeyboard _keyboard = null!;
@@ -210,8 +212,37 @@ void main()
         }
     }
 
+    public nint GetOrCreateImGuiBinding(ResourceFactory factory, TextureView textureView)
+    {
+        if (!_mapped.TryGetValue(textureView, out nint result))
+        {
+            result = _mapped.Count;
+
+            _mapped[textureView] = result;
+
+            ResourceSet resourceSet = factory.CreateResourceSet(new ResourceSetDescription(_layout1, textureView));
+            _resources.Add(resourceSet);
+
+            _sets[result] = resourceSet;
+        }
+
+        return result;
+    }
+
+    public nint GetOrCreateImGuiBinding(ResourceFactory factory, Texture texture)
+    {
+        TextureView textureView = factory.CreateTextureView(texture);
+        _resources.Add(textureView);
+
+        return GetOrCreateImGuiBinding(factory, textureView);
+    }
+
     protected override void Destroy()
     {
+        foreach (DeviceResource resource in _resources)
+        {
+            resource.Dispose();
+        }
         _vertexBuffer.Dispose();
         _indexBuffer.Dispose();
         _uboBuffer.Dispose();
@@ -220,10 +251,18 @@ void main()
         _resourceSet.Dispose();
         _pipeline.Dispose();
         _fontTexture.Dispose();
-        _fontTextureView.Dispose();
-        _fontTextureResourceSet.Dispose();
 
         ImGui.DestroyContext(_imGuiContext);
+    }
+
+    private ResourceSet GetResourceSet(nint handle)
+    {
+        if (!_sets.TryGetValue(handle, out ResourceSet? resourceSet))
+        {
+            throw new InvalidOperationException("No resource set found for the given handle.");
+        }
+
+        return resourceSet;
     }
 
     private static bool TryMapKey(Key key, out ImGuiKey result)
@@ -391,14 +430,7 @@ void main()
             {
                 ImDrawCmd imDrawCmd = imDrawListPtr.CmdBuffer.Data[j];
 
-                if (imDrawCmd.TextureId == FontTextureID)
-                {
-                    commandList.SetGraphicsResourceSet(1, _fontTextureResourceSet);
-                }
-                else
-                {
-
-                }
+                commandList.SetGraphicsResourceSet(1, GetResourceSet(imDrawCmd.TextureId.Handle));
 
                 commandList.SetScissorRect(0,
                                            (uint)imDrawCmd.ClipRect.X,
@@ -484,11 +516,7 @@ void main()
                                       0,
                                       0);
 
-        _fontTextureView = _factory.CreateTextureView(_fontTexture);
-
-        _fontTextureResourceSet = _factory.CreateResourceSet(new ResourceSetDescription(_layout1, _fontTextureView));
-
-        io.Fonts.SetTexID(FontTextureID);
+        io.Fonts.SetTexID(GetOrCreateImGuiBinding(_factory, _fontTexture));
     }
 
     private void CreateDeviceResources()
