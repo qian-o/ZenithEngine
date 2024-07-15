@@ -230,38 +230,62 @@ public unsafe class GraphicsDevice : ContextObject
             return;
         }
 
-        DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
-
-        void* stagingBufferPointer = stagingBuffer.DeviceMemory.Map(sizeInBytes);
-
-        Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
-
-        stagingBuffer.DeviceMemory.Unmap();
-
-        CommandBuffer commandBuffer = BeginSingleTimeCommands();
-
-        BufferCopy bufferCopy = new()
+        if (buffer.IsHostVisible)
         {
-            SrcOffset = 0,
-            DstOffset = bufferOffsetInBytes,
-            Size = sizeInBytes
-        };
+            void* bufferPointer = buffer.DeviceMemory.Map(sizeInBytes, bufferOffsetInBytes);
 
-        Vk.CmdCopyBuffer(commandBuffer, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
+            Unsafe.CopyBlock(bufferPointer, source, sizeInBytes);
 
-        EndSingleTimeCommands(commandBuffer);
+            buffer.DeviceMemory.Unmap();
+        }
+        else
+        {
+            DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
 
-        CacheStagingBuffer(stagingBuffer);
+            void* stagingBufferPointer = stagingBuffer.DeviceMemory.Map(sizeInBytes);
+
+            Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
+
+            stagingBuffer.DeviceMemory.Unmap();
+
+            CommandBuffer commandBuffer = BeginSingleTimeCommands();
+
+            BufferCopy bufferCopy = new()
+            {
+                SrcOffset = 0,
+                DstOffset = bufferOffsetInBytes,
+                Size = sizeInBytes
+            };
+
+            Vk.CmdCopyBuffer(commandBuffer, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
+
+            EndSingleTimeCommands(commandBuffer);
+
+            CacheStagingBuffer(stagingBuffer);
+        }
+    }
+
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
+    {
+        UpdateBuffer(buffer, bufferOffsetInBytes, source, (uint)(sizeof(T) * length));
+    }
+
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ref readonly T source, int length) where T : unmanaged
+    {
+        fixed (T* sourcePointer = &source)
+        {
+            UpdateBuffer(buffer, bufferOffsetInBytes, sourcePointer, length);
+        }
     }
 
     public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T source) where T : unmanaged
     {
-        UpdateBuffer(buffer, bufferOffsetInBytes, &source, (uint)sizeof(T));
+        UpdateBuffer(buffer, bufferOffsetInBytes, in source, 1);
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ReadOnlySpan<T> source) where T : unmanaged
     {
-        UpdateBuffer(buffer, bufferOffsetInBytes, Unsafe.AsPointer(ref source[0]), (uint)(sizeof(T) * source.Length));
+        UpdateBuffer(buffer, bufferOffsetInBytes, in source.GetPinnableReference(), source.Length);
     }
 
     public void UpdateTexture(Texture texture,

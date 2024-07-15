@@ -403,14 +403,35 @@ void main()
             indexOffsetInElements += (uint)imDrawListPtr.IdxBuffer.Size;
         }
 
-        Matrix4x4 orthoProjection = Matrix4x4.CreateOrthographicOffCenter(0.0f,
-                                                                         drawDataPtr.DisplaySize.X,
-                                                                         drawDataPtr.DisplaySize.Y,
-                                                                         0.0f,
-                                                                         -1.0f,
-                                                                         1.0f);
+        // Orthographic projection matrix
+        {
+            float x = drawDataPtr.DisplayPos.X;
+            float num1 = drawDataPtr.DisplayPos.X + drawDataPtr.DisplaySize.X;
+            float y = drawDataPtr.DisplayPos.Y;
+            float num2 = drawDataPtr.DisplayPos.Y + drawDataPtr.DisplaySize.Y;
 
-        _graphicsDevice.UpdateBuffer(_uboBuffer, 0, orthoProjection);
+            Span<float> span =
+            [
+                2.0f / (num1 - x),
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                2.0f / (y - num2),
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                -1.0f,
+                0.0f,
+                (num1 + x) / (x - num1),
+                (y + num2) / (num2 - y),
+                0.0f,
+                1.0f
+            ];
+
+            _graphicsDevice.UpdateBuffer<float>(_uboBuffer, 0, span);
+        }
 
         commandList.SetVertexBuffer(0, _vertexBuffer);
         commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U16);

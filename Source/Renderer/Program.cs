@@ -123,10 +123,10 @@ void main()
         _indexBuffer = factory.CreateBuffer(new BufferDescription((uint)(sizeof(ushort) * triangleIndices.Length), BufferUsage.IndexBuffer));
         _beginBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
         _endBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
-        _stepBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
+        _stepBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
-        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, triangleVertices);
-        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, triangleIndices);
+        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, (Vertex*)Unsafe.AsPointer(ref triangleVertices[0]), triangleVertices.Length);
+        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, (ushort*)Unsafe.AsPointer(ref triangleIndices[0]), triangleIndices.Length);
         _graphicsDevice.UpdateBuffer(_beginBuffer, 0, new Ubo { Value = new Vector4(1.0f, 0.0f, 0.0f, 1.0f) });
         _graphicsDevice.UpdateBuffer(_endBuffer, 0, new Ubo { Value = new Vector4(0.0f, 0.0f, 1.0f, 1.0f) });
         _graphicsDevice.UpdateBuffer(_stepBuffer, 0, new Ubo { Value = new Vector4(0.2f) });
