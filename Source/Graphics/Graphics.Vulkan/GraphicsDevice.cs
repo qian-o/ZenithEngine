@@ -218,6 +218,7 @@ public unsafe class GraphicsDevice : ContextObject
         swapChain = new Swapchain(this, in swapchainDescription);
     }
 
+    #region UpdateBuffer
     public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
     {
         uint sizeInBytes = (uint)(sizeof(T) * length);
@@ -267,25 +268,27 @@ public unsafe class GraphicsDevice : ContextObject
         }
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ReadOnlySpan<T> source) where T : unmanaged
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
     {
         fixed (T* sourcePointer = source)
         {
             UpdateBuffer(buffer, bufferOffsetInBytes, sourcePointer, source.Length);
         }
     }
+    #endregion
 
-    public void UpdateTexture(Texture texture,
-                              void* source,
-                              uint sizeInBytes,
-                              uint x,
-                              uint y,
-                              uint z,
-                              uint width,
-                              uint height,
-                              uint depth,
-                              uint mipLevel,
-                              uint arrayLayer)
+    #region UpdateTexture
+    public void UpdateTexture<T>(Texture texture,
+                                 T* source,
+                                 int length,
+                                 uint x,
+                                 uint y,
+                                 uint z,
+                                 uint width,
+                                 uint height,
+                                 uint depth,
+                                 uint mipLevel,
+                                 uint arrayLayer) where T : unmanaged
     {
         if (x + width > texture.Width)
         {
@@ -310,6 +313,13 @@ public unsafe class GraphicsDevice : ContextObject
         if (arrayLayer >= texture.ArrayLayers)
         {
             throw new ArgumentOutOfRangeException(nameof(arrayLayer), "The array layer exceeds the texture array layers.");
+        }
+
+        uint sizeInBytes = (uint)(sizeof(T) * length);
+
+        if (sizeInBytes == 0)
+        {
+            return;
         }
 
         DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
@@ -360,8 +370,12 @@ public unsafe class GraphicsDevice : ContextObject
                                  uint mipLevel,
                                  uint arrayLayer) where T : unmanaged
     {
-        UpdateTexture(texture, Unsafe.AsPointer(ref source[0]), (uint)(sizeof(T) * source.Length), x, y, z, width, height, depth, mipLevel, arrayLayer);
+        fixed (T* sourcePointer = source)
+        {
+            UpdateTexture(texture, sourcePointer, source.Length, x, y, z, width, height, depth, mipLevel, arrayLayer);
+        }
     }
+    #endregion
 
     public void SubmitCommands(CommandList commandList)
     {

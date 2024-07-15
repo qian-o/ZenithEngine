@@ -430,7 +430,7 @@ void main()
                 1.0f
             ];
 
-            _graphicsDevice.UpdateBuffer<float>(_uboBuffer, 0, matrix);
+            _graphicsDevice.UpdateBuffer(_uboBuffer, 0, matrix);
         }
 
         commandList.SetVertexBuffer(0, _vertexBuffer);
@@ -526,7 +526,7 @@ void main()
 
         _graphicsDevice.UpdateTexture(_fontTexture,
                                       pixels,
-                                      (uint)(width * height * 4),
+                                      width * height * 4,
                                       0,
                                       0,
                                       0,
