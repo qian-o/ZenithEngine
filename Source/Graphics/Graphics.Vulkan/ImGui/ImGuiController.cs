@@ -392,12 +392,12 @@ void main()
             _graphicsDevice.UpdateBuffer(_vertexBuffer,
                                          vertexOffsetInVertices * (uint)sizeof(ImDrawVert),
                                          imDrawListPtr.VtxBuffer.Data,
-                                         (uint)(imDrawListPtr.VtxBuffer.Size * sizeof(ImDrawVert)));
+                                         imDrawListPtr.VtxBuffer.Size);
 
             _graphicsDevice.UpdateBuffer(_indexBuffer,
                                          indexOffsetInElements * sizeof(ushort),
                                          imDrawListPtr.IdxBuffer.Data,
-                                         (uint)(imDrawListPtr.IdxBuffer.Size * sizeof(ushort)));
+                                         imDrawListPtr.IdxBuffer.Size);
 
             vertexOffsetInVertices += (uint)imDrawListPtr.VtxBuffer.Size;
             indexOffsetInElements += (uint)imDrawListPtr.IdxBuffer.Size;
@@ -410,7 +410,7 @@ void main()
             float y = drawDataPtr.DisplayPos.Y;
             float num2 = drawDataPtr.DisplayPos.Y + drawDataPtr.DisplaySize.Y;
 
-            Span<float> span =
+            float[] matrix =
             [
                 2.0f / (num1 - x),
                 0.0f,
@@ -430,7 +430,7 @@ void main()
                 1.0f
             ];
 
-            _graphicsDevice.UpdateBuffer<float>(_uboBuffer, 0, span);
+            _graphicsDevice.UpdateBuffer<float>(_uboBuffer, 0, matrix);
         }
 
         commandList.SetVertexBuffer(0, _vertexBuffer);
