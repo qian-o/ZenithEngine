@@ -218,11 +218,13 @@ public unsafe class GraphicsDevice : ContextObject
         swapChain = new Swapchain(this, in swapchainDescription);
     }
 
-    public void UpdateBuffer(DeviceBuffer buffer, uint bufferOffsetInBytes, void* source, uint sizeInBytes)
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
     {
+        uint sizeInBytes = (uint)(sizeof(T) * length);
+
         if (bufferOffsetInBytes + sizeInBytes > buffer.SizeInBytes)
         {
-            throw new ArgumentOutOfRangeException(nameof(sizeInBytes), "The buffer offset and size exceed the buffer size.");
+            throw new ArgumentOutOfRangeException(nameof(bufferOffsetInBytes), "The buffer offset and size exceed the buffer size.");
         }
 
         if (sizeInBytes == 0)
@@ -265,27 +267,12 @@ public unsafe class GraphicsDevice : ContextObject
         }
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
-    {
-        UpdateBuffer(buffer, bufferOffsetInBytes, source, (uint)(sizeof(T) * length));
-    }
-
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ref readonly T source, int length) where T : unmanaged
-    {
-        fixed (T* sourcePointer = &source)
-        {
-            UpdateBuffer(buffer, bufferOffsetInBytes, sourcePointer, length);
-        }
-    }
-
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T source) where T : unmanaged
-    {
-        UpdateBuffer(buffer, bufferOffsetInBytes, in source, 1);
-    }
-
     public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ReadOnlySpan<T> source) where T : unmanaged
     {
-        UpdateBuffer(buffer, bufferOffsetInBytes, in source.GetPinnableReference(), source.Length);
+        fixed (T* sourcePointer = source)
+        {
+            UpdateBuffer(buffer, bufferOffsetInBytes, sourcePointer, source.Length);
+        }
     }
 
     public void UpdateTexture(Texture texture,

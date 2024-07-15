@@ -125,11 +125,11 @@ void main()
         _endBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
         _stepBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
-        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, (Vertex*)Unsafe.AsPointer(ref triangleVertices[0]), triangleVertices.Length);
-        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, (ushort*)Unsafe.AsPointer(ref triangleIndices[0]), triangleIndices.Length);
-        _graphicsDevice.UpdateBuffer(_beginBuffer, 0, new Ubo { Value = new Vector4(1.0f, 0.0f, 0.0f, 1.0f) });
-        _graphicsDevice.UpdateBuffer(_endBuffer, 0, new Ubo { Value = new Vector4(0.0f, 0.0f, 1.0f, 1.0f) });
-        _graphicsDevice.UpdateBuffer(_stepBuffer, 0, new Ubo { Value = new Vector4(0.2f) });
+        _graphicsDevice.UpdateBuffer<Vertex>(_vertexBuffer, 0, triangleVertices);
+        _graphicsDevice.UpdateBuffer<ushort>(_indexBuffer, 0, triangleIndices);
+        _graphicsDevice.UpdateBuffer(_beginBuffer, 0, [new Ubo { Value = new Vector4(1.0f, 0.0f, 0.0f, 1.0f) }]);
+        _graphicsDevice.UpdateBuffer(_endBuffer, 0, [new Ubo { Value = new Vector4(0.0f, 0.0f, 1.0f, 1.0f) }]);
+        _graphicsDevice.UpdateBuffer(_stepBuffer, 0, [new Ubo { Value = new Vector4(0.2f) }]);
 
         ResourceLayoutDescription resourceLayoutDescription = new(new ResourceLayoutElementDescription("Begin", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                                                                   new ResourceLayoutElementDescription("End", ResourceKind.UniformBuffer, ShaderStages.Fragment),
@@ -166,7 +166,7 @@ void main()
 
     private static void Window_Update(object? sender, UpdateEventArgs e)
     {
-        _graphicsDevice.UpdateBuffer(_stepBuffer, 0, new Ubo { Value = new Vector4(((float)Math.Sin(e.TotalTime) * 0.5f) + 0.5f) });
+        _graphicsDevice.UpdateBuffer(_stepBuffer, 0, [new Ubo { Value = new Vector4(((float)Math.Sin(e.TotalTime) * 0.5f) + 0.5f) }]);
     }
 
     private static void Window_Render(object? sender, RenderEventArgs e)
