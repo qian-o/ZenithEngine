@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Graphics.Core;
 using Hexa.NET.ImGui;
@@ -368,6 +369,11 @@ void main()
             return;
         }
 
+        if (drawDataPtr.TotalVtxCount == 0 || drawDataPtr.TotalIdxCount == 0)
+        {
+            return;
+        }
+
         uint totalVBSize = (uint)(drawDataPtr.TotalVtxCount * sizeof(ImDrawVert));
         if (totalVBSize > _vertexBuffer.SizeInBytes)
         {
@@ -382,25 +388,29 @@ void main()
             _indexBuffer = _factory.CreateBuffer(new BufferDescription((uint)(totalIBSize * 1.5f), BufferUsage.IndexBuffer | BufferUsage.Dynamic));
         }
 
-        uint vertexOffsetInVertices = 0;
-        uint indexOffsetInElements = 0;
-
-        for (int i = 0; i < drawDataPtr.CmdListsCount; i++)
+        // Update vertex and index buffers
         {
-            ImDrawListPtr imDrawListPtr = drawDataPtr.CmdLists.Data[i];
+            ImDrawVert* imDrawVertPtr = (ImDrawVert*)_vertexBuffer.Map(totalVBSize);
+            ushort* imDrawIdxPtr = (ushort*)_indexBuffer.Map(totalIBSize);
 
-            _graphicsDevice.UpdateBuffer(_vertexBuffer,
-                                         vertexOffsetInVertices * (uint)sizeof(ImDrawVert),
-                                         imDrawListPtr.VtxBuffer.Data,
-                                         imDrawListPtr.VtxBuffer.Size);
+            for (int i = 0; i < drawDataPtr.CmdListsCount; i++)
+            {
+                ImDrawListPtr imDrawListPtr = drawDataPtr.CmdLists.Data[i];
 
-            _graphicsDevice.UpdateBuffer(_indexBuffer,
-                                         indexOffsetInElements * sizeof(ushort),
-                                         imDrawListPtr.IdxBuffer.Data,
-                                         imDrawListPtr.IdxBuffer.Size);
+                Unsafe.CopyBlock(imDrawVertPtr,
+                                 imDrawListPtr.VtxBuffer.Data,
+                                 (uint)(imDrawListPtr.VtxBuffer.Size * sizeof(ImDrawVert)));
 
-            vertexOffsetInVertices += (uint)imDrawListPtr.VtxBuffer.Size;
-            indexOffsetInElements += (uint)imDrawListPtr.IdxBuffer.Size;
+                Unsafe.CopyBlock(imDrawIdxPtr,
+                                 imDrawListPtr.IdxBuffer.Data,
+                                 (uint)(imDrawListPtr.IdxBuffer.Size * sizeof(ushort)));
+
+                imDrawVertPtr += imDrawListPtr.VtxBuffer.Size;
+                imDrawIdxPtr += imDrawListPtr.IdxBuffer.Size;
+            }
+
+            _vertexBuffer.Unmap();
+            _indexBuffer.Unmap();
         }
 
         // Orthographic projection matrix
@@ -543,7 +553,7 @@ void main()
     {
         _vertexBuffer = _factory.CreateBuffer(new BufferDescription(10000, BufferUsage.VertexBuffer | BufferUsage.Dynamic));
         _indexBuffer = _factory.CreateBuffer(new BufferDescription(2000, BufferUsage.IndexBuffer | BufferUsage.Dynamic));
-        _uboBuffer = _factory.CreateBuffer(new BufferDescription((uint)sizeof(Matrix4x4), BufferUsage.UniformBuffer));
+        _uboBuffer = _factory.CreateBuffer(new BufferDescription((uint)sizeof(Matrix4x4), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
         Shader[] shaders = _factory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(VertexShader), "main"),
                                                     new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(FragmentShader), "main"));
