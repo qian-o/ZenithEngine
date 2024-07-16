@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Hexa.NET.ImGui;
@@ -361,18 +362,12 @@ void main()
 
     private void RenderImDrawData(CommandList commandList, ImDrawDataPtr drawDataPtr)
     {
-        int framebufferWidth = (int)(drawDataPtr.DisplaySize.X * drawDataPtr.FramebufferScale.X);
-        int framebufferHeight = (int)(drawDataPtr.DisplaySize.Y * drawDataPtr.FramebufferScale.Y);
-
-        if (framebufferWidth <= 0 || framebufferHeight <= 0)
+        if (drawDataPtr.CmdListsCount == 0)
         {
             return;
         }
 
-        if (drawDataPtr.TotalVtxCount == 0 || drawDataPtr.TotalIdxCount == 0)
-        {
-            return;
-        }
+        ImGuiIOPtr io = ImGui.GetIO();
 
         uint totalVBSize = (uint)(drawDataPtr.TotalVtxCount * sizeof(ImDrawVert));
         if (totalVBSize > _vertexBuffer.SizeInBytes)
@@ -390,23 +385,23 @@ void main()
 
         // Update vertex and index buffers
         {
-            ImDrawVert* imDrawVertPtr = (ImDrawVert*)_vertexBuffer.Map(totalVBSize);
-            ushort* imDrawIdxPtr = (ushort*)_indexBuffer.Map(totalIBSize);
+            ImDrawVert* vertMap = (ImDrawVert*)_vertexBuffer.Map(totalVBSize);
+            ushort* idxMap = (ushort*)_indexBuffer.Map(totalIBSize);
 
             for (int i = 0; i < drawDataPtr.CmdListsCount; i++)
             {
                 ImDrawListPtr imDrawListPtr = drawDataPtr.CmdLists.Data[i];
 
-                Unsafe.CopyBlock(imDrawVertPtr,
+                Unsafe.CopyBlock(vertMap,
                                  imDrawListPtr.VtxBuffer.Data,
                                  (uint)(imDrawListPtr.VtxBuffer.Size * sizeof(ImDrawVert)));
 
-                Unsafe.CopyBlock(imDrawIdxPtr,
+                Unsafe.CopyBlock(idxMap,
                                  imDrawListPtr.IdxBuffer.Data,
                                  (uint)(imDrawListPtr.IdxBuffer.Size * sizeof(ushort)));
 
-                imDrawVertPtr += imDrawListPtr.VtxBuffer.Size;
-                imDrawIdxPtr += imDrawListPtr.IdxBuffer.Size;
+                vertMap += imDrawListPtr.VtxBuffer.Size;
+                idxMap += imDrawListPtr.IdxBuffer.Size;
             }
 
             _vertexBuffer.Unmap();
@@ -415,32 +410,18 @@ void main()
 
         // Orthographic projection matrix
         {
-            float x = drawDataPtr.DisplayPos.X;
-            float num1 = drawDataPtr.DisplayPos.X + drawDataPtr.DisplaySize.X;
-            float y = drawDataPtr.DisplayPos.Y;
-            float num2 = drawDataPtr.DisplayPos.Y + drawDataPtr.DisplaySize.Y;
+            void* uboMap = _uboBuffer.Map((uint)sizeof(Matrix4x4));
 
-            float[] matrix =
-            [
-                2.0f / (num1 - x),
-                0.0f,
-                0.0f,
-                0.0f,
-                0.0f,
-                2.0f / (y - num2),
-                0.0f,
-                0.0f,
-                0.0f,
-                0.0f,
-                -1.0f,
-                0.0f,
-                (num1 + x) / (x - num1),
-                (y + num2) / (num2 - y),
-                0.0f,
-                1.0f
-            ];
+            Matrix4x4 orthoProjection = Matrix4x4.CreateOrthographicOffCenter(0.0f,
+                                                                              io.DisplaySize.X,
+                                                                              io.DisplaySize.Y,
+                                                                              0.0f,
+                                                                              -1.0f,
+                                                                              1.0f);
 
-            _graphicsDevice.UpdateBuffer(_uboBuffer, 0, matrix);
+            Unsafe.CopyBlock(uboMap, &orthoProjection, (uint)sizeof(Matrix4x4));
+
+            _uboBuffer.Unmap();
         }
 
         commandList.SetVertexBuffer(0, _vertexBuffer);
@@ -448,7 +429,7 @@ void main()
         commandList.SetPipeline(_pipeline);
         commandList.SetGraphicsResourceSet(0, _resourceSet);
 
-        drawDataPtr.ScaleClipRects(ImGui.GetIO().DisplayFramebufferScale);
+        drawDataPtr.ScaleClipRects(io.DisplayFramebufferScale);
 
         int vertexOffset = 0;
         int indexOffset = 0;
@@ -460,19 +441,27 @@ void main()
             {
                 ImDrawCmd imDrawCmd = imDrawListPtr.CmdBuffer.Data[j];
 
-                commandList.SetGraphicsResourceSet(1, GetResourceSet(imDrawCmd.TextureId.Handle));
+                if (imDrawCmd.UserCallback != null)
+                {
+                    ImDrawCallback callback = Marshal.GetDelegateForFunctionPointer<ImDrawCallback>((nint)imDrawCmd.UserCallback);
+                    callback(imDrawListPtr, &imDrawCmd);
+                }
+                else
+                {
+                    commandList.SetGraphicsResourceSet(1, GetResourceSet(imDrawCmd.TextureId.Handle));
 
-                commandList.SetScissorRect(0,
-                                           (uint)imDrawCmd.ClipRect.X,
-                                           (uint)imDrawCmd.ClipRect.Y,
-                                           (uint)(imDrawCmd.ClipRect.Z - imDrawCmd.ClipRect.X),
-                                           (uint)(imDrawCmd.ClipRect.W - imDrawCmd.ClipRect.Y));
+                    commandList.SetScissorRect(0,
+                                               (uint)imDrawCmd.ClipRect.X,
+                                               (uint)imDrawCmd.ClipRect.Y,
+                                               (uint)(imDrawCmd.ClipRect.Z - imDrawCmd.ClipRect.X),
+                                               (uint)(imDrawCmd.ClipRect.W - imDrawCmd.ClipRect.Y));
 
-                commandList.DrawIndexed(imDrawCmd.ElemCount,
-                                        1,
-                                        imDrawCmd.IdxOffset + (uint)indexOffset,
-                                        (int)imDrawCmd.VtxOffset + vertexOffset,
-                                        0);
+                    commandList.DrawIndexed(imDrawCmd.ElemCount,
+                                            1,
+                                            (uint)(imDrawCmd.IdxOffset + indexOffset),
+                                            (int)(imDrawCmd.VtxOffset + vertexOffset),
+                                            0);
+                }
             }
 
             vertexOffset += imDrawListPtr.VtxBuffer.Size;
