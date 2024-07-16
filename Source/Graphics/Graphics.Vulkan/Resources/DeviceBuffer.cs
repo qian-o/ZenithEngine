@@ -77,6 +77,27 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
 
     public bool IsHostVisible => _isHostVisible;
 
+    public void* Map(ulong sizeInBytes, ulong offsetInBytes = 0)
+    {
+        if (!IsHostVisible)
+        {
+            throw new InvalidOperationException("Cannot map a device buffer that is not host visible.");
+        }
+
+        void* data;
+        Vk.MapMemory(Device, _deviceMemory.Handle, offsetInBytes, sizeInBytes, 0, &data).ThrowCode();
+
+        return data;
+    }
+
+    public void Unmap()
+    {
+        if (IsHostVisible)
+        {
+            Vk.UnmapMemory(Device, _deviceMemory.Handle);
+        }
+    }
+
     protected override void Destroy()
     {
         Vk.DestroyBuffer(Device, _buffer, null);

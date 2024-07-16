@@ -23,19 +23,6 @@ internal sealed unsafe class DeviceMemory : DeviceResource
 
     internal VkDeviceMemory Handle => _deviceMemory;
 
-    public void* Map(ulong size, ulong offset = 0)
-    {
-        void* data;
-        Vk.MapMemory(Device, _deviceMemory, offset, size, 0, &data).ThrowCode();
-
-        return data;
-    }
-
-    public void Unmap()
-    {
-        Vk.UnmapMemory(Device, _deviceMemory);
-    }
-
     protected override void Destroy()
     {
         Vk.FreeMemory(Device, _deviceMemory, null);

@@ -235,21 +235,21 @@ public unsafe class GraphicsDevice : ContextObject
 
         if (buffer.IsHostVisible)
         {
-            void* bufferPointer = buffer.DeviceMemory.Map(sizeInBytes, bufferOffsetInBytes);
+            void* bufferPointer = buffer.Map(sizeInBytes, bufferOffsetInBytes);
 
             Unsafe.CopyBlock(bufferPointer, source, sizeInBytes);
 
-            buffer.DeviceMemory.Unmap();
+            buffer.Unmap();
         }
         else
         {
             DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
 
-            void* stagingBufferPointer = stagingBuffer.DeviceMemory.Map(sizeInBytes);
+            void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
 
             Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
 
-            stagingBuffer.DeviceMemory.Unmap();
+            stagingBuffer.Unmap();
 
             CommandBuffer commandBuffer = BeginSingleTimeCommands();
 
@@ -324,11 +324,11 @@ public unsafe class GraphicsDevice : ContextObject
 
         DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
 
-        void* stagingBufferPointer = stagingBuffer.DeviceMemory.Map(sizeInBytes);
+        void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
 
         Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
 
-        stagingBuffer.DeviceMemory.Unmap();
+        stagingBuffer.Unmap();
 
         texture.TransitionImageLayout(ImageLayout.TransferDstOptimal);
 
