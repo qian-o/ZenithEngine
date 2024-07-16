@@ -38,7 +38,7 @@ public unsafe partial class Context : DisposableObject
 
         // Load instance extensions
         _debugUtilsExt = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
-        _surfaceExt = CreateInstanceExtension<KhrSurface>()!;
+        _surfaceExt = CreateInstanceExtension<KhrSurface>();
 
         // Debug message callback
         if (Debugging)
@@ -178,7 +178,7 @@ public unsafe partial class Context : DisposableObject
     /// <typeparam name="T">T</typeparam>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException">InvalidOperationException</exception>
-    private T? CreateInstanceExtension<T>() where T : NativeExtension<Vk>
+    private T CreateInstanceExtension<T>() where T : NativeExtension<Vk>
     {
         if (!_vk.TryGetInstanceExtension(_instance, out T ext))
         {

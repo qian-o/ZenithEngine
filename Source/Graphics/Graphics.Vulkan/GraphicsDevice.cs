@@ -534,7 +534,7 @@ public unsafe partial class Context
         Device device;
         _vk.CreateDevice(physicalDevice.VkPhysicalDevice, &createInfo, null, &device).ThrowCode("Failed to create device.");
 
-        KhrSwapchain swapchainExt = CreateDeviceExtension<KhrSwapchain>(device)!;
+        KhrSwapchain swapchainExt = CreateDeviceExtension<KhrSwapchain>(device);
 
         SurfaceKHR windowSurface = window.IWindow.VkSurface!.Create<AllocationCallbacks>(_instance.ToHandle(), null).ToSurface();
 
@@ -554,7 +554,7 @@ public unsafe partial class Context
         return graphicsDevice;
     }
 
-    private T? CreateDeviceExtension<T>(Device device) where T : NativeExtension<Vk>
+    private T CreateDeviceExtension<T>(Device device) where T : NativeExtension<Vk>
     {
         if (!_vk.TryGetDeviceExtension(_instance, device, out T ext))
         {

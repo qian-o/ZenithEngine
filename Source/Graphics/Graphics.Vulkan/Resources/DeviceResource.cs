@@ -5,6 +5,10 @@ namespace Graphics.Vulkan;
 
 public abstract class DeviceResource(GraphicsDevice graphicsDevice) : ContextObject(graphicsDevice.Context)
 {
+    private string name = string.Empty;
+
+    public string Name { get => name; set => name = value; }
+
     internal PhysicalDevice PhysicalDevice => graphicsDevice.PhysicalDevice;
 
     internal VkPhysicalDevice VkPhysicalDevice => graphicsDevice.PhysicalDevice.VkPhysicalDevice;
