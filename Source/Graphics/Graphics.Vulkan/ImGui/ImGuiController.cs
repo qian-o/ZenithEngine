@@ -574,6 +574,7 @@ void main()
         };
 
         _pipeline = _factory.CreateGraphicsPipeline(pipelineDescription);
+        _pipeline.Name = "ImGui Pipeline";
 
         RecreateFontDeviceTexture();
 

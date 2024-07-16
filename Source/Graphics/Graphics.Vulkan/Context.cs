@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Text;
 using Graphics.Core;
 using Silk.NET.Core;
 using Silk.NET.Core.Native;
@@ -68,6 +70,8 @@ public unsafe partial class Context : DisposableObject
     internal Vk Vk => _vk;
 
     internal Instance Instance => _instance;
+
+    internal ExtDebugUtils? DebugUtilsExt => _debugUtilsExt;
 
     internal KhrSurface SurfaceExt => _surfaceExt;
 
@@ -194,8 +198,28 @@ public unsafe partial class Context : DisposableObject
                                       void* pUserData)
     {
         string message = Alloter.GetString(pCallbackData->PMessage);
+        string[] strings = message.Split('|', StringSplitOptions.TrimEntries);
 
-        Console.WriteLine($"[{messageSeverity}] {message}");
+        StringBuilder stringBuilder = new();
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{messageSeverity}] [{messageTypes}]");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Alloter.GetString(pCallbackData->PMessageIdName)}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Number: {pCallbackData->MessageIdNumber}");
+        foreach (string str in strings)
+        {
+            stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");
+        }
+
+        Console.ForegroundColor = messageSeverity switch
+        {
+            DebugUtilsMessageSeverityFlagsEXT.InfoBitExt => ConsoleColor.Blue,
+            DebugUtilsMessageSeverityFlagsEXT.WarningBitExt => ConsoleColor.Yellow,
+            DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt => ConsoleColor.Red,
+            _ => ConsoleColor.White
+        };
+
+        Console.WriteLine(stringBuilder);
+
+        Console.ForegroundColor = ConsoleColor.White;
 
         return Vk.False;
     }
