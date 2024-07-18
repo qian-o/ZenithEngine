@@ -14,6 +14,7 @@ public unsafe class CommandList : DeviceResource
     private bool _isRecording;
     private Framebuffer? _currentFramebuffer;
     private Pipeline? _currentPipeline;
+    private bool _isInRenderPass;
 
     internal CommandList(GraphicsDevice graphicsDevice, Queue queue, Fence fence, CommandPool commandPool) : base(graphicsDevice)
     {
@@ -44,7 +45,7 @@ public unsafe class CommandList : DeviceResource
     {
         if (_isRecording)
         {
-            throw new InvalidOperationException("Command list is already recording");
+            throw new InvalidOperationException("Command list is already recording.");
         }
 
         Vk.ResetCommandBuffer(_commandBuffer, CommandBufferResetFlags.None).ThrowCode();
@@ -62,7 +63,10 @@ public unsafe class CommandList : DeviceResource
 
     public void SetFramebuffer(Framebuffer framebuffer)
     {
-        EndCurrentRenderPass();
+        if (_isInRenderPass)
+        {
+            EndCurrentRenderPass();
+        }
 
         _currentFramebuffer = framebuffer;
 
@@ -105,7 +109,7 @@ public unsafe class CommandList : DeviceResource
     {
         if (_currentFramebuffer == null)
         {
-            throw new InvalidOperationException("No framebuffer set");
+            throw new InvalidOperationException("No framebuffer set.");
         }
 
         for (uint i = 0; i < _currentFramebuffer.ColorAttachmentCount; i++)
@@ -118,7 +122,7 @@ public unsafe class CommandList : DeviceResource
     {
         if (_currentFramebuffer == null)
         {
-            throw new InvalidOperationException("No framebuffer set");
+            throw new InvalidOperationException("No framebuffer set.");
         }
 
         for (uint i = 0; i < _currentFramebuffer.ColorAttachmentCount; i++)
@@ -131,7 +135,7 @@ public unsafe class CommandList : DeviceResource
     {
         if (_currentFramebuffer == null)
         {
-            throw new InvalidOperationException("No framebuffer set");
+            throw new InvalidOperationException("No framebuffer set.");
         }
 
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _currentFramebuffer.ColorAttachmentCount);
@@ -165,12 +169,12 @@ public unsafe class CommandList : DeviceResource
     {
         if (_currentFramebuffer == null)
         {
-            throw new InvalidOperationException("No framebuffer set");
+            throw new InvalidOperationException("No framebuffer set.");
         }
 
         if (_currentFramebuffer.DepthAttachmentCount == 0)
         {
-            throw new InvalidOperationException("Framebuffer does not have a depth attachment");
+            throw new InvalidOperationException("Framebuffer does not have a depth attachment.");
         }
 
         ClearAttachment clearAttachment = new()
@@ -239,7 +243,7 @@ public unsafe class CommandList : DeviceResource
     {
         if (_currentPipeline == null)
         {
-            throw new InvalidOperationException("No pipeline set");
+            throw new InvalidOperationException("No pipeline set.");
         }
 
         VkDescriptorSet descriptorSet = resourceSet.Handle;
@@ -269,6 +273,68 @@ public unsafe class CommandList : DeviceResource
         DrawIndexed(indexCount, 1, 0, 0, 0);
     }
 
+    public void ResolveTexture(Texture source, Texture destination)
+    {
+        if (source.SampleCount == TextureSampleCount.Count1)
+        {
+            throw new InvalidOperationException("Source texture must be multisampled.");
+        }
+
+        if (destination.SampleCount != TextureSampleCount.Count1)
+        {
+            throw new InvalidOperationException("Destination texture must not be multisampled.");
+        }
+
+        if (_isInRenderPass)
+        {
+            EndCurrentRenderPass();
+        }
+
+        source.TransitionImageLayout(_commandBuffer, ImageLayout.TransferSrcOptimal);
+        destination.TransitionImageLayout(_commandBuffer, ImageLayout.TransferDstOptimal);
+
+        ImageAspectFlags aspectMask = source.Usage.HasFlag(TextureUsage.DepthStencil)
+            ? ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit
+            : ImageAspectFlags.ColorBit;
+
+        ImageResolve resolve = new()
+        {
+            Extent = new Extent3D
+            {
+                Width = source.Width,
+                Height = source.Height,
+                Depth = source.Depth
+            },
+            SrcSubresource = new ImageSubresourceLayers
+            {
+                AspectMask = aspectMask,
+                MipLevel = 0,
+                BaseArrayLayer = 0,
+                LayerCount = 1
+            },
+            SrcOffset = new Offset3D(),
+            DstSubresource = new ImageSubresourceLayers
+            {
+                AspectMask = aspectMask,
+                MipLevel = 0,
+                BaseArrayLayer = 0,
+                LayerCount = 1
+            },
+            DstOffset = new Offset3D()
+        };
+
+        Vk.CmdResolveImage(_commandBuffer,
+                           source.Handle,
+                           ImageLayout.TransferSrcOptimal,
+                           destination.Handle,
+                           ImageLayout.TransferDstOptimal,
+                           1,
+                           &resolve);
+
+        source.TransitionToBestLayout(_commandBuffer);
+        destination.TransitionToBestLayout(_commandBuffer);
+    }
+
     public void End()
     {
         if (!_isRecording)
@@ -280,8 +346,6 @@ public unsafe class CommandList : DeviceResource
 
         Vk.EndCommandBuffer(_commandBuffer).ThrowCode();
 
-        _currentFramebuffer = null;
-
         _isRecording = false;
     }
 
@@ -292,12 +356,7 @@ public unsafe class CommandList : DeviceResource
 
     private void BeginCurrentRenderPass()
     {
-        if (_currentFramebuffer == null)
-        {
-            throw new InvalidOperationException("No framebuffer set");
-        }
-
-        ClearColorValue[] clearColorValues = new ClearColorValue[_currentFramebuffer.AttachmentCount];
+        ClearColorValue[] clearColorValues = new ClearColorValue[_currentFramebuffer!.AttachmentCount];
         for (int i = 0; i < clearColorValues.Length; i++)
         {
             clearColorValues[i] = new ClearColorValue(0, 0, 0, 0);
@@ -327,15 +386,12 @@ public unsafe class CommandList : DeviceResource
         };
 
         Vk.CmdBeginRenderPass(_commandBuffer, &beginInfo, SubpassContents.Inline);
+
+        _isInRenderPass = true;
     }
 
     private void EndCurrentRenderPass()
     {
-        if (_currentFramebuffer == null)
-        {
-            return;
-        }
-
         Vk.CmdEndRenderPass(_commandBuffer);
 
         Vk.CmdPipelineBarrier(_commandBuffer,
@@ -348,5 +404,7 @@ public unsafe class CommandList : DeviceResource
                               null,
                               0,
                               null);
+
+        _isInRenderPass = false;
     }
 }

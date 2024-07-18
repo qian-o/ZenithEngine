@@ -123,24 +123,8 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
     public uint ArrayLayers => _arrayLayers;
 
-    internal void TransitionToBestLayout()
+    internal void TransitionImageLayout(CommandBuffer commandBuffer, ImageLayout newLayout)
     {
-        ImageLayout newLayout = _usage switch
-        {
-            TextureUsage.DepthStencil => ImageLayout.DepthStencilAttachmentOptimal,
-            TextureUsage.RenderTarget => ImageLayout.ColorAttachmentOptimal,
-            TextureUsage.Sampled => ImageLayout.ShaderReadOnlyOptimal,
-            TextureUsage.Staging => ImageLayout.General,
-            _ => throw new InvalidOperationException("Unsupported texture usage!")
-        };
-
-        TransitionImageLayout(newLayout);
-    }
-
-    internal void TransitionImageLayout(ImageLayout newLayout)
-    {
-        CommandBuffer commandBuffer = GraphicsDevice.BeginSingleTimeCommands();
-
         ImageMemoryBarrier barrier = new()
         {
             SType = StructureType.ImageMemoryBarrier,
@@ -353,9 +337,37 @@ public unsafe class Texture : DeviceResource, IBindableResource
                               1,
                               &barrier);
 
-        GraphicsDevice.EndSingleTimeCommands(commandBuffer);
-
         _layout = newLayout;
+    }
+
+    internal void TransitionImageLayout(ImageLayout newLayout)
+    {
+        CommandBuffer commandBuffer = GraphicsDevice.BeginSingleTimeCommands();
+
+        TransitionImageLayout(commandBuffer, newLayout);
+
+        GraphicsDevice.EndSingleTimeCommands(commandBuffer);
+    }
+
+    internal void TransitionToBestLayout(CommandBuffer? commandBuffer = null)
+    {
+        ImageLayout newLayout = _usage switch
+        {
+            TextureUsage.DepthStencil => ImageLayout.DepthStencilAttachmentOptimal,
+            TextureUsage.RenderTarget => ImageLayout.ColorAttachmentOptimal,
+            TextureUsage.Sampled => ImageLayout.ShaderReadOnlyOptimal,
+            TextureUsage.Staging => ImageLayout.General,
+            _ => throw new InvalidOperationException("Unsupported texture usage!")
+        };
+
+        if (commandBuffer == null)
+        {
+            TransitionImageLayout(newLayout);
+        }
+        else
+        {
+            TransitionImageLayout(commandBuffer.Value, newLayout);
+        }
     }
 
     internal void GenerateMipmaps()
