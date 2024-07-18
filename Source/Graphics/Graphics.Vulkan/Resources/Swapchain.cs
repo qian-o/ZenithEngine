@@ -18,7 +18,7 @@ public unsafe class Swapchain : DeviceResource
     {
         if (description.Width == 0 || description.Height == 0)
         {
-            return;
+            throw new ArgumentException("Invalid swapchain dimensions", nameof(description));
         }
 
         SurfaceCapabilitiesKHR surfaceCapabilities;
