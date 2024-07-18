@@ -213,6 +213,16 @@ public unsafe class GraphicsDevice : ContextObject
     {
         swapChain?.Dispose();
 
+        if (width == 0)
+        {
+            width = 1;
+        }
+
+        if (height == 0)
+        {
+            height = 1;
+        }
+
         SwapchainDescription swapchainDescription = new(_windowSurface, width, height, _depthFormat);
 
         swapChain = new Swapchain(this, in swapchainDescription);
