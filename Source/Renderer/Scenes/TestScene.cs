@@ -1,9 +1,10 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
+using Renderer.Components;
 
-namespace Renderer.Components.Scenes;
+namespace Renderer.Scenes;
 
-internal sealed class TestScene(GraphicsDevice graphicsDevice, ImGuiController imGuiController) : SubScene(graphicsDevice, imGuiController)
+internal sealed class TestScene(GraphicsDevice graphicsDevice, ImGuiController imGuiController) : Scene(graphicsDevice, imGuiController)
 {
     protected override void UpdateCore(UpdateEventArgs e)
     {

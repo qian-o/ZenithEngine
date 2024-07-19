@@ -1,11 +1,12 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
 using Hexa.NET.ImGui;
-using Renderer.Components.Scenes;
+using Renderer.Components;
+using Renderer.Scenes;
 
-namespace Renderer.Components;
+namespace Renderer;
 
-internal sealed class MainScene : DisposableObject
+internal sealed class MainWindow : DisposableObject
 {
     private readonly Window _window;
     private readonly Context _context;
@@ -15,7 +16,7 @@ internal sealed class MainScene : DisposableObject
 
     private bool _firstFrame = true;
 
-    public MainScene(Window window)
+    public MainWindow(Window window)
     {
         if (!window.IsInitialized)
         {
@@ -32,19 +33,19 @@ internal sealed class MainScene : DisposableObject
         _window.Render += Window_Render;
         _window.Resize += Window_Resize;
 
-        SubScenes.Add(CreateSubScene<TestScene>());
+        Scenes.Add(CreateScene<TestScene>());
     }
 
-    public List<SubScene> SubScenes { get; } = [];
+    public List<Scene> Scenes { get; } = [];
 
-    public TSubScene CreateSubScene<TSubScene>() where TSubScene : SubScene
+    public TScene CreateScene<TScene>() where TScene : Scene
     {
-        return (TSubScene)Activator.CreateInstance(typeof(TSubScene), _graphicsDevice, _imGuiController)!;
+        return (TScene)Activator.CreateInstance(typeof(TScene), _graphicsDevice, _imGuiController)!;
     }
 
     protected override void Destroy()
     {
-        foreach (SubScene subScene in SubScenes)
+        foreach (Scene subScene in Scenes)
         {
             subScene.Dispose();
         }
@@ -56,9 +57,9 @@ internal sealed class MainScene : DisposableObject
 
     private void Window_Update(object? sender, UpdateEventArgs e)
     {
-        foreach (SubScene subScene in SubScenes)
+        foreach (Scene scene in Scenes)
         {
-            subScene.Update(e);
+            scene.Update(e);
         }
     }
 
@@ -75,9 +76,9 @@ internal sealed class MainScene : DisposableObject
 
         ImGui.DockSpaceOverViewport();
 
-        foreach (SubScene subScene in SubScenes)
+        foreach (Scene scene in Scenes)
         {
-            subScene.Render(e);
+            scene.Render(e);
         }
 
         _commandList.Begin();

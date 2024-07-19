@@ -5,7 +5,7 @@ using Hexa.NET.ImGui;
 
 namespace Renderer.Components;
 
-internal abstract class SubScene(GraphicsDevice graphicsDevice, ImGuiController imGuiController) : DisposableObject
+internal abstract class Scene(GraphicsDevice graphicsDevice, ImGuiController imGuiController) : DisposableObject
 {
     private readonly FBO _fbo = new(graphicsDevice.ResourceFactory);
     private readonly CommandList _commandList = graphicsDevice.ResourceFactory.CreateGraphicsCommandList();
