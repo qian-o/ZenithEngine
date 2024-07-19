@@ -1,5 +1,4 @@
-﻿global using SilkWindow = Silk.NET.Windowing.Window;
-global using VkBlendFactor = Silk.NET.Vulkan.BlendFactor;
+﻿global using VkBlendFactor = Silk.NET.Vulkan.BlendFactor;
 global using VkBuffer = Silk.NET.Vulkan.Buffer;
 global using VkDescriptorPool = Silk.NET.Vulkan.DescriptorPool;
 global using VkDescriptorSet = Silk.NET.Vulkan.DescriptorSet;

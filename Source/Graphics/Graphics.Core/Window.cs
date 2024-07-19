@@ -1,9 +1,8 @@
-﻿using Graphics.Core;
-using Silk.NET.Input;
+﻿using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Core;
 
 public class Window : DisposableObject
 {
@@ -14,18 +13,9 @@ public class Window : DisposableObject
     private IKeyboard? keyboard;
     private bool isInitialized;
 
-    public Window()
+    internal Window(IWindow window)
     {
-        WindowOptions windowOptions = WindowOptions.DefaultVulkan;
-        windowOptions.API = new GraphicsAPI()
-        {
-            API = ContextAPI.Vulkan,
-            Profile = ContextProfile.Core,
-            Flags = ContextFlags.ForwardCompatible,
-            Version = new APIVersion(1, 3)
-        };
-
-        _window = SilkWindow.Create(windowOptions);
+        _window = window;
     }
 
     public event EventHandler<LoadEventArgs>? Load;
@@ -37,6 +27,8 @@ public class Window : DisposableObject
     public event EventHandler<ResizeEventArgs>? Resize;
 
     public event EventHandler<CloseEventArgs>? Close;
+
+    public bool IsInitialized => isInitialized;
 
     public string Title
     {
@@ -100,5 +92,19 @@ public class Window : DisposableObject
         }
 
         return value!;
+    }
+
+    public static Window CreateWindowByVulkan()
+    {
+        WindowOptions windowOptions = WindowOptions.DefaultVulkan;
+        windowOptions.API = new GraphicsAPI()
+        {
+            API = ContextAPI.Vulkan,
+            Profile = ContextProfile.Core,
+            Flags = ContextFlags.ForwardCompatible,
+            Version = new APIVersion(1, 3)
+        };
+
+        return new Window(SilkWindow.Create(windowOptions));
     }
 }

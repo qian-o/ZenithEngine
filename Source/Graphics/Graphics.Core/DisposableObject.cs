@@ -9,6 +9,8 @@ public abstract class DisposableObject : IDisposable
         Dispose();
     }
 
+    public string Id { get; } = Guid.NewGuid().ToString();
+
     public bool IsDisposed => _isDisposed != 0;
 
     public void Dispose()
