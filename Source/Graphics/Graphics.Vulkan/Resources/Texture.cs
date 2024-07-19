@@ -164,184 +164,69 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
         // Transition layouts.
         {
-            if ((_layout == ImageLayout.Undefined || _layout == ImageLayout.Preinitialized) && newLayout == ImageLayout.TransferDstOptimal)
+            if (_layout == ImageLayout.Undefined || _layout == ImageLayout.Preinitialized)
             {
                 barrier.SrcAccessMask = AccessFlags.None;
-                barrier.DstAccessMask = AccessFlags.TransferWriteBit;
                 srcStageFlags = PipelineStageFlags.TopOfPipeBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
             }
-            else if (_layout == ImageLayout.ShaderReadOnlyOptimal && newLayout == ImageLayout.TransferSrcOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.ShaderReadBit;
-                barrier.DstAccessMask = AccessFlags.TransferReadBit;
-                srcStageFlags = PipelineStageFlags.FragmentShaderBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
-            }
-            else if (_layout == ImageLayout.ShaderReadOnlyOptimal && newLayout == ImageLayout.TransferDstOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.ShaderReadBit;
-                barrier.DstAccessMask = AccessFlags.TransferWriteBit;
-                srcStageFlags = PipelineStageFlags.FragmentShaderBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
-            }
-            else if (_layout == ImageLayout.Preinitialized && newLayout == ImageLayout.TransferSrcOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.None;
-                barrier.DstAccessMask = AccessFlags.TransferReadBit;
-                srcStageFlags = PipelineStageFlags.TopOfPipeBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
-            }
-            else if (_layout == ImageLayout.Preinitialized && newLayout == ImageLayout.General)
-            {
-                barrier.SrcAccessMask = AccessFlags.None;
-                barrier.DstAccessMask = AccessFlags.ShaderReadBit;
-                srcStageFlags = PipelineStageFlags.TopOfPipeBit;
-                dstStageFlags = PipelineStageFlags.ComputeShaderBit;
-            }
-            else if (_layout == ImageLayout.Preinitialized && newLayout == ImageLayout.ShaderReadOnlyOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.None;
-                barrier.DstAccessMask = AccessFlags.ShaderReadBit;
-                srcStageFlags = PipelineStageFlags.TopOfPipeBit;
-                dstStageFlags = PipelineStageFlags.FragmentShaderBit;
-            }
-            else if (_layout == ImageLayout.General && newLayout == ImageLayout.ShaderReadOnlyOptimal)
+            else if (_layout == ImageLayout.TransferSrcOptimal)
             {
                 barrier.SrcAccessMask = AccessFlags.TransferReadBit;
-                barrier.DstAccessMask = AccessFlags.ShaderReadBit;
                 srcStageFlags = PipelineStageFlags.TransferBit;
-                dstStageFlags = PipelineStageFlags.FragmentShaderBit;
             }
-            else if (_layout == ImageLayout.ShaderReadOnlyOptimal && newLayout == ImageLayout.General)
-            {
-                barrier.SrcAccessMask = AccessFlags.ShaderReadBit;
-                barrier.DstAccessMask = AccessFlags.ShaderReadBit;
-                srcStageFlags = PipelineStageFlags.FragmentShaderBit;
-                dstStageFlags = PipelineStageFlags.ComputeShaderBit;
-            }
-            else if (_layout == ImageLayout.TransferSrcOptimal && newLayout == ImageLayout.ShaderReadOnlyOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.TransferReadBit;
-                barrier.DstAccessMask = AccessFlags.ShaderReadBit;
-                srcStageFlags = PipelineStageFlags.TransferBit;
-                dstStageFlags = PipelineStageFlags.FragmentShaderBit;
-            }
-            else if (_layout == ImageLayout.TransferDstOptimal && newLayout == ImageLayout.ShaderReadOnlyOptimal)
+            else if (_layout == ImageLayout.TransferDstOptimal)
             {
                 barrier.SrcAccessMask = AccessFlags.TransferWriteBit;
-                barrier.DstAccessMask = AccessFlags.ShaderReadBit;
                 srcStageFlags = PipelineStageFlags.TransferBit;
-                dstStageFlags = PipelineStageFlags.FragmentShaderBit;
             }
-            else if (_layout == ImageLayout.TransferSrcOptimal && newLayout == ImageLayout.TransferDstOptimal)
+            else if (_layout == ImageLayout.ShaderReadOnlyOptimal)
             {
-                barrier.SrcAccessMask = AccessFlags.TransferReadBit;
-                barrier.DstAccessMask = AccessFlags.TransferWriteBit;
-                srcStageFlags = PipelineStageFlags.TransferBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
+                barrier.SrcAccessMask = AccessFlags.ShaderReadBit;
+                srcStageFlags = PipelineStageFlags.FragmentShaderBit;
             }
-            else if (_layout == ImageLayout.TransferDstOptimal && newLayout == ImageLayout.TransferSrcOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.TransferWriteBit;
-                barrier.DstAccessMask = AccessFlags.TransferReadBit;
-                srcStageFlags = PipelineStageFlags.TransferBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
-            }
-            else if (_layout == ImageLayout.TransferSrcOptimal && newLayout == ImageLayout.ColorAttachmentOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.TransferReadBit;
-                barrier.DstAccessMask = AccessFlags.ColorAttachmentWriteBit;
-                srcStageFlags = PipelineStageFlags.TransferBit;
-                dstStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
-            }
-            else if (_layout == ImageLayout.TransferDstOptimal && newLayout == ImageLayout.ColorAttachmentOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.TransferWriteBit;
-                barrier.DstAccessMask = AccessFlags.ColorAttachmentWriteBit;
-                srcStageFlags = PipelineStageFlags.TransferBit;
-                dstStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
-            }
-            else if (_layout == ImageLayout.ColorAttachmentOptimal && newLayout == ImageLayout.TransferSrcOptimal)
+            else if (_layout == ImageLayout.ColorAttachmentOptimal)
             {
                 barrier.SrcAccessMask = AccessFlags.ColorAttachmentWriteBit;
-                barrier.DstAccessMask = AccessFlags.TransferReadBit;
                 srcStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
             }
-            else if (_layout == ImageLayout.ColorAttachmentOptimal && newLayout == ImageLayout.TransferDstOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.ColorAttachmentWriteBit;
-                barrier.DstAccessMask = AccessFlags.TransferWriteBit;
-                srcStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
-            }
-            else if (_layout == ImageLayout.ColorAttachmentOptimal && newLayout == ImageLayout.ShaderReadOnlyOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.ColorAttachmentWriteBit;
-                barrier.DstAccessMask = AccessFlags.ShaderReadBit;
-                srcStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
-                dstStageFlags = PipelineStageFlags.FragmentShaderBit;
-            }
-            else if (_layout == ImageLayout.DepthStencilAttachmentOptimal && newLayout == ImageLayout.ShaderReadOnlyOptimal)
+            else if (_layout == ImageLayout.DepthStencilAttachmentOptimal)
             {
                 barrier.SrcAccessMask = AccessFlags.DepthStencilAttachmentWriteBit;
-                barrier.DstAccessMask = AccessFlags.ShaderReadBit;
-                srcStageFlags = PipelineStageFlags.LateFragmentTestsBit;
-                dstStageFlags = PipelineStageFlags.FragmentShaderBit;
-            }
-            else if (_layout == ImageLayout.ColorAttachmentOptimal && newLayout == ImageLayout.PresentSrcKhr)
-            {
-                barrier.SrcAccessMask = AccessFlags.ColorAttachmentWriteBit;
-                barrier.DstAccessMask = AccessFlags.MemoryReadBit;
-                srcStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
-                dstStageFlags = PipelineStageFlags.BottomOfPipeBit;
-            }
-            else if (_layout == ImageLayout.TransferDstOptimal && newLayout == ImageLayout.PresentSrcKhr)
-            {
-                barrier.SrcAccessMask = AccessFlags.TransferWriteBit;
-                barrier.DstAccessMask = AccessFlags.MemoryReadBit;
-                srcStageFlags = PipelineStageFlags.TransferBit;
-                dstStageFlags = PipelineStageFlags.BottomOfPipeBit;
-            }
-            else if (_layout == ImageLayout.TransferDstOptimal && newLayout == ImageLayout.ColorAttachmentOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.TransferWriteBit;
-                barrier.DstAccessMask = AccessFlags.ColorAttachmentWriteBit;
-                srcStageFlags = PipelineStageFlags.TransferBit;
-                dstStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
-            }
-            else if (_layout == ImageLayout.TransferDstOptimal && newLayout == ImageLayout.DepthStencilAttachmentOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.TransferWriteBit;
-                barrier.DstAccessMask = AccessFlags.DepthStencilAttachmentWriteBit;
-                srcStageFlags = PipelineStageFlags.TransferBit;
-                dstStageFlags = PipelineStageFlags.LateFragmentTestsBit;
-            }
-            else if (_layout == ImageLayout.General && newLayout == ImageLayout.TransferSrcOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.ShaderWriteBit;
-                barrier.DstAccessMask = AccessFlags.TransferReadBit;
-                srcStageFlags = PipelineStageFlags.ComputeShaderBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
-            }
-            else if (_layout == ImageLayout.General && newLayout == ImageLayout.TransferDstOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.ShaderWriteBit;
-                barrier.DstAccessMask = AccessFlags.TransferWriteBit;
-                srcStageFlags = PipelineStageFlags.ComputeShaderBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
-            }
-            else if (_layout == ImageLayout.PresentSrcKhr && newLayout == ImageLayout.TransferSrcOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.MemoryReadBit;
-                barrier.DstAccessMask = AccessFlags.TransferReadBit;
-                srcStageFlags = PipelineStageFlags.BottomOfPipeBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
+                srcStageFlags = PipelineStageFlags.EarlyFragmentTestsBit;
             }
             else
             {
-                throw new InvalidOperationException("Unsupported layout transition!");
+                throw new InvalidOperationException("Unsupported layout transition.");
+            }
+
+            if (newLayout == ImageLayout.TransferSrcOptimal)
+            {
+                barrier.DstAccessMask = AccessFlags.TransferReadBit;
+                dstStageFlags = PipelineStageFlags.TransferBit;
+            }
+            else if (newLayout == ImageLayout.TransferDstOptimal)
+            {
+                barrier.DstAccessMask = AccessFlags.TransferWriteBit;
+                dstStageFlags = PipelineStageFlags.TransferBit;
+            }
+            else if (newLayout == ImageLayout.ShaderReadOnlyOptimal)
+            {
+                barrier.DstAccessMask = AccessFlags.ShaderReadBit;
+                dstStageFlags = PipelineStageFlags.FragmentShaderBit;
+            }
+            else if (newLayout == ImageLayout.ColorAttachmentOptimal)
+            {
+                barrier.DstAccessMask = AccessFlags.ColorAttachmentWriteBit;
+                dstStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
+            }
+            else if (newLayout == ImageLayout.DepthStencilAttachmentOptimal)
+            {
+                barrier.DstAccessMask = AccessFlags.DepthStencilAttachmentWriteBit;
+                dstStageFlags = PipelineStageFlags.EarlyFragmentTestsBit;
+            }
+            else
+            {
+                throw new InvalidOperationException("Unsupported layout transition.");
             }
         }
 
