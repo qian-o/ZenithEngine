@@ -7,8 +7,6 @@ namespace Graphics.Vulkan;
 public unsafe class Framebuffer : DeviceResource
 {
     private readonly VkRenderPass _renderPass;
-    private readonly Texture[] _colors;
-    private readonly Texture? _depth;
     private readonly TextureView[] _colorViews;
     private readonly TextureView? _depthView;
     private readonly VkFramebuffer _framebuffer;
@@ -17,7 +15,6 @@ public unsafe class Framebuffer : DeviceResource
     private readonly uint _attachmentCount;
     private readonly uint _width;
     private readonly uint _height;
-    private readonly bool _isPresented;
 
     internal Framebuffer(GraphicsDevice graphicsDevice, ref readonly FramebufferDescription description, bool isPresented) : base(graphicsDevice)
     {
@@ -126,7 +123,6 @@ public unsafe class Framebuffer : DeviceResource
         VkRenderPass renderPass;
         Vk.CreateRenderPass(graphicsDevice.Device, &createInfo, null, &renderPass).ThrowCode();
 
-        Texture[] colors = new Texture[description.ColorTargets.Length];
         TextureView[] colorViews = new TextureView[description.ColorTargets.Length];
         for (int i = 0; i < description.ColorTargets.Length; i++)
         {
@@ -136,11 +132,9 @@ public unsafe class Framebuffer : DeviceResource
                                                           attachmentDescription.MipLevel,
                                                           attachmentDescription.ArrayLayer);
 
-            colors[i] = attachmentDescription.Target;
             colorViews[i] = new TextureView(graphicsDevice, in colorDescription);
         }
 
-        Texture? depth = null;
         TextureView? depthView = null;
         if (hasDepth)
         {
@@ -150,7 +144,6 @@ public unsafe class Framebuffer : DeviceResource
                                                           attachmentDescription.MipLevel,
                                                           attachmentDescription.ArrayLayer);
 
-            depth = attachmentDescription.Target;
             depthView = new TextureView(graphicsDevice, in depthDescription);
         }
 
@@ -196,8 +189,6 @@ public unsafe class Framebuffer : DeviceResource
         Vk.CreateFramebuffer(graphicsDevice.Device, &framebufferCreateInfo, null, &framebuffer).ThrowCode();
 
         _renderPass = renderPass;
-        _colors = colors;
-        _depth = depth;
         _colorViews = colorViews;
         _depthView = depthView;
         _framebuffer = framebuffer;
@@ -206,7 +197,6 @@ public unsafe class Framebuffer : DeviceResource
         _attachmentCount = attachmentCount;
         _width = width;
         _height = height;
-        _isPresented = isPresented;
     }
 
     internal VkFramebuffer Handle => _framebuffer;
@@ -222,30 +212,6 @@ public unsafe class Framebuffer : DeviceResource
     public uint Width => _width;
 
     public uint Height => _height;
-
-    public bool IsPresented => _isPresented;
-
-    public void TransitionToInitialLayout(CommandBuffer commandBuffer)
-    {
-        for (int i = 0; i < _colors.Length; i++)
-        {
-            _colors[i].TransitionLayout(commandBuffer, ImageLayout.ColorAttachmentOptimal);
-        }
-
-        _depth?.TransitionLayout(commandBuffer, ImageLayout.DepthStencilAttachmentOptimal);
-    }
-
-    public void TransitionToFinalLayout(CommandBuffer commandBuffer)
-    {
-        ImageLayout finalLayout = _isPresented ? ImageLayout.PresentSrcKhr : ImageLayout.ShaderReadOnlyOptimal;
-
-        for (int i = 0; i < _colors.Length; i++)
-        {
-            _colors[i].TransitionLayout(commandBuffer, finalLayout);
-        }
-
-        _depth?.TransitionLayout(commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
-    }
 
     protected override void Destroy()
     {

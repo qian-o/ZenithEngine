@@ -357,10 +357,7 @@ public unsafe class GraphicsDevice : ContextObject
 
         Vk.CmdCopyBufferToImage(commandBuffer, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
 
-        if (texture.Usage.HasFlag(TextureUsage.Sampled))
-        {
-            texture.TransitionLayout(commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
-        }
+        texture.TransitionToBestLayout(commandBuffer);
 
         EndSingleTimeCommands(commandBuffer);
 

@@ -248,6 +248,20 @@ public unsafe class Texture : DeviceResource, IBindableResource
                 srcStageFlags = PipelineStageFlags.TransferBit;
                 dstStageFlags = PipelineStageFlags.TransferBit;
             }
+            else if (_layout == ImageLayout.TransferSrcOptimal && newLayout == ImageLayout.ColorAttachmentOptimal)
+            {
+                barrier.SrcAccessMask = AccessFlags.TransferReadBit;
+                barrier.DstAccessMask = AccessFlags.ColorAttachmentWriteBit;
+                srcStageFlags = PipelineStageFlags.TransferBit;
+                dstStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
+            }
+            else if (_layout == ImageLayout.TransferDstOptimal && newLayout == ImageLayout.ColorAttachmentOptimal)
+            {
+                barrier.SrcAccessMask = AccessFlags.TransferWriteBit;
+                barrier.DstAccessMask = AccessFlags.ColorAttachmentWriteBit;
+                srcStageFlags = PipelineStageFlags.TransferBit;
+                dstStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
+            }
             else if (_layout == ImageLayout.ColorAttachmentOptimal && newLayout == ImageLayout.TransferSrcOptimal)
             {
                 barrier.SrcAccessMask = AccessFlags.ColorAttachmentWriteBit;
@@ -352,6 +366,33 @@ public unsafe class Texture : DeviceResource, IBindableResource
         TransitionLayout(commandBuffer, newLayout);
 
         GraphicsDevice.EndSingleTimeCommands(commandBuffer);
+    }
+
+    internal void TransitionToBestLayout(CommandBuffer? commandBuffer = null)
+    {
+        ImageLayout newLayout = ImageLayout.General;
+
+        if (Usage.HasFlag(TextureUsage.Sampled))
+        {
+            newLayout = ImageLayout.ShaderReadOnlyOptimal;
+        }
+        else if (Usage.HasFlag(TextureUsage.RenderTarget))
+        {
+            newLayout = ImageLayout.ColorAttachmentOptimal;
+        }
+        else if (Usage.HasFlag(TextureUsage.DepthStencil))
+        {
+            newLayout = ImageLayout.DepthStencilAttachmentOptimal;
+        }
+
+        if (commandBuffer == null)
+        {
+            TransitionLayout(newLayout);
+        }
+        else
+        {
+            TransitionLayout(commandBuffer.Value, newLayout);
+        }
     }
 
     internal void GenerateMipmaps()

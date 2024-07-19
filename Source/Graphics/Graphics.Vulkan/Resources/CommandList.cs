@@ -331,15 +331,8 @@ public unsafe class CommandList : DeviceResource
                            1,
                            &resolve);
 
-        if (source.Usage.HasFlag(TextureUsage.Sampled))
-        {
-            source.TransitionLayout(_commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
-        }
-
-        if (destination.Usage.HasFlag(TextureUsage.Sampled))
-        {
-            destination.TransitionLayout(_commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
-        }
+        source.TransitionToBestLayout(_commandBuffer);
+        destination.TransitionToBestLayout(_commandBuffer);
     }
 
     public void End()
@@ -366,9 +359,7 @@ public unsafe class CommandList : DeviceResource
 
     private void BeginCurrentRenderPass()
     {
-        _currentFramebuffer!.TransitionToInitialLayout(_commandBuffer);
-
-        ClearColorValue[] clearColorValues = new ClearColorValue[_currentFramebuffer.AttachmentCount];
+        ClearColorValue[] clearColorValues = new ClearColorValue[_currentFramebuffer!.AttachmentCount];
         for (int i = 0; i < clearColorValues.Length; i++)
         {
             clearColorValues[i] = new ClearColorValue(0, 0, 0, 0);
@@ -405,8 +396,6 @@ public unsafe class CommandList : DeviceResource
     private void EndCurrentRenderPass()
     {
         Vk.CmdEndRenderPass(_commandBuffer);
-
-        _currentFramebuffer!.TransitionToFinalLayout(_commandBuffer);
 
         Vk.CmdPipelineBarrier(_commandBuffer,
                               PipelineStageFlags.BottomOfPipeBit,
