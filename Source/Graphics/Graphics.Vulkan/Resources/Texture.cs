@@ -123,7 +123,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
     public uint ArrayLayers => _arrayLayers;
 
-    internal void TransitionImageLayout(CommandBuffer commandBuffer, ImageLayout newLayout)
+    internal void TransitionLayout(CommandBuffer commandBuffer, ImageLayout newLayout)
     {
         if (_layout == newLayout)
         {
@@ -345,11 +345,11 @@ public unsafe class Texture : DeviceResource, IBindableResource
         _layout = newLayout;
     }
 
-    internal void TransitionImageLayout(ImageLayout newLayout)
+    internal void TransitionLayout(ImageLayout newLayout)
     {
         CommandBuffer commandBuffer = GraphicsDevice.BeginSingleTimeCommands();
 
-        TransitionImageLayout(commandBuffer, newLayout);
+        TransitionLayout(commandBuffer, newLayout);
 
         GraphicsDevice.EndSingleTimeCommands(commandBuffer);
     }

@@ -290,8 +290,8 @@ public unsafe class CommandList : DeviceResource
             EndCurrentRenderPass();
         }
 
-        source.TransitionImageLayout(_commandBuffer, ImageLayout.TransferSrcOptimal);
-        destination.TransitionImageLayout(_commandBuffer, ImageLayout.TransferDstOptimal);
+        source.TransitionLayout(_commandBuffer, ImageLayout.TransferSrcOptimal);
+        destination.TransitionLayout(_commandBuffer, ImageLayout.TransferDstOptimal);
 
         ImageAspectFlags aspectMask = source.Usage.HasFlag(TextureUsage.DepthStencil)
             ? ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit
@@ -333,12 +333,12 @@ public unsafe class CommandList : DeviceResource
 
         if (source.Usage.HasFlag(TextureUsage.Sampled))
         {
-            source.TransitionImageLayout(_commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+            source.TransitionLayout(_commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
         }
 
         if (destination.Usage.HasFlag(TextureUsage.Sampled))
         {
-            destination.TransitionImageLayout(_commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+            destination.TransitionLayout(_commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
         }
     }
 
@@ -366,7 +366,9 @@ public unsafe class CommandList : DeviceResource
 
     private void BeginCurrentRenderPass()
     {
-        ClearColorValue[] clearColorValues = new ClearColorValue[_currentFramebuffer!.AttachmentCount];
+        _currentFramebuffer!.TransitionToInitialLayout(_commandBuffer);
+
+        ClearColorValue[] clearColorValues = new ClearColorValue[_currentFramebuffer.AttachmentCount];
         for (int i = 0; i < clearColorValues.Length; i++)
         {
             clearColorValues[i] = new ClearColorValue(0, 0, 0, 0);
@@ -403,6 +405,8 @@ public unsafe class CommandList : DeviceResource
     private void EndCurrentRenderPass()
     {
         Vk.CmdEndRenderPass(_commandBuffer);
+
+        _currentFramebuffer!.TransitionToFinalLayout(_commandBuffer);
 
         Vk.CmdPipelineBarrier(_commandBuffer,
                               PipelineStageFlags.BottomOfPipeBit,

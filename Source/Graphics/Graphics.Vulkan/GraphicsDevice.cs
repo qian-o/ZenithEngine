@@ -337,7 +337,7 @@ public unsafe class GraphicsDevice : ContextObject
 
         CommandBuffer commandBuffer = BeginSingleTimeCommands();
 
-        texture.TransitionImageLayout(commandBuffer, ImageLayout.TransferDstOptimal);
+        texture.TransitionLayout(commandBuffer, ImageLayout.TransferDstOptimal);
 
         BufferImageCopy bufferImageCopy = new()
         {
@@ -359,7 +359,7 @@ public unsafe class GraphicsDevice : ContextObject
 
         if (texture.Usage.HasFlag(TextureUsage.Sampled))
         {
-            texture.TransitionImageLayout(commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+            texture.TransitionLayout(commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
         }
 
         EndSingleTimeCommands(commandBuffer);
