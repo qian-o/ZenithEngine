@@ -12,8 +12,6 @@ internal sealed class TestScene(GraphicsDevice graphicsDevice, ImGuiController i
 
     protected override void RenderCore(CommandList commandList, Framebuffer framebuffer, RenderEventArgs e)
     {
-        commandList.SetFramebuffer(framebuffer);
-
         commandList.ClearColorTarget(0, RgbaFloat.CornflowerBlue);
         commandList.ClearDepthStencil(1.0f);
     }

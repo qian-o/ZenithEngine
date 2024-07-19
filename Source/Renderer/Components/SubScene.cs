@@ -60,6 +60,8 @@ internal abstract class SubScene(GraphicsDevice graphicsDevice, ImGuiController 
             {
                 _commandList.Begin();
                 {
+                    _commandList.SetFramebuffer(_fbo.Framebuffer!);
+
                     RenderCore(_commandList, _fbo.Framebuffer!, e);
 
                     _fbo.Present(_commandList);
