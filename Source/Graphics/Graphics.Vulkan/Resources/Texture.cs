@@ -93,6 +93,8 @@ public unsafe class Texture : DeviceResource, IBindableResource
         _usage = TextureUsage.RenderTarget;
         _width = width;
         _height = height;
+        _depth = 1;
+        _layout = ImageLayout.PresentSrcKhr;
         _mipLevels = 1;
         _arrayLayers = 1;
         _deviceMemory = null;
@@ -164,7 +166,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
         // Transition layouts.
         {
-            if (_layout == ImageLayout.Undefined || _layout == ImageLayout.Preinitialized)
+            if (_layout == ImageLayout.Preinitialized)
             {
                 barrier.SrcAccessMask = AccessFlags.None;
                 srcStageFlags = PipelineStageFlags.TopOfPipeBit;
