@@ -1,5 +1,6 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
+using Hexa.NET.ImGui;
 
 namespace Renderer.Components;
 
@@ -10,6 +11,8 @@ internal sealed class MainScene : DisposableObject
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ImGuiController _imGuiController;
     private readonly CommandList _commandList;
+
+    private bool _firstFrame = true;
 
     public MainScene(Window window)
     {
@@ -26,6 +29,7 @@ internal sealed class MainScene : DisposableObject
 
         _window.Update += Window_Update;
         _window.Render += Window_Render;
+        _window.Resize += Window_Resize;
     }
 
     public List<SubScene> SubScenes { get; } = [];
@@ -41,6 +45,15 @@ internal sealed class MainScene : DisposableObject
     private void Window_Render(object? sender, RenderEventArgs e)
     {
         _imGuiController.Update(e.DeltaTime);
+
+        if (_firstFrame)
+        {
+            ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+
+            _firstFrame = false;
+        }
+
+        ImGui.DockSpaceOverViewport();
 
         foreach (SubScene subScene in SubScenes)
         {
@@ -61,8 +74,17 @@ internal sealed class MainScene : DisposableObject
         _graphicsDevice.SwapBuffers();
     }
 
+    private void Window_Resize(object? sender, ResizeEventArgs e)
+    {
+        _graphicsDevice.Resize(e.Width, e.Height);
+    }
+
     protected override void Destroy()
     {
+        foreach (SubScene subScene in SubScenes)
+        {
+            subScene.Dispose();
+        }
         _commandList.Dispose();
         _imGuiController.Dispose();
         _graphicsDevice.Dispose();

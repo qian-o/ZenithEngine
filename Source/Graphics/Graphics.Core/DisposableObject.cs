@@ -1,6 +1,8 @@
-﻿namespace Graphics.Core;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public abstract class DisposableObject : IDisposable
+namespace Graphics.Core;
+
+public abstract class DisposableObject : ObservableRecipient, IDisposable
 {
     private volatile uint _isDisposed;
 

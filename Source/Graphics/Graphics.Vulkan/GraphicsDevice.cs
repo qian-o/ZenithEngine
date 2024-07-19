@@ -211,17 +211,12 @@ public unsafe class GraphicsDevice : ContextObject
 
     public void Resize(uint width, uint height)
     {
+        if (width == 0 || height == 0)
+        {
+            return;
+        }
+
         swapChain?.Dispose();
-
-        if (width == 0)
-        {
-            width = 1;
-        }
-
-        if (height == 0)
-        {
-            height = 1;
-        }
 
         SwapchainDescription swapchainDescription = new(_windowSurface, width, height, _depthFormat);
 
@@ -424,9 +419,19 @@ public unsafe class GraphicsDevice : ContextObject
             PImageIndices = &imageIndex
         };
 
-        _swapchainExt.QueuePresent(_graphicsQueue, &presentInfo).ThrowCode("Failed to present the swap chain.");
+        Result result = _swapchainExt.QueuePresent(_graphicsQueue, &presentInfo);
 
-        swapChain.AcquireNextImage();
+        if (result == Result.Success)
+        {
+            swapChain.AcquireNextImage();
+        }
+        else
+        {
+            if (result != Result.ErrorOutOfDateKhr)
+            {
+                result.ThrowCode("Failed to present the swap chain image.");
+            }
+        }
     }
 
     protected override void Destroy()
