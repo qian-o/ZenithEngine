@@ -1,6 +1,7 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
 using Hexa.NET.ImGui;
+using Renderer.Components.Scenes;
 
 namespace Renderer.Components;
 
@@ -30,9 +31,28 @@ internal sealed class MainScene : DisposableObject
         _window.Update += Window_Update;
         _window.Render += Window_Render;
         _window.Resize += Window_Resize;
+
+        SubScenes.Add(CreateSubScene<TestScene>());
     }
 
     public List<SubScene> SubScenes { get; } = [];
+
+    public TSubScene CreateSubScene<TSubScene>() where TSubScene : SubScene
+    {
+        return (TSubScene)Activator.CreateInstance(typeof(TSubScene), _graphicsDevice, _imGuiController)!;
+    }
+
+    protected override void Destroy()
+    {
+        foreach (SubScene subScene in SubScenes)
+        {
+            subScene.Dispose();
+        }
+        _commandList.Dispose();
+        _imGuiController.Dispose();
+        _graphicsDevice.Dispose();
+        _context.Dispose();
+    }
 
     private void Window_Update(object? sender, UpdateEventArgs e)
     {
@@ -77,17 +97,5 @@ internal sealed class MainScene : DisposableObject
     private void Window_Resize(object? sender, ResizeEventArgs e)
     {
         _graphicsDevice.Resize(e.Width, e.Height);
-    }
-
-    protected override void Destroy()
-    {
-        foreach (SubScene subScene in SubScenes)
-        {
-            subScene.Dispose();
-        }
-        _commandList.Dispose();
-        _imGuiController.Dispose();
-        _graphicsDevice.Dispose();
-        _context.Dispose();
     }
 }

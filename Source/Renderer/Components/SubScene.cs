@@ -5,10 +5,10 @@ using Hexa.NET.ImGui;
 
 namespace Renderer.Components;
 
-internal abstract class SubScene(ResourceFactory resourceFactory, ImGuiController imGuiController) : DisposableObject
+internal abstract class SubScene(GraphicsDevice graphicsDevice, ImGuiController imGuiController) : DisposableObject
 {
-    private readonly FBO _fbo = new(resourceFactory);
-    private readonly CommandList _commandList = resourceFactory.CreateGraphicsCommandList();
+    private readonly FBO _fbo = new(graphicsDevice.ResourceFactory);
+    private readonly CommandList _commandList = graphicsDevice.ResourceFactory.CreateGraphicsCommandList();
 
     private nint _presentTextureHandle;
 
@@ -45,8 +45,8 @@ internal abstract class SubScene(ResourceFactory resourceFactory, ImGuiControlle
         {
             Vector2 size = ImGui.GetContentRegionAvail();
 
-            Width = Convert.ToUInt32(size.X);
-            Height = Convert.ToUInt32(size.Y);
+            Width = (uint)Math.Max(0, Convert.ToInt32(size.X));
+            Height = (uint)Math.Max(0, Convert.ToInt32(size.Y));
 
             IsHovered = ImGui.IsWindowHovered();
             IsFocused = ImGui.IsWindowFocused();
@@ -58,9 +58,15 @@ internal abstract class SubScene(ResourceFactory resourceFactory, ImGuiControlle
 
             if (_fbo.IsReady)
             {
-                RenderCore(_commandList, _fbo.Framebuffer!, e);
+                _commandList.Begin();
+                {
+                    RenderCore(_commandList, _fbo.Framebuffer!, e);
 
-                _fbo.Present(_commandList);
+                    _fbo.Present(_commandList);
+                }
+                _commandList.End();
+
+                graphicsDevice.SubmitCommands(_commandList);
 
                 ImGui.Image(_presentTextureHandle, size, Vector2.Zero, Vector2.One, Vector4.One, Vector4.Zero);
             }
@@ -85,11 +91,9 @@ internal abstract class SubScene(ResourceFactory resourceFactory, ImGuiControlle
 
     private void Initialize(uint width, uint height, TextureSampleCount sampleCount = TextureSampleCount.Count1)
     {
-        _fbo.Initialize(width, height, sampleCount);
-
-        if (_fbo.IsReady)
+        if (_fbo.Initialize(width, height, sampleCount) && _fbo.IsReady)
         {
-            _presentTextureHandle = imGuiController.GetOrCreateImGuiBinding(resourceFactory, _fbo.PresentTexture!);
+            _presentTextureHandle = imGuiController.GetOrCreateImGuiBinding(graphicsDevice.ResourceFactory, _fbo.PresentTexture!);
         }
     }
 }

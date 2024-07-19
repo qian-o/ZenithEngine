@@ -21,11 +21,11 @@ internal sealed class FBO(ResourceFactory resourceFactory) : DisposableObject
 
     public Texture? PresentTexture { get; private set; }
 
-    public void Initialize(uint width, uint height, TextureSampleCount sampleCount = TextureSampleCount.Count1)
+    public bool Initialize(uint width, uint height, TextureSampleCount sampleCount = TextureSampleCount.Count1)
     {
         if (Width == width && Height == height && SampleCount == sampleCount)
         {
-            return;
+            return false;
         }
 
         Width = width;
@@ -34,7 +34,7 @@ internal sealed class FBO(ResourceFactory resourceFactory) : DisposableObject
 
         ResetFramebuffer();
 
-        return;
+        return true;
     }
 
     public void Present(CommandList commandList)
@@ -66,11 +66,18 @@ internal sealed class FBO(ResourceFactory resourceFactory) : DisposableObject
             return;
         }
 
+        TextureUsage colorUsage = TextureUsage.RenderTarget;
+
+        if (SampleCount == TextureSampleCount.Count1)
+        {
+            colorUsage |= TextureUsage.Sampled;
+        }
+
         ColorTexture = resourceFactory.CreateTexture(TextureDescription.Texture2D(Width,
                                                                                   Height,
                                                                                   1,
                                                                                   PixelFormat.R8G8B8A8UNorm,
-                                                                                  TextureUsage.Sampled,
+                                                                                  colorUsage,
                                                                                   SampleCount));
 
         DepthTexture = resourceFactory.CreateTexture(TextureDescription.Texture2D(Width,

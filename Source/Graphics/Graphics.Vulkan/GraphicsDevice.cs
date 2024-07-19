@@ -335,9 +335,9 @@ public unsafe class GraphicsDevice : ContextObject
 
         stagingBuffer.Unmap();
 
-        texture.TransitionImageLayout(ImageLayout.TransferDstOptimal);
-
         CommandBuffer commandBuffer = BeginSingleTimeCommands();
+
+        texture.TransitionImageLayout(commandBuffer, ImageLayout.TransferDstOptimal);
 
         BufferImageCopy bufferImageCopy = new()
         {
@@ -357,9 +357,12 @@ public unsafe class GraphicsDevice : ContextObject
 
         Vk.CmdCopyBufferToImage(commandBuffer, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
 
-        EndSingleTimeCommands(commandBuffer);
+        if (texture.Usage.HasFlag(TextureUsage.Sampled))
+        {
+            texture.TransitionImageLayout(commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+        }
 
-        texture.TransitionToBestLayout();
+        EndSingleTimeCommands(commandBuffer);
 
         CacheStagingBuffer(stagingBuffer);
     }

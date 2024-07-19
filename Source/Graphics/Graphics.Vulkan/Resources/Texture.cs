@@ -125,6 +125,11 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
     internal void TransitionImageLayout(CommandBuffer commandBuffer, ImageLayout newLayout)
     {
+        if (_layout == newLayout)
+        {
+            return;
+        }
+
         ImageMemoryBarrier barrier = new()
         {
             SType = StructureType.ImageMemoryBarrier,
@@ -136,7 +141,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
                 BaseArrayLayer = 0,
                 LayerCount = _arrayLayers
             },
-            OldLayout = _layout,
+            OldLayout = ImageLayout.Undefined,
             NewLayout = newLayout,
         };
 
@@ -347,27 +352,6 @@ public unsafe class Texture : DeviceResource, IBindableResource
         TransitionImageLayout(commandBuffer, newLayout);
 
         GraphicsDevice.EndSingleTimeCommands(commandBuffer);
-    }
-
-    internal void TransitionToBestLayout(CommandBuffer? commandBuffer = null)
-    {
-        ImageLayout newLayout = _usage switch
-        {
-            TextureUsage.DepthStencil => ImageLayout.DepthStencilAttachmentOptimal,
-            TextureUsage.RenderTarget => ImageLayout.ColorAttachmentOptimal,
-            TextureUsage.Sampled => ImageLayout.ShaderReadOnlyOptimal,
-            TextureUsage.Staging => ImageLayout.General,
-            _ => throw new InvalidOperationException("Unsupported texture usage!")
-        };
-
-        if (commandBuffer == null)
-        {
-            TransitionImageLayout(newLayout);
-        }
-        else
-        {
-            TransitionImageLayout(commandBuffer.Value, newLayout);
-        }
     }
 
     internal void GenerateMipmaps()

@@ -331,8 +331,15 @@ public unsafe class CommandList : DeviceResource
                            1,
                            &resolve);
 
-        source.TransitionToBestLayout(_commandBuffer);
-        destination.TransitionToBestLayout(_commandBuffer);
+        if (source.Usage.HasFlag(TextureUsage.Sampled))
+        {
+            source.TransitionImageLayout(_commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+        }
+
+        if (destination.Usage.HasFlag(TextureUsage.Sampled))
+        {
+            destination.TransitionImageLayout(_commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+        }
     }
 
     public void End()
@@ -342,7 +349,10 @@ public unsafe class CommandList : DeviceResource
             throw new InvalidOperationException("Command list is not recording");
         }
 
-        EndCurrentRenderPass();
+        if (_isInRenderPass)
+        {
+            EndCurrentRenderPass();
+        }
 
         Vk.EndCommandBuffer(_commandBuffer).ThrowCode();
 
