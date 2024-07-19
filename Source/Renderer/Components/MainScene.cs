@@ -1,6 +1,5 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
-using Hexa.NET.ImGui;
 
 namespace Renderer.Components;
 
@@ -29,15 +28,24 @@ internal sealed class MainScene : DisposableObject
         _window.Render += Window_Render;
     }
 
+    public List<SubScene> SubScenes { get; } = [];
+
     private void Window_Update(object? sender, UpdateEventArgs e)
     {
+        foreach (SubScene subScene in SubScenes)
+        {
+            subScene.Update(e);
+        }
     }
 
     private void Window_Render(object? sender, RenderEventArgs e)
     {
         _imGuiController.Update(e.DeltaTime);
 
-        ImGui.ShowDemoWindow();
+        foreach (SubScene subScene in SubScenes)
+        {
+            subScene.Render(e);
+        }
 
         _commandList.Begin();
         _commandList.SetFramebuffer(_graphicsDevice.Swapchain.Framebuffer);

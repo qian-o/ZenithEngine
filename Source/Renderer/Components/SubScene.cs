@@ -14,21 +14,51 @@ internal abstract class SubScene(ResourceFactory resourceFactory, ImGuiControlle
 
     public string Title { get; set; } = string.Empty;
 
+    public uint Width { get; private set; }
+
+    public uint Height { get; private set; }
+
+    public bool IsVisible { get; private set; }
+
+    public bool IsHovered { get; private set; }
+
+    public bool IsFocused { get; private set; }
+
+    public bool IsLeftClicked { get; private set; }
+
+    public bool IsRightClicked { get; private set; }
+
+    public bool IsMiddleClicked { get; private set; }
+
     public TextureSampleCount SampleCount { get; set; } = TextureSampleCount.Count1;
 
-    public void Render()
+    public void Update(UpdateEventArgs e)
+    {
+        UpdateCore(e);
+    }
+
+    public void Render(RenderEventArgs e)
     {
         string title = string.IsNullOrEmpty(Title) ? Id : Title;
 
-        if (ImGui.Begin(title))
+        if (IsVisible = ImGui.Begin(title))
         {
             Vector2 size = ImGui.GetContentRegionAvail();
 
-            Initialize(Convert.ToUInt32(size.X), Convert.ToUInt32(size.Y), SampleCount);
+            Width = Convert.ToUInt32(size.X);
+            Height = Convert.ToUInt32(size.Y);
+
+            IsHovered = ImGui.IsWindowHovered();
+            IsFocused = ImGui.IsWindowFocused();
+            IsLeftClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Left);
+            IsRightClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Right);
+            IsMiddleClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Middle);
+
+            Initialize(Width, Height, SampleCount);
 
             if (_fbo.IsReady)
             {
-                RenderCore(_commandList, _fbo.Framebuffer!);
+                RenderCore(_commandList, _fbo.Framebuffer!, e);
 
                 _fbo.Present(_commandList);
 
@@ -43,7 +73,9 @@ internal abstract class SubScene(ResourceFactory resourceFactory, ImGuiControlle
         }
     }
 
-    protected abstract void RenderCore(CommandList commandList, Framebuffer framebuffer);
+    protected abstract void UpdateCore(UpdateEventArgs e);
+
+    protected abstract void RenderCore(CommandList commandList, Framebuffer framebuffer, RenderEventArgs e);
 
     protected override void Destroy()
     {
