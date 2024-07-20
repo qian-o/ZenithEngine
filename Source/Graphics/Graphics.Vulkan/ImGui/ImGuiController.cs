@@ -13,6 +13,8 @@ namespace Graphics.Vulkan;
 
 public unsafe class ImGuiController : DisposableObject
 {
+    private const nint BindingHandle = 999;
+
     private const string VertexShader = @"
 #version 450
 
@@ -217,7 +219,7 @@ void main()
     {
         if (!_mapped.TryGetValue(textureView, out nint result))
         {
-            result = _mapped.Count;
+            result = BindingHandle + _mapped.Count;
 
             _mapped[textureView] = result;
 
@@ -236,6 +238,34 @@ void main()
         _resources.Add(textureView);
 
         return GetOrCreateImGuiBinding(factory, textureView);
+    }
+
+    public void RemoveImGuiBinding(nint binding)
+    {
+        foreach (KeyValuePair<TextureView, nint> item in _mapped)
+        {
+            if (item.Value == binding)
+            {
+                _mapped.Remove(item.Key);
+
+                if (_sets.TryGetValue(binding, out ResourceSet? resourceSet))
+                {
+                    resourceSet.Dispose();
+
+                    _resources.Remove(resourceSet);
+                    _sets.Remove(binding);
+                }
+
+                if (_resources.Contains(item.Key))
+                {
+                    item.Key.Dispose();
+
+                    _resources.Remove(item.Key);
+                }
+
+                break;
+            }
+        }
     }
 
     protected override void Destroy()

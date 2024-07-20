@@ -10,9 +10,18 @@ internal abstract class Scene : DisposableObject
     protected readonly GraphicsDevice _graphicsDevice;
     protected readonly ResourceFactory _resourceFactory;
     protected readonly ImGuiController _imGuiController;
-    protected readonly FBO _fbo;
-    protected readonly CommandList _commandList;
 
+    private readonly CommandList _commandList;
+
+    private FBO? _fbo;
+    private uint _width;
+    private uint _height;
+    private bool _isVisible;
+    private bool _isHovered;
+    private bool _isFocused;
+    private bool _isLeftClicked;
+    private bool _isRightClicked;
+    private bool _isMiddleClicked;
     private nint _presentTextureHandle;
 
     protected Scene(MainWindow mainWindow)
@@ -20,7 +29,7 @@ internal abstract class Scene : DisposableObject
         _graphicsDevice = mainWindow.GraphicsDevice;
         _resourceFactory = mainWindow.ResourceFactory;
         _imGuiController = mainWindow.ImGuiController;
-        _fbo = new FBO(_resourceFactory, InitialColorFormat(), InitialDepthFormat(), InitialSampleCount());
+
         _commandList = _resourceFactory.CreateGraphicsCommandList();
 
         Initialize();
@@ -28,21 +37,23 @@ internal abstract class Scene : DisposableObject
 
     public string Title { get; set; } = string.Empty;
 
-    public uint Width { get; private set; }
+    public TextureSampleCount SampleCount { get; set; } = TextureSampleCount.Count1;
 
-    public uint Height { get; private set; }
+    public uint Width => _width;
 
-    public bool IsVisible { get; private set; }
+    public uint Height => _height;
 
-    public bool IsHovered { get; private set; }
+    public bool IsVisible => _isVisible;
 
-    public bool IsFocused { get; private set; }
+    public bool IsHovered => _isHovered;
 
-    public bool IsLeftClicked { get; private set; }
+    public bool IsFocused => _isFocused;
 
-    public bool IsRightClicked { get; private set; }
+    public bool IsLeftClicked => _isLeftClicked;
 
-    public bool IsMiddleClicked { get; private set; }
+    public bool IsRightClicked => _isRightClicked;
+
+    public bool IsMiddleClicked => _isMiddleClicked;
 
     public void Update(UpdateEventArgs e)
     {
@@ -53,31 +64,42 @@ internal abstract class Scene : DisposableObject
     {
         string title = string.IsNullOrEmpty(Title) ? Id : Title;
 
-        if (IsVisible = ImGui.Begin(title))
+        if (_isVisible = ImGui.Begin(title))
         {
             Vector2 size = ImGui.GetContentRegionAvail();
 
-            Width = (uint)Math.Max(0, Convert.ToInt32(size.X));
-            Height = (uint)Math.Max(0, Convert.ToInt32(size.Y));
+            _width = (uint)Math.Max(0, Convert.ToInt32(size.X));
+            _height = (uint)Math.Max(0, Convert.ToInt32(size.Y));
 
-            IsHovered = ImGui.IsWindowHovered();
-            IsFocused = ImGui.IsWindowFocused();
-            IsLeftClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Left);
-            IsRightClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Right);
-            IsMiddleClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Middle);
+            _isHovered = ImGui.IsWindowHovered();
+            _isFocused = ImGui.IsWindowFocused();
+            _isLeftClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Left);
+            _isRightClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Right);
+            _isMiddleClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Middle);
 
-            if (_fbo.Resize(Width, Height) && _fbo.IsReady)
+            if (_width != 0 && _height != 0)
             {
-                _presentTextureHandle = _imGuiController.GetOrCreateImGuiBinding(_resourceFactory, _fbo.PresentTexture!);
-            }
+                if (_fbo == null || _fbo.Width != _width || _fbo.Height != _height || _fbo.SampleCount != SampleCount)
+                {
+                    bool isUpdatePipelineRequired = _fbo == null || _fbo.SampleCount != SampleCount;
 
-            if (_fbo.IsReady)
-            {
+                    _fbo?.Dispose();
+                    _imGuiController.RemoveImGuiBinding(_presentTextureHandle);
+
+                    _fbo = new FBO(_resourceFactory, _width, _height, sampleCount: SampleCount);
+                    _presentTextureHandle = _imGuiController.GetOrCreateImGuiBinding(_resourceFactory, _fbo.PresentTexture);
+
+                    if (isUpdatePipelineRequired)
+                    {
+                        UpdatePipeline(_fbo.Framebuffer);
+                    }
+                }
+
                 _commandList.Begin();
                 {
-                    _commandList.SetFramebuffer(_fbo.Framebuffer!);
+                    _commandList.SetFramebuffer(_fbo.Framebuffer);
 
-                    RenderCore(e);
+                    RenderCore(_commandList, _fbo.Framebuffer, e);
 
                     _fbo.Present(_commandList);
                 }
@@ -86,10 +108,6 @@ internal abstract class Scene : DisposableObject
                 _graphicsDevice.SubmitCommands(_commandList);
 
                 ImGui.Image(_presentTextureHandle, size, Vector2.Zero, Vector2.One, Vector4.One, Vector4.Zero);
-            }
-            else
-            {
-                ImGui.Text("Frame is not ready.");
             }
 
             ImGui.End();
@@ -102,16 +120,11 @@ internal abstract class Scene : DisposableObject
         _commandList.Dispose();
     }
 
-    protected virtual PixelFormat InitialColorFormat() => PixelFormat.R8G8B8A8UNorm;
-
-    protected virtual PixelFormat InitialDepthFormat() => PixelFormat.D32FloatS8UInt;
-
-    protected virtual TextureSampleCount InitialSampleCount() => TextureSampleCount.Count1;
-
     protected abstract void Initialize();
+
+    protected abstract void UpdatePipeline(Framebuffer framebuffer);
 
     protected abstract void UpdateCore(UpdateEventArgs e);
 
-    protected abstract void RenderCore(RenderEventArgs e);
-
+    protected abstract void RenderCore(CommandList commandList, Framebuffer framebuffer, RenderEventArgs e);
 }

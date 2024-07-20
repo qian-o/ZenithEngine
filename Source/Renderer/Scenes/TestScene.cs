@@ -72,9 +72,8 @@ void main()
     private ResourceLayout _resourceLayout = null!;
     private ResourceSet _resourceSet = null!;
     private Shader[] _shaders = null!;
+    private VertexLayoutDescription[] _vertexLayoutDescriptions = null!;
     private Pipeline _pipeline = null!;
-
-    protected override TextureSampleCount InitialSampleCount() => TextureSampleCount.Count8;
 
     protected override void Initialize()
     {
@@ -115,7 +114,12 @@ void main()
         VertexElementDescription positionDescription = new("Position", VertexElementFormat.Float2);
         VertexElementDescription colorDescription = new("Color", VertexElementFormat.Float4);
 
-        VertexLayoutDescription vertexLayoutDescription = new(positionDescription, colorDescription);
+        _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription, colorDescription)];
+    }
+
+    protected override void UpdatePipeline(Framebuffer framebuffer)
+    {
+        _pipeline?.Dispose();
 
         GraphicsPipelineDescription graphicsPipelineDescription = new()
         {
@@ -124,8 +128,8 @@ void main()
             RasterizerState = RasterizerStateDescription.Default,
             PrimitiveTopology = PrimitiveTopology.TriangleList,
             ResourceLayouts = [_resourceLayout],
-            ShaderSet = new ShaderSetDescription([vertexLayoutDescription], _shaders),
-            Outputs = _fbo.OutputDescription
+            ShaderSet = new ShaderSetDescription(_vertexLayoutDescriptions, _shaders),
+            Outputs = framebuffer.OutputDescription
         };
 
         _pipeline = _resourceFactory.CreateGraphicsPipeline(graphicsPipelineDescription);
@@ -136,23 +140,23 @@ void main()
         _graphicsDevice.UpdateBuffer(_stepBuffer, 0, [new Ubo { Value = new Vector4(((float)Math.Sin(e.TotalTime) * 0.5f) + 0.5f) }]);
     }
 
-    protected override void RenderCore(RenderEventArgs e)
+    protected override void RenderCore(CommandList commandList, Framebuffer framebuffer, RenderEventArgs e)
     {
-        _commandList.ClearColorTarget(0, RgbaFloat.CornflowerBlue);
-        _commandList.ClearDepthStencil(1.0f);
+        commandList.ClearColorTarget(0, RgbaFloat.CornflowerBlue);
+        commandList.ClearDepthStencil(1.0f);
 
-        _commandList.SetVertexBuffer(0, _vertexBuffer);
-        _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U16);
+        commandList.SetVertexBuffer(0, _vertexBuffer);
+        commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U16);
 
-        _commandList.SetPipeline(_pipeline);
+        commandList.SetPipeline(_pipeline);
 
-        _commandList.SetGraphicsResourceSet(0, _resourceSet);
+        commandList.SetGraphicsResourceSet(0, _resourceSet);
 
-        _commandList.DrawIndexed(indexCount: 3,
-                                 instanceCount: 1,
-                                 indexStart: 0,
-                                 vertexOffset: 0,
-                                 instanceStart: 0);
+        commandList.DrawIndexed(indexCount: 3,
+                                instanceCount: 1,
+                                indexStart: 0,
+                                vertexOffset: 0,
+                                instanceStart: 0);
     }
 
     protected override void Destroy()

@@ -3,109 +3,88 @@ using Graphics.Vulkan;
 
 namespace Renderer.Components;
 
-internal sealed class FBO(ResourceFactory resourceFactory,
-                          PixelFormat colorFormat = PixelFormat.R8G8B8A8UNorm,
-                          PixelFormat depthFormat = PixelFormat.D32FloatS8UInt,
-                          TextureSampleCount sampleCount = TextureSampleCount.Count1) : DisposableObject
+internal sealed class FBO : DisposableObject
 {
-    public OutputDescription OutputDescription { get; } = new(new OutputAttachmentDescription(depthFormat), [new OutputAttachmentDescription(colorFormat)], sampleCount);
+    private readonly uint _width;
+    private readonly uint _height;
+    private readonly PixelFormat _colorFormat;
+    private readonly PixelFormat _depthFormat;
+    private readonly TextureSampleCount _sampleCount;
+    private readonly Texture _colorTexture;
+    private readonly Texture _depthTexture;
+    private readonly Framebuffer _framebuffer;
+    private readonly Texture _presentTexture;
 
-    public bool IsReady { get; private set; }
-
-    public uint Width { get; private set; }
-
-    public uint Height { get; private set; }
-
-    public Texture? ColorTexture { get; private set; }
-
-    public Texture? DepthTexture { get; private set; }
-
-    public Framebuffer? Framebuffer { get; private set; }
-
-    public Texture? PresentTexture { get; private set; }
-
-    public bool Resize(uint width, uint height)
+    public FBO(ResourceFactory resourceFactory,
+               uint width,
+               uint height,
+               PixelFormat colorFormat = PixelFormat.R8G8B8A8UNorm,
+               PixelFormat depthFormat = PixelFormat.D32FloatS8UInt,
+               TextureSampleCount sampleCount = TextureSampleCount.Count1)
     {
-        if (Width == width && Height == height)
-        {
-            return false;
-        }
-
-        Width = width;
-        Height = height;
-
-        ResetFramebuffer();
-
-        return true;
+        _width = width;
+        _height = height;
+        _colorFormat = colorFormat;
+        _depthFormat = depthFormat;
+        _sampleCount = sampleCount;
+        _colorTexture = resourceFactory.CreateTexture(TextureDescription.Texture2D(width,
+                                                                                   height,
+                                                                                   1,
+                                                                                   colorFormat,
+                                                                                   sampleCount == TextureSampleCount.Count1
+                                                                                       ? TextureUsage.RenderTarget | TextureUsage.Sampled
+                                                                                       : TextureUsage.RenderTarget,
+                                                                                   sampleCount));
+        _depthTexture = resourceFactory.CreateTexture(TextureDescription.Texture2D(width,
+                                                                                   height,
+                                                                                   1,
+                                                                                   depthFormat,
+                                                                                   TextureUsage.DepthStencil,
+                                                                                   sampleCount));
+        _framebuffer = resourceFactory.CreateFramebuffer(new FramebufferDescription(_depthTexture, _colorTexture));
+        _presentTexture = sampleCount == TextureSampleCount.Count1
+            ? _colorTexture
+            : resourceFactory.CreateTexture(TextureDescription.Texture2D(width,
+                                                                         height,
+                                                                         1,
+                                                                         colorFormat,
+                                                                         TextureUsage.Sampled,
+                                                                         TextureSampleCount.Count1));
     }
+
+    public uint Width => _width;
+
+    public uint Height => _height;
+
+    public PixelFormat ColorFormat => _colorFormat;
+
+    public PixelFormat DepthFormat => _depthFormat;
+
+    public TextureSampleCount SampleCount => _sampleCount;
+
+    public Texture ColorTexture => _colorTexture;
+
+    public Texture DepthTexture => _depthTexture;
+
+    public Framebuffer Framebuffer => _framebuffer;
+
+    public Texture PresentTexture => _presentTexture;
 
     public void Present(CommandList commandList)
     {
-        if (!IsReady || sampleCount == TextureSampleCount.Count1)
+        if (_sampleCount == TextureSampleCount.Count1)
         {
             return;
         }
 
-        commandList.ResolveTexture(ColorTexture!, PresentTexture!);
+        commandList.ResolveTexture(_colorTexture, _presentTexture);
     }
 
     protected override void Destroy()
     {
-        PresentTexture?.Dispose();
-        Framebuffer?.Dispose();
-        DepthTexture?.Dispose();
-        ColorTexture?.Dispose();
-    }
-
-    private void ResetFramebuffer()
-    {
-        IsReady = false;
-
-        Destroy();
-
-        if (Width == 0 || Height == 0)
-        {
-            return;
-        }
-
-        TextureUsage colorUsage = TextureUsage.RenderTarget;
-
-        if (sampleCount == TextureSampleCount.Count1)
-        {
-            colorUsage |= TextureUsage.Sampled;
-        }
-
-        ColorTexture = resourceFactory.CreateTexture(TextureDescription.Texture2D(Width,
-                                                                                  Height,
-                                                                                  1,
-                                                                                  colorFormat,
-                                                                                  colorUsage,
-                                                                                  sampleCount));
-
-        DepthTexture = resourceFactory.CreateTexture(TextureDescription.Texture2D(Width,
-                                                                                  Height,
-                                                                                  1,
-                                                                                  depthFormat,
-                                                                                  TextureUsage.DepthStencil,
-                                                                                  sampleCount));
-
-        Framebuffer = resourceFactory.CreateFramebuffer(new FramebufferDescription(DepthTexture,
-                                                                                   ColorTexture));
-
-        if (sampleCount == TextureSampleCount.Count1)
-        {
-            PresentTexture = ColorTexture;
-        }
-        else
-        {
-            PresentTexture = resourceFactory.CreateTexture(TextureDescription.Texture2D(Width,
-                                                                                        Height,
-                                                                                        1,
-                                                                                        colorFormat,
-                                                                                        TextureUsage.Sampled,
-                                                                                        TextureSampleCount.Count1));
-        }
-
-        IsReady = true;
+        _colorTexture?.Dispose();
+        _depthTexture?.Dispose();
+        _framebuffer?.Dispose();
+        _presentTexture?.Dispose();
     }
 }
