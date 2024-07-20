@@ -39,7 +39,7 @@ internal sealed class MenuBar(MainWindow mainWindow) : Control(mainWindow)
                 ImGui.Separator();
 
                 if (ImGui.MenuItem("Exit"))
-                { 
+                {
                     App.Exit();
                 }
 
