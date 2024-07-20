@@ -13,8 +13,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class ImGuiController : DisposableObject
 {
-    private const nint BindingHandle = 999;
-
     private const string VertexShader = @"
 #version 450
 
@@ -86,8 +84,8 @@ void main()
 
     #region Resource Management
     private readonly Dictionary<TextureView, nint> _mapped = [];
-    private readonly Dictionary<nint, ResourceSet> _sets = [];
-    private readonly List<DeviceResource> _resources = [];
+    private readonly Dictionary<nint, ResourceSet> _selfSets = [];
+    private readonly Dictionary<nint, TextureView> _selfViews = [];
     #endregion
 
     private int _windowWidth;
@@ -217,62 +215,57 @@ void main()
 
     public nint GetOrCreateImGuiBinding(ResourceFactory factory, TextureView textureView)
     {
-        if (!_mapped.TryGetValue(textureView, out nint result))
+        if (!_mapped.TryGetValue(textureView, out nint binding))
         {
-            result = BindingHandle + _mapped.Count;
+            binding = _mapped.Count;
 
-            _mapped[textureView] = result;
-
-            ResourceSet resourceSet = factory.CreateResourceSet(new ResourceSetDescription(_layout1, textureView));
-            _resources.Add(resourceSet);
-
-            _sets[result] = resourceSet;
+            _mapped[textureView] = binding;
+            _selfSets[binding] = factory.CreateResourceSet(new ResourceSetDescription(_layout1, textureView));
         }
 
-        return result;
+        return binding;
     }
 
     public nint GetOrCreateImGuiBinding(ResourceFactory factory, Texture texture)
     {
         TextureView textureView = factory.CreateTextureView(texture);
-        _resources.Add(textureView);
 
-        return GetOrCreateImGuiBinding(factory, textureView);
+        nint binding = GetOrCreateImGuiBinding(factory, textureView);
+
+        _selfViews[binding] = textureView;
+
+        return binding;
     }
 
     public void RemoveImGuiBinding(nint binding)
     {
-        foreach (KeyValuePair<TextureView, nint> item in _mapped)
+        if (_selfSets.TryGetValue(binding, out ResourceSet? resourceSet))
         {
-            if (item.Value == binding)
-            {
-                _mapped.Remove(item.Key);
+            resourceSet.Dispose();
+            _selfSets.Remove(binding);
+        }
 
-                if (_sets.TryGetValue(binding, out ResourceSet? resourceSet))
-                {
-                    resourceSet.Dispose();
+        if (_selfViews.TryGetValue(binding, out TextureView? textureView))
+        {
+            textureView.Dispose();
+            _selfViews.Remove(binding);
+        }
 
-                    _resources.Remove(resourceSet);
-                    _sets.Remove(binding);
-                }
-
-                if (_resources.Contains(item.Key))
-                {
-                    item.Key.Dispose();
-
-                    _resources.Remove(item.Key);
-                }
-
-                break;
-            }
+        if (textureView != null)
+        {
+            _mapped.Remove(textureView);
         }
     }
 
     protected override void Destroy()
     {
-        foreach (DeviceResource resource in _resources)
+        foreach (ResourceSet resourceSet in _selfSets.Values)
         {
-            resource.Dispose();
+            resourceSet.Dispose();
+        }
+        foreach (TextureView textureView in _selfViews.Values)
+        {
+            textureView.Dispose();
         }
         _vertexBuffer.Dispose();
         _indexBuffer.Dispose();
@@ -288,7 +281,7 @@ void main()
 
     private ResourceSet GetResourceSet(nint handle)
     {
-        if (!_sets.TryGetValue(handle, out ResourceSet? resourceSet))
+        if (!_selfSets.TryGetValue(handle, out ResourceSet? resourceSet))
         {
             throw new InvalidOperationException("No resource set found for the given handle.");
         }

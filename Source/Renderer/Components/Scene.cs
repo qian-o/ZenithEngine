@@ -22,7 +22,7 @@ internal abstract class Scene : MVVM
     private bool _isLeftClicked;
     private bool _isRightClicked;
     private bool _isMiddleClicked;
-    private nint _presentTextureHandle;
+    private nint _presentTextureHandle = -1;
 
     protected Scene(MainWindow mainWindow)
     {
