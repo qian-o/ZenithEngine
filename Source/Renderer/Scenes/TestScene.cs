@@ -77,6 +77,8 @@ void main()
 
     protected override void Initialize()
     {
+        Title = "Test Scene";
+
         Vertex[] triangleVertices =
         [
             new(new Vector2( 0.00f,  0.75f), new Vector4(1.0f, 0.0f, 0.0f, 1.0f)),

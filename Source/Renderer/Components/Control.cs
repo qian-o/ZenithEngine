@@ -3,7 +3,7 @@ using Graphics.Vulkan;
 
 namespace Renderer.Components;
 
-internal abstract class Control : DisposableObject
+internal abstract class Control : MVVM
 {
     protected readonly ImGuiController _imGuiController;
 

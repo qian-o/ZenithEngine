@@ -46,6 +46,36 @@ internal sealed class MenuBar(MainWindow mainWindow) : Control(mainWindow)
                 ImGui.EndMenu();
             }
 
+            if (ImGui.BeginMenu("Settings"))
+            {
+                if (ImGui.BeginMenu("MSAA"))
+                {
+                    if (ImGui.MenuItem("Disabled", App.GraphicsSettings.SampleCount == TextureSampleCount.Count1))
+                    {
+                        App.GraphicsSettings.SampleCount = TextureSampleCount.Count1;
+                    }
+
+                    if (ImGui.MenuItem("2x", App.GraphicsSettings.SampleCount == TextureSampleCount.Count2))
+                    {
+                        App.GraphicsSettings.SampleCount = TextureSampleCount.Count2;
+                    }
+
+                    if (ImGui.MenuItem("4x", App.GraphicsSettings.SampleCount == TextureSampleCount.Count4))
+                    {
+                        App.GraphicsSettings.SampleCount = TextureSampleCount.Count4;
+                    }
+
+                    if (ImGui.MenuItem("8x", App.GraphicsSettings.SampleCount == TextureSampleCount.Count8))
+                    {
+                        App.GraphicsSettings.SampleCount = TextureSampleCount.Count8;
+                    }
+
+                    ImGui.EndMenu();
+                }
+
+                ImGui.EndMenu();
+            }
+
             ImGui.EndMainMenuBar();
         }
     }

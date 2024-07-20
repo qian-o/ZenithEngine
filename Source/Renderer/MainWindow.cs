@@ -96,7 +96,7 @@ internal sealed class MainWindow : DisposableObject
         if (_firstFrame)
         {
             ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.DockingEnable;
-            
+
             _firstFrame = false;
         }
 

@@ -5,7 +5,7 @@ using Hexa.NET.ImGui;
 
 namespace Renderer.Components;
 
-internal abstract class Scene : DisposableObject
+internal abstract class Scene : MVVM
 {
     protected readonly GraphicsDevice _graphicsDevice;
     protected readonly ResourceFactory _resourceFactory;
@@ -37,8 +37,6 @@ internal abstract class Scene : DisposableObject
 
     public string Title { get; set; } = string.Empty;
 
-    public TextureSampleCount SampleCount { get; set; } = TextureSampleCount.Count1;
-
     public uint Width => _width;
 
     public uint Height => _height;
@@ -66,6 +64,8 @@ internal abstract class Scene : DisposableObject
 
         if (_isVisible = ImGui.Begin(title))
         {
+            ImGui.SetWindowSize(new Vector2(100, 100), ImGuiCond.FirstUseEver);
+
             Vector2 size = ImGui.GetContentRegionAvail();
 
             _width = (uint)Math.Max(0, Convert.ToInt32(size.X));
@@ -79,14 +79,14 @@ internal abstract class Scene : DisposableObject
 
             if (_width != 0 && _height != 0)
             {
-                if (_fbo == null || _fbo.Width != _width || _fbo.Height != _height || _fbo.SampleCount != SampleCount)
+                if (_fbo == null || _fbo.Width != _width || _fbo.Height != _height || _fbo.SampleCount != App.GraphicsSettings.SampleCount)
                 {
-                    bool isUpdatePipelineRequired = _fbo == null || _fbo.SampleCount != SampleCount;
+                    bool isUpdatePipelineRequired = _fbo == null || _fbo.SampleCount != App.GraphicsSettings.SampleCount;
 
                     _fbo?.Dispose();
                     _imGuiController.RemoveImGuiBinding(_presentTextureHandle);
 
-                    _fbo = new FBO(_resourceFactory, _width, _height, sampleCount: SampleCount);
+                    _fbo = new FBO(_resourceFactory, _width, _height, sampleCount: App.GraphicsSettings.SampleCount);
                     _presentTextureHandle = _imGuiController.GetOrCreateImGuiBinding(_resourceFactory, _fbo.PresentTexture);
 
                     if (isUpdatePipelineRequired)

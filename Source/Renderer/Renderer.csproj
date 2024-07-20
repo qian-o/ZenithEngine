@@ -14,6 +14,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\Graphics\Graphics.Vulkan\Graphics.Vulkan.csproj" />
 	</ItemGroup>
 

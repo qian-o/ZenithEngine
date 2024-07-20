@@ -1,4 +1,5 @@
 ﻿using Graphics.Core;
+using Renderer.Models;
 
 namespace Renderer;
 
@@ -8,6 +9,8 @@ internal static class App
     private static MainWindow? _mainWindow;
 
     public static MainWindow MainWindow => _mainWindow ?? throw new InvalidOperationException("App is not initialized.");
+
+    public static GraphicsSettings GraphicsSettings { get; } = new();
 
     public static void Initialize()
     {
