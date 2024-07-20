@@ -18,35 +18,7 @@ internal sealed class MenuBar(MainWindow mainWindow) : Control(mainWindow)
     {
         if (ImGui.BeginMainMenuBar())
         {
-            if (ImGui.BeginMenu("File"))
-            {
-                if (ImGui.MenuItem("New"))
-                {
-                }
-
-                if (ImGui.MenuItem("Open"))
-                {
-                }
-
-                if (ImGui.MenuItem("Save"))
-                {
-                }
-
-                if (ImGui.MenuItem("Save As"))
-                {
-                }
-
-                ImGui.Separator();
-
-                if (ImGui.MenuItem("Exit"))
-                {
-                    App.Exit();
-                }
-
-                ImGui.EndMenu();
-            }
-
-            if (ImGui.BeginMenu("Settings"))
+            if (ImGui.BeginMenu("Graphics Settings"))
             {
                 if (ImGui.BeginMenu("MSAA"))
                 {
@@ -75,6 +47,10 @@ internal sealed class MenuBar(MainWindow mainWindow) : Control(mainWindow)
 
                 ImGui.EndMenu();
             }
+
+            ImGui.SameLine(ImGui.GetWindowWidth() - 100);
+
+            ImGui.Text($"FPS: {ImGui.GetIO().Framerate}");
 
             ImGui.EndMainMenuBar();
         }
