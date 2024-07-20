@@ -14,6 +14,8 @@ internal sealed class MainWindow : DisposableObject
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ImGuiController _imGuiController;
     private readonly CommandList _commandList;
+    private readonly List<Control> _controls;
+    private readonly List<Scene> _scenes;
 
     private bool _firstFrame = true;
 
@@ -29,6 +31,8 @@ internal sealed class MainWindow : DisposableObject
         _graphicsDevice = _context.CreateGraphicsDevice(_context.EnumeratePhysicalDevices().First(), window);
         _imGuiController = new ImGuiController(_graphicsDevice, _window.IWindow, _window.InputContext);
         _commandList = _graphicsDevice.ResourceFactory.CreateGraphicsCommandList();
+        _controls = [];
+        _scenes = [];
 
         _window.Update += Window_Update;
         _window.Render += Window_Render;
@@ -43,17 +47,13 @@ internal sealed class MainWindow : DisposableObject
 
     public ImGuiController ImGuiController => _imGuiController;
 
-    public List<Control> Controls { get; } = [];
-
-    public List<Scene> Scenes { get; } = [];
-
     protected override void Destroy()
     {
-        foreach (Scene scene in Scenes)
+        foreach (Scene scene in _scenes)
         {
             scene.Dispose();
         }
-        foreach (Control control in Controls)
+        foreach (Control control in _controls)
         {
             control.Dispose();
         }
@@ -67,21 +67,21 @@ internal sealed class MainWindow : DisposableObject
     {
         MenuBar menuBar = new(this);
 
-        Controls.Add(menuBar);
+        _controls.Add(menuBar);
 
         TestScene testScene = new(this);
 
-        Scenes.Add(testScene);
+        _scenes.Add(testScene);
     }
 
     private void Window_Update(object? sender, UpdateEventArgs e)
     {
-        foreach (Control control in Controls)
+        foreach (Control control in _controls)
         {
             control.Update(e);
         }
 
-        foreach (Scene scene in Scenes)
+        foreach (Scene scene in _scenes)
         {
             scene.Update(e);
         }
@@ -100,12 +100,12 @@ internal sealed class MainWindow : DisposableObject
 
         ImGui.DockSpaceOverViewport();
 
-        foreach (Control control in Controls)
+        foreach (Control control in _controls)
         {
             control.Render(e);
         }
 
-        foreach (Scene scene in Scenes)
+        foreach (Scene scene in _scenes)
         {
             scene.Render(e);
         }

@@ -4,13 +4,14 @@ namespace Renderer;
 
 internal static class App
 {
+    private static Window? _window;
     private static MainWindow? _mainWindow;
 
     public static MainWindow MainWindow => _mainWindow ?? throw new InvalidOperationException("App is not initialized.");
 
     public static void Initialize()
     {
-        if (_mainWindow != null)
+        if (_window != null)
         {
             return;
         }
@@ -19,7 +20,14 @@ internal static class App
         window.Load += Window_Load;
         window.Close += Window_Close;
 
+        _window = window;
+
         window.Run();
+    }
+
+    public static void Exit()
+    {
+        _window?.Exit();
     }
 
     private static void Window_Load(object? sender, LoadEventArgs e)

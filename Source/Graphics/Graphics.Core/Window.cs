@@ -12,6 +12,7 @@ public class Window : DisposableObject
     private IMouse? mouse;
     private IKeyboard? keyboard;
     private bool isInitialized;
+    private bool isExiting;
 
     internal Window(IWindow window)
     {
@@ -71,12 +72,41 @@ public class Window : DisposableObject
             Load?.Invoke(this, new LoadEventArgs());
             Resize?.Invoke(this, new ResizeEventArgs((uint)_window.Size.X, (uint)_window.Size.Y));
         };
-        _window.Update += (d) => Update?.Invoke(this, new UpdateEventArgs((float)d, (float)_window.Time));
-        _window.Render += (d) => Render?.Invoke(this, new RenderEventArgs((float)d, (float)_window.Time));
-        _window.FramebufferResize += (v) => Resize?.Invoke(this, new ResizeEventArgs((uint)v.X, (uint)v.Y));
+        _window.Update += (d) =>
+        {
+            if (isExiting)
+            {
+                _window.Close();
+            }
+
+            Update?.Invoke(this, new UpdateEventArgs((float)d, (float)_window.Time));
+        };
+        _window.Render += (d) =>
+        {
+            if (isExiting)
+            {
+                _window.Close();
+            }
+
+            Render?.Invoke(this, new RenderEventArgs((float)d, (float)_window.Time));
+        };
+        _window.FramebufferResize += (v) =>
+        {
+            if (isExiting)
+            {
+                _window.Close();
+            }
+
+            Resize?.Invoke(this, new ResizeEventArgs((uint)v.X, (uint)v.Y));
+        };
         _window.Closing += () => Close?.Invoke(this, new CloseEventArgs());
 
         _window.Run();
+    }
+
+    public void Exit()
+    {
+        isExiting = true;
     }
 
     protected override void Destroy()
