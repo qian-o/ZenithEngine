@@ -21,7 +21,7 @@ internal sealed class FBO(ResourceFactory resourceFactory) : DisposableObject
 
     public Texture? PresentTexture { get; private set; }
 
-    public bool Initialize(uint width, uint height, TextureSampleCount sampleCount = TextureSampleCount.Count1)
+    public bool Update(uint width, uint height, TextureSampleCount sampleCount = TextureSampleCount.Count1)
     {
         if (Width == width && Height == height && SampleCount == sampleCount)
         {

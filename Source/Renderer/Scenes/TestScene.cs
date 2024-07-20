@@ -4,11 +4,15 @@ using Renderer.Components;
 
 namespace Renderer.Scenes;
 
-internal sealed class TestScene(GraphicsDevice graphicsDevice, ImGuiController imGuiController) : Scene(graphicsDevice, imGuiController)
+internal sealed class TestScene(MainWindow mainWindow) : Scene(mainWindow)
 {
-    protected override void UpdateCore(UpdateEventArgs e)
+    protected override void Initialize()
     {
         SampleCount = TextureSampleCount.Count8;
+    }
+
+    protected override void UpdateCore(UpdateEventArgs e)
+    {
     }
 
     protected override void RenderCore(CommandList commandList, Framebuffer framebuffer, RenderEventArgs e)

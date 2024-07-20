@@ -13,7 +13,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 		<PackageReference Include="Hexa.NET.ImGui" Version="1.0.4" />
 		<PackageReference Include="Hexa.NET.ImGuizmo" Version="1.0.4" />
 		<PackageReference Include="Silk.NET.Input" Version="2.21.0" />

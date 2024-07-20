@@ -2,6 +2,7 @@
 using Graphics.Vulkan;
 using Hexa.NET.ImGui;
 using Renderer.Components;
+using Renderer.Controls;
 using Renderer.Scenes;
 
 namespace Renderer;
@@ -33,21 +34,28 @@ internal sealed class MainWindow : DisposableObject
         _window.Render += Window_Render;
         _window.Resize += Window_Resize;
 
-        Scenes.Add(CreateScene<TestScene>());
+        Initialize();
     }
+
+    public Context Context => _context;
+
+    public GraphicsDevice GraphicsDevice => _graphicsDevice;
+
+    public ImGuiController ImGuiController => _imGuiController;
+
+    public List<Control> Controls { get; } = [];
 
     public List<Scene> Scenes { get; } = [];
 
-    public TScene CreateScene<TScene>() where TScene : Scene
-    {
-        return (TScene)Activator.CreateInstance(typeof(TScene), _graphicsDevice, _imGuiController)!;
-    }
-
     protected override void Destroy()
     {
-        foreach (Scene subScene in Scenes)
+        foreach (Scene scene in Scenes)
         {
-            subScene.Dispose();
+            scene.Dispose();
+        }
+        foreach (Control control in Controls)
+        {
+            control.Dispose();
         }
         _commandList.Dispose();
         _imGuiController.Dispose();
@@ -55,8 +63,24 @@ internal sealed class MainWindow : DisposableObject
         _context.Dispose();
     }
 
+    private void Initialize()
+    {
+        MenuBar menuBar = new(this);
+
+        Controls.Add(menuBar);
+
+        TestScene testScene = new(this);
+
+        Scenes.Add(testScene);
+    }
+
     private void Window_Update(object? sender, UpdateEventArgs e)
     {
+        foreach (Control control in Controls)
+        {
+            control.Update(e);
+        }
+
         foreach (Scene scene in Scenes)
         {
             scene.Update(e);
@@ -75,6 +99,11 @@ internal sealed class MainWindow : DisposableObject
         }
 
         ImGui.DockSpaceOverViewport();
+
+        foreach (Control control in Controls)
+        {
+            control.Render(e);
+        }
 
         foreach (Scene scene in Scenes)
         {

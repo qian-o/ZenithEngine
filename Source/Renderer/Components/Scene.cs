@@ -5,10 +5,24 @@ using Hexa.NET.ImGui;
 
 namespace Renderer.Components;
 
-internal abstract class Scene(GraphicsDevice graphicsDevice, ImGuiController imGuiController) : DisposableObject
+internal abstract class Scene : DisposableObject
 {
-    private readonly FBO _fbo = new(graphicsDevice.ResourceFactory);
-    private readonly CommandList _commandList = graphicsDevice.ResourceFactory.CreateGraphicsCommandList();
+    protected readonly GraphicsDevice _graphicsDevice;
+    protected readonly ImGuiController _imGuiController;
+
+    private readonly FBO _fbo;
+    private readonly CommandList _commandList;
+
+    protected Scene(MainWindow mainWindow)
+    {
+        _graphicsDevice = mainWindow.GraphicsDevice;
+        _imGuiController = mainWindow.ImGuiController;
+
+        _fbo = new FBO(mainWindow.GraphicsDevice.ResourceFactory);
+        _commandList = mainWindow.GraphicsDevice.ResourceFactory.CreateGraphicsCommandList();
+
+        Initialize();
+    }
 
     private nint _presentTextureHandle;
 
@@ -54,7 +68,7 @@ internal abstract class Scene(GraphicsDevice graphicsDevice, ImGuiController imG
             IsRightClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Right);
             IsMiddleClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Middle);
 
-            Initialize(Width, Height, SampleCount);
+            UpdateFBO(Width, Height, SampleCount);
 
             if (_fbo.IsReady)
             {
@@ -68,7 +82,7 @@ internal abstract class Scene(GraphicsDevice graphicsDevice, ImGuiController imG
                 }
                 _commandList.End();
 
-                graphicsDevice.SubmitCommands(_commandList);
+                _graphicsDevice.SubmitCommands(_commandList);
 
                 ImGui.Image(_presentTextureHandle, size, Vector2.Zero, Vector2.One, Vector4.One, Vector4.Zero);
             }
@@ -81,6 +95,8 @@ internal abstract class Scene(GraphicsDevice graphicsDevice, ImGuiController imG
         }
     }
 
+    protected abstract void Initialize();
+
     protected abstract void UpdateCore(UpdateEventArgs e);
 
     protected abstract void RenderCore(CommandList commandList, Framebuffer framebuffer, RenderEventArgs e);
@@ -91,11 +107,11 @@ internal abstract class Scene(GraphicsDevice graphicsDevice, ImGuiController imG
         _commandList.Dispose();
     }
 
-    private void Initialize(uint width, uint height, TextureSampleCount sampleCount = TextureSampleCount.Count1)
+    private void UpdateFBO(uint width, uint height, TextureSampleCount sampleCount = TextureSampleCount.Count1)
     {
-        if (_fbo.Initialize(width, height, sampleCount) && _fbo.IsReady)
+        if (_fbo.Update(width, height, sampleCount) && _fbo.IsReady)
         {
-            _presentTextureHandle = imGuiController.GetOrCreateImGuiBinding(graphicsDevice.ResourceFactory, _fbo.PresentTexture!);
+            _presentTextureHandle = _imGuiController.GetOrCreateImGuiBinding(_graphicsDevice.ResourceFactory, _fbo.PresentTexture!);
         }
     }
 }
