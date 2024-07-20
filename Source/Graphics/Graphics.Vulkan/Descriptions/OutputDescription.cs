@@ -36,7 +36,7 @@ public readonly record struct OutputDescription
     /// </summary>
     public TextureSampleCount SampleCount { get; init; }
 
-    internal static OutputDescription CreateFromFramebufferDescription(FramebufferDescription description)
+    internal static OutputDescription CreateFromFramebufferDescription(ref readonly FramebufferDescription description)
     {
         OutputAttachmentDescription? depthAttachment = null;
         OutputAttachmentDescription[] colorAttachments = new OutputAttachmentDescription[description.ColorTargets.Length];

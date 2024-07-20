@@ -8,23 +8,23 @@ namespace Renderer.Components;
 internal abstract class Scene : DisposableObject
 {
     protected readonly GraphicsDevice _graphicsDevice;
+    protected readonly ResourceFactory _resourceFactory;
     protected readonly ImGuiController _imGuiController;
+    protected readonly FBO _fbo;
+    protected readonly CommandList _commandList;
 
-    private readonly FBO _fbo;
-    private readonly CommandList _commandList;
+    private nint _presentTextureHandle;
 
     protected Scene(MainWindow mainWindow)
     {
         _graphicsDevice = mainWindow.GraphicsDevice;
+        _resourceFactory = mainWindow.ResourceFactory;
         _imGuiController = mainWindow.ImGuiController;
-
-        _fbo = new FBO(mainWindow.GraphicsDevice.ResourceFactory);
-        _commandList = mainWindow.GraphicsDevice.ResourceFactory.CreateGraphicsCommandList();
+        _fbo = new FBO(_resourceFactory, InitialColorFormat(), InitialDepthFormat(), InitialSampleCount());
+        _commandList = _resourceFactory.CreateGraphicsCommandList();
 
         Initialize();
     }
-
-    private nint _presentTextureHandle;
 
     public string Title { get; set; } = string.Empty;
 
@@ -43,8 +43,6 @@ internal abstract class Scene : DisposableObject
     public bool IsRightClicked { get; private set; }
 
     public bool IsMiddleClicked { get; private set; }
-
-    public TextureSampleCount SampleCount { get; set; } = TextureSampleCount.Count1;
 
     public void Update(UpdateEventArgs e)
     {
@@ -68,7 +66,10 @@ internal abstract class Scene : DisposableObject
             IsRightClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Right);
             IsMiddleClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Middle);
 
-            UpdateFBO(Width, Height, SampleCount);
+            if (_fbo.Resize(Width, Height) && _fbo.IsReady)
+            {
+                _presentTextureHandle = _imGuiController.GetOrCreateImGuiBinding(_resourceFactory, _fbo.PresentTexture!);
+            }
 
             if (_fbo.IsReady)
             {
@@ -76,7 +77,7 @@ internal abstract class Scene : DisposableObject
                 {
                     _commandList.SetFramebuffer(_fbo.Framebuffer!);
 
-                    RenderCore(_commandList, _fbo.Framebuffer!, e);
+                    RenderCore(e);
 
                     _fbo.Present(_commandList);
                 }
@@ -95,23 +96,22 @@ internal abstract class Scene : DisposableObject
         }
     }
 
-    protected abstract void Initialize();
-
-    protected abstract void UpdateCore(UpdateEventArgs e);
-
-    protected abstract void RenderCore(CommandList commandList, Framebuffer framebuffer, RenderEventArgs e);
-
     protected override void Destroy()
     {
         _fbo?.Dispose();
         _commandList.Dispose();
     }
 
-    private void UpdateFBO(uint width, uint height, TextureSampleCount sampleCount = TextureSampleCount.Count1)
-    {
-        if (_fbo.Update(width, height, sampleCount) && _fbo.IsReady)
-        {
-            _presentTextureHandle = _imGuiController.GetOrCreateImGuiBinding(_graphicsDevice.ResourceFactory, _fbo.PresentTexture!);
-        }
-    }
+    protected virtual PixelFormat InitialColorFormat() => PixelFormat.R8G8B8A8UNorm;
+
+    protected virtual PixelFormat InitialDepthFormat() => PixelFormat.D32FloatS8UInt;
+
+    protected virtual TextureSampleCount InitialSampleCount() => TextureSampleCount.Count1;
+
+    protected abstract void Initialize();
+
+    protected abstract void UpdateCore(UpdateEventArgs e);
+
+    protected abstract void RenderCore(RenderEventArgs e);
+
 }

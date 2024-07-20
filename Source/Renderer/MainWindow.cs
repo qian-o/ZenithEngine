@@ -45,6 +45,8 @@ internal sealed class MainWindow : DisposableObject
 
     public GraphicsDevice GraphicsDevice => _graphicsDevice;
 
+    public ResourceFactory ResourceFactory => _graphicsDevice.ResourceFactory;
+
     public ImGuiController ImGuiController => _imGuiController;
 
     protected override void Destroy()

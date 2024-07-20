@@ -15,6 +15,7 @@ public unsafe class Framebuffer : DeviceResource
     private readonly uint _attachmentCount;
     private readonly uint _width;
     private readonly uint _height;
+    private readonly OutputDescription _outputDescription;
 
     internal Framebuffer(GraphicsDevice graphicsDevice, ref readonly FramebufferDescription description, bool isPresented) : base(graphicsDevice)
     {
@@ -197,6 +198,7 @@ public unsafe class Framebuffer : DeviceResource
         _attachmentCount = attachmentCount;
         _width = width;
         _height = height;
+        _outputDescription = OutputDescription.CreateFromFramebufferDescription(in description);
     }
 
     internal VkFramebuffer Handle => _framebuffer;
@@ -212,6 +214,8 @@ public unsafe class Framebuffer : DeviceResource
     public uint Width => _width;
 
     public uint Height => _height;
+
+    public OutputDescription OutputDescription => _outputDescription;
 
     protected override void Destroy()
     {

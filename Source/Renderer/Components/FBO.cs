@@ -3,15 +3,18 @@ using Graphics.Vulkan;
 
 namespace Renderer.Components;
 
-internal sealed class FBO(ResourceFactory resourceFactory) : DisposableObject
+internal sealed class FBO(ResourceFactory resourceFactory,
+                          PixelFormat colorFormat = PixelFormat.R8G8B8A8UNorm,
+                          PixelFormat depthFormat = PixelFormat.D32FloatS8UInt,
+                          TextureSampleCount sampleCount = TextureSampleCount.Count1) : DisposableObject
 {
+    public OutputDescription OutputDescription { get; } = new(new OutputAttachmentDescription(depthFormat), [new OutputAttachmentDescription(colorFormat)], sampleCount);
+
     public bool IsReady { get; private set; }
 
     public uint Width { get; private set; }
 
     public uint Height { get; private set; }
-
-    public TextureSampleCount SampleCount { get; private set; }
 
     public Texture? ColorTexture { get; private set; }
 
@@ -21,16 +24,15 @@ internal sealed class FBO(ResourceFactory resourceFactory) : DisposableObject
 
     public Texture? PresentTexture { get; private set; }
 
-    public bool Update(uint width, uint height, TextureSampleCount sampleCount = TextureSampleCount.Count1)
+    public bool Resize(uint width, uint height)
     {
-        if (Width == width && Height == height && SampleCount == sampleCount)
+        if (Width == width && Height == height)
         {
             return false;
         }
 
         Width = width;
         Height = height;
-        SampleCount = sampleCount;
 
         ResetFramebuffer();
 
@@ -39,7 +41,7 @@ internal sealed class FBO(ResourceFactory resourceFactory) : DisposableObject
 
     public void Present(CommandList commandList)
     {
-        if (!IsReady || SampleCount == TextureSampleCount.Count1)
+        if (!IsReady || sampleCount == TextureSampleCount.Count1)
         {
             return;
         }
@@ -68,7 +70,7 @@ internal sealed class FBO(ResourceFactory resourceFactory) : DisposableObject
 
         TextureUsage colorUsage = TextureUsage.RenderTarget;
 
-        if (SampleCount == TextureSampleCount.Count1)
+        if (sampleCount == TextureSampleCount.Count1)
         {
             colorUsage |= TextureUsage.Sampled;
         }
@@ -76,21 +78,21 @@ internal sealed class FBO(ResourceFactory resourceFactory) : DisposableObject
         ColorTexture = resourceFactory.CreateTexture(TextureDescription.Texture2D(Width,
                                                                                   Height,
                                                                                   1,
-                                                                                  PixelFormat.R8G8B8A8UNorm,
+                                                                                  colorFormat,
                                                                                   colorUsage,
-                                                                                  SampleCount));
+                                                                                  sampleCount));
 
         DepthTexture = resourceFactory.CreateTexture(TextureDescription.Texture2D(Width,
                                                                                   Height,
                                                                                   1,
-                                                                                  PixelFormat.D32FloatS8UInt,
+                                                                                  depthFormat,
                                                                                   TextureUsage.DepthStencil,
-                                                                                  SampleCount));
+                                                                                  sampleCount));
 
         Framebuffer = resourceFactory.CreateFramebuffer(new FramebufferDescription(DepthTexture,
                                                                                    ColorTexture));
 
-        if (SampleCount == TextureSampleCount.Count1)
+        if (sampleCount == TextureSampleCount.Count1)
         {
             PresentTexture = ColorTexture;
         }
@@ -99,7 +101,7 @@ internal sealed class FBO(ResourceFactory resourceFactory) : DisposableObject
             PresentTexture = resourceFactory.CreateTexture(TextureDescription.Texture2D(Width,
                                                                                         Height,
                                                                                         1,
-                                                                                        PixelFormat.R8G8B8A8UNorm,
+                                                                                        colorFormat,
                                                                                         TextureUsage.Sampled,
                                                                                         TextureSampleCount.Count1));
         }

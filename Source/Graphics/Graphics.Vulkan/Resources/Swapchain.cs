@@ -10,7 +10,6 @@ public unsafe class Swapchain : DeviceResource
     private readonly Fence _imageAvailableFence;
     private readonly Texture? _depthBuffer;
     private readonly Framebuffer[]? _framebuffers;
-    private readonly OutputDescription _outputDescription;
 
     private uint _currentImageIndex;
 
@@ -106,7 +105,6 @@ public unsafe class Swapchain : DeviceResource
         }
 
         Framebuffer[] framebuffers = new Framebuffer[imageCount];
-        OutputDescription outputDescription = new();
         for (int i = 0; i < imageCount; i++)
         {
             Texture colorBuffer = new(graphicsDevice,
@@ -118,14 +116,12 @@ public unsafe class Swapchain : DeviceResource
             FramebufferDescription framebufferDescription = new(depthBuffer, colorBuffer);
 
             framebuffers[i] = new Framebuffer(graphicsDevice, in framebufferDescription, true);
-            outputDescription = OutputDescription.CreateFromFramebufferDescription(framebufferDescription);
         }
 
         _swapchain = swapchain;
         _imageAvailableFence = imageAvailableFence;
         _depthBuffer = depthBuffer;
         _framebuffers = framebuffers;
-        _outputDescription = outputDescription;
 
         AcquireNextImage();
     }
@@ -134,9 +130,9 @@ public unsafe class Swapchain : DeviceResource
 
     internal uint CurrentImageIndex => _currentImageIndex;
 
-    public OutputDescription OutputDescription => _outputDescription;
-
     public Framebuffer Framebuffer => _framebuffers != null ? _framebuffers[_currentImageIndex] : throw new InvalidOperationException("Swapchain is not initialized");
+
+    public OutputDescription OutputDescription => Framebuffer.OutputDescription;
 
     public void AcquireNextImage()
     {
