@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Graphics.Core;
+using Renderer.Components;
 
 namespace Renderer.Models;
 

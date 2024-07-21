@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 
-namespace Renderer;
+namespace Renderer.Components;
 
 internal abstract partial class MVVM : ObservableRecipient, IDisposable
 {
