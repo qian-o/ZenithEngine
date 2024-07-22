@@ -70,16 +70,6 @@ public unsafe class Swapchain : DeviceResource
         SwapchainKHR swapchain;
         SwapchainExt.CreateSwapchain(Device, &createInfo, null, &swapchain).ThrowCode();
 
-        FenceCreateInfo fenceCreateInfo = new()
-        {
-            SType = StructureType.FenceCreateInfo,
-            Flags = FenceCreateFlags.SignaledBit
-        };
-
-        Fence imageAvailableFence;
-        Vk.CreateFence(Device, &fenceCreateInfo, null, &imageAvailableFence).ThrowCode();
-        Vk.ResetFences(Device, 1, &imageAvailableFence).ThrowCode();
-
         uint imageCount;
         SwapchainExt.GetSwapchainImages(Device, swapchain, &imageCount, null).ThrowCode();
 
@@ -119,7 +109,7 @@ public unsafe class Swapchain : DeviceResource
         }
 
         _swapchain = swapchain;
-        _imageAvailableFence = imageAvailableFence;
+        _imageAvailableFence = new Fence(graphicsDevice);
         _depthBuffer = depthBuffer;
         _framebuffers = framebuffers;
 
@@ -146,11 +136,10 @@ public unsafe class Swapchain : DeviceResource
                                       _swapchain.Value,
                                       ulong.MaxValue,
                                       default,
-                                      _imageAvailableFence,
+                                      _imageAvailableFence.Handle,
                                       &currentImageIndex).ThrowCode();
 
-        Vk.WaitForFences(Device, 1, in _imageAvailableFence, Vk.True, ulong.MaxValue).ThrowCode();
-        Vk.ResetFences(Device, 1, in _imageAvailableFence).ThrowCode();
+        _imageAvailableFence.WaitAndReset();
 
         _currentImageIndex = currentImageIndex;
     }
@@ -159,7 +148,7 @@ public unsafe class Swapchain : DeviceResource
     {
         if (_swapchain != null)
         {
-            Vk.DestroyFence(Device, _imageAvailableFence, null);
+            _imageAvailableFence.Dispose();
 
             foreach (Framebuffer framebuffer in _framebuffers!)
             {

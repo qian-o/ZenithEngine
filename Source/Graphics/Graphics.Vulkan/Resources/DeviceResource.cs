@@ -33,8 +33,6 @@ public abstract unsafe class DeviceResource(GraphicsDevice graphicsDevice) : Con
 
     internal CommandPool ComputeCommandPool => graphicsDevice.ComputeCommandPool;
 
-    internal CommandPool TransferCommandPool => graphicsDevice.TransferCommandPool;
-
     private void UpdateResourceName()
     {
         switch (this)

@@ -20,16 +20,15 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly Queue _transferQueue;
     private readonly Fence _graphicsFence;
     private readonly Fence _computeFence;
-    private readonly Fence _transferFence;
     private readonly CommandPool _graphicsCommandPool;
     private readonly CommandPool _computeCommandPool;
-    private readonly CommandPool _transferCommandPool;
     private readonly DescriptorPoolManager _descriptorPoolManager;
     private readonly SurfaceKHR _windowSurface;
     private readonly PixelFormat _depthFormat;
     private readonly Sampler _pointSampler;
     private readonly Sampler _linearSampler;
     private readonly object _stagingResourcesLock;
+    private readonly List<SharedCommandPool> _availableSharedCommandPools;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
 
     private Swapchain? swapChain;
@@ -43,69 +42,6 @@ public unsafe class GraphicsDevice : ContextObject
                             uint computeQueueFamilyIndex,
                             uint transferQueueFamilyIndex) : base(context)
     {
-        Queue graphicsQueue;
-        Vk.GetDeviceQueue(device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
-
-        Queue computeQueue;
-        Vk.GetDeviceQueue(device, computeQueueFamilyIndex, 0, &computeQueue);
-
-        Queue transferQueue;
-        Vk.GetDeviceQueue(device, transferQueueFamilyIndex, 0, &transferQueue);
-
-        FenceCreateInfo fenceCreateInfo = new()
-        {
-            SType = StructureType.FenceCreateInfo,
-            Flags = FenceCreateFlags.SignaledBit
-        };
-
-        Fence graphicsFence;
-        Vk.CreateFence(device, &fenceCreateInfo, null, &graphicsFence).ThrowCode();
-        Vk.ResetFences(device, 1, &graphicsFence).ThrowCode();
-
-        Fence computeFence;
-        Vk.CreateFence(device, &fenceCreateInfo, null, &computeFence).ThrowCode();
-        Vk.ResetFences(device, 1, &computeFence).ThrowCode();
-
-        Fence transferFence;
-        Vk.CreateFence(device, &fenceCreateInfo, null, &transferFence).ThrowCode();
-        Vk.ResetFences(device, 1, &transferFence).ThrowCode();
-
-        CommandPool graphicsCommandPool;
-        {
-            CommandPoolCreateInfo createInfo = new()
-            {
-                SType = StructureType.CommandPoolCreateInfo,
-                QueueFamilyIndex = graphicsQueueFamilyIndex,
-                Flags = CommandPoolCreateFlags.ResetCommandBufferBit
-            };
-
-            Vk.CreateCommandPool(device, &createInfo, null, &graphicsCommandPool).ThrowCode();
-        }
-
-        CommandPool computeCommandPool;
-        {
-            CommandPoolCreateInfo createInfo = new()
-            {
-                SType = StructureType.CommandPoolCreateInfo,
-                QueueFamilyIndex = computeQueueFamilyIndex,
-                Flags = CommandPoolCreateFlags.ResetCommandBufferBit
-            };
-
-            Vk.CreateCommandPool(device, &createInfo, null, &computeCommandPool).ThrowCode();
-        }
-
-        CommandPool transferCommandPool;
-        {
-            CommandPoolCreateInfo createInfo = new()
-            {
-                SType = StructureType.CommandPoolCreateInfo,
-                QueueFamilyIndex = transferQueueFamilyIndex,
-                Flags = CommandPoolCreateFlags.ResetCommandBufferBit
-            };
-
-            Vk.CreateCommandPool(device, &createInfo, null, &transferCommandPool).ThrowCode();
-        }
-
         Format depthFormat = physicalDevice.FindSupportedFormat([Format.D32SfloatS8Uint, Format.D24UnormS8Uint, Format.D32Sfloat],
                                                                 ImageTiling.Optimal,
                                                                 FormatFeatureFlags.DepthStencilAttachmentBit);
@@ -114,21 +50,20 @@ public unsafe class GraphicsDevice : ContextObject
         _physicalDevice = physicalDevice;
         _device = device;
         _swapchainExt = swapchainExt;
-        _graphicsQueue = graphicsQueue;
-        _computeQueue = computeQueue;
-        _transferQueue = transferQueue;
-        _graphicsFence = graphicsFence;
-        _computeFence = computeFence;
-        _transferFence = transferFence;
-        _graphicsCommandPool = graphicsCommandPool;
-        _computeCommandPool = computeCommandPool;
-        _transferCommandPool = transferCommandPool;
+        _graphicsQueue = new Queue(this, graphicsQueueFamilyIndex);
+        _computeQueue = new Queue(this, computeQueueFamilyIndex);
+        _transferQueue = new Queue(this, transferQueueFamilyIndex);
+        _graphicsFence = new Fence(this);
+        _computeFence = new Fence(this);
+        _graphicsCommandPool = new CommandPool(this, graphicsQueueFamilyIndex);
+        _computeCommandPool = new CommandPool(this, computeQueueFamilyIndex);
         _descriptorPoolManager = new DescriptorPoolManager(this);
         _windowSurface = windowSurface;
         _depthFormat = Formats.GetPixelFormat(depthFormat);
         _pointSampler = _resourceFactory.CreateSampler(SamplerDescription.Point);
         _linearSampler = _resourceFactory.CreateSampler(SamplerDescription.Linear);
         _stagingResourcesLock = new object();
+        _availableSharedCommandPools = [];
         _availableStagingBuffers = [];
     }
 
@@ -156,58 +91,11 @@ public unsafe class GraphicsDevice : ContextObject
 
     internal Fence ComputeFence => _computeFence;
 
-    internal Fence TransferFence => _transferFence;
-
     internal CommandPool GraphicsCommandPool => _graphicsCommandPool;
 
     internal CommandPool ComputeCommandPool => _computeCommandPool;
 
-    internal CommandPool TransferCommandPool => _transferCommandPool;
-
     internal DescriptorPoolManager DescriptorPoolManager => _descriptorPoolManager;
-
-    internal CommandBuffer BeginSingleTimeCommands()
-    {
-        CommandBufferAllocateInfo allocateInfo = new()
-        {
-            SType = StructureType.CommandBufferAllocateInfo,
-            CommandPool = _transferCommandPool,
-            Level = CommandBufferLevel.Primary,
-            CommandBufferCount = 1
-        };
-
-        CommandBuffer commandBuffer;
-        Vk.AllocateCommandBuffers(_device, &allocateInfo, &commandBuffer);
-
-        CommandBufferBeginInfo beginInfo = new()
-        {
-            SType = StructureType.CommandBufferBeginInfo,
-            Flags = CommandBufferUsageFlags.OneTimeSubmitBit
-        };
-
-        Vk.BeginCommandBuffer(commandBuffer, &beginInfo);
-
-        return commandBuffer;
-    }
-
-    internal void EndSingleTimeCommands(CommandBuffer commandBuffer)
-    {
-        Vk.EndCommandBuffer(commandBuffer);
-
-        SubmitInfo submitInfo = new()
-        {
-            SType = StructureType.SubmitInfo,
-            CommandBufferCount = 1,
-            PCommandBuffers = &commandBuffer
-        };
-
-        Vk.QueueSubmit(_transferQueue, 1, &submitInfo, _transferFence);
-
-        Vk.WaitForFences(_device, 1, in _transferFence, Vk.True, ulong.MaxValue);
-        Vk.ResetFences(_device, 1, in _transferFence);
-
-        Vk.FreeCommandBuffers(_device, _transferCommandPool, 1, &commandBuffer);
-    }
 
     public void Resize(uint width, uint height)
     {
@@ -248,6 +136,7 @@ public unsafe class GraphicsDevice : ContextObject
         }
         else
         {
+            SharedCommandPool sharedCommandPool = GetSharedCommandPool();
             DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
 
             void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
@@ -256,7 +145,7 @@ public unsafe class GraphicsDevice : ContextObject
 
             stagingBuffer.Unmap();
 
-            CommandBuffer commandBuffer = BeginSingleTimeCommands();
+            CommandBuffer commandBuffer = sharedCommandPool.BeginNewCommandBuffer();
 
             BufferCopy bufferCopy = new()
             {
@@ -267,9 +156,10 @@ public unsafe class GraphicsDevice : ContextObject
 
             Vk.CmdCopyBuffer(commandBuffer, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
 
-            EndSingleTimeCommands(commandBuffer);
+            sharedCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
 
             CacheStagingBuffer(stagingBuffer);
+            CacheSharedCommandPool(sharedCommandPool);
         }
     }
 
@@ -327,6 +217,7 @@ public unsafe class GraphicsDevice : ContextObject
             return;
         }
 
+        SharedCommandPool sharedCommandPool = GetSharedCommandPool();
         DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
 
         void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
@@ -335,7 +226,7 @@ public unsafe class GraphicsDevice : ContextObject
 
         stagingBuffer.Unmap();
 
-        CommandBuffer commandBuffer = BeginSingleTimeCommands();
+        CommandBuffer commandBuffer = sharedCommandPool.BeginNewCommandBuffer();
 
         texture.TransitionLayout(commandBuffer, ImageLayout.TransferDstOptimal);
 
@@ -359,9 +250,10 @@ public unsafe class GraphicsDevice : ContextObject
 
         texture.TransitionToBestLayout(commandBuffer);
 
-        EndSingleTimeCommands(commandBuffer);
+        sharedCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
 
         CacheStagingBuffer(stagingBuffer);
+        CacheSharedCommandPool(sharedCommandPool);
     }
 
     public void UpdateTexture<T>(Texture texture,
@@ -395,10 +287,9 @@ public unsafe class GraphicsDevice : ContextObject
             PCommandBuffers = &commandBuffer
         };
 
-        Vk.QueueSubmit(queue, 1, &submitInfo, fence);
+        Vk.QueueSubmit(queue.Handle, 1, &submitInfo, fence.Handle);
 
-        Vk.WaitForFences(_device, 1, &fence, Vk.True, ulong.MaxValue);
-        Vk.ResetFences(_device, 1, &fence);
+        fence.WaitAndReset();
     }
 
     public void SwapBuffers()
@@ -419,7 +310,7 @@ public unsafe class GraphicsDevice : ContextObject
             PImageIndices = &imageIndex
         };
 
-        Result result = _swapchainExt.QueuePresent(_graphicsQueue, &presentInfo);
+        Result result = _swapchainExt.QueuePresent(_graphicsQueue.Handle, &presentInfo);
 
         if (result == Result.Success)
         {
@@ -441,6 +332,11 @@ public unsafe class GraphicsDevice : ContextObject
             deviceBuffer.Dispose();
         }
 
+        foreach (SharedCommandPool sharedCommandPool in _availableSharedCommandPools)
+        {
+            sharedCommandPool.Dispose();
+        }
+
         swapChain?.Dispose();
 
         _pointSampler.Dispose();
@@ -448,19 +344,40 @@ public unsafe class GraphicsDevice : ContextObject
 
         _descriptorPoolManager.Dispose();
 
-        Vk.DestroyFence(_device, _transferFence, null);
-        Vk.DestroyFence(_device, _computeFence, null);
-        Vk.DestroyFence(_device, _graphicsFence, null);
+        _computeFence.Dispose();
+        _graphicsFence.Dispose();
 
-        Vk.DestroyCommandPool(_device, _transferCommandPool, null);
-        Vk.DestroyCommandPool(_device, _computeCommandPool, null);
-        Vk.DestroyCommandPool(_device, _graphicsCommandPool, null);
+        _computeCommandPool.Dispose();
+        _graphicsCommandPool.Dispose();
 
         _swapchainExt.Dispose();
 
         _resourceFactory.Dispose();
 
         Vk.DestroyDevice(_device, null);
+    }
+
+    private SharedCommandPool GetSharedCommandPool()
+    {
+        lock (_stagingResourcesLock)
+        {
+            foreach (SharedCommandPool sharedCommandPool in _availableSharedCommandPools)
+            {
+                _availableSharedCommandPools.Remove(sharedCommandPool);
+
+                return sharedCommandPool;
+            }
+        }
+
+        return new SharedCommandPool(this, _transferQueue);
+    }
+
+    private void CacheSharedCommandPool(SharedCommandPool sharedCommandPool)
+    {
+        lock (_stagingResourcesLock)
+        {
+            _availableSharedCommandPools.Add(sharedCommandPool);
+        }
     }
 
     private DeviceBuffer GetStagingBuffer(uint sizeInBytes)

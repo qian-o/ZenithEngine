@@ -19,21 +19,10 @@ public unsafe class CommandList : DeviceResource
 
     internal CommandList(GraphicsDevice graphicsDevice, Queue queue, Fence fence, CommandPool commandPool) : base(graphicsDevice)
     {
-        CommandBufferAllocateInfo allocateInfo = new()
-        {
-            SType = StructureType.CommandBufferAllocateInfo,
-            CommandPool = commandPool,
-            Level = CommandBufferLevel.Primary,
-            CommandBufferCount = 1
-        };
-
-        CommandBuffer commandBuffer;
-        Vk.AllocateCommandBuffers(Device, &allocateInfo, &commandBuffer).ThrowCode();
-
         _queue = queue;
         _fence = fence;
         _commandPool = commandPool;
-        _commandBuffer = commandBuffer;
+        _commandBuffer = commandPool.AllocateCommandBuffer();
     }
 
     internal CommandBuffer Handle => _commandBuffer;
@@ -355,7 +344,7 @@ public unsafe class CommandList : DeviceResource
 
     protected override void Destroy()
     {
-        Vk.FreeCommandBuffers(Device, _commandPool, 1, [_commandBuffer]);
+        _commandPool.FreeCommandBuffer(_commandBuffer);
     }
 
     private void BeginCurrentRenderPass()

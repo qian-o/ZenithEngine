@@ -246,16 +246,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
         _layout = newLayout;
     }
 
-    internal void TransitionLayout(ImageLayout newLayout)
-    {
-        CommandBuffer commandBuffer = GraphicsDevice.BeginSingleTimeCommands();
-
-        TransitionLayout(commandBuffer, newLayout);
-
-        GraphicsDevice.EndSingleTimeCommands(commandBuffer);
-    }
-
-    internal void TransitionToBestLayout(CommandBuffer? commandBuffer = null)
+    internal void TransitionToBestLayout(CommandBuffer commandBuffer)
     {
         ImageLayout newLayout = ImageLayout.General;
 
@@ -272,20 +263,11 @@ public unsafe class Texture : DeviceResource, IBindableResource
             newLayout = ImageLayout.DepthStencilAttachmentOptimal;
         }
 
-        if (commandBuffer == null)
-        {
-            TransitionLayout(newLayout);
-        }
-        else
-        {
-            TransitionLayout(commandBuffer.Value, newLayout);
-        }
+        TransitionLayout(commandBuffer, newLayout);
     }
 
-    internal void GenerateMipmaps()
+    internal void GenerateMipmaps(CommandBuffer commandBuffer)
     {
-        CommandBuffer commandBuffer = GraphicsDevice.BeginSingleTimeCommands();
-
         for (uint layer = 0; layer < _arrayLayers; layer++)
         {
             ImageMemoryBarrier barrier = new()
@@ -380,8 +362,6 @@ public unsafe class Texture : DeviceResource, IBindableResource
                 mipHeight = Math.Max(1, mipHeight / 2);
             }
         }
-
-        GraphicsDevice.EndSingleTimeCommands(commandBuffer);
     }
 
     protected override void Destroy()
