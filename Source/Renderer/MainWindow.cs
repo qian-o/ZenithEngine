@@ -7,7 +7,7 @@ using Renderer.Scenes;
 
 namespace Renderer;
 
-internal sealed class MainWindow : DisposableObject
+internal sealed unsafe class MainWindow : DisposableObject
 {
     private readonly Window _window;
     private readonly Context _context;
@@ -29,7 +29,10 @@ internal sealed class MainWindow : DisposableObject
         _window = window;
         _context = new Context();
         _graphicsDevice = _context.CreateGraphicsDevice(_context.EnumeratePhysicalDevices().First(), window);
-        _imGuiController = new ImGuiController(_graphicsDevice, _window.IWindow, _window.InputContext);
+        _imGuiController = new ImGuiController(_graphicsDevice,
+                                               _window.IWindow,
+                                               _window.InputContext,
+                                               new ImGuiFontConfig("Assets/Fonts/MSYH.TTC", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
         _commandList = _graphicsDevice.ResourceFactory.CreateGraphicsCommandList();
         _controls = [];
         _scenes = [];
