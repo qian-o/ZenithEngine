@@ -112,6 +112,11 @@ internal sealed class MainWindow : DisposableObject
             scene.Render(e);
         }
 
+        foreach (Scene scene in _scenes)
+        {
+            scene.Present();
+        }
+
         _commandList.Begin();
         _commandList.SetFramebuffer(_graphicsDevice.Swapchain.Framebuffer);
         {

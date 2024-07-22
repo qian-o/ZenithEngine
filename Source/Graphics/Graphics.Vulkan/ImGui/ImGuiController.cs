@@ -83,6 +83,7 @@ void main()
     private readonly List<char> _pressedChars = [];
 
     #region Resource Management
+    private readonly object _lock = new();
     private readonly Dictionary<TextureView, nint> _mapped = [];
     private readonly Dictionary<nint, ResourceSet> _selfSets = [];
     private readonly Dictionary<nint, TextureView> _selfViews = [];
@@ -215,45 +216,54 @@ void main()
 
     public nint GetOrCreateImGuiBinding(ResourceFactory factory, TextureView textureView)
     {
-        if (!_mapped.TryGetValue(textureView, out nint binding))
+        lock (_lock)
         {
-            binding = _mapped.Count;
+            if (!_mapped.TryGetValue(textureView, out nint binding))
+            {
+                binding = _mapped.Count;
 
-            _mapped[textureView] = binding;
-            _selfSets[binding] = factory.CreateResourceSet(new ResourceSetDescription(_layout1, textureView));
+                _mapped[textureView] = binding;
+                _selfSets[binding] = factory.CreateResourceSet(new ResourceSetDescription(_layout1, textureView));
+            }
+
+            return binding;
         }
-
-        return binding;
     }
 
     public nint GetOrCreateImGuiBinding(ResourceFactory factory, Texture texture)
     {
-        TextureView textureView = factory.CreateTextureView(texture);
+        lock (_lock)
+        {
+            TextureView textureView = factory.CreateTextureView(texture);
 
-        nint binding = GetOrCreateImGuiBinding(factory, textureView);
+            nint binding = GetOrCreateImGuiBinding(factory, textureView);
 
-        _selfViews[binding] = textureView;
+            _selfViews[binding] = textureView;
 
-        return binding;
+            return binding;
+        }
     }
 
     public void RemoveImGuiBinding(nint binding)
     {
-        if (_selfSets.TryGetValue(binding, out ResourceSet? resourceSet))
+        lock (_lock)
         {
-            resourceSet.Dispose();
-            _selfSets.Remove(binding);
-        }
+            if (_selfSets.TryGetValue(binding, out ResourceSet? resourceSet))
+            {
+                resourceSet.Dispose();
+                _selfSets.Remove(binding);
+            }
 
-        if (_selfViews.TryGetValue(binding, out TextureView? textureView))
-        {
-            textureView.Dispose();
-            _selfViews.Remove(binding);
-        }
+            if (_selfViews.TryGetValue(binding, out TextureView? textureView))
+            {
+                textureView.Dispose();
+                _selfViews.Remove(binding);
+            }
 
-        if (textureView != null)
-        {
-            _mapped.Remove(textureView);
+            if (textureView != null)
+            {
+                _mapped.Remove(textureView);
+            }
         }
     }
 
