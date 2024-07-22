@@ -1,4 +1,4 @@
-﻿namespace Graphics.Vulkan;
+﻿namespace Graphics.Core;
 
 public readonly record struct Viewport
 {

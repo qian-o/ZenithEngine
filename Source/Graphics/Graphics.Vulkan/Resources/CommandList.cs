@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Graphics.Core;
 using Silk.NET.Vulkan;
+using Viewport = Graphics.Core.Viewport;
 
 namespace Graphics.Vulkan;
 

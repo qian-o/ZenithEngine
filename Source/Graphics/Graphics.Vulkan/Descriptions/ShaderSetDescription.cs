@@ -1,4 +1,6 @@
-﻿namespace Graphics.Vulkan;
+﻿using Graphics.Core;
+
+namespace Graphics.Vulkan;
 
 public readonly record struct ShaderSetDescription
 {

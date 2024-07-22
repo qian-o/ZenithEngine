@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
-using Graphics.Core;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Core;
 
 public readonly record struct SpecializationConstant
 {
