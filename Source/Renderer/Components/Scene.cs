@@ -22,7 +22,6 @@ internal abstract class Scene : MVVM
     private bool _isLeftClicked;
     private bool _isRightClicked;
     private bool _isMiddleClicked;
-    private bool _canPresent;
     private nint _presentTextureHandle = -1;
 
     protected Scene(MainWindow mainWindow)
@@ -61,40 +60,6 @@ internal abstract class Scene : MVVM
 
     public void Render(RenderEventArgs e)
     {
-        if (_canPresent = _width != 0 && _height != 0)
-        {
-            if (_fbo == null || _fbo.Width != _width || _fbo.Height != _height || _fbo.SampleCount != App.GraphicsSettings.SampleCount)
-            {
-                bool isUpdatePipelineRequired = _fbo == null || _fbo.SampleCount != App.GraphicsSettings.SampleCount;
-
-                _fbo?.Dispose();
-                _imGuiController.RemoveImGuiBinding(_presentTextureHandle);
-
-                _fbo = new FBO(_resourceFactory, _width, _height, sampleCount: App.GraphicsSettings.SampleCount);
-                _presentTextureHandle = _imGuiController.GetOrCreateImGuiBinding(_resourceFactory, _fbo.PresentTexture);
-
-                if (isUpdatePipelineRequired)
-                {
-                    UpdatePipeline(_fbo.Framebuffer);
-                }
-            }
-
-            _commandList.Begin();
-            {
-                _commandList.SetFramebuffer(_fbo.Framebuffer);
-
-                RenderCore(_commandList, _fbo.Framebuffer, e);
-
-                _fbo.Present(_commandList);
-            }
-            _commandList.End();
-
-            _graphicsDevice.SubmitCommands(_commandList);
-        }
-    }
-
-    public void Present()
-    {
         string title = string.IsNullOrEmpty(Title) ? Id : Title;
 
         if (_isVisible = ImGui.Begin(title))
@@ -112,8 +77,36 @@ internal abstract class Scene : MVVM
             _isRightClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Right);
             _isMiddleClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Middle);
 
-            if (_canPresent)
+            if (_width != 0 && _height != 0)
             {
+                if (_fbo == null || _fbo.Width != _width || _fbo.Height != _height || _fbo.SampleCount != App.Settings.SampleCount)
+                {
+                    bool isUpdatePipelineRequired = _fbo == null || _fbo.SampleCount != App.Settings.SampleCount;
+
+                    _fbo?.Dispose();
+                    _imGuiController.RemoveImGuiBinding(_presentTextureHandle);
+
+                    _fbo = new FBO(_resourceFactory, _width, _height, sampleCount: App.Settings.SampleCount);
+                    _presentTextureHandle = _imGuiController.GetOrCreateImGuiBinding(_resourceFactory, _fbo.PresentTexture);
+
+                    if (isUpdatePipelineRequired)
+                    {
+                        UpdatePipeline(_fbo.Framebuffer);
+                    }
+                }
+
+                _commandList.Begin();
+                {
+                    _commandList.SetFramebuffer(_fbo.Framebuffer);
+
+                    RenderCore(_commandList, _fbo.Framebuffer, e);
+
+                    _fbo.Present(_commandList);
+                }
+                _commandList.End();
+
+                _graphicsDevice.SubmitCommands(_commandList);
+
                 ImGui.Image(_presentTextureHandle, size, Vector2.Zero, Vector2.One, Vector4.One, Vector4.Zero);
             }
             else

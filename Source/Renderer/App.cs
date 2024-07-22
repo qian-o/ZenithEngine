@@ -10,7 +10,7 @@ internal static class App
 
     public static MainWindow MainWindow => _mainWindow ?? throw new InvalidOperationException("App is not initialized.");
 
-    public static GraphicsSettings GraphicsSettings { get; } = new();
+    public static Settings Settings { get; } = new();
 
     public static void Initialize()
     {

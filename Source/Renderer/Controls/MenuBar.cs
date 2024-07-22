@@ -18,31 +18,38 @@ internal sealed class MenuBar(MainWindow mainWindow) : Control(mainWindow)
     {
         if (ImGui.BeginMainMenuBar())
         {
-            if (ImGui.BeginMenu("Graphics Settings"))
+            if (ImGui.BeginMenu("Settings"))
             {
                 if (ImGui.BeginMenu("MSAA"))
                 {
-                    if (ImGui.MenuItem("Disabled", App.GraphicsSettings.SampleCount == TextureSampleCount.Count1))
+                    if (ImGui.MenuItem("Disabled", App.Settings.SampleCount == TextureSampleCount.Count1))
                     {
-                        App.GraphicsSettings.SampleCount = TextureSampleCount.Count1;
+                        App.Settings.SampleCount = TextureSampleCount.Count1;
                     }
 
-                    if (ImGui.MenuItem("2x", App.GraphicsSettings.SampleCount == TextureSampleCount.Count2))
+                    if (ImGui.MenuItem("2x", App.Settings.SampleCount == TextureSampleCount.Count2))
                     {
-                        App.GraphicsSettings.SampleCount = TextureSampleCount.Count2;
+                        App.Settings.SampleCount = TextureSampleCount.Count2;
                     }
 
-                    if (ImGui.MenuItem("4x", App.GraphicsSettings.SampleCount == TextureSampleCount.Count4))
+                    if (ImGui.MenuItem("4x", App.Settings.SampleCount == TextureSampleCount.Count4))
                     {
-                        App.GraphicsSettings.SampleCount = TextureSampleCount.Count4;
+                        App.Settings.SampleCount = TextureSampleCount.Count4;
                     }
 
-                    if (ImGui.MenuItem("8x", App.GraphicsSettings.SampleCount == TextureSampleCount.Count8))
+                    if (ImGui.MenuItem("8x", App.Settings.SampleCount == TextureSampleCount.Count8))
                     {
-                        App.GraphicsSettings.SampleCount = TextureSampleCount.Count8;
+                        App.Settings.SampleCount = TextureSampleCount.Count8;
                     }
 
                     ImGui.EndMenu();
+                }
+
+                ImGui.Separator();
+
+                if (ImGui.MenuItem("Multi-threaded Rendering", App.Settings.IsMultiThreadedRendering))
+                {
+                    App.Settings.IsMultiThreadedRendering = !App.Settings.IsMultiThreadedRendering;
                 }
 
                 ImGui.EndMenu();

@@ -81,14 +81,29 @@ internal sealed unsafe class MainWindow : DisposableObject
 
     private void Window_Update(object? sender, UpdateEventArgs e)
     {
-        foreach (Control control in _controls)
+        if (App.Settings.IsMultiThreadedRendering)
         {
-            control.Update(e);
-        }
+            Parallel.ForEach(_controls, (control) =>
+            {
+                control.Update(e);
+            });
 
-        foreach (Scene scene in _scenes)
+            Parallel.ForEach(_scenes, (scene) =>
+            {
+                scene.Update(e);
+            });
+        }
+        else
         {
-            scene.Update(e);
+            foreach (Control control in _controls)
+            {
+                control.Update(e);
+            }
+
+            foreach (Scene scene in _scenes)
+            {
+                scene.Update(e);
+            }
         }
     }
 
@@ -113,11 +128,6 @@ internal sealed unsafe class MainWindow : DisposableObject
         foreach (Scene scene in _scenes)
         {
             scene.Render(e);
-        }
-
-        foreach (Scene scene in _scenes)
-        {
-            scene.Present();
         }
 
         _commandList.Begin();
