@@ -7,60 +7,12 @@ namespace Graphics.Vulkan;
 
 internal static unsafe class ImGuiPlatform
 {
-    private struct PlatformUserData
-    {
-        public GCHandle Window;
-
-        public Window GetWindow() => (Window)Window.Target!;
-
-        public static PlatformUserData* Alloc(Window window)
-        {
-            PlatformUserData* viewportData = (PlatformUserData*)Marshal.AllocHGlobal(sizeof(PlatformUserData));
-            viewportData->Window = GCHandle.Alloc(window);
-
-            return viewportData;
-        }
-
-        public static void Free(PlatformUserData* platformUserData)
-        {
-            if (platformUserData->Window.IsAllocated)
-            {
-                platformUserData->Window.Free();
-                Marshal.FreeHGlobal((IntPtr)platformUserData);
-            }
-        }
-    }
-
-    private struct RendererUserData
-    {
-        public GCHandle GraphicsDevice;
-
-        public GraphicsDevice GetGraphicsDevice() => (GraphicsDevice)GraphicsDevice.Target!;
-
-        public static RendererUserData* Alloc(GraphicsDevice graphicsDevice)
-        {
-            RendererUserData* rendererData = (RendererUserData*)Marshal.AllocHGlobal(sizeof(RendererUserData));
-            rendererData->GraphicsDevice = GCHandle.Alloc(graphicsDevice);
-
-            return rendererData;
-        }
-
-        public static void Free(RendererUserData* rendererData)
-        {
-            if (rendererData->GraphicsDevice.IsAllocated)
-            {
-                rendererData->GraphicsDevice.Free();
-                Marshal.FreeHGlobal((IntPtr)rendererData);
-            }
-        }
-    }
-
-    public static void Initialize(GraphicsDevice graphicsDevice, Window window)
+    public static void Initialize(Window window, GraphicsDevice graphicsDevice)
     {
         ImGuiViewport* mainViewport = ImGui.GetMainViewport();
-        mainViewport->PlatformHandle = (void*)window.Handle;
-        mainViewport->PlatformUserData = PlatformUserData.Alloc(window);
+        mainViewport->PlatformUserData = PlatformUserData.Alloc(new ImGuiWindow(window, graphicsDevice));
         mainViewport->RendererUserData = RendererUserData.Alloc(graphicsDevice);
+        mainViewport->PlatformHandle = (void*)window.Handle;
 
         ImGuiPlatformIOPtr imGuiPlatformIOPtr = ImGui.GetPlatformIO();
         imGuiPlatformIOPtr.PlatformCreateWindow = (void*)Marshal.GetFunctionPointerForDelegate<PlatformCreateWindow>(CreateWindow);
@@ -78,10 +30,7 @@ internal static unsafe class ImGuiPlatform
 
     private static void CreateWindow(ImGuiViewport* viewport)
     {
-        Window window = Window.CreateWindowByVulkan();
-
-        viewport->PlatformUserData = PlatformUserData.Alloc(window);
-        viewport->RendererUserData = ImGui.GetMainViewport().RendererUserData;
+        viewport->PlatformUserData = PlatformUserData.Alloc(new ImGuiWindow(viewport));
     }
 
     private static void DestroyWindow(ImGuiViewport* viewport)
@@ -99,7 +48,7 @@ internal static unsafe class ImGuiPlatform
             viewport->PlatformUserData = null;
         }
 
-        if (viewport->PlatformHandle != null)
+        if (viewport->RendererUserData != null)
         {
             RendererUserData* rendererUserData = (RendererUserData*)viewport->RendererUserData;
 

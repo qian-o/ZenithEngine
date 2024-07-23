@@ -21,6 +21,7 @@ public unsafe class Window : DisposableObject
     public event EventHandler<UpdateEventArgs>? Update;
     public event EventHandler<RenderEventArgs>? Render;
     public event EventHandler<ResizeEventArgs>? Resize;
+    public event EventHandler<MoveEventArgs>? Move;
     public event EventHandler<CloseEventArgs>? Close;
 
     static Window()
@@ -127,6 +128,11 @@ public unsafe class Window : DisposableObject
         isExiting = true;
     }
 
+    public void PollEvents()
+    {
+        _window.DoEvents();
+    }
+
     protected override void Destroy()
     {
         _window.Dispose();
@@ -173,6 +179,15 @@ public unsafe class Window : DisposableObject
             }
 
             Resize?.Invoke(this, new ResizeEventArgs((uint)v.X, (uint)v.Y));
+        };
+        _window.Move += (v) =>
+        {
+            if (isExiting)
+            {
+                _window.Close();
+            }
+
+            Move?.Invoke(this, new MoveEventArgs(v.X, v.Y));
         };
         _window.Closing += () =>
         {

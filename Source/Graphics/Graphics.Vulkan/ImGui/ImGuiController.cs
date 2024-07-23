@@ -398,6 +398,16 @@ void main()
         }
 
         _pressedChars.Clear();
+
+        ImVectorImGuiViewportPtr viewports = ImGui.GetPlatformIO().Viewports;
+        for (int i = 0; i < viewports.Size; i++)
+        {
+            ImGuiViewport* viewport = viewports.Data[i];
+
+            PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
+
+            platformUserData->GetImGuiWindow().Update();
+        }
     }
 
     private void RenderImDrawData(CommandList commandList, ImDrawDataPtr drawDataPtr)
@@ -649,7 +659,7 @@ void main()
         io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
 
-        ImGuiPlatform.Initialize(_graphicsDevice, _window);
+        ImGuiPlatform.Initialize(_window, _graphicsDevice);
 
         CreateDeviceResources();
         SetPerFrameImGuiData(1.0f / 60.0f);
