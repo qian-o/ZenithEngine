@@ -220,7 +220,10 @@ void main()
         {
             if (!_mapped.TryGetValue(textureView, out nint binding))
             {
-                binding = _mapped.Count;
+                while (_selfSets.ContainsKey(binding))
+                {
+                    binding++;
+                }
 
                 _mapped[textureView] = binding;
                 _selfSets[binding] = factory.CreateResourceSet(new ResourceSetDescription(_layout1, textureView));

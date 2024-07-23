@@ -74,9 +74,10 @@ internal sealed unsafe class MainWindow : DisposableObject
 
         _controls.Add(menuBar);
 
-        TestScene testScene = new(this);
-
-        _scenes.Add(testScene);
+        for (int i = 0; i < 4; i++)
+        {
+            _scenes.Add(new TestScene(this) { Title = $"Scene {i + 1}" });
+        }
     }
 
     private void Window_Update(object? sender, UpdateEventArgs e)
