@@ -1,11 +1,14 @@
 ﻿using Silk.NET.Input;
 using Silk.NET.Maths;
+using Silk.NET.SDL;
 using Silk.NET.Windowing;
 
 namespace Graphics.Core;
 
-public class Window : DisposableObject
+public unsafe class Window : DisposableObject
 {
+    private static readonly Sdl _sdl;
+
     private readonly IWindow _window;
 
     private IInputContext? inputContext;
@@ -14,20 +17,27 @@ public class Window : DisposableObject
     private bool isInitialized;
     private bool isExiting;
 
+    public event EventHandler<LoadEventArgs>? Load;
+    public event EventHandler<UpdateEventArgs>? Update;
+    public event EventHandler<RenderEventArgs>? Render;
+    public event EventHandler<ResizeEventArgs>? Resize;
+    public event EventHandler<CloseEventArgs>? Close;
+
+    static Window()
+    {
+        SilkWindow.PrioritizeSdl();
+
+        _sdl = Sdl.GetApi();
+    }
+
     internal Window(IWindow window)
     {
         _window = window;
+
+        Assembly();
     }
 
-    public event EventHandler<LoadEventArgs>? Load;
-
-    public event EventHandler<UpdateEventArgs>? Update;
-
-    public event EventHandler<RenderEventArgs>? Render;
-
-    public event EventHandler<ResizeEventArgs>? Resize;
-
-    public event EventHandler<CloseEventArgs>? Close;
+    public static Sdl Sdl => _sdl;
 
     public bool IsInitialized => isInitialized;
 
@@ -58,6 +68,28 @@ public class Window : DisposableObject
     public IKeyboard Keyboard => ThrowIfNotInitialized(keyboard);
 
     public void Run()
+    {
+        _window.Run();
+    }
+
+    public void Show()
+    {
+        _window.Initialize();
+
+        _sdl.ShowWindow((Silk.NET.SDL.Window*)_window.Handle);
+    }
+
+    public void Exit()
+    {
+        isExiting = true;
+    }
+
+    protected override void Destroy()
+    {
+        _window.Dispose();
+    }
+
+    private void Assembly()
     {
         _window.Load += () =>
         {
@@ -100,18 +132,6 @@ public class Window : DisposableObject
             Resize?.Invoke(this, new ResizeEventArgs((uint)v.X, (uint)v.Y));
         };
         _window.Closing += () => Close?.Invoke(this, new CloseEventArgs());
-
-        _window.Run();
-    }
-
-    public void Exit()
-    {
-        isExiting = true;
-    }
-
-    protected override void Destroy()
-    {
-        _window.Dispose();
     }
 
     private T ThrowIfNotInitialized<T>(T? value)

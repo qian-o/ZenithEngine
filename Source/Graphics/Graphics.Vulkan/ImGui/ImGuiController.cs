@@ -177,6 +177,9 @@ void main()
             ImGui.Render();
             RenderImDrawData(commandList, ImGui.GetDrawData());
 
+            ImGui.UpdatePlatformWindows();
+            ImGui.RenderPlatformWindowsDefault();
+
             if (currentContext != _imGuiContext)
             {
                 ImGui.SetCurrentContext(currentContext);
@@ -638,9 +641,17 @@ void main()
         onConfigureIO?.Invoke();
 
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
+        io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
+
+        InitPlatformInterface();
 
         CreateDeviceResources();
         SetPerFrameImGuiData(1.0f / 60.0f);
         BeginFrame();
+    }
+
+    private void InitPlatformInterface()
+    {
+        ImGuiPlatformIOPtr platformIOPtr = ImGui.GetPlatformIO();
     }
 }

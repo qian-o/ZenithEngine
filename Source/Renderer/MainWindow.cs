@@ -10,7 +10,6 @@ namespace Renderer;
 internal sealed unsafe class MainWindow : DisposableObject
 {
     private readonly Window _window;
-    private readonly Context _context;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ImGuiController _imGuiController;
     private readonly CommandList _commandList;
@@ -27,8 +26,7 @@ internal sealed unsafe class MainWindow : DisposableObject
         }
 
         _window = window;
-        _context = new Context();
-        _graphicsDevice = _context.CreateGraphicsDevice(_context.EnumeratePhysicalDevices().First(), window);
+        _graphicsDevice = App.Context.CreateGraphicsDevice(App.Context.EnumeratePhysicalDevices().First(), window);
         _imGuiController = new ImGuiController(_graphicsDevice,
                                                _window.IWindow,
                                                _window.InputContext,
@@ -43,8 +41,6 @@ internal sealed unsafe class MainWindow : DisposableObject
 
         Initialize();
     }
-
-    public Context Context => _context;
 
     public GraphicsDevice GraphicsDevice => _graphicsDevice;
 
@@ -65,7 +61,6 @@ internal sealed unsafe class MainWindow : DisposableObject
         _commandList.Dispose();
         _imGuiController.Dispose();
         _graphicsDevice.Dispose();
-        _context.Dispose();
     }
 
     private void Initialize()

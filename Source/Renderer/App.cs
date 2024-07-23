@@ -1,4 +1,5 @@
 ﻿using Graphics.Core;
+using Graphics.Vulkan;
 using Renderer.Models;
 
 namespace Renderer;
@@ -6,7 +7,10 @@ namespace Renderer;
 internal static class App
 {
     private static Window? _window;
+    private static Context? _context;
     private static MainWindow? _mainWindow;
+
+    public static Context Context => _context ?? throw new InvalidOperationException("App is not initialized.");
 
     public static MainWindow MainWindow => _mainWindow ?? throw new InvalidOperationException("App is not initialized.");
 
@@ -35,11 +39,13 @@ internal static class App
 
     private static void Window_Load(object? sender, LoadEventArgs e)
     {
+        _context = new();
         _mainWindow = new MainWindow((Window)sender!);
     }
 
     private static void Window_Close(object? sender, CloseEventArgs e)
     {
         _mainWindow?.Dispose();
+        _context?.Dispose();
     }
 }
