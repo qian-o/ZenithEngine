@@ -649,7 +649,7 @@ void main()
         io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
 
-        ImGuiPlatform.Initialize(_window);
+        ImGuiPlatform.Initialize(_graphicsDevice, _window);
 
         CreateDeviceResources();
         SetPerFrameImGuiData(1.0f / 60.0f);

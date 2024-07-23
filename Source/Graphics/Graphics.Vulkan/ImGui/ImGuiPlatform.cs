@@ -5,23 +5,64 @@ using Hexa.NET.ImGui;
 
 namespace Graphics.Vulkan;
 
-internal unsafe static class ImGuiPlatform
+internal static unsafe class ImGuiPlatform
 {
-    private struct ViewportData
+    private struct PlatformUserData
     {
         public GCHandle Window;
 
         public Window GetWindow() => (Window)Window.Target!;
+
+        public static PlatformUserData* Alloc(Window window)
+        {
+            PlatformUserData* viewportData = (PlatformUserData*)Marshal.AllocHGlobal(sizeof(PlatformUserData));
+            viewportData->Window = GCHandle.Alloc(window);
+
+            return viewportData;
+        }
+
+        public static void Free(PlatformUserData* platformUserData)
+        {
+            if (platformUserData->Window.IsAllocated)
+            {
+                platformUserData->Window.Free();
+                Marshal.FreeHGlobal((IntPtr)platformUserData);
+            }
+        }
     }
 
-    public static void Initialize(Window window)
+    private struct RendererUserData
+    {
+        public GCHandle GraphicsDevice;
+
+        public GraphicsDevice GetGraphicsDevice() => (GraphicsDevice)GraphicsDevice.Target!;
+
+        public static RendererUserData* Alloc(GraphicsDevice graphicsDevice)
+        {
+            RendererUserData* rendererData = (RendererUserData*)Marshal.AllocHGlobal(sizeof(RendererUserData));
+            rendererData->GraphicsDevice = GCHandle.Alloc(graphicsDevice);
+
+            return rendererData;
+        }
+
+        public static void Free(RendererUserData* rendererData)
+        {
+            if (rendererData->GraphicsDevice.IsAllocated)
+            {
+                rendererData->GraphicsDevice.Free();
+                Marshal.FreeHGlobal((IntPtr)rendererData);
+            }
+        }
+    }
+
+    public static void Initialize(GraphicsDevice graphicsDevice, Window window)
     {
         ImGuiViewport* mainViewport = ImGui.GetMainViewport();
         mainViewport->PlatformHandle = (void*)window.Handle;
-        mainViewport->PlatformUserData = AllocViewportData(window);
+        mainViewport->PlatformUserData = PlatformUserData.Alloc(window);
+        mainViewport->RendererUserData = RendererUserData.Alloc(graphicsDevice);
 
         ImGuiPlatformIOPtr imGuiPlatformIOPtr = ImGui.GetPlatformIO();
-
         imGuiPlatformIOPtr.PlatformCreateWindow = (void*)Marshal.GetFunctionPointerForDelegate<PlatformCreateWindow>(CreateWindow);
         imGuiPlatformIOPtr.PlatformDestroyWindow = (void*)Marshal.GetFunctionPointerForDelegate<PlatformDestroyWindow>(DestroyWindow);
         imGuiPlatformIOPtr.PlatformShowWindow = (void*)Marshal.GetFunctionPointerForDelegate<PlatformShowWindow>(ShowWindow);
@@ -39,39 +80,49 @@ internal unsafe static class ImGuiPlatform
     {
         Window window = Window.CreateWindowByVulkan();
 
-        viewport->PlatformUserData = AllocViewportData(window);
+        viewport->PlatformUserData = PlatformUserData.Alloc(window);
+        viewport->RendererUserData = ImGui.GetMainViewport().RendererUserData;
     }
 
     private static void DestroyWindow(ImGuiViewport* viewport)
     {
-        if (viewport->PlatformUserData == null)
+        if (viewport->PlatformUserData != null)
         {
-            return;
+            PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
+
+            Window window = platformUserData->GetWindow();
+
+            window.Exit();
+
+            PlatformUserData.Free(platformUserData);
+
+            viewport->PlatformUserData = null;
         }
 
-        ViewportData* viewportData = (ViewportData*)viewport->PlatformUserData;
+        if (viewport->PlatformHandle != null)
+        {
+            RendererUserData* rendererUserData = (RendererUserData*)viewport->RendererUserData;
 
-        Window window = viewportData->GetWindow();
+            RendererUserData.Free(rendererUserData);
 
-        window.Exit();
-
-        FreeViewportData(viewportData);
+            viewport->RendererUserData = null;
+        }
     }
 
     private static void ShowWindow(ImGuiViewport* viewport)
     {
-        ViewportData* viewportData = (ViewportData*)viewport->PlatformUserData;
+        PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
 
-        Window window = viewportData->GetWindow();
+        Window window = platformUserData->GetWindow();
 
         window.Show();
     }
 
     private static void SetWindowPos(ImGuiViewport* viewport, Vector2 pos)
     {
-        ViewportData* viewportData = (ViewportData*)viewport->PlatformUserData;
+        PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
 
-        Window window = viewportData->GetWindow();
+        Window window = platformUserData->GetWindow();
 
         window.X = (int)pos.X;
         window.Y = (int)pos.Y;
@@ -79,9 +130,9 @@ internal unsafe static class ImGuiPlatform
 
     private static Vector2* GetWindowPos(Vector2* pos, ImGuiViewport* viewport)
     {
-        ViewportData* viewportData = (ViewportData*)viewport->PlatformUserData;
+        PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
 
-        Window window = viewportData->GetWindow();
+        Window window = platformUserData->GetWindow();
 
         pos->X = window.X;
         pos->Y = window.Y;
@@ -91,9 +142,9 @@ internal unsafe static class ImGuiPlatform
 
     private static void SetWindowSize(ImGuiViewport* viewport, Vector2 size)
     {
-        ViewportData* viewportData = (ViewportData*)viewport->PlatformUserData;
+        PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
 
-        Window window = viewportData->GetWindow();
+        Window window = platformUserData->GetWindow();
 
         window.Width = (int)size.X;
         window.Height = (int)size.Y;
@@ -101,9 +152,9 @@ internal unsafe static class ImGuiPlatform
 
     private static Vector2* GetWindowSize(Vector2* size, ImGuiViewport* viewport)
     {
-        ViewportData* viewportData = (ViewportData*)viewport->PlatformUserData;
+        PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
 
-        Window window = viewportData->GetWindow();
+        Window window = platformUserData->GetWindow();
 
         size->X = window.Width;
         size->Y = window.Height;
@@ -113,52 +164,37 @@ internal unsafe static class ImGuiPlatform
 
     private static void SetWindowFocus(ImGuiViewport* viewport)
     {
-        ViewportData* viewportData = (ViewportData*)viewport->PlatformUserData;
+        PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
 
-        Window window = viewportData->GetWindow();
+        Window window = platformUserData->GetWindow();
 
         window.Focus();
     }
 
     private static byte GetWindowFocus(ImGuiViewport* viewport)
     {
-        ViewportData* viewportData = (ViewportData*)viewport->PlatformUserData;
+        PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
 
-        Window window = viewportData->GetWindow();
+        Window window = platformUserData->GetWindow();
 
         return window.Focused ? (byte)1 : (byte)0;
     }
 
     private static byte GetWindowMinimized(ImGuiViewport* viewport)
     {
-        ViewportData* viewportData = (ViewportData*)viewport->PlatformUserData;
+        PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
 
-        Window window = viewportData->GetWindow();
+        Window window = platformUserData->GetWindow();
 
         return window.Minimized ? (byte)1 : (byte)0;
     }
 
     private static void SetWindowTitle(ImGuiViewport* viewport, byte* str)
     {
-        ViewportData* viewportData = (ViewportData*)viewport->PlatformUserData;
+        PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
 
-        Window window = viewportData->GetWindow();
+        Window window = platformUserData->GetWindow();
 
         window.Title = Marshal.PtrToStringAnsi((nint)str)!;
-    }
-
-    private static ViewportData* AllocViewportData(Window window)
-    {
-        ViewportData* viewportData = (ViewportData*)Marshal.AllocHGlobal(sizeof(ViewportData));
-        viewportData->Window = GCHandle.Alloc(window);
-
-        return viewportData;
-    }
-
-    private static void FreeViewportData(ViewportData* viewportData)
-    {
-        Marshal.FreeHGlobal((IntPtr)viewportData);
-
-        viewportData->Window.Free();
     }
 }
