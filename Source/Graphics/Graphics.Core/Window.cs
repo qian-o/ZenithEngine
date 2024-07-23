@@ -41,10 +41,24 @@ public unsafe class Window : DisposableObject
 
     public bool IsInitialized => isInitialized;
 
+    public nint Handle => _window.Handle;
+
     public string Title
     {
         get => _window.Title;
         set => _window.Title = value;
+    }
+
+    public int X
+    {
+        get => _window.Position.X;
+        set => _window.Position = new Vector2D<int>(value, Y);
+    }
+
+    public int Y
+    {
+        get => _window.Position.Y;
+        set => _window.Position = new Vector2D<int>(X, value);
     }
 
     public int Width
@@ -57,6 +71,30 @@ public unsafe class Window : DisposableObject
     {
         get => _window.Size.Y;
         set => _window.Size = new Vector2D<int>(Width, value);
+    }
+
+    public int FramebufferWidth => _window.FramebufferSize.X;
+
+    public int FramebufferHeight => _window.FramebufferSize.Y;
+
+    public bool Focused
+    {
+        get
+        {
+            WindowFlags flags = (WindowFlags)Sdl.GetWindowFlags((SDLWindow*)_window.Handle);
+
+            return flags.HasFlag(WindowFlags.InputFocus);
+        }
+    }
+
+    public bool Minimized
+    {
+        get
+        {
+            WindowFlags flags = (WindowFlags)Sdl.GetWindowFlags((SDLWindow*)_window.Handle);
+
+            return flags.HasFlag(WindowFlags.Minimized);
+        }
     }
 
     public IWindow IWindow => _window;
@@ -76,7 +114,12 @@ public unsafe class Window : DisposableObject
     {
         _window.Initialize();
 
-        _sdl.ShowWindow((Silk.NET.SDL.Window*)_window.Handle);
+        _sdl.ShowWindow((SDLWindow*)_window.Handle);
+    }
+
+    public void Focus()
+    {
+        _sdl.RaiseWindow((SDLWindow*)_window.Handle);
     }
 
     public void Exit()
@@ -131,7 +174,10 @@ public unsafe class Window : DisposableObject
 
             Resize?.Invoke(this, new ResizeEventArgs((uint)v.X, (uint)v.Y));
         };
-        _window.Closing += () => Close?.Invoke(this, new CloseEventArgs());
+        _window.Closing += () =>
+        {
+            Close?.Invoke(this, new CloseEventArgs());
+        };
     }
 
     private T ThrowIfNotInitialized<T>(T? value)

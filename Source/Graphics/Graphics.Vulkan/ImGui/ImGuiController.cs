@@ -6,8 +6,7 @@ using Graphics.Core;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
 using Silk.NET.Input;
-using Silk.NET.Maths;
-using Silk.NET.Windowing;
+using Window = Graphics.Core.Window;
 
 namespace Graphics.Vulkan;
 
@@ -76,7 +75,7 @@ void main()
 
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ResourceFactory _factory;
-    private readonly IView _view;
+    private readonly Window _window;
     private readonly IInputContext _input;
     private readonly ColorSpaceHandling _colorSpaceHandling;
     private readonly ImGuiContextPtr _imGuiContext;
@@ -106,7 +105,7 @@ void main()
 
     #region Constructors
     public ImGuiController(GraphicsDevice graphicsDevice,
-                           IView view,
+                           Window window,
                            IInputContext input,
                            ColorSpaceHandling colorSpaceHandling,
                            ImGuiFontConfig? imGuiFontConfig,
@@ -114,21 +113,21 @@ void main()
     {
         _graphicsDevice = graphicsDevice;
         _factory = _graphicsDevice.ResourceFactory;
-        _view = view;
+        _window = window;
         _input = input;
         _colorSpaceHandling = colorSpaceHandling;
         _imGuiContext = ImGui.CreateContext();
-        _windowWidth = view.Size.X;
-        _windowHeight = view.Size.Y;
+        _windowWidth = window.Width;
+        _windowHeight = window.Height;
 
         Initialize(imGuiFontConfig, onConfigureIO);
     }
 
     public ImGuiController(GraphicsDevice graphicsDevice,
-                           IView view,
+                           Window window,
                            IInputContext input,
                            ImGuiFontConfig imGuiFontConfig) : this(graphicsDevice,
-                                                                   view,
+                                                                   window,
                                                                    input,
                                                                    ColorSpaceHandling.Legacy,
                                                                    imGuiFontConfig,
@@ -137,10 +136,10 @@ void main()
     }
 
     public ImGuiController(GraphicsDevice graphicsDevice,
-                           IView view,
+                           Window window,
                            IInputContext input,
                            Action onConfigureIO) : this(graphicsDevice,
-                                                        view,
+                                                        window,
                                                         input,
                                                         ColorSpaceHandling.Legacy,
                                                         null,
@@ -149,9 +148,9 @@ void main()
     }
 
     public ImGuiController(GraphicsDevice graphicsDevice,
-                           IView view,
+                           Window window,
                            IInputContext input) : this(graphicsDevice,
-                                                       view,
+                                                       window,
                                                        input,
                                                        ColorSpaceHandling.Legacy,
                                                        null,
@@ -291,6 +290,8 @@ void main()
         _resourceSet.Dispose();
         _pipeline.Dispose();
         _fontTexture.Dispose();
+
+        ImGui.DestroyPlatformWindows();
 
         ImGui.DestroyContext(_imGuiContext);
     }
@@ -513,10 +514,10 @@ void main()
         _pressedChars.Add(arg2);
     }
 
-    private void WindowResized(Vector2D<int> size)
+    private void WindowResized(object? sender, ResizeEventArgs e)
     {
-        _windowWidth = size.X;
-        _windowHeight = size.Y;
+        _windowWidth = (int)e.Width;
+        _windowHeight = (int)e.Height;
     }
 
     private void BeginFrame()
@@ -527,7 +528,7 @@ void main()
         _frameBegun = true;
         _keyboard = _input.Keyboards[0];
 
-        _view.Resize += WindowResized;
+        _window.Resize += WindowResized;
         _keyboard.KeyChar += OnKeyChar;
     }
 
@@ -539,7 +540,7 @@ void main()
 
         if (_windowWidth > 0 && _windowHeight > 0)
         {
-            io.DisplayFramebufferScale = new Vector2(_view.FramebufferSize.X / _windowWidth, _view.FramebufferSize.Y / _windowHeight);
+            io.DisplayFramebufferScale = new Vector2(_window.FramebufferWidth / _windowWidth, _window.FramebufferHeight / _windowHeight);
         }
 
         io.DeltaTime = deltaSeconds;
@@ -638,20 +639,20 @@ void main()
             io.Fonts.AddFontFromFileTTF(imGuiFontConfig.Value.FontPath, imGuiFontConfig.Value.FontSize, null, (char*)glyph_ranges);
         }
 
+        io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
+
         onConfigureIO?.Invoke();
 
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
+        io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
 
-        InitPlatformInterface();
+        ImGuiPlatform.Initialize(_window);
 
         CreateDeviceResources();
         SetPerFrameImGuiData(1.0f / 60.0f);
         BeginFrame();
-    }
-
-    private void InitPlatformInterface()
-    {
-        ImGuiPlatformIOPtr platformIOPtr = ImGui.GetPlatformIO();
     }
 }

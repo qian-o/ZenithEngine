@@ -16,8 +16,6 @@ internal sealed unsafe class MainWindow : DisposableObject
     private readonly List<Control> _controls;
     private readonly List<Scene> _scenes;
 
-    private bool _firstFrame = true;
-
     public MainWindow(Window window)
     {
         if (!window.IsInitialized)
@@ -28,7 +26,7 @@ internal sealed unsafe class MainWindow : DisposableObject
         _window = window;
         _graphicsDevice = App.Context.CreateGraphicsDevice(App.Context.EnumeratePhysicalDevices().First(), window);
         _imGuiController = new ImGuiController(_graphicsDevice,
-                                               _window.IWindow,
+                                               _window,
                                                _window.InputContext,
                                                new ImGuiFontConfig("Assets/Fonts/MSYH.TTC", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
         _commandList = _graphicsDevice.ResourceFactory.CreateGraphicsCommandList();
@@ -106,13 +104,6 @@ internal sealed unsafe class MainWindow : DisposableObject
     private void Window_Render(object? sender, RenderEventArgs e)
     {
         _imGuiController.Update(e.DeltaTime);
-
-        if (_firstFrame)
-        {
-            ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.DockingEnable;
-
-            _firstFrame = false;
-        }
 
         ImGui.DockSpaceOverViewport();
 
