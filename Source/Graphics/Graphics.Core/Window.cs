@@ -1,13 +1,13 @@
-﻿using Silk.NET.Input;
+﻿using Silk.NET.GLFW;
+using Silk.NET.Input;
 using Silk.NET.Maths;
-using Silk.NET.SDL;
 using Silk.NET.Windowing;
 
 namespace Graphics.Core;
 
 public unsafe class Window : DisposableObject
 {
-    private static readonly Sdl _sdl;
+    private static readonly Glfw _glfw;
 
     private readonly IWindow _window;
 
@@ -26,9 +26,7 @@ public unsafe class Window : DisposableObject
 
     static Window()
     {
-        SilkWindow.PrioritizeSdl();
-
-        _sdl = Sdl.GetApi();
+        _glfw = Glfw.GetApi();
     }
 
     internal Window(IWindow window)
@@ -38,7 +36,7 @@ public unsafe class Window : DisposableObject
         Assembly();
     }
 
-    public static Sdl Sdl => _sdl;
+    public static Glfw Glfw => _glfw;
 
     public bool IsInitialized => isInitialized;
 
@@ -82,9 +80,7 @@ public unsafe class Window : DisposableObject
     {
         get
         {
-            WindowFlags flags = (WindowFlags)Sdl.GetWindowFlags((SDLWindow*)_window.Handle);
-
-            return flags.HasFlag(WindowFlags.InputFocus);
+            return _glfw.GetWindowAttrib((WindowHandle*)Handle, WindowAttributeGetter.Focused);
         }
     }
 
@@ -92,9 +88,19 @@ public unsafe class Window : DisposableObject
     {
         get
         {
-            WindowFlags flags = (WindowFlags)Sdl.GetWindowFlags((SDLWindow*)_window.Handle);
+            return _glfw.GetWindowAttrib((WindowHandle*)Handle, WindowAttributeGetter.Iconified);
+        }
+    }
 
-            return flags.HasFlag(WindowFlags.Minimized);
+    public float Opacity
+    {
+        get
+        {
+            return _glfw.GetWindowOpacity((WindowHandle*)Handle);
+        }
+        set
+        {
+            _glfw.SetWindowOpacity((WindowHandle*)Handle, value);
         }
     }
 
@@ -111,16 +117,21 @@ public unsafe class Window : DisposableObject
         _window.Run();
     }
 
-    public void Show()
+    public void Initialize()
     {
         _window.Initialize();
+    }
 
-        _sdl.ShowWindow((SDLWindow*)_window.Handle);
+    public void Show()
+    {
+        Initialize();
+
+        _glfw.ShowWindow((WindowHandle*)Handle);
     }
 
     public void Focus()
     {
-        _sdl.RaiseWindow((SDLWindow*)_window.Handle);
+        _glfw.FocusWindow((WindowHandle*)Handle);
     }
 
     public void Exit()

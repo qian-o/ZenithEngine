@@ -177,7 +177,6 @@ void main()
             RenderImDrawData(commandList, ImGui.GetDrawData());
 
             ImGui.UpdatePlatformWindows();
-            ImGui.RenderPlatformWindowsDefault();
 
             if (currentContext != _imGuiContext)
             {
@@ -199,6 +198,7 @@ void main()
         if (_frameBegun)
         {
             ImGui.Render();
+            ImGui.UpdatePlatformWindows();
         }
 
         SetPerFrameImGuiData(deltaSeconds);
@@ -376,7 +376,7 @@ void main()
         IKeyboard keyboard = _input.Keyboards[0];
         ScrollWheel scrollWheel = mouse.ScrollWheels[0];
 
-        io.AddMousePosEvent(mouse.Position.X, mouse.Position.Y);
+        io.AddMousePosEvent(_window.X + mouse.Position.X, _window.Y + mouse.Position.Y);
         io.AddMouseButtonEvent(0, mouse.IsButtonPressed(MouseButton.Left));
         io.AddMouseButtonEvent(1, mouse.IsButtonPressed(MouseButton.Right));
         io.AddMouseButtonEvent(2, mouse.IsButtonPressed(MouseButton.Middle));
@@ -658,6 +658,8 @@ void main()
 
         onConfigureIO?.Invoke();
 
+        io.BackendFlags |= ImGuiBackendFlags.HasMouseCursors;
+        io.BackendFlags |= ImGuiBackendFlags.HasSetMousePos;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
         io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;

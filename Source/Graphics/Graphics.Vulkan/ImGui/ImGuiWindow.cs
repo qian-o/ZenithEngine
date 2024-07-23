@@ -14,6 +14,8 @@ internal sealed unsafe class ImGuiWindow
         _window = Window.CreateWindowByVulkan();
         _graphicsDevice = ((RendererUserData*)ImGui.GetMainViewport().RendererUserData)->GetGraphicsDevice();
 
+        _window.Initialize();
+
         WindowFlags flags = WindowFlags.None;
 
         if (viewport->Flags.HasFlag(ImGuiViewportFlags.NoTaskBarIcon))

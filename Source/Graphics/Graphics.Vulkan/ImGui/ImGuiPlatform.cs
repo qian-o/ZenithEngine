@@ -26,6 +26,7 @@ internal static unsafe class ImGuiPlatform
         imGuiPlatformIOPtr.PlatformGetWindowFocus = (void*)Marshal.GetFunctionPointerForDelegate<PlatformGetWindowFocus>(GetWindowFocus);
         imGuiPlatformIOPtr.PlatformGetWindowMinimized = (void*)Marshal.GetFunctionPointerForDelegate<PlatformGetWindowMinimized>(GetWindowMinimized);
         imGuiPlatformIOPtr.PlatformSetWindowTitle = (void*)Marshal.GetFunctionPointerForDelegate<PlatformSetWindowTitle>(SetWindowTitle);
+        imGuiPlatformIOPtr.PlatformSetWindowAlpha = (void*)Marshal.GetFunctionPointerForDelegate<PlatformSetWindowAlpha>(SetWindowAlpha);
     }
 
     private static void CreateWindow(ImGuiViewport* viewport)
@@ -145,5 +146,14 @@ internal static unsafe class ImGuiPlatform
         Window window = platformUserData->GetWindow();
 
         window.Title = Marshal.PtrToStringAnsi((nint)str)!;
+    }
+
+    private static void SetWindowAlpha(ImGuiViewport* viewport, float alpha)
+    {
+        PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
+
+        Window window = platformUserData->GetWindow();
+
+        window.Opacity = alpha;
     }
 }
