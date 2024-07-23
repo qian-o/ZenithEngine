@@ -433,6 +433,9 @@ void main()
             _indexBuffer = _factory.CreateBuffer(new BufferDescription((uint)(totalIBSize * 1.5f), BufferUsage.IndexBuffer | BufferUsage.Dynamic));
         }
 
+
+        Vector2 displayPos = drawDataPtr.DisplayPos;
+
         // Update vertex and index buffers
         {
             ImDrawVert* vertMap = (ImDrawVert*)_vertexBuffer.Map(totalVBSize);
@@ -462,10 +465,10 @@ void main()
         {
             void* uboMap = _uboBuffer.Map((uint)sizeof(Matrix4x4));
 
-            Matrix4x4 orthoProjection = Matrix4x4.CreateOrthographicOffCenter(0.0f,
-                                                                              io.DisplaySize.X,
-                                                                              io.DisplaySize.Y,
-                                                                              0.0f,
+            Matrix4x4 orthoProjection = Matrix4x4.CreateOrthographicOffCenter(displayPos.X,
+                                                                              displayPos.X + io.DisplaySize.X,
+                                                                              displayPos.Y + io.DisplaySize.Y,
+                                                                              displayPos.Y,
                                                                               -1.0f,
                                                                               1.0f);
 
@@ -501,8 +504,8 @@ void main()
                     commandList.SetGraphicsResourceSet(1, GetResourceSet(imDrawCmd.TextureId.Handle));
 
                     commandList.SetScissorRect(0,
-                                               (uint)imDrawCmd.ClipRect.X,
-                                               (uint)imDrawCmd.ClipRect.Y,
+                                               (uint)(imDrawCmd.ClipRect.X - displayPos.X),
+                                               (uint)(imDrawCmd.ClipRect.Y - displayPos.Y),
                                                (uint)(imDrawCmd.ClipRect.Z - imDrawCmd.ClipRect.X),
                                                (uint)(imDrawCmd.ClipRect.W - imDrawCmd.ClipRect.Y));
 
