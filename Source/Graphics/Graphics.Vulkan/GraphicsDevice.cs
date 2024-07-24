@@ -472,7 +472,7 @@ public unsafe partial class Context
                                             computeQueueFamilyIndex,
                                             transferQueueFamilyIndex);
 
-        graphicsDevice.MainSwapchain.Resize((uint)graphicsWindow.Width, (uint)graphicsWindow.Height);
+        graphicsDevice.MainSwapchain.Resize((uint)graphicsWindow.FramebufferSize.X, (uint)graphicsWindow.FramebufferSize.Y);
 
         return graphicsDevice;
     }

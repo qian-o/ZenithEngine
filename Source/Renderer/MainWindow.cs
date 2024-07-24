@@ -18,13 +18,8 @@ internal sealed unsafe class MainWindow : DisposableObject
 
     public MainWindow(GraphicsWindow graphicsWindow)
     {
-        if (!graphicsWindow.IsInitialized)
-        {
-            throw new InvalidOperationException("Window is not initialized.");
-        }
-
         _graphicsWindow = graphicsWindow;
-        _graphicsDevice = App.Context.CreateGraphicsDevice(App.Context.EnumeratePhysicalDevices().First(), graphicsWindow);
+        _graphicsDevice = App.Context.CreateGraphicsDevice(App.Context.EnumeratePhysicalDevices().First(), _graphicsWindow);
         _imGuiController = new ImGuiController(_graphicsWindow,
                                                _graphicsDevice,
                                                new ImGuiFontConfig("Assets/Fonts/MSYH.TTC", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
@@ -128,7 +123,6 @@ internal sealed unsafe class MainWindow : DisposableObject
 
         _graphicsDevice.SubmitCommands(_commandList);
         _graphicsDevice.SwapBuffers();
-        _imGuiController.SwapExtraWindows(_graphicsDevice);
     }
 
     private void Window_Resize(object? sender, ResizeEventArgs e)
