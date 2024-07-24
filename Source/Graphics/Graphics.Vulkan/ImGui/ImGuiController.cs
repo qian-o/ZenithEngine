@@ -149,6 +149,24 @@ void main()
     }
     #endregion
 
+    public void SwapExtraWindows(GraphicsDevice gd)
+    {
+        ImVectorImGuiViewportPtr viewports = ImGui.GetPlatformIO().Viewports;
+        for (int i = 0; i < viewports.Size; i++)
+        {
+            ImGuiViewport* viewport = viewports.Data[i];
+
+            PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
+
+            ImGuiWindow imGuiWindow = platformUserData->GetImGuiWindow();
+
+            if (imGuiWindow.Swapchain != null)
+            {
+                gd.SwapBuffers(imGuiWindow.Swapchain);
+            }
+        }
+    }
+
     public void Render(CommandList commandList)
     {
         if (_frameBegun)
@@ -167,6 +185,23 @@ void main()
             RenderImDrawData(commandList, ImGui.GetDrawData());
 
             ImGui.UpdatePlatformWindows();
+
+            ImVectorImGuiViewportPtr viewports = ImGui.GetPlatformIO().Viewports;
+            for (int i = 0; i < viewports.Size; i++)
+            {
+                ImGuiViewport* viewport = viewports.Data[i];
+
+                PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
+
+                ImGuiWindow imGuiWindow = platformUserData->GetImGuiWindow();
+
+                if (imGuiWindow.Swapchain != null)
+                {
+                    commandList.SetFramebuffer(imGuiWindow.Swapchain.Framebuffer);
+
+                    RenderImDrawData(commandList, viewport->DrawData);
+                }
+            }
 
             if (currentContext != _imGuiContext)
             {
@@ -397,7 +432,7 @@ void main()
 
             PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
 
-            platformUserData->GetImGuiWindow().Update();
+            platformUserData->GetImGuiWindow().DoEvents();
         }
     }
 

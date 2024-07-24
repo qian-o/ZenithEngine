@@ -18,7 +18,7 @@ public unsafe class Swapchain : DeviceResource
 
     internal Swapchain(GraphicsDevice graphicsDevice, ref readonly SwapchainDescription description) : base(graphicsDevice)
     {
-        _target = description.Target;
+        _target = description.Target.Create<AllocationCallbacks>(Instance.ToHandle(), null).ToSurface();
         _depthFormat = description.DepthFormat;
         _imageAvailableFence = new Fence(graphicsDevice);
 

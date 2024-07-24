@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Graphics.Core;
+using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
@@ -11,9 +12,9 @@ public unsafe class GraphicsDevice : ContextObject
     private const uint MinStagingBufferSize = 1024 * 4;
     private const uint MaxStagingBufferSize = 1024 * 1024 * 4;
 
-    private readonly ResourceFactory _resourceFactory;
     private readonly PhysicalDevice _physicalDevice;
     private readonly Device _device;
+    private readonly ResourceFactory _resourceFactory;
     private readonly KhrSwapchain _swapchainExt;
     private readonly Queue _graphicsQueue;
     private readonly Queue _computeQueue;
@@ -34,18 +35,14 @@ public unsafe class GraphicsDevice : ContextObject
                             PhysicalDevice physicalDevice,
                             Device device,
                             KhrSwapchain swapchainExt,
-                            SurfaceKHR windowSurface,
+                            IVkSurface windowSurface,
                             uint graphicsQueueFamilyIndex,
                             uint computeQueueFamilyIndex,
                             uint transferQueueFamilyIndex) : base(context)
     {
-        Format depthFormat = physicalDevice.FindSupportedFormat([Format.D32SfloatS8Uint, Format.D24UnormS8Uint, Format.D32Sfloat],
-                                                                ImageTiling.Optimal,
-                                                                FormatFeatureFlags.DepthStencilAttachmentBit);
-
-        _resourceFactory = new ResourceFactory(context, this);
         _physicalDevice = physicalDevice;
         _device = device;
+        _resourceFactory = new ResourceFactory(context, this);
         _swapchainExt = swapchainExt;
         _graphicsQueue = new Queue(this, graphicsQueueFamilyIndex);
         _computeQueue = new Queue(this, computeQueueFamilyIndex);
@@ -55,7 +52,7 @@ public unsafe class GraphicsDevice : ContextObject
         _graphicsCommandPool = new CommandPool(this, graphicsQueueFamilyIndex);
         _computeCommandPool = new CommandPool(this, computeQueueFamilyIndex);
         _descriptorPoolManager = new DescriptorPoolManager(this);
-        _mainSwapChain = _resourceFactory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, Formats.GetPixelFormat(depthFormat)));
+        _mainSwapChain = _resourceFactory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, GetBestDepthFormat()));
         _pointSampler = _resourceFactory.CreateSampler(SamplerDescription.Point);
         _linearSampler = _resourceFactory.CreateSampler(SamplerDescription.Linear);
         _stagingResourcesLock = new object();
@@ -92,6 +89,15 @@ public unsafe class GraphicsDevice : ContextObject
     internal CommandPool ComputeCommandPool => _computeCommandPool;
 
     internal DescriptorPoolManager DescriptorPoolManager => _descriptorPoolManager;
+
+    public PixelFormat GetBestDepthFormat()
+    {
+        Format format = _physicalDevice.FindSupportedFormat([Format.D32SfloatS8Uint, Format.D24UnormS8Uint, Format.D32Sfloat],
+                                                            ImageTiling.Optimal,
+                                                            FormatFeatureFlags.DepthStencilAttachmentBit);
+
+        return Formats.GetPixelFormat(format);
+    }
 
     #region UpdateBuffer
     public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
@@ -455,15 +461,13 @@ public unsafe partial class Context
 
         KhrSwapchain swapchainExt = CreateDeviceExtension<KhrSwapchain>(device);
 
-        SurfaceKHR windowSurface = graphicsWindow.VkSurface!.Create<AllocationCallbacks>(_instance.ToHandle(), null).ToSurface();
-
         _alloter.Clear();
 
         GraphicsDevice graphicsDevice = new(this,
                                             physicalDevice,
                                             device,
                                             swapchainExt,
-                                            windowSurface,
+                                            graphicsWindow.VkSurface!,
                                             graphicsQueueFamilyIndex,
                                             computeQueueFamilyIndex,
                                             transferQueueFamilyIndex);

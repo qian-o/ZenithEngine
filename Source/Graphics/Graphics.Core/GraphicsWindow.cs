@@ -96,6 +96,8 @@ public unsafe partial class GraphicsWindow : DisposableObject
 
     public IKeyboard Keyboard => ThrowIfNotInitialized(keyboard);
 
+    public bool ShowInTaskbar { get; set; }
+
     public void Run()
     {
         _window.Run();

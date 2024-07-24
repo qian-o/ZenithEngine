@@ -40,9 +40,9 @@ internal static unsafe class ImGuiPlatform
         {
             PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
 
-            GraphicsWindow graphicsWindow = platformUserData->GetGraphicsWindow();
+            ImGuiWindow imGuiWindow = platformUserData->GetImGuiWindow();
 
-            graphicsWindow.Exit();
+            imGuiWindow.Close();
 
             PlatformUserData.Free(platformUserData);
 
@@ -63,9 +63,9 @@ internal static unsafe class ImGuiPlatform
     {
         PlatformUserData* platformUserData = (PlatformUserData*)viewport->PlatformUserData;
 
-        GraphicsWindow graphicsWindow = platformUserData->GetGraphicsWindow();
+        ImGuiWindow imGuiWindow = platformUserData->GetImGuiWindow();
 
-        graphicsWindow.Show();
+        imGuiWindow.Show();
     }
 
     private static void SetWindowPos(ImGuiViewport* viewport, Vector2 pos)
