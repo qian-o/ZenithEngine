@@ -50,9 +50,6 @@ public unsafe class ImGuiController : DisposableObject
 
     public void Update(float deltaSeconds)
     {
-        ImGui.SetCurrentContext(_imGuiContext);
-        ImGuizmo.SetImGuiContext(_imGuiContext);
-
         SetPerFrameImGuiData(deltaSeconds);
         UpdateImGuiInput();
 

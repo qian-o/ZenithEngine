@@ -2,13 +2,13 @@
 
 namespace Graphics.Vulkan;
 
-internal sealed unsafe class SharedCommandPool : DeviceResource
+internal sealed unsafe class StagingCommandPool : DeviceResource
 {
     private readonly Queue _transferQueue;
     private readonly VkCommandPool _commandPool;
     private readonly Fence _fence;
 
-    public SharedCommandPool(GraphicsDevice graphicsDevice, Queue transferQueue) : base(graphicsDevice)
+    public StagingCommandPool(GraphicsDevice graphicsDevice, Queue transferQueue) : base(graphicsDevice)
     {
         CommandPoolCreateInfo createInfo = new()
         {

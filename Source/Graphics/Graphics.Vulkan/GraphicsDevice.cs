@@ -28,8 +28,9 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly Sampler _pointSampler;
     private readonly Sampler _linearSampler;
     private readonly object _stagingResourcesLock;
-    private readonly List<SharedCommandPool> _availableSharedCommandPools;
+    private readonly List<StagingCommandPool> _availableStagingCommandPools;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
+    private readonly Dictionary<CommandList, List<DeviceBuffer>> _usedStagingBuffers;
 
     internal GraphicsDevice(Context context,
                             PhysicalDevice physicalDevice,
@@ -56,8 +57,9 @@ public unsafe class GraphicsDevice : ContextObject
         _pointSampler = _resourceFactory.CreateSampler(SamplerDescription.Point);
         _linearSampler = _resourceFactory.CreateSampler(SamplerDescription.Linear);
         _stagingResourcesLock = new object();
-        _availableSharedCommandPools = [];
+        _availableStagingCommandPools = [];
         _availableStagingBuffers = [];
+        _usedStagingBuffers = [];
     }
 
     public ResourceFactory ResourceFactory => _resourceFactory;
@@ -100,6 +102,38 @@ public unsafe class GraphicsDevice : ContextObject
     }
 
     #region UpdateBuffer
+    public void CmdUpdateBuffer<T>(CommandList commandList, DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
+    {
+        uint sizeInBytes = (uint)(sizeof(T) * length);
+
+        if (bufferOffsetInBytes + sizeInBytes > buffer.SizeInBytes)
+        {
+            throw new ArgumentOutOfRangeException(nameof(bufferOffsetInBytes), "The buffer offset and size exceed the buffer size.");
+        }
+
+        if (sizeInBytes == 0)
+        {
+            return;
+        }
+
+        DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
+
+        void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
+
+        Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
+
+        stagingBuffer.Unmap();
+
+        BufferCopy bufferCopy = new()
+        {
+            SrcOffset = 0,
+            DstOffset = bufferOffsetInBytes,
+            Size = sizeInBytes
+        };
+
+        Vk.CmdCopyBuffer(commandList.Handle, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
+    }
+
     public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
     {
         uint sizeInBytes = (uint)(sizeof(T) * length);
@@ -124,7 +158,7 @@ public unsafe class GraphicsDevice : ContextObject
         }
         else
         {
-            SharedCommandPool sharedCommandPool = GetSharedCommandPool();
+            StagingCommandPool sharedCommandPool = GetStagingCommandPool();
             DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
 
             void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
@@ -147,7 +181,7 @@ public unsafe class GraphicsDevice : ContextObject
             sharedCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
 
             CacheStagingBuffer(stagingBuffer);
-            CacheSharedCommandPool(sharedCommandPool);
+            CacheStagingCommandPool(sharedCommandPool);
         }
     }
 
@@ -205,7 +239,7 @@ public unsafe class GraphicsDevice : ContextObject
             return;
         }
 
-        SharedCommandPool sharedCommandPool = GetSharedCommandPool();
+        StagingCommandPool sharedCommandPool = GetStagingCommandPool();
         DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
 
         void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
@@ -241,7 +275,7 @@ public unsafe class GraphicsDevice : ContextObject
         sharedCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
 
         CacheStagingBuffer(stagingBuffer);
-        CacheSharedCommandPool(sharedCommandPool);
+        CacheStagingCommandPool(sharedCommandPool);
     }
 
     public void UpdateTexture<T>(Texture texture,
@@ -325,7 +359,7 @@ public unsafe class GraphicsDevice : ContextObject
             deviceBuffer.Dispose();
         }
 
-        foreach (SharedCommandPool sharedCommandPool in _availableSharedCommandPools)
+        foreach (StagingCommandPool sharedCommandPool in _availableStagingCommandPools)
         {
             sharedCommandPool.Dispose();
         }
@@ -350,26 +384,26 @@ public unsafe class GraphicsDevice : ContextObject
         Vk.DestroyDevice(_device, null);
     }
 
-    private SharedCommandPool GetSharedCommandPool()
+    private StagingCommandPool GetStagingCommandPool()
     {
         lock (_stagingResourcesLock)
         {
-            foreach (SharedCommandPool sharedCommandPool in _availableSharedCommandPools)
+            foreach (StagingCommandPool stagingCommandPool in _availableStagingCommandPools)
             {
-                _availableSharedCommandPools.Remove(sharedCommandPool);
+                _availableStagingCommandPools.Remove(stagingCommandPool);
 
-                return sharedCommandPool;
+                return stagingCommandPool;
             }
         }
 
-        return new SharedCommandPool(this, _transferQueue);
+        return new StagingCommandPool(this, _transferQueue);
     }
 
-    private void CacheSharedCommandPool(SharedCommandPool sharedCommandPool)
+    private void CacheStagingCommandPool(StagingCommandPool stagingCommandPool)
     {
         lock (_stagingResourcesLock)
         {
-            _availableSharedCommandPools.Add(sharedCommandPool);
+            _availableStagingCommandPools.Add(stagingCommandPool);
         }
     }
 
