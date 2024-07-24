@@ -9,33 +9,32 @@ namespace Renderer;
 
 internal sealed unsafe class MainWindow : DisposableObject
 {
-    private readonly Window _window;
+    private readonly GraphicsWindow _graphicsWindow;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ImGuiController _imGuiController;
     private readonly CommandList _commandList;
     private readonly List<Control> _controls;
     private readonly List<Scene> _scenes;
 
-    public MainWindow(Window window)
+    public MainWindow(GraphicsWindow graphicsWindow)
     {
-        if (!window.IsInitialized)
+        if (!graphicsWindow.IsInitialized)
         {
             throw new InvalidOperationException("Window is not initialized.");
         }
 
-        _window = window;
-        _graphicsDevice = App.Context.CreateGraphicsDevice(App.Context.EnumeratePhysicalDevices().First(), window);
-        _imGuiController = new ImGuiController(_graphicsDevice,
-                                               _window,
-                                               _window.InputContext,
+        _graphicsWindow = graphicsWindow;
+        _graphicsDevice = App.Context.CreateGraphicsDevice(App.Context.EnumeratePhysicalDevices().First(), graphicsWindow);
+        _imGuiController = new ImGuiController(_graphicsWindow,
+                                               _graphicsDevice,
                                                new ImGuiFontConfig("Assets/Fonts/MSYH.TTC", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
         _commandList = _graphicsDevice.ResourceFactory.CreateGraphicsCommandList();
         _controls = [];
         _scenes = [];
 
-        _window.Update += Window_Update;
-        _window.Render += Window_Render;
-        _window.Resize += Window_Resize;
+        _graphicsWindow.Update += Window_Update;
+        _graphicsWindow.Render += Window_Render;
+        _graphicsWindow.Resize += Window_Resize;
 
         Initialize();
     }

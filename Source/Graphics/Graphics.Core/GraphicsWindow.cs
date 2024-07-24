@@ -1,20 +1,19 @@
-﻿using Silk.NET.GLFW;
+﻿using Silk.NET.Core.Contexts;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
 namespace Graphics.Core;
 
-public unsafe class Window : DisposableObject
+public unsafe partial class GraphicsWindow : DisposableObject
 {
-    private static readonly Glfw _glfw;
-
     private readonly IWindow _window;
 
     private IInputContext? inputContext;
     private IMouse? mouse;
     private IKeyboard? keyboard;
     private bool isInitialized;
+    private bool isFocused;
     private bool isExiting;
 
     public event EventHandler<LoadEventArgs>? Load;
@@ -24,23 +23,16 @@ public unsafe class Window : DisposableObject
     public event EventHandler<MoveEventArgs>? Move;
     public event EventHandler<CloseEventArgs>? Close;
 
-    static Window()
-    {
-        _glfw = Glfw.GetApi();
-    }
-
-    internal Window(IWindow window)
+    internal GraphicsWindow(IWindow window)
     {
         _window = window;
 
         Assembly();
     }
 
-    public static Glfw Glfw => _glfw;
+    public nint Handle => _window.Handle;
 
     public bool IsInitialized => isInitialized;
-
-    public nint Handle => _window.Handle;
 
     public string Title
     {
@@ -76,35 +68,27 @@ public unsafe class Window : DisposableObject
 
     public int FramebufferHeight => _window.FramebufferSize.Y;
 
-    public bool Focused
+    public IVkSurface? VkSurface => _window.VkSurface;
+
+    public bool IsFocused => isFocused;
+
+    public WindowState WindowState
     {
-        get
-        {
-            return _glfw.GetWindowAttrib((WindowHandle*)Handle, WindowAttributeGetter.Focused);
-        }
+        get => _window.WindowState;
+        set => _window.WindowState = value;
     }
 
-    public bool Minimized
+    public WindowBorder WindowBorder
     {
-        get
-        {
-            return _glfw.GetWindowAttrib((WindowHandle*)Handle, WindowAttributeGetter.Iconified);
-        }
+        get => _window.WindowBorder;
+        set => _window.WindowBorder = value;
     }
 
-    public float Opacity
+    public bool TopMost
     {
-        get
-        {
-            return _glfw.GetWindowOpacity((WindowHandle*)Handle);
-        }
-        set
-        {
-            _glfw.SetWindowOpacity((WindowHandle*)Handle, value);
-        }
+        get => _window.TopMost;
+        set => _window.TopMost = value;
     }
-
-    public IWindow IWindow => _window;
 
     public IInputContext InputContext => ThrowIfNotInitialized(inputContext);
 
@@ -117,21 +101,9 @@ public unsafe class Window : DisposableObject
         _window.Run();
     }
 
-    public void Initialize()
-    {
-        _window.Initialize();
-    }
-
     public void Show()
     {
-        Initialize();
-
-        _glfw.ShowWindow((WindowHandle*)Handle);
-    }
-
-    public void Focus()
-    {
-        _glfw.FocusWindow((WindowHandle*)Handle);
+        _window.Initialize();
     }
 
     public void Exit()
@@ -139,7 +111,12 @@ public unsafe class Window : DisposableObject
         isExiting = true;
     }
 
-    public void PollEvents()
+    public void Focus()
+    {
+
+    }
+
+    public void DoEvents()
     {
         _window.DoEvents();
     }
@@ -153,8 +130,6 @@ public unsafe class Window : DisposableObject
     {
         _window.Load += () =>
         {
-            _window.Center();
-
             inputContext = _window.CreateInput();
             mouse = inputContext.Mice[0];
             keyboard = inputContext.Keyboards[0];
@@ -163,6 +138,15 @@ public unsafe class Window : DisposableObject
 
             Load?.Invoke(this, new LoadEventArgs());
             Resize?.Invoke(this, new ResizeEventArgs((uint)_window.Size.X, (uint)_window.Size.Y));
+        };
+        _window.FocusChanged += (b) =>
+        {
+            if (isExiting)
+            {
+                _window.Close();
+            }
+
+            isFocused = b;
         };
         _window.Update += (d) =>
         {
@@ -216,7 +200,7 @@ public unsafe class Window : DisposableObject
         return value!;
     }
 
-    public static Window CreateWindowByVulkan()
+    public static GraphicsWindow CreateWindowByVulkan()
     {
         WindowOptions windowOptions = WindowOptions.DefaultVulkan;
         windowOptions.API = new GraphicsAPI()
@@ -227,6 +211,6 @@ public unsafe class Window : DisposableObject
             Version = new APIVersion(1, 3)
         };
 
-        return new Window(SilkWindow.Create(windowOptions));
+        return new GraphicsWindow(Window.Create(windowOptions));
     }
 }

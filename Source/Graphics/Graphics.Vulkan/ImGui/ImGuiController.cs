@@ -6,7 +6,6 @@ using Graphics.Core;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
 using Silk.NET.Input;
-using Window = Graphics.Core.Window;
 
 namespace Graphics.Vulkan;
 
@@ -73,10 +72,9 @@ void main()
 
     private static readonly Key[] _keyEnumArr = (Key[])Enum.GetValues(typeof(Key));
 
+    private readonly GraphicsWindow _graphicsWindow;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ResourceFactory _factory;
-    private readonly Window _window;
-    private readonly IInputContext _input;
     private readonly ColorSpaceHandling _colorSpaceHandling;
     private readonly ImGuiContextPtr _imGuiContext;
     private readonly List<char> _pressedChars = [];
@@ -104,57 +102,49 @@ void main()
     private IKeyboard _keyboard = null!;
 
     #region Constructors
-    public ImGuiController(GraphicsDevice graphicsDevice,
-                           Window window,
-                           IInputContext input,
+    public ImGuiController(GraphicsWindow graphicsWindow,
+                           GraphicsDevice graphicsDevice,
                            ColorSpaceHandling colorSpaceHandling,
                            ImGuiFontConfig? imGuiFontConfig,
                            Action? onConfigureIO)
     {
+        _graphicsWindow = graphicsWindow;
         _graphicsDevice = graphicsDevice;
-        _factory = _graphicsDevice.ResourceFactory;
-        _window = window;
-        _input = input;
+        _factory = graphicsDevice.ResourceFactory;
         _colorSpaceHandling = colorSpaceHandling;
         _imGuiContext = ImGui.CreateContext();
-        _windowWidth = window.Width;
-        _windowHeight = window.Height;
+        _windowWidth = graphicsWindow.Width;
+        _windowHeight = graphicsWindow.Height;
 
         Initialize(imGuiFontConfig, onConfigureIO);
     }
 
-    public ImGuiController(GraphicsDevice graphicsDevice,
-                           Window window,
-                           IInputContext input,
-                           ImGuiFontConfig imGuiFontConfig) : this(graphicsDevice,
-                                                                   window,
-                                                                   input,
+    public ImGuiController(GraphicsWindow graphicsWindow,
+                           GraphicsDevice graphicsDevice,
+                           ImGuiFontConfig imGuiFontConfig) : this(graphicsWindow,
+                                                                   graphicsDevice,
                                                                    ColorSpaceHandling.Legacy,
                                                                    imGuiFontConfig,
                                                                    null)
     {
     }
 
-    public ImGuiController(GraphicsDevice graphicsDevice,
-                           Window window,
-                           IInputContext input,
-                           Action onConfigureIO) : this(graphicsDevice,
-                                                        window,
-                                                        input,
+    public ImGuiController(GraphicsWindow graphicsWindow,
+                           GraphicsDevice graphicsDevice,
+                           Action onConfigureIO) : this(graphicsWindow,
+                                                        graphicsDevice,
                                                         ColorSpaceHandling.Legacy,
                                                         null,
                                                         onConfigureIO)
     {
     }
 
-    public ImGuiController(GraphicsDevice graphicsDevice,
-                           Window window,
-                           IInputContext input) : this(graphicsDevice,
-                                                       window,
-                                                       input,
-                                                       ColorSpaceHandling.Legacy,
-                                                       null,
-                                                       null)
+    public ImGuiController(GraphicsWindow graphicsWindow,
+                           GraphicsDevice graphicsDevice) : this(graphicsWindow,
+                                                                 graphicsDevice,
+                                                                 ColorSpaceHandling.Legacy,
+                                                                 null,
+                                                                 null)
     {
     }
     #endregion
@@ -372,11 +362,12 @@ void main()
     {
         ImGuiIOPtr io = ImGui.GetIO();
 
-        IMouse mouse = _input.Mice[0];
-        IKeyboard keyboard = _input.Keyboards[0];
+        IMouse mouse = _graphicsWindow.InputContext.Mice[0];
+        IKeyboard keyboard = _graphicsWindow.InputContext.Keyboards[0];
+
         ScrollWheel scrollWheel = mouse.ScrollWheels[0];
 
-        io.AddMousePosEvent(_window.X + mouse.Position.X, _window.Y + mouse.Position.Y);
+        io.AddMousePosEvent(_graphicsWindow.X + mouse.Position.X, _graphicsWindow.Y + mouse.Position.Y);
         io.AddMouseButtonEvent(0, mouse.IsButtonPressed(MouseButton.Left));
         io.AddMouseButtonEvent(1, mouse.IsButtonPressed(MouseButton.Right));
         io.AddMouseButtonEvent(2, mouse.IsButtonPressed(MouseButton.Middle));
@@ -539,9 +530,9 @@ void main()
         ImGuizmo.BeginFrame();
 
         _frameBegun = true;
-        _keyboard = _input.Keyboards[0];
+        _keyboard = _graphicsWindow.InputContext.Keyboards[0];
 
-        _window.Resize += WindowResized;
+        _graphicsWindow.Resize += WindowResized;
         _keyboard.KeyChar += OnKeyChar;
     }
 
@@ -553,7 +544,7 @@ void main()
 
         if (_windowWidth > 0 && _windowHeight > 0)
         {
-            io.DisplayFramebufferScale = new Vector2(_window.FramebufferWidth / _windowWidth, _window.FramebufferHeight / _windowHeight);
+            io.DisplayFramebufferScale = new Vector2(_graphicsWindow.FramebufferWidth / _windowWidth, _graphicsWindow.FramebufferHeight / _windowHeight);
         }
 
         io.DeltaTime = deltaSeconds;
@@ -664,7 +655,7 @@ void main()
         io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
 
-        ImGuiPlatform.Initialize(_window, _graphicsDevice);
+        ImGuiPlatform.Initialize(_graphicsWindow, _graphicsDevice);
 
         CreateDeviceResources();
         SetPerFrameImGuiData(1.0f / 60.0f);

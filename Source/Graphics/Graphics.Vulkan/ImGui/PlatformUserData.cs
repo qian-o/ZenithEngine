@@ -9,7 +9,7 @@ internal unsafe struct PlatformUserData
 
     public ImGuiWindow GetImGuiWindow() => (ImGuiWindow)ImGuiWindow.Target!;
 
-    public Window GetWindow() => GetImGuiWindow().Window;
+    public GraphicsWindow GetGraphicsWindow() => GetImGuiWindow().GraphicsWindow;
 
     public static PlatformUserData* Alloc(ImGuiWindow imGuiWindow)
     {
