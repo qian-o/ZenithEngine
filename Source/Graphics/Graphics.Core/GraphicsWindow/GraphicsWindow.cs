@@ -30,6 +30,7 @@ public unsafe partial class GraphicsWindow : DisposableObject
     public GraphicsWindow CreateWindow()
     {
         IWindow window = _window.CreateWindow(_windowOptions);
+        window.Initialize();
 
         return new GraphicsWindow(_windowOptions, window, window.CreateInput());
     }

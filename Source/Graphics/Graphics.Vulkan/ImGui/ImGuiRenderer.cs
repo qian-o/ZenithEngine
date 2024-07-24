@@ -7,7 +7,7 @@ using Hexa.NET.ImGui;
 
 namespace Graphics.Vulkan;
 
-internal unsafe sealed class ImGuiRenderer : DisposableObject
+internal sealed unsafe class ImGuiRenderer : DisposableObject
 {
     private const string VertexShader = @"
 #version 450
