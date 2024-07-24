@@ -581,4 +581,14 @@ internal static class Formats
         };
     }
     #endregion
+
+    public static PipelineStageFlags AllShaderStages()
+    {
+        return PipelineStageFlags.VertexShaderBit |
+               PipelineStageFlags.TessellationControlShaderBit |
+               PipelineStageFlags.TessellationEvaluationShaderBit |
+               PipelineStageFlags.GeometryShaderBit |
+               PipelineStageFlags.FragmentShaderBit |
+               PipelineStageFlags.ComputeShaderBit;
+    }
 }

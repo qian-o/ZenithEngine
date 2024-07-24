@@ -183,17 +183,15 @@ void main()
             {
                 ImDrawListPtr imDrawListPtr = drawDataPtr.CmdLists.Data[i];
 
-                _graphicsDevice.UpdateBuffer(commandList,
-                                             _vertexBuffer,
-                                             vertOffset,
-                                             imDrawListPtr.VtxBuffer.Data,
-                                             imDrawListPtr.VtxBuffer.Size);
+                commandList.UpdateBuffer(_vertexBuffer,
+                                         vertOffset,
+                                         imDrawListPtr.VtxBuffer.Data,
+                                         imDrawListPtr.VtxBuffer.Size);
 
-                _graphicsDevice.UpdateBuffer(commandList,
-                                             _indexBuffer,
-                                             idxOffset,
-                                             imDrawListPtr.IdxBuffer.Data,
-                                             imDrawListPtr.IdxBuffer.Size);
+                commandList.UpdateBuffer(_indexBuffer,
+                                         idxOffset,
+                                         imDrawListPtr.IdxBuffer.Data,
+                                         imDrawListPtr.IdxBuffer.Size);
 
                 vertOffset += (uint)(imDrawListPtr.VtxBuffer.Size * (uint)sizeof(ImDrawVert));
                 idxOffset += (uint)(imDrawListPtr.IdxBuffer.Size * sizeof(ushort));
@@ -209,7 +207,7 @@ void main()
                                                                               -1.0f,
                                                                               1.0f);
 
-            _graphicsDevice.UpdateBuffer(commandList, _uboBuffer, 0, &orthoProjection, 1);
+            commandList.UpdateBuffer(_uboBuffer, 0, &orthoProjection, 1);
         }
 
         commandList.SetVertexBuffer(0, _vertexBuffer);

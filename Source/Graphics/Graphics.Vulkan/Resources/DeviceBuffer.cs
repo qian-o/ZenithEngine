@@ -8,6 +8,7 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
     private readonly VkBuffer _buffer;
     private readonly DeviceMemory _deviceMemory;
     private readonly uint _sizeInBytes;
+    private readonly BufferUsage _usage;
     private readonly bool _isHostVisible;
 
     internal DeviceBuffer(GraphicsDevice graphicsDevice, ref readonly BufferDescription description) : base(graphicsDevice)
@@ -66,6 +67,7 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
         _buffer = buffer;
         _deviceMemory = deviceMemory;
         _sizeInBytes = description.SizeInBytes;
+        _usage = description.Usage;
         _isHostVisible = hostVisible;
     }
 
@@ -74,6 +76,8 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
     internal DeviceMemory DeviceMemory => _deviceMemory;
 
     public uint SizeInBytes => _sizeInBytes;
+
+    public BufferUsage Usage => _usage;
 
     public bool IsHostVisible => _isHostVisible;
 

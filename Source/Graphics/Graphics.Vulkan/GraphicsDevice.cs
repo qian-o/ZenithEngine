@@ -30,7 +30,6 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly object _stagingResourcesLock;
     private readonly List<StagingCommandPool> _availableStagingCommandPools;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
-    private readonly Dictionary<CommandList, List<DeviceBuffer>> _usedStagingBuffers;
 
     internal GraphicsDevice(Context context,
                             PhysicalDevice physicalDevice,
@@ -59,7 +58,6 @@ public unsafe class GraphicsDevice : ContextObject
         _stagingResourcesLock = new object();
         _availableStagingCommandPools = [];
         _availableStagingBuffers = [];
-        _usedStagingBuffers = [];
     }
 
     public ResourceFactory ResourceFactory => _resourceFactory;
@@ -102,22 +100,6 @@ public unsafe class GraphicsDevice : ContextObject
     }
 
     #region UpdateBuffer
-    public void UpdateBuffer<T>(CommandList commandList, DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
-    {
-        uint sizeInBytes = (uint)(sizeof(T) * length);
-
-        if (!CanUpdate(buffer, bufferOffsetInBytes, sizeInBytes))
-        {
-            return;
-        }
-
-        DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
-
-        UpdateBufferByCommandBuffer(commandList.Handle, stagingBuffer, buffer, bufferOffsetInBytes, source, sizeInBytes);
-
-        RecordUsedStagingBuffer(commandList, stagingBuffer);
-    }
-
     public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
     {
         uint sizeInBytes = (uint)(sizeof(T) * length);
@@ -145,9 +127,22 @@ public unsafe class GraphicsDevice : ContextObject
             StagingCommandPool sharedCommandPool = GetStagingCommandPool();
             DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
 
+            void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
+
+            Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
+
+            stagingBuffer.Unmap();
+
             CommandBuffer commandBuffer = sharedCommandPool.BeginNewCommandBuffer();
 
-            UpdateBufferByCommandBuffer(commandBuffer, stagingBuffer, buffer, bufferOffsetInBytes, source, sizeInBytes);
+            BufferCopy bufferCopy = new()
+            {
+                SrcOffset = 0,
+                DstOffset = bufferOffsetInBytes,
+                Size = sizeInBytes
+            };
+
+            Vk.CmdCopyBuffer(commandBuffer, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
 
             sharedCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
 
@@ -163,71 +158,9 @@ public unsafe class GraphicsDevice : ContextObject
             UpdateBuffer(buffer, bufferOffsetInBytes, sourcePointer, source.Length);
         }
     }
-
-    private void UpdateBufferByCommandBuffer(CommandBuffer commandBuffer,
-                                             DeviceBuffer stagingBuffer,
-                                             DeviceBuffer buffer,
-                                             uint bufferOffsetInBytes,
-                                             void* source,
-                                             uint sizeInBytes)
-    {
-        void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
-
-        Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
-
-        stagingBuffer.Unmap();
-
-        BufferCopy bufferCopy = new()
-        {
-            SrcOffset = 0,
-            DstOffset = bufferOffsetInBytes,
-            Size = sizeInBytes
-        };
-
-        Vk.CmdCopyBuffer(commandBuffer, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
-    }
     #endregion
 
     #region UpdateTexture
-    public void UpdateTexture<T>(CommandList commandList,
-                                 Texture texture,
-                                 T* source,
-                                 int length,
-                                 uint x,
-                                 uint y,
-                                 uint z,
-                                 uint width,
-                                 uint height,
-                                 uint depth,
-                                 uint mipLevel,
-                                 uint arrayLayer) where T : unmanaged
-    {
-        uint sizeInBytes = (uint)(sizeof(T) * length);
-
-        if (!CanUpdate(texture, x, y, z, width, height, depth, mipLevel, arrayLayer, sizeInBytes))
-        {
-            return;
-        }
-
-        DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
-
-        UpdateTextureByCommandBuffer(commandList.Handle,
-                                     stagingBuffer,
-                                     texture,
-                                     x,
-                                     y,
-                                     z,
-                                     width,
-                                     height,
-                                     depth,
-                                     mipLevel,
-                                     arrayLayer,
-                                     source,
-                                     sizeInBytes);
-
-        RecordUsedStagingBuffer(commandList, stagingBuffer);
-    }
-
     public void UpdateTexture<T>(Texture texture,
                                  T* source,
                                  int length,
@@ -242,7 +175,32 @@ public unsafe class GraphicsDevice : ContextObject
     {
         uint sizeInBytes = (uint)(sizeof(T) * length);
 
-        if (!CanUpdate(texture, x, y, z, width, height, depth, mipLevel, arrayLayer, sizeInBytes))
+        if (x + width > texture.Width)
+        {
+            throw new ArgumentOutOfRangeException(nameof(width), "The width exceeds the texture width.");
+        }
+
+        if (y + height > texture.Height)
+        {
+            throw new ArgumentOutOfRangeException(nameof(height), "The height exceeds the texture height.");
+        }
+
+        if (z + depth > texture.Depth)
+        {
+            throw new ArgumentOutOfRangeException(nameof(depth), "The depth exceeds the texture depth.");
+        }
+
+        if (mipLevel >= texture.MipLevels)
+        {
+            throw new ArgumentOutOfRangeException(nameof(mipLevel), "The mip level exceeds the texture mip levels.");
+        }
+
+        if (arrayLayer >= texture.ArrayLayers)
+        {
+            throw new ArgumentOutOfRangeException(nameof(arrayLayer), "The array layer exceeds the texture array layers.");
+        }
+
+        if (sizeInBytes == 0)
         {
             return;
         }
@@ -250,21 +208,35 @@ public unsafe class GraphicsDevice : ContextObject
         StagingCommandPool sharedCommandPool = GetStagingCommandPool();
         DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
 
+        void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
+
+        Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
+
+        stagingBuffer.Unmap();
+
         CommandBuffer commandBuffer = sharedCommandPool.BeginNewCommandBuffer();
 
-        UpdateTextureByCommandBuffer(commandBuffer,
-                                     stagingBuffer,
-                                     texture,
-                                     x,
-                                     y,
-                                     z,
-                                     width,
-                                     height,
-                                     depth,
-                                     mipLevel,
-                                     arrayLayer,
-                                     source,
-                                     sizeInBytes);
+        texture.TransitionLayout(commandBuffer, ImageLayout.TransferDstOptimal);
+
+        BufferImageCopy bufferImageCopy = new()
+        {
+            BufferOffset = 0,
+            BufferRowLength = 0,
+            BufferImageHeight = 0,
+            ImageSubresource = new ImageSubresourceLayers
+            {
+                AspectMask = ImageAspectFlags.ColorBit,
+                MipLevel = mipLevel,
+                BaseArrayLayer = arrayLayer,
+                LayerCount = 1
+            },
+            ImageOffset = new Offset3D((int)x, (int)y, (int)z),
+            ImageExtent = new Extent3D(width, height, depth)
+        };
+
+        Vk.CmdCopyBufferToImage(commandBuffer, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
+
+        texture.TransitionToBestLayout(commandBuffer);
 
         sharedCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
 
@@ -288,49 +260,6 @@ public unsafe class GraphicsDevice : ContextObject
             UpdateTexture(texture, sourcePointer, source.Length, x, y, z, width, height, depth, mipLevel, arrayLayer);
         }
     }
-
-    private void UpdateTextureByCommandBuffer(CommandBuffer commandBuffer,
-                                              DeviceBuffer stagingBuffer,
-                                              Texture texture,
-                                              uint x,
-                                              uint y,
-                                              uint z,
-                                              uint width,
-                                              uint height,
-                                              uint depth,
-                                              uint mipLevel,
-                                              uint arrayLayer,
-                                              void* source,
-                                              uint sizeInBytes)
-    {
-        void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
-
-        Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
-
-        stagingBuffer.Unmap();
-
-        texture.TransitionLayout(commandBuffer, ImageLayout.TransferDstOptimal);
-
-        BufferImageCopy bufferImageCopy = new()
-        {
-            BufferOffset = 0,
-            BufferRowLength = 0,
-            BufferImageHeight = 0,
-            ImageSubresource = new ImageSubresourceLayers
-            {
-                AspectMask = ImageAspectFlags.ColorBit,
-                MipLevel = mipLevel,
-                BaseArrayLayer = arrayLayer,
-                LayerCount = 1
-            },
-            ImageOffset = new Offset3D((int)x, (int)y, (int)z),
-            ImageExtent = new Extent3D(width, height, depth)
-        };
-
-        Vk.CmdCopyBufferToImage(commandBuffer, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
-
-        texture.TransitionToBestLayout(commandBuffer);
-    }
     #endregion
 
     public void SubmitCommands(CommandList commandList)
@@ -350,7 +279,7 @@ public unsafe class GraphicsDevice : ContextObject
 
         fence.WaitAndReset();
 
-        ReturnUsedStagingResources(commandList);
+        commandList.Submitted();
     }
 
     public void SwapBuffers(Swapchain swapchain)
@@ -423,46 +352,6 @@ public unsafe class GraphicsDevice : ContextObject
         Vk.DestroyDevice(_device, null);
     }
 
-    private static bool CanUpdate(DeviceBuffer buffer, uint bufferOffsetInBytes, uint sizeInBytes)
-    {
-        if (bufferOffsetInBytes + sizeInBytes > buffer.SizeInBytes)
-        {
-            throw new ArgumentOutOfRangeException(nameof(bufferOffsetInBytes), "The buffer offset and size exceed the buffer size.");
-        }
-
-        return sizeInBytes != 0;
-    }
-
-    private static bool CanUpdate(Texture texture, uint x, uint y, uint z, uint width, uint height, uint depth, uint mipLevel, uint arrayLayer, uint sizeInBytes)
-    {
-        if (x + width > texture.Width)
-        {
-            throw new ArgumentOutOfRangeException(nameof(width), "The width exceeds the texture width.");
-        }
-
-        if (y + height > texture.Height)
-        {
-            throw new ArgumentOutOfRangeException(nameof(height), "The height exceeds the texture height.");
-        }
-
-        if (z + depth > texture.Depth)
-        {
-            throw new ArgumentOutOfRangeException(nameof(depth), "The depth exceeds the texture depth.");
-        }
-
-        if (mipLevel >= texture.MipLevels)
-        {
-            throw new ArgumentOutOfRangeException(nameof(mipLevel), "The mip level exceeds the texture mip levels.");
-        }
-
-        if (arrayLayer >= texture.ArrayLayers)
-        {
-            throw new ArgumentOutOfRangeException(nameof(arrayLayer), "The array layer exceeds the texture array layers.");
-        }
-
-        return sizeInBytes != 0;
-    }
-
     private StagingCommandPool GetStagingCommandPool()
     {
         lock (_stagingResourcesLock)
@@ -506,20 +395,6 @@ public unsafe class GraphicsDevice : ContextObject
         return ResourceFactory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
     }
 
-    private void RecordUsedStagingBuffer(CommandList commandList, DeviceBuffer stagingBuffer)
-    {
-        lock (_stagingResourcesLock)
-        {
-            if (!_usedStagingBuffers.TryGetValue(commandList, out List<DeviceBuffer>? stagingBuffers))
-            {
-                stagingBuffers = [];
-                _usedStagingBuffers.Add(commandList, stagingBuffers);
-            }
-
-            stagingBuffers.Add(stagingBuffer);
-        }
-    }
-
     private void CacheStagingBuffer(DeviceBuffer stagingBuffer)
     {
         lock (_stagingResourcesLock)
@@ -531,22 +406,6 @@ public unsafe class GraphicsDevice : ContextObject
             else
             {
                 _availableStagingBuffers.Add(stagingBuffer);
-            }
-        }
-    }
-
-    private void ReturnUsedStagingResources(CommandList commandList)
-    {
-        lock (_stagingResourcesLock)
-        {
-            if (_usedStagingBuffers.TryGetValue(commandList, out List<DeviceBuffer>? stagingBuffers))
-            {
-                foreach (DeviceBuffer stagingBuffer in stagingBuffers)
-                {
-                    CacheStagingBuffer(stagingBuffer);
-                }
-
-                _usedStagingBuffers.Remove(commandList);
             }
         }
     }
@@ -584,10 +443,8 @@ public unsafe partial class Context
 
         string[] deviceExtensions = [KhrSwapchain.ExtensionName];
 
-        PhysicalDeviceFeatures physicalDeviceFeatures = new()
-        {
-            SampleRateShading = Vk.True
-        };
+        PhysicalDeviceFeatures physicalDeviceFeatures;
+        _vk.GetPhysicalDeviceFeatures(physicalDevice.VkPhysicalDevice, &physicalDeviceFeatures);
 
         DeviceCreateInfo createInfo = new()
         {
