@@ -118,7 +118,7 @@ internal sealed unsafe class MainWindow : DisposableObject
         }
 
         _commandList.Begin();
-        _commandList.SetFramebuffer(_graphicsDevice.Swapchain.Framebuffer);
+        _commandList.SetFramebuffer(_graphicsDevice.MainSwapchain.Framebuffer);
         {
             _commandList.ClearColorTarget(0, RgbaFloat.Black);
             _commandList.ClearDepthStencil(1.0f);
@@ -133,6 +133,6 @@ internal sealed unsafe class MainWindow : DisposableObject
 
     private void Window_Resize(object? sender, ResizeEventArgs e)
     {
-        _graphicsDevice.Resize(e.Width, e.Height);
+        _graphicsDevice.MainSwapchain.Resize(e.Width, e.Height);
     }
 }

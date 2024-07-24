@@ -23,15 +23,12 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly CommandPool _graphicsCommandPool;
     private readonly CommandPool _computeCommandPool;
     private readonly DescriptorPoolManager _descriptorPoolManager;
-    private readonly SurfaceKHR _windowSurface;
-    private readonly PixelFormat _depthFormat;
+    private readonly Swapchain _mainSwapChain;
     private readonly Sampler _pointSampler;
     private readonly Sampler _linearSampler;
     private readonly object _stagingResourcesLock;
     private readonly List<SharedCommandPool> _availableSharedCommandPools;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
-
-    private Swapchain? swapChain;
 
     internal GraphicsDevice(Context context,
                             PhysicalDevice physicalDevice,
@@ -58,8 +55,7 @@ public unsafe class GraphicsDevice : ContextObject
         _graphicsCommandPool = new CommandPool(this, graphicsQueueFamilyIndex);
         _computeCommandPool = new CommandPool(this, computeQueueFamilyIndex);
         _descriptorPoolManager = new DescriptorPoolManager(this);
-        _windowSurface = windowSurface;
-        _depthFormat = Formats.GetPixelFormat(depthFormat);
+        _mainSwapChain = _resourceFactory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, Formats.GetPixelFormat(depthFormat)));
         _pointSampler = _resourceFactory.CreateSampler(SamplerDescription.Point);
         _linearSampler = _resourceFactory.CreateSampler(SamplerDescription.Linear);
         _stagingResourcesLock = new object();
@@ -69,11 +65,11 @@ public unsafe class GraphicsDevice : ContextObject
 
     public ResourceFactory ResourceFactory => _resourceFactory;
 
+    public Swapchain MainSwapchain => _mainSwapChain;
+
     public Sampler PointSampler => _pointSampler;
 
     public Sampler LinearSampler => _linearSampler;
-
-    public Swapchain Swapchain => swapChain!;
 
     internal PhysicalDevice PhysicalDevice => _physicalDevice;
 
@@ -96,20 +92,6 @@ public unsafe class GraphicsDevice : ContextObject
     internal CommandPool ComputeCommandPool => _computeCommandPool;
 
     internal DescriptorPoolManager DescriptorPoolManager => _descriptorPoolManager;
-
-    public void Resize(uint width, uint height)
-    {
-        if (width == 0 || height == 0)
-        {
-            return;
-        }
-
-        swapChain?.Dispose();
-
-        SwapchainDescription swapchainDescription = new(_windowSurface, width, height, _depthFormat);
-
-        swapChain = new Swapchain(this, in swapchainDescription);
-    }
 
     #region UpdateBuffer
     public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
@@ -292,15 +274,10 @@ public unsafe class GraphicsDevice : ContextObject
         fence.WaitAndReset();
     }
 
-    public void SwapBuffers()
+    public void SwapBuffers(Swapchain swapchain)
     {
-        if (swapChain == null)
-        {
-            throw new InvalidOperationException("The swap chain is not initialized.");
-        }
-
-        SwapchainKHR swapchainKHR = swapChain.Handle;
-        uint imageIndex = swapChain.CurrentImageIndex;
+        SwapchainKHR swapchainKHR = swapchain.Handle;
+        uint imageIndex = swapchain.CurrentImageIndex;
 
         PresentInfoKHR presentInfo = new()
         {
@@ -314,7 +291,7 @@ public unsafe class GraphicsDevice : ContextObject
 
         if (result == Result.Success)
         {
-            swapChain.AcquireNextImage();
+            swapchain.AcquireNextImage();
         }
         else
         {
@@ -323,6 +300,16 @@ public unsafe class GraphicsDevice : ContextObject
                 result.ThrowCode("Failed to present the swap chain image.");
             }
         }
+    }
+
+    public void SwapBuffers()
+    {
+        if (_mainSwapChain == null)
+        {
+            throw new InvalidOperationException("The swap chain is not initialized.");
+        }
+
+        SwapBuffers(_mainSwapChain);
     }
 
     protected override void Destroy()
@@ -337,7 +324,7 @@ public unsafe class GraphicsDevice : ContextObject
             sharedCommandPool.Dispose();
         }
 
-        swapChain?.Dispose();
+        _mainSwapChain.Dispose();
 
         _pointSampler.Dispose();
         _linearSampler.Dispose();
@@ -481,7 +468,7 @@ public unsafe partial class Context
                                             computeQueueFamilyIndex,
                                             transferQueueFamilyIndex);
 
-        graphicsDevice.Resize((uint)window.Width, (uint)window.Height);
+        graphicsDevice.MainSwapchain.Resize((uint)window.Width, (uint)window.Height);
 
         return graphicsDevice;
     }

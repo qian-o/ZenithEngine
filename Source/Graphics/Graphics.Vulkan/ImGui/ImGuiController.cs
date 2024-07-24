@@ -623,7 +623,7 @@ void main()
             ShaderSet = new ShaderSetDescription([vertexLayoutDescription],
                                                  shaders,
                                                  [new SpecializationConstant(0, _colorSpaceHandling == ColorSpaceHandling.Legacy)]),
-            Outputs = _graphicsDevice.Swapchain.OutputDescription
+            Outputs = _graphicsDevice.MainSwapchain.OutputDescription
         };
 
         _pipeline = _factory.CreateGraphicsPipeline(pipelineDescription);
