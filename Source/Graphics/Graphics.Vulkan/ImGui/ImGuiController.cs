@@ -96,7 +96,7 @@ public unsafe class ImGuiController : DisposableObject
         ImGui.UpdatePlatformWindows();
         foreach (ImGuiPlatform platform in _platforms)
         {
-            ImGuiViewport* vp = platform.Viewport;
+            ImGuiViewport* vp = ImGui.FindViewportByPlatformHandle((void*)platform.Handle);
 
             commandList.SetFramebuffer(platform.Swapchain!.Framebuffer);
 
@@ -182,7 +182,6 @@ public unsafe class ImGuiController : DisposableObject
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
         io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
-        io.BackendFlags |= ImGuiBackendFlags.HasMouseHoveredViewport;
 
         InitializePlatform();
     }

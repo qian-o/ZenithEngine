@@ -8,6 +8,7 @@ namespace Graphics.Vulkan;
 
 internal sealed unsafe class ImGuiPlatform : DisposableObject
 {
+    private readonly ImGuiViewport* _viewport;
     private readonly GraphicsWindow _graphicsWindow;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly bool _isExternalPlatform;
@@ -16,23 +17,25 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     public ImGuiPlatform(ImGuiViewport* viewport, GraphicsWindow graphicsWindow, GraphicsDevice graphicsDevice)
     {
+        _viewport = viewport;
         _graphicsWindow = graphicsWindow;
         _graphicsDevice = graphicsDevice;
         _isExternalPlatform = true;
 
-        Initialize(viewport);
+        Initialize();
     }
 
     public ImGuiPlatform(ImGuiViewport* viewport, GraphicsDevice graphicsDevice)
     {
+        _viewport = viewport;
         _graphicsWindow = GraphicsWindow.CreateWindowByVulkan();
         _graphicsDevice = graphicsDevice;
         _isExternalPlatform = false;
 
-        Initialize(viewport);
+        Initialize();
     }
 
-    public ImGuiViewport* Viewport => ImGui.FindViewportByPlatformHandle((void*)_graphicsWindow.Handle);
+    public nint Handle => _graphicsWindow.Handle;
 
     public Swapchain? Swapchain => _swapchain;
 
@@ -93,23 +96,23 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         }
     }
 
-    private void Initialize(ImGuiViewport* viewport)
+    private void Initialize()
     {
-        viewport->PlatformHandle = (void*)_graphicsWindow.Handle;
+        _viewport->PlatformHandle = (void*)_graphicsWindow.Handle;
 
         if (!_isExternalPlatform)
         {
-            if (viewport->Flags.HasFlag(ImGuiViewportFlags.NoTaskBarIcon))
+            if (_viewport->Flags.HasFlag(ImGuiViewportFlags.NoTaskBarIcon))
             {
                 _graphicsWindow.ShowInTaskbar = false;
             }
 
-            if (viewport->Flags.HasFlag(ImGuiViewportFlags.NoDecoration))
+            if (_viewport->Flags.HasFlag(ImGuiViewportFlags.NoDecoration))
             {
                 _graphicsWindow.WindowBorder = WindowBorder.Hidden;
             }
 
-            if (viewport->Flags.HasFlag(ImGuiViewportFlags.TopMost))
+            if (_viewport->Flags.HasFlag(ImGuiViewportFlags.TopMost))
             {
                 _graphicsWindow.TopMost = true;
             }
@@ -255,7 +258,6 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
     private void MouseMove(object? sender, MouseMoveEventArgs e)
     {
         ImGui.GetIO().AddMousePosEvent(e.PositionByScreen.X, e.PositionByScreen.Y);
-        ImGui.GetIO().AddMouseViewportEvent(Viewport->ID);
     }
 
     private void MouseWheel(object? sender, MouseWheelEventArgs e)
@@ -286,18 +288,18 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     private void Move(object? sender, MoveEventArgs e)
     {
-        Viewport->PlatformRequestMove = 1;
+        _viewport->PlatformRequestMove = 1;
     }
 
     private void Resize(object? sender, ResizeEventArgs e)
     {
-        Viewport->PlatformRequestResize = 1;
+        _viewport->PlatformRequestResize = 1;
 
         _swapchain?.Resize(e.Width, e.Height);
     }
 
     private void Closing(object? sender, ClosingEventArgs e)
     {
-        Viewport->PlatformRequestClose = 1;
+        _viewport->PlatformRequestClose = 1;
     }
 }
