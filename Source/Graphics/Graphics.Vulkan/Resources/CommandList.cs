@@ -14,6 +14,8 @@ public unsafe class CommandList : DeviceResource
     private readonly Fence _fence;
     private readonly CommandPool _commandPool;
     private readonly CommandBuffer _commandBuffer;
+    private readonly object _disposablesLock;
+    private readonly List<DisposableObject> _disposables;
     private readonly object _stagingResourcesLock;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
     private readonly List<DeviceBuffer> _usedStagingBuffers;
@@ -29,6 +31,8 @@ public unsafe class CommandList : DeviceResource
         _fence = fence;
         _commandPool = commandPool;
         _commandBuffer = commandPool.AllocateCommandBuffer();
+        _disposablesLock = new();
+        _disposables = [];
         _stagingResourcesLock = new();
         _availableStagingBuffers = [];
         _usedStagingBuffers = [];
@@ -414,8 +418,26 @@ public unsafe class CommandList : DeviceResource
         _isRecording = false;
     }
 
+    public void DisposeSubmitted(DisposableObject disposable)
+    {
+        lock (_disposablesLock)
+        {
+            _disposables.Add(disposable);
+        }
+    }
+
     internal void Submitted()
     {
+        lock (_disposablesLock)
+        {
+            foreach (DisposableObject disposable in _disposables)
+            {
+                disposable.Dispose();
+            }
+
+            _disposables.Clear();
+        }
+
         ReturnUsedStagingResources();
     }
 

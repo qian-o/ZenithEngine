@@ -132,9 +132,6 @@ partial class GraphicsWindow
             }
 
             Move?.Invoke(this, new MoveEventArgs(v.X, v.Y));
-
-            _window.DoUpdate();
-            _window.DoRender();
         };
 
         _window.FramebufferResize += (v) =>

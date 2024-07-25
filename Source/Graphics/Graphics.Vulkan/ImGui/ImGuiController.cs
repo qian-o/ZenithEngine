@@ -201,7 +201,6 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiPlatform mainPlatform = new(_graphicsWindow, _graphicsDevice);
 
-        _platforms.Add(mainPlatform);
         _platformsByHandle.Add((nint)ImGui.GetMainViewport().PlatformHandle, mainPlatform);
 
         InitializePlatformCallbacks();

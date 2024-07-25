@@ -160,14 +160,14 @@ void main()
         uint totalVBSize = (uint)(drawDataPtr.TotalVtxCount * sizeof(ImDrawVert));
         if (totalVBSize > _vertexBuffer.SizeInBytes)
         {
-            _vertexBuffer.Dispose();
+            commandList.DisposeSubmitted(_vertexBuffer);
             _vertexBuffer = _factory.CreateBuffer(new BufferDescription((uint)(totalVBSize * 1.5f), BufferUsage.VertexBuffer));
         }
 
         uint totalIBSize = (uint)(drawDataPtr.TotalIdxCount * sizeof(ushort));
         if (totalIBSize > _indexBuffer.SizeInBytes)
         {
-            _indexBuffer.Dispose();
+            commandList.DisposeSubmitted(_indexBuffer);
             _indexBuffer = _factory.CreateBuffer(new BufferDescription((uint)(totalIBSize * 1.5f), BufferUsage.IndexBuffer));
         }
 
