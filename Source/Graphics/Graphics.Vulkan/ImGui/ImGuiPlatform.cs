@@ -33,6 +33,8 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         Initialize();
     }
 
+    public GraphicsWindow GraphicsWindow => _graphicsWindow;
+
     public Swapchain? Swapchain => _swapchain;
 
     public void Show()
@@ -212,7 +214,7 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     private void MouseMove(object? sender, MouseMoveEventArgs e)
     {
-        ImGui.GetIO().AddMousePosEvent(e.PositionByWindow.X, e.PositionByWindow.Y);
+        ImGui.GetIO().AddMousePosEvent(e.PositionByScreen.X, e.PositionByScreen.Y);
     }
 
     private void MouseWheel(object? sender, MouseWheelEventArgs e)

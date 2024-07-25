@@ -1,6 +1,9 @@
-﻿using Graphics.Core;
+﻿using System.Numerics;
+using System.Runtime.InteropServices;
+using Graphics.Core;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
+using Silk.NET.Windowing;
 
 namespace Graphics.Vulkan;
 
@@ -11,6 +14,19 @@ public unsafe class ImGuiController : DisposableObject
     private readonly ImGuiContextPtr _imGuiContext;
     private readonly ImGuiRenderer _imGuiRenderer;
     private readonly List<ImGuiPlatform> _platforms;
+    private readonly Dictionary<nint, ImGuiPlatform> _platformsByHandle;
+
+    private readonly PlatformCreateWindow _createWindow;
+    private readonly PlatformDestroyWindow _destroyWindow;
+    private readonly PlatformShowWindow _showWindow;
+    private readonly PlatformGetWindowPos _getWindowPos;
+    private readonly PlatformSetWindowPos _setWindowPos;
+    private readonly PlatformGetWindowSize _getWindowSize;
+    private readonly PlatformSetWindowSize _setWindowSize;
+    private readonly PlatformGetWindowFocus _getWindowFocus;
+    private readonly PlatformSetWindowFocus _setWindowFocus;
+    private readonly PlatformGetWindowMinimized _getWindowMinimized;
+    private readonly PlatformSetWindowTitle _setWindowTitle;
 
     #region Constructors
     public ImGuiController(GraphicsWindow graphicsWindow,
@@ -24,6 +40,19 @@ public unsafe class ImGuiController : DisposableObject
         _imGuiContext = ImGui.CreateContext();
         _imGuiRenderer = new ImGuiRenderer(graphicsDevice, colorSpaceHandling);
         _platforms = [];
+        _platformsByHandle = [];
+
+        _createWindow = CreateWindow;
+        _destroyWindow = DestroyWindow;
+        _showWindow = ShowWindow;
+        _getWindowPos = GetWindowPos;
+        _setWindowPos = SetWindowPos;
+        _getWindowSize = GetWindowSize;
+        _setWindowSize = SetWindowSize;
+        _getWindowFocus = GetWindowFocus;
+        _setWindowFocus = SetWindowFocus;
+        _getWindowMinimized = GetWindowMinimized;
+        _setWindowTitle = SetWindowTitle;
 
         Initialize(imGuiFontConfig, onConfigureIO);
     }
@@ -129,7 +158,7 @@ public unsafe class ImGuiController : DisposableObject
 
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
-        // io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
+        io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
 
         onConfigureIO?.Invoke();
 
@@ -139,6 +168,120 @@ public unsafe class ImGuiController : DisposableObject
         io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
 
-        _platforms.Add(new ImGuiPlatform(_graphicsWindow, _graphicsDevice));
+        InitializePlatform();
+    }
+
+    private void InitializePlatform()
+    {
+        ImGuiPlatform mainPlatform = new(_graphicsWindow, _graphicsDevice);
+
+        _platforms.Add(mainPlatform);
+        _platformsByHandle.Add((nint)ImGui.GetMainViewport().PlatformHandle, mainPlatform);
+
+        InitializePlatformCallbacks();
+    }
+
+    private void InitializePlatformCallbacks()
+    {
+        ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
+
+        platformIO.PlatformCreateWindow = (void*)Marshal.GetFunctionPointerForDelegate(_createWindow);
+        platformIO.PlatformDestroyWindow = (void*)Marshal.GetFunctionPointerForDelegate(_destroyWindow);
+        platformIO.PlatformShowWindow = (void*)Marshal.GetFunctionPointerForDelegate(_showWindow);
+        platformIO.PlatformGetWindowPos = (void*)Marshal.GetFunctionPointerForDelegate(_getWindowPos);
+        platformIO.PlatformSetWindowPos = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowPos);
+        platformIO.PlatformGetWindowSize = (void*)Marshal.GetFunctionPointerForDelegate(_getWindowSize);
+        platformIO.PlatformSetWindowSize = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowSize);
+        platformIO.PlatformGetWindowFocus = (void*)Marshal.GetFunctionPointerForDelegate(_getWindowFocus);
+        platformIO.PlatformSetWindowFocus = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowFocus);
+        platformIO.PlatformGetWindowMinimized = (void*)Marshal.GetFunctionPointerForDelegate(_getWindowMinimized);
+        platformIO.PlatformSetWindowTitle = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowTitle);
+    }
+
+    private void CreateWindow(ImGuiViewport* vp)
+    {
+        ImGuiPlatform platform = new(vp, _graphicsDevice);
+
+        _platforms.Add(platform);
+        _platformsByHandle.Add((nint)vp->PlatformHandle, platform);
+    }
+
+    private void DestroyWindow(ImGuiViewport* vp)
+    {
+        ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
+
+        _platforms.Remove(platform);
+        _platformsByHandle.Remove((nint)vp->PlatformHandle);
+
+        platform.Dispose();
+    }
+
+    private void ShowWindow(ImGuiViewport* vp)
+    {
+        ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
+
+        platform.Show();
+    }
+
+    private Vector2* GetWindowPos(Vector2* pos, ImGuiViewport* viewport)
+    {
+        ImGuiPlatform platform = _platformsByHandle[(nint)viewport->PlatformHandle];
+
+        pos->X = platform.GraphicsWindow.Position.X;
+        pos->Y = platform.GraphicsWindow.Position.Y;
+
+        return pos;
+    }
+
+    private void SetWindowPos(ImGuiViewport* vp, Vector2 pos)
+    {
+        ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
+
+        platform.GraphicsWindow.Position = pos;
+    }
+
+    private Vector2* GetWindowSize(Vector2* size, ImGuiViewport* viewport)
+    {
+        ImGuiPlatform platform = _platformsByHandle[(nint)viewport->PlatformHandle];
+
+        size->X = platform.GraphicsWindow.Size.X;
+        size->Y = platform.GraphicsWindow.Size.Y;
+
+        return size;
+    }
+
+    private void SetWindowSize(ImGuiViewport* vp, Vector2 size)
+    {
+        ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
+
+        platform.GraphicsWindow.Size = size;
+    }
+
+    private byte GetWindowFocus(ImGuiViewport* vp)
+    {
+        ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
+
+        return platform.GraphicsWindow.IsFocused ? (byte)1 : (byte)0;
+    }
+
+    private void SetWindowFocus(ImGuiViewport* vp)
+    {
+        ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
+
+        platform.GraphicsWindow.Focus();
+    }
+
+    private byte GetWindowMinimized(ImGuiViewport* vp)
+    {
+        ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
+
+        return platform.GraphicsWindow.WindowState == WindowState.Minimized ? (byte)1 : (byte)0;
+    }
+
+    private void SetWindowTitle(ImGuiViewport* vp, byte* str)
+    {
+        ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
+
+        platform.GraphicsWindow.Title = Marshal.PtrToStringAnsi((nint)str)!;
     }
 }
