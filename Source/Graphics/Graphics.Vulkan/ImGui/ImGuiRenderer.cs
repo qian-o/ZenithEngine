@@ -157,8 +157,6 @@ void main()
             return;
         }
 
-        ImGuiIOPtr io = ImGui.GetIO();
-
         uint totalVBSize = (uint)(drawDataPtr.TotalVtxCount * sizeof(ImDrawVert));
         if (totalVBSize > _vertexBuffer.SizeInBytes)
         {
@@ -174,6 +172,7 @@ void main()
         }
 
         Vector2 displayPos = drawDataPtr.DisplayPos;
+        Vector2 displaySize = drawDataPtr.DisplaySize;
 
         // Update vertex and index buffers
         {
@@ -201,8 +200,8 @@ void main()
         // Orthographic projection matrix
         {
             Matrix4x4 orthoProjection = Matrix4x4.CreateOrthographicOffCenter(displayPos.X,
-                                                                              displayPos.X + io.DisplaySize.X,
-                                                                              displayPos.Y + io.DisplaySize.Y,
+                                                                              displayPos.X + displaySize.X,
+                                                                              displayPos.Y + displaySize.Y,
                                                                               displayPos.Y,
                                                                               -1.0f,
                                                                               1.0f);
@@ -215,7 +214,7 @@ void main()
         commandList.SetPipeline(_pipeline);
         commandList.SetGraphicsResourceSet(0, _resourceSet);
 
-        drawDataPtr.ScaleClipRects(io.DisplayFramebufferScale);
+        drawDataPtr.ScaleClipRects(ImGui.GetIO().DisplayFramebufferScale);
 
         int vertexOffset = 0;
         int indexOffset = 0;

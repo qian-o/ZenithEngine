@@ -27,6 +27,7 @@ public unsafe partial class GraphicsWindow : DisposableObject
 
     protected override void Destroy()
     {
+        _inputContext.Dispose();
         _window.Dispose();
     }
 

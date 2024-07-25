@@ -1,6 +1,7 @@
 ﻿using Graphics.Core;
 using Hexa.NET.ImGui;
 using Silk.NET.Input;
+using Silk.NET.Windowing;
 
 namespace Graphics.Vulkan;
 
@@ -20,7 +21,7 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         _graphicsDevice = graphicsDevice;
         _isExternalPlatform = true;
 
-        Register();
+        Initialize();
     }
 
     public ImGuiPlatform(ImGuiViewport* viewport, GraphicsDevice graphicsDevice)
@@ -57,6 +58,16 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         _graphicsWindow.DoEvents();
     }
 
+    public void SwapBuffers()
+    {
+        if (_isExternalPlatform)
+        {
+            return;
+        }
+
+        _graphicsDevice.SwapBuffers(_swapchain!);
+    }
+
     protected override void Destroy()
     {
         _swapchain?.Dispose();
@@ -75,11 +86,27 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
         if (!_isExternalPlatform)
         {
+            if (_viewport->Flags.HasFlag(ImGuiViewportFlags.NoTaskBarIcon))
+            {
+                _graphicsWindow.ShowInTaskbar = false;
+            }
+
+            if (_viewport->Flags.HasFlag(ImGuiViewportFlags.NoDecoration))
+            {
+                _graphicsWindow.WindowBorder = WindowBorder.Hidden;
+            }
+
+            if (_viewport->Flags.HasFlag(ImGuiViewportFlags.TopMost))
+            {
+                _graphicsWindow.TopMost = true;
+            }
+
             SwapchainDescription swapchainDescription = new()
             {
                 Target = _graphicsWindow.VkSurface!,
                 Width = (uint)_graphicsWindow.FramebufferSize.X,
-                Height = (uint)_graphicsWindow.FramebufferSize.Y
+                Height = (uint)_graphicsWindow.FramebufferSize.Y,
+                DepthFormat = _graphicsDevice.GetBestDepthFormat()
             };
 
             _swapchain = _graphicsDevice.ResourceFactory.CreateSwapchain(in swapchainDescription);
