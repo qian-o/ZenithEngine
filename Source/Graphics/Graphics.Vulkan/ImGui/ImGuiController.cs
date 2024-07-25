@@ -26,7 +26,6 @@ public unsafe class ImGuiController : DisposableObject
     private readonly PlatformSetWindowFocus _setWindowFocus;
     private readonly PlatformGetWindowMinimized _getWindowMinimized;
     private readonly PlatformSetWindowTitle _setWindowTitle;
-    private readonly PlatformUpdateWindow _updateWindow;
 
     #region Constructors
     public ImGuiController(GraphicsWindow graphicsWindow,
@@ -53,7 +52,6 @@ public unsafe class ImGuiController : DisposableObject
         _setWindowFocus = SetWindowFocus;
         _getWindowMinimized = GetWindowMinimized;
         _setWindowTitle = SetWindowTitle;
-        _updateWindow = UpdateWindow;
 
         Initialize(imGuiFontConfig, onConfigureIO);
     }
@@ -88,6 +86,10 @@ public unsafe class ImGuiController : DisposableObject
         ImGui.DockSpaceOverViewport();
 
         ImGui.ShowDemoWindow();
+
+        ImGui.Text($"Main viewport Position: {ImGui.GetMainViewport().Pos}");
+        ImGui.Text($"Main viewport Size: {ImGui.GetMainViewport().Size}");
+        ImGui.Text($"MoouseHoveredViewport: {ImGui.GetIO().MouseHoveredViewport}");
     }
 
     public void Render(CommandList commandList)
@@ -96,30 +98,21 @@ public unsafe class ImGuiController : DisposableObject
         _imGuiRenderer.RenderImDrawData(commandList, ImGui.GetDrawData());
 
         ImGui.UpdatePlatformWindows();
-
-        ImGuiPlatformIO* platformIO = ImGui.GetPlatformIO();
-        for (int i = 1; i < platformIO->Viewports.Size; i++)
+        foreach (ImGuiPlatform platform in _platforms)
         {
-            ImGuiViewport* vp = platformIO->Viewports.Data[i];
+            ImGuiViewport* vp = platform.Viewport;
 
-            ImGuiPlatform imGuiPlatform = _platformsByHandle[(nint)vp->PlatformHandle];
-
-            commandList.SetFramebuffer(imGuiPlatform.Swapchain!.Framebuffer);
+            commandList.SetFramebuffer(platform.Swapchain!.Framebuffer);
 
             _imGuiRenderer.RenderImDrawData(commandList, vp->DrawData);
         }
     }
 
-    public void SwapBuffers()
+    public void PlatformSwapBuffers()
     {
-        ImGuiPlatformIO* platformIO = ImGui.GetPlatformIO();
-        for (int i = 1; i < platformIO->Viewports.Size; i++)
+        foreach (ImGuiPlatform platform in _platforms)
         {
-            ImGuiViewport* vp = platformIO->Viewports.Data[i];
-
-            ImGuiPlatform imGuiPlatform = _platformsByHandle[(nint)vp->PlatformHandle];
-
-            imGuiPlatform.SwapBuffers();
+            platform.SwapBuffers();
         }
     }
 
@@ -184,6 +177,7 @@ public unsafe class ImGuiController : DisposableObject
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
+        io.ConfigViewportsNoAutoMerge = true;
 
         onConfigureIO?.Invoke();
 
@@ -192,6 +186,7 @@ public unsafe class ImGuiController : DisposableObject
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
         io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
+        io.BackendFlags |= ImGuiBackendFlags.HasMouseHoveredViewport;
 
         InitializePlatform();
     }
@@ -199,10 +194,8 @@ public unsafe class ImGuiController : DisposableObject
     private void InitializePlatform()
     {
         ImGuiViewport* mainViewport = ImGui.GetMainViewport();
-
         ImGuiPlatform mainPlatform = new(mainViewport, _graphicsWindow, _graphicsDevice);
 
-        _platforms.Add(mainPlatform);
         _platformsByHandle.Add((nint)mainViewport->PlatformHandle, mainPlatform);
 
         InitializePlatformCallbacks();
@@ -223,7 +216,6 @@ public unsafe class ImGuiController : DisposableObject
         platformIO.PlatformSetWindowFocus = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowFocus);
         platformIO.PlatformGetWindowMinimized = (void*)Marshal.GetFunctionPointerForDelegate(_getWindowMinimized);
         platformIO.PlatformSetWindowTitle = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowTitle);
-        platformIO.PlatformUpdateWindow = (void*)Marshal.GetFunctionPointerForDelegate(_updateWindow);
     }
 
     private void CreateWindow(ImGuiViewport* vp)
@@ -314,12 +306,5 @@ public unsafe class ImGuiController : DisposableObject
         ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
 
         platform.Title = Marshal.PtrToStringAnsi((nint)str)!;
-    }
-
-    private void UpdateWindow(ImGuiViewport* vp)
-    {
-        ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
-
-        platform.DoEvents();
     }
 }

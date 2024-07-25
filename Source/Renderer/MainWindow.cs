@@ -121,7 +121,7 @@ internal sealed unsafe class MainWindow : DisposableObject
         _graphicsDevice.SubmitCommands(_commandList);
         _graphicsDevice.SwapBuffers();
 
-        _imGuiController.SwapBuffers();
+        _imGuiController.PlatformSwapBuffers();
     }
 
     private void Window_Resize(object? sender, ResizeEventArgs e)
