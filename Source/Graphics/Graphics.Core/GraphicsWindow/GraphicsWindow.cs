@@ -42,6 +42,8 @@ public unsafe partial class GraphicsWindow : DisposableObject
 
     public static GraphicsWindow CreateWindowByVulkan()
     {
+        Window.PrioritizeSdl();
+
         WindowOptions windowOptions = WindowOptions.DefaultVulkan;
         windowOptions.IsVisible = false;
         windowOptions.API = new GraphicsAPI()

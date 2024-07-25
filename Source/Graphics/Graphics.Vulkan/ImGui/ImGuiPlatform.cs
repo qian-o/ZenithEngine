@@ -61,6 +61,16 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         _graphicsWindow.Focus();
     }
 
+    public void Update()
+    {
+        if (_isExternalPlatform)
+        {
+            return;
+        }
+
+        _graphicsWindow.PollEvents();
+    }
+
     public void SwapBuffers()
     {
         if (_isExternalPlatform)

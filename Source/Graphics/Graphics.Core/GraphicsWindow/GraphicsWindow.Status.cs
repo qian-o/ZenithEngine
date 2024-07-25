@@ -80,6 +80,11 @@ partial class GraphicsWindow
         Console.WriteLine(_window);
     }
 
+    public void PollEvents()
+    {
+        _window.DoEvents();
+    }
+
     private void AssemblyStatusEvent()
     {
         _window.Load += () =>

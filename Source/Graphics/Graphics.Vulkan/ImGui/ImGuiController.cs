@@ -26,6 +26,7 @@ public unsafe class ImGuiController : DisposableObject
     private readonly PlatformSetWindowFocus _setWindowFocus;
     private readonly PlatformGetWindowMinimized _getWindowMinimized;
     private readonly PlatformSetWindowTitle _setWindowTitle;
+    private readonly PlatformUpdateWindow _updateWindow;
 
     #region Constructors
     public ImGuiController(GraphicsWindow graphicsWindow,
@@ -52,6 +53,7 @@ public unsafe class ImGuiController : DisposableObject
         _setWindowFocus = SetWindowFocus;
         _getWindowMinimized = GetWindowMinimized;
         _setWindowTitle = SetWindowTitle;
+        _updateWindow = UpdateWindow;
 
         Initialize(imGuiFontConfig, onConfigureIO);
     }
@@ -210,6 +212,7 @@ public unsafe class ImGuiController : DisposableObject
         platformIO.PlatformSetWindowFocus = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowFocus);
         platformIO.PlatformGetWindowMinimized = (void*)Marshal.GetFunctionPointerForDelegate(_getWindowMinimized);
         platformIO.PlatformSetWindowTitle = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowTitle);
+        platformIO.PlatformUpdateWindow = (void*)Marshal.GetFunctionPointerForDelegate(_updateWindow);
     }
 
     private void CreateWindow(ImGuiViewport* vp)
@@ -300,5 +303,12 @@ public unsafe class ImGuiController : DisposableObject
         ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
 
         platform.Title = Marshal.PtrToStringAnsi((nint)str)!;
+    }
+
+    private void UpdateWindow(ImGuiViewport* vp)
+    {
+        ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
+
+        platform.Update();
     }
 }
