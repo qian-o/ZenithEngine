@@ -72,6 +72,12 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         }
 
         _graphicsWindow.PollEvents();
+
+        // sdl not trigger Resize event when size is changed actively.
+        if (_swapchain!.Width != _graphicsWindow.FramebufferSize.X || _swapchain!.Height != _graphicsWindow.FramebufferSize.Y)
+        {
+            _swapchain.Resize((uint)_graphicsWindow.FramebufferSize.X, (uint)_graphicsWindow.FramebufferSize.Y);
+        }
     }
 
     public void SwapBuffers()
