@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using Graphics.Core;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
-using Silk.NET.Windowing;
 
 namespace Graphics.Vulkan;
 
@@ -199,9 +198,12 @@ public unsafe class ImGuiController : DisposableObject
 
     private void InitializePlatform()
     {
-        ImGuiPlatform mainPlatform = new(_graphicsWindow, _graphicsDevice);
+        ImGuiViewport* mainViewport = ImGui.GetMainViewport();
 
-        _platformsByHandle.Add((nint)ImGui.GetMainViewport().PlatformHandle, mainPlatform);
+        ImGuiPlatform mainPlatform = new(mainViewport, _graphicsWindow, _graphicsDevice);
+
+        _platforms.Add(mainPlatform);
+        _platformsByHandle.Add((nint)mainViewport->PlatformHandle, mainPlatform);
 
         InitializePlatformCallbacks();
     }
@@ -258,8 +260,7 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiPlatform platform = _platformsByHandle[(nint)viewport->PlatformHandle];
 
-        pos->X = platform.GraphicsWindow.Position.X;
-        pos->Y = platform.GraphicsWindow.Position.Y;
+        *pos = platform.Position;
 
         return pos;
     }
@@ -268,15 +269,14 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
 
-        platform.GraphicsWindow.Position = pos;
+        platform.Position = pos;
     }
 
     private Vector2* GetWindowSize(Vector2* size, ImGuiViewport* viewport)
     {
         ImGuiPlatform platform = _platformsByHandle[(nint)viewport->PlatformHandle];
 
-        size->X = platform.GraphicsWindow.Size.X;
-        size->Y = platform.GraphicsWindow.Size.Y;
+        *size = platform.Size;
 
         return size;
     }
@@ -285,35 +285,35 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
 
-        platform.GraphicsWindow.Size = size;
+        platform.Size = size;
     }
 
     private byte GetWindowFocus(ImGuiViewport* vp)
     {
         ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
 
-        return platform.GraphicsWindow.IsFocused ? (byte)1 : (byte)0;
+        return platform.IsFocused;
     }
 
     private void SetWindowFocus(ImGuiViewport* vp)
     {
         ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
 
-        platform.GraphicsWindow.Focus();
+        platform.Focus();
     }
 
     private byte GetWindowMinimized(ImGuiViewport* vp)
     {
         ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
 
-        return platform.GraphicsWindow.WindowState == WindowState.Minimized ? (byte)1 : (byte)0;
+        return platform.IsMinimized;
     }
 
     private void SetWindowTitle(ImGuiViewport* vp, byte* str)
     {
         ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
 
-        platform.GraphicsWindow.Title = Marshal.PtrToStringAnsi((nint)str)!;
+        platform.Title = Marshal.PtrToStringAnsi((nint)str)!;
     }
 
     private void UpdateWindow(ImGuiViewport* vp)

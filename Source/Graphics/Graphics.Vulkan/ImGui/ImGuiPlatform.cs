@@ -1,4 +1,5 @@
-﻿using Graphics.Core;
+﻿using System.Numerics;
+using Graphics.Core;
 using Hexa.NET.ImGui;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
@@ -14,9 +15,9 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     private Swapchain? _swapchain;
 
-    public ImGuiPlatform(GraphicsWindow graphicsWindow, GraphicsDevice graphicsDevice)
+    public ImGuiPlatform(ImGuiViewport* viewport, GraphicsWindow graphicsWindow, GraphicsDevice graphicsDevice)
     {
-        _viewport = ImGui.GetMainViewport();
+        _viewport = viewport;
         _graphicsWindow = graphicsWindow;
         _graphicsDevice = graphicsDevice;
         _isExternalPlatform = true;
@@ -34,9 +35,17 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         Initialize();
     }
 
-    public GraphicsWindow GraphicsWindow => _graphicsWindow;
-
     public Swapchain? Swapchain => _swapchain;
+
+    public string Title { get => _graphicsWindow.Title; set => _graphicsWindow.Title = value; }
+
+    public Vector2 Position { get => _graphicsWindow.Position; set => _graphicsWindow.Position = value; }
+
+    public Vector2 Size { get => _graphicsWindow.Size; set => _graphicsWindow.Size = value; }
+
+    public byte IsFocused => _graphicsWindow.IsFocused ? (byte)1 : (byte)0;
+
+    public byte IsMinimized => _graphicsWindow.WindowState == WindowState.Minimized ? (byte)1 : (byte)0;
 
     public void Show()
     {
@@ -46,6 +55,11 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         }
 
         _graphicsWindow.Show();
+    }
+
+    public void Focus()
+    {
+        _graphicsWindow.Focus();
     }
 
     public void DoEvents()
