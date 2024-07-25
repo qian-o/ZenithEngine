@@ -79,7 +79,7 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
         if (!_isExternalPlatform)
         {
-            _graphicsWindow.Close();
+            _graphicsWindow.Dispose();
         }
     }
 

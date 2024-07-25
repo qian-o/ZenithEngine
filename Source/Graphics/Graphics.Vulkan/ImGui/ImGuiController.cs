@@ -81,20 +81,14 @@ public unsafe class ImGuiController : DisposableObject
         SetPerFrameImGuiData(deltaSeconds);
 
         ImGui.NewFrame();
-        ImGuizmo.BeginFrame();
 
         ImGui.DockSpaceOverViewport();
-
-        ImGui.ShowDemoWindow();
-
-        ImGui.Text($"Main viewport Position: {ImGui.GetMainViewport().Pos}");
-        ImGui.Text($"Main viewport Size: {ImGui.GetMainViewport().Size}");
-        ImGui.Text($"MoouseHoveredViewport: {ImGui.GetIO().MouseHoveredViewport}");
     }
 
     public void Render(CommandList commandList)
     {
         ImGui.Render();
+
         _imGuiRenderer.RenderImDrawData(commandList, ImGui.GetDrawData());
 
         ImGui.UpdatePlatformWindows();
@@ -162,9 +156,9 @@ public unsafe class ImGuiController : DisposableObject
     private void Initialize(ImGuiFontConfig? imGuiFontConfig, Action? onConfigureIO)
     {
         ImGui.SetCurrentContext(_imGuiContext);
-        ImGui.StyleColorsDark();
-
         ImGuizmo.SetImGuiContext(_imGuiContext);
+
+        ImGui.StyleColorsDark();
 
         ImGuiIOPtr io = ImGui.GetIO();
 

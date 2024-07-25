@@ -74,22 +74,10 @@ partial class GraphicsWindow
         DoLoad();
     }
 
-    public void Close()
-    {
-        _window.IsVisible = false;
-
-        _window.Close();
-    }
-
     public void Focus()
     {
         // TODO: Focus
         Console.WriteLine(_window);
-    }
-
-    public void DoEvents()
-    {
-        _window.DoEvents();
     }
 
     private void AssemblyStatusEvent()
