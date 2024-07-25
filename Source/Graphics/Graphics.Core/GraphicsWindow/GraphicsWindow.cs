@@ -6,15 +6,13 @@ namespace Graphics.Core;
 
 public unsafe partial class GraphicsWindow : DisposableObject
 {
-    private readonly WindowOptions _windowOptions;
     private readonly IWindow _window;
     private readonly IInputContext _inputContext;
     private readonly IMouse _mouse;
     private readonly IKeyboard _keyboard;
 
-    internal GraphicsWindow(WindowOptions windowOptions, IWindow window, IInputContext inputContext)
+    internal GraphicsWindow(IWindow window, IInputContext inputContext)
     {
-        _windowOptions = windowOptions;
         _window = window;
         _inputContext = inputContext;
         _mouse = _inputContext.Mice[0];
@@ -26,14 +24,6 @@ public unsafe partial class GraphicsWindow : DisposableObject
     public nint Handle => _window.Handle;
 
     public IVkSurface? VkSurface => _window.VkSurface;
-
-    public GraphicsWindow CreateWindow()
-    {
-        IWindow window = _window.CreateWindow(_windowOptions);
-        window.Initialize();
-
-        return new GraphicsWindow(_windowOptions, window, window.CreateInput());
-    }
 
     protected override void Destroy()
     {
@@ -62,6 +52,6 @@ public unsafe partial class GraphicsWindow : DisposableObject
         IWindow window = Window.Create(windowOptions);
         window.Initialize();
 
-        return new GraphicsWindow(windowOptions, window, window.CreateInput());
+        return new GraphicsWindow(window, window.CreateInput());
     }
 }

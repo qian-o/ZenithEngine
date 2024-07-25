@@ -10,12 +10,11 @@ partial class GraphicsWindow
     public event EventHandler<MouseButtonEventArgs>? MouseClick;
     public event EventHandler<MouseButtonEventArgs>? MouseDoubleClick;
     public event EventHandler<MouseMoveEventArgs>? MouseMove;
+    public event EventHandler<MouseWheelEventArgs>? MouseWheel;
 
     public Vector2 MousePositionByWindow => _mouse.Position;
 
     public Vector2 MousePositionByScreen => Position + MousePositionByWindow;
-
-    public ScrollWheel ScrollWheel { get; private set; }
 
     public bool IsButtonPressed(MouseButton mouseButton)
     {
@@ -46,12 +45,12 @@ partial class GraphicsWindow
 
         _mouse.MouseMove += (m, p) =>
         {
-            MouseMove?.Invoke(this, new MouseMoveEventArgs(p));
+            MouseMove?.Invoke(this, new MouseMoveEventArgs(p, Position + p));
         };
 
         _mouse.Scroll += (m, w) =>
         {
-            ScrollWheel = w;
+            MouseWheel?.Invoke(this, new MouseWheelEventArgs(w));
         };
     }
 }

@@ -11,8 +11,8 @@ partial class GraphicsWindow
     public event EventHandler<LoadEventArgs>? Load;
     public event EventHandler<UpdateEventArgs>? Update;
     public event EventHandler<RenderEventArgs>? Render;
-    public event EventHandler<ResizeEventArgs>? Resize;
     public event EventHandler<MoveEventArgs>? Move;
+    public event EventHandler<ResizeEventArgs>? Resize;
     public event EventHandler<CloseEventArgs>? Close;
 
     public string Title
@@ -124,16 +124,6 @@ partial class GraphicsWindow
             Render?.Invoke(this, new RenderEventArgs((float)d, (float)_window.Time));
         };
 
-        _window.FramebufferResize += (v) =>
-        {
-            if (isExiting)
-            {
-                _window.Close();
-            }
-
-            Resize?.Invoke(this, new ResizeEventArgs((uint)v.X, (uint)v.Y));
-        };
-
         _window.Move += (v) =>
         {
             if (isExiting)
@@ -142,6 +132,16 @@ partial class GraphicsWindow
             }
 
             Move?.Invoke(this, new MoveEventArgs(v.X, v.Y));
+        };
+
+        _window.FramebufferResize += (v) =>
+        {
+            if (isExiting)
+            {
+                _window.Close();
+            }
+
+            Resize?.Invoke(this, new ResizeEventArgs((uint)v.X, (uint)v.Y));
         };
 
         _window.Closing += () =>
