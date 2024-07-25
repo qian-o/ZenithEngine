@@ -76,7 +76,7 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
         if (!_isExternalPlatform)
         {
-            _graphicsWindow.Exit();
+            _graphicsWindow.Close();
         }
     }
 
@@ -126,7 +126,7 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         _graphicsWindow.KeyChar += KeyChar;
         _graphicsWindow.Move += Move;
         _graphicsWindow.Resize += Resize;
-        _graphicsWindow.Close += Close;
+        _graphicsWindow.Closing += Closing;
     }
 
     private void Unregister()
@@ -140,7 +140,7 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         _graphicsWindow.KeyChar -= KeyChar;
         _graphicsWindow.Move -= Move;
         _graphicsWindow.Resize -= Resize;
-        _graphicsWindow.Close -= Close;
+        _graphicsWindow.Closing -= Closing;
     }
 
     private static bool TryMapMouseButton(MouseButton button, out int result)
@@ -282,7 +282,7 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         _swapchain?.Resize(e.Width, e.Height);
     }
 
-    private void Close(object? sender, CloseEventArgs e)
+    private void Closing(object? sender, ClosingEventArgs e)
     {
         _viewport->PlatformRequestClose = 1;
     }

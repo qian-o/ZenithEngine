@@ -25,16 +25,11 @@ internal static class App
 
         using GraphicsWindow graphicsWindow = GraphicsWindow.CreateWindowByVulkan();
         graphicsWindow.Load += Window_Load;
-        graphicsWindow.Close += Window_Close;
+        graphicsWindow.Closing += Window_Closing;
 
         _graphicsWindow = graphicsWindow;
 
         graphicsWindow.Run();
-    }
-
-    public static void Exit()
-    {
-        _graphicsWindow?.Exit();
     }
 
     private static void Window_Load(object? sender, LoadEventArgs e)
@@ -43,7 +38,7 @@ internal static class App
         _mainWindow = new MainWindow((GraphicsWindow)sender!);
     }
 
-    private static void Window_Close(object? sender, CloseEventArgs e)
+    private static void Window_Closing(object? sender, ClosingEventArgs e)
     {
         _mainWindow?.Dispose();
         _context?.Dispose();

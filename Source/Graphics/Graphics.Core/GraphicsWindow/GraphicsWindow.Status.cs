@@ -6,14 +6,12 @@ namespace Graphics.Core;
 
 partial class GraphicsWindow
 {
-    private bool isExiting;
-
     public event EventHandler<LoadEventArgs>? Load;
     public event EventHandler<UpdateEventArgs>? Update;
     public event EventHandler<RenderEventArgs>? Render;
     public event EventHandler<MoveEventArgs>? Move;
     public event EventHandler<ResizeEventArgs>? Resize;
-    public event EventHandler<CloseEventArgs>? Close;
+    public event EventHandler<ClosingEventArgs>? Closing;
 
     public string Title
     {
@@ -76,9 +74,11 @@ partial class GraphicsWindow
         DoLoad();
     }
 
-    public void Exit()
+    public void Close()
     {
-        isExiting = true;
+        _window.IsVisible = false;
+
+        _window.Close();
     }
 
     public void Focus()
@@ -96,57 +96,32 @@ partial class GraphicsWindow
     {
         _window.Load += () =>
         {
-            if (isExiting)
-            {
-                _window.Close();
-            }
-
             DoLoad();
         };
 
         _window.Update += (d) =>
         {
-            if (isExiting)
-            {
-                _window.Close();
-            }
-
             Update?.Invoke(this, new UpdateEventArgs((float)d, (float)_window.Time));
         };
 
         _window.Render += (d) =>
         {
-            if (isExiting)
-            {
-                _window.Close();
-            }
-
             Render?.Invoke(this, new RenderEventArgs((float)d, (float)_window.Time));
         };
 
         _window.Move += (v) =>
         {
-            if (isExiting)
-            {
-                _window.Close();
-            }
-
             Move?.Invoke(this, new MoveEventArgs(v.X, v.Y));
         };
 
         _window.FramebufferResize += (v) =>
         {
-            if (isExiting)
-            {
-                _window.Close();
-            }
-
             Resize?.Invoke(this, new ResizeEventArgs((uint)v.X, (uint)v.Y));
         };
 
         _window.Closing += () =>
         {
-            Close?.Invoke(this, new CloseEventArgs());
+            Closing?.Invoke(this, new ClosingEventArgs());
         };
 
         _window.FocusChanged += (b) => IsFocused = b;
