@@ -1,6 +1,5 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
-using Hexa.NET.ImGui;
 using Renderer.Components;
 using Renderer.Controls;
 using Renderer.Scenes;
@@ -9,32 +8,27 @@ namespace Renderer;
 
 internal sealed unsafe class MainWindow : DisposableObject
 {
-    private readonly GraphicsWindow _graphicsWindow;
+    private readonly Window _window;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ImGuiController _imGuiController;
     private readonly CommandList _commandList;
     private readonly List<Control> _controls;
     private readonly List<Scene> _scenes;
 
-    public MainWindow(GraphicsWindow graphicsWindow)
+    public MainWindow(Window window)
     {
-        if (!graphicsWindow.IsInitialized)
-        {
-            throw new InvalidOperationException("Window is not initialized.");
-        }
-
-        _graphicsWindow = graphicsWindow;
-        _graphicsDevice = App.Context.CreateGraphicsDevice(App.Context.EnumeratePhysicalDevices().First(), graphicsWindow);
-        _imGuiController = new ImGuiController(_graphicsWindow,
+        _window = window;
+        _graphicsDevice = App.Context.CreateGraphicsDevice(App.Context.EnumeratePhysicalDevices().First(), _window);
+        _imGuiController = new ImGuiController(_window,
                                                _graphicsDevice,
                                                new ImGuiFontConfig("Assets/Fonts/MSYH.TTC", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
         _commandList = _graphicsDevice.ResourceFactory.CreateGraphicsCommandList();
         _controls = [];
         _scenes = [];
 
-        _graphicsWindow.Update += Window_Update;
-        _graphicsWindow.Render += Window_Render;
-        _graphicsWindow.Resize += Window_Resize;
+        _window.Update += Window_Update;
+        _window.Render += Window_Render;
+        _window.Resize += Window_Resize;
 
         Initialize();
     }
@@ -104,8 +98,6 @@ internal sealed unsafe class MainWindow : DisposableObject
     {
         _imGuiController.Update(e.DeltaTime);
 
-        ImGui.DockSpaceOverViewport();
-
         foreach (Control control in _controls)
         {
             control.Render(e);
@@ -128,6 +120,8 @@ internal sealed unsafe class MainWindow : DisposableObject
 
         _graphicsDevice.SubmitCommands(_commandList);
         _graphicsDevice.SwapBuffers();
+
+        _imGuiController.PlatformSwapBuffers();
     }
 
     private void Window_Resize(object? sender, ResizeEventArgs e)

@@ -1,11 +1,11 @@
 ﻿using Graphics.Core;
-using Silk.NET.Vulkan;
+using Silk.NET.Core.Contexts;
 
 namespace Graphics.Vulkan;
 
 public readonly record struct SwapchainDescription
 {
-    public SwapchainDescription(SurfaceKHR target,
+    public SwapchainDescription(IVkSurface target,
                                 uint width,
                                 uint height,
                                 PixelFormat? depthFormat)
@@ -19,7 +19,7 @@ public readonly record struct SwapchainDescription
     /// <summary>
     /// The render target.
     /// </summary>
-    public SurfaceKHR Target { get; init; }
+    public IVkSurface Target { get; init; }
 
     /// <summary>
     /// The width of the swapchain surface.

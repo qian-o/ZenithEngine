@@ -6,7 +6,6 @@ namespace Renderer;
 
 internal static class App
 {
-    private static GraphicsWindow? _graphicsWindow;
     private static Context? _context;
     private static MainWindow? _mainWindow;
 
@@ -18,32 +17,25 @@ internal static class App
 
     public static void Initialize()
     {
-        if (_graphicsWindow != null)
+        if (_context != null)
         {
             return;
         }
 
-        using GraphicsWindow graphicsWindow = GraphicsWindow.CreateWindowByVulkan();
-        graphicsWindow.Load += Window_Load;
-        graphicsWindow.Close += Window_Close;
+        using Window window = Window.CreateWindowByVulkan();
+        window.Load += Window_Load;
+        window.Closing += Window_Closing;
 
-        _graphicsWindow = graphicsWindow;
-
-        graphicsWindow.Run();
-    }
-
-    public static void Exit()
-    {
-        _graphicsWindow?.Exit();
+        window.Run();
     }
 
     private static void Window_Load(object? sender, LoadEventArgs e)
     {
         _context = new();
-        _mainWindow = new MainWindow((GraphicsWindow)sender!);
+        _mainWindow = new MainWindow((Window)sender!);
     }
 
-    private static void Window_Close(object? sender, CloseEventArgs e)
+    private static void Window_Closing(object? sender, ClosingEventArgs e)
     {
         _mainWindow?.Dispose();
         _context?.Dispose();

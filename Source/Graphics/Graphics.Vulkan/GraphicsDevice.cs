@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Graphics.Core;
+using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
@@ -11,9 +12,9 @@ public unsafe class GraphicsDevice : ContextObject
     private const uint MinStagingBufferSize = 1024 * 4;
     private const uint MaxStagingBufferSize = 1024 * 1024 * 4;
 
-    private readonly ResourceFactory _resourceFactory;
     private readonly PhysicalDevice _physicalDevice;
     private readonly Device _device;
+    private readonly ResourceFactory _resourceFactory;
     private readonly KhrSwapchain _swapchainExt;
     private readonly Queue _graphicsQueue;
     private readonly Queue _computeQueue;
@@ -27,25 +28,21 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly Sampler _pointSampler;
     private readonly Sampler _linearSampler;
     private readonly object _stagingResourcesLock;
-    private readonly List<SharedCommandPool> _availableSharedCommandPools;
+    private readonly List<StagingCommandPool> _availableStagingCommandPools;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
 
     internal GraphicsDevice(Context context,
                             PhysicalDevice physicalDevice,
                             Device device,
                             KhrSwapchain swapchainExt,
-                            SurfaceKHR windowSurface,
+                            IVkSurface windowSurface,
                             uint graphicsQueueFamilyIndex,
                             uint computeQueueFamilyIndex,
                             uint transferQueueFamilyIndex) : base(context)
     {
-        Format depthFormat = physicalDevice.FindSupportedFormat([Format.D32SfloatS8Uint, Format.D24UnormS8Uint, Format.D32Sfloat],
-                                                                ImageTiling.Optimal,
-                                                                FormatFeatureFlags.DepthStencilAttachmentBit);
-
-        _resourceFactory = new ResourceFactory(context, this);
         _physicalDevice = physicalDevice;
         _device = device;
+        _resourceFactory = new ResourceFactory(context, this);
         _swapchainExt = swapchainExt;
         _graphicsQueue = new Queue(this, graphicsQueueFamilyIndex);
         _computeQueue = new Queue(this, computeQueueFamilyIndex);
@@ -55,11 +52,11 @@ public unsafe class GraphicsDevice : ContextObject
         _graphicsCommandPool = new CommandPool(this, graphicsQueueFamilyIndex);
         _computeCommandPool = new CommandPool(this, computeQueueFamilyIndex);
         _descriptorPoolManager = new DescriptorPoolManager(this);
-        _mainSwapChain = _resourceFactory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, Formats.GetPixelFormat(depthFormat)));
+        _mainSwapChain = _resourceFactory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, GetBestDepthFormat()));
         _pointSampler = _resourceFactory.CreateSampler(SamplerDescription.Point);
         _linearSampler = _resourceFactory.CreateSampler(SamplerDescription.Linear);
         _stagingResourcesLock = new object();
-        _availableSharedCommandPools = [];
+        _availableStagingCommandPools = [];
         _availableStagingBuffers = [];
     }
 
@@ -93,6 +90,15 @@ public unsafe class GraphicsDevice : ContextObject
 
     internal DescriptorPoolManager DescriptorPoolManager => _descriptorPoolManager;
 
+    public PixelFormat GetBestDepthFormat()
+    {
+        Format format = _physicalDevice.FindSupportedFormat([Format.D32SfloatS8Uint, Format.D24UnormS8Uint, Format.D32Sfloat],
+                                                            ImageTiling.Optimal,
+                                                            FormatFeatureFlags.DepthStencilAttachmentBit);
+
+        return Formats.GetPixelFormat(format);
+    }
+
     #region UpdateBuffer
     public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
     {
@@ -118,7 +124,7 @@ public unsafe class GraphicsDevice : ContextObject
         }
         else
         {
-            SharedCommandPool sharedCommandPool = GetSharedCommandPool();
+            StagingCommandPool sharedCommandPool = GetStagingCommandPool();
             DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
 
             void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
@@ -141,7 +147,7 @@ public unsafe class GraphicsDevice : ContextObject
             sharedCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
 
             CacheStagingBuffer(stagingBuffer);
-            CacheSharedCommandPool(sharedCommandPool);
+            CacheStagingCommandPool(sharedCommandPool);
         }
     }
 
@@ -167,6 +173,8 @@ public unsafe class GraphicsDevice : ContextObject
                                  uint mipLevel,
                                  uint arrayLayer) where T : unmanaged
     {
+        uint sizeInBytes = (uint)(sizeof(T) * length);
+
         if (x + width > texture.Width)
         {
             throw new ArgumentOutOfRangeException(nameof(width), "The width exceeds the texture width.");
@@ -192,14 +200,12 @@ public unsafe class GraphicsDevice : ContextObject
             throw new ArgumentOutOfRangeException(nameof(arrayLayer), "The array layer exceeds the texture array layers.");
         }
 
-        uint sizeInBytes = (uint)(sizeof(T) * length);
-
         if (sizeInBytes == 0)
         {
             return;
         }
 
-        SharedCommandPool sharedCommandPool = GetSharedCommandPool();
+        StagingCommandPool sharedCommandPool = GetStagingCommandPool();
         DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
 
         void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
@@ -235,7 +241,7 @@ public unsafe class GraphicsDevice : ContextObject
         sharedCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
 
         CacheStagingBuffer(stagingBuffer);
-        CacheSharedCommandPool(sharedCommandPool);
+        CacheStagingCommandPool(sharedCommandPool);
     }
 
     public void UpdateTexture<T>(Texture texture,
@@ -272,6 +278,8 @@ public unsafe class GraphicsDevice : ContextObject
         Vk.QueueSubmit(queue.Handle, 1, &submitInfo, fence.Handle);
 
         fence.WaitAndReset();
+
+        commandList.Submitted();
     }
 
     public void SwapBuffers(Swapchain swapchain)
@@ -319,7 +327,7 @@ public unsafe class GraphicsDevice : ContextObject
             deviceBuffer.Dispose();
         }
 
-        foreach (SharedCommandPool sharedCommandPool in _availableSharedCommandPools)
+        foreach (StagingCommandPool sharedCommandPool in _availableStagingCommandPools)
         {
             sharedCommandPool.Dispose();
         }
@@ -344,26 +352,26 @@ public unsafe class GraphicsDevice : ContextObject
         Vk.DestroyDevice(_device, null);
     }
 
-    private SharedCommandPool GetSharedCommandPool()
+    private StagingCommandPool GetStagingCommandPool()
     {
         lock (_stagingResourcesLock)
         {
-            foreach (SharedCommandPool sharedCommandPool in _availableSharedCommandPools)
+            foreach (StagingCommandPool stagingCommandPool in _availableStagingCommandPools)
             {
-                _availableSharedCommandPools.Remove(sharedCommandPool);
+                _availableStagingCommandPools.Remove(stagingCommandPool);
 
-                return sharedCommandPool;
+                return stagingCommandPool;
             }
         }
 
-        return new SharedCommandPool(this, _transferQueue);
+        return new StagingCommandPool(this, _transferQueue);
     }
 
-    private void CacheSharedCommandPool(SharedCommandPool sharedCommandPool)
+    private void CacheStagingCommandPool(StagingCommandPool stagingCommandPool)
     {
         lock (_stagingResourcesLock)
         {
-            _availableSharedCommandPools.Add(sharedCommandPool);
+            _availableStagingCommandPools.Add(stagingCommandPool);
         }
     }
 
@@ -405,7 +413,7 @@ public unsafe class GraphicsDevice : ContextObject
 
 public unsafe partial class Context
 {
-    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice, GraphicsWindow graphicsWindow)
+    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice, Window window)
     {
         float queuePriority = 1.0f;
 
@@ -435,10 +443,8 @@ public unsafe partial class Context
 
         string[] deviceExtensions = [KhrSwapchain.ExtensionName];
 
-        PhysicalDeviceFeatures physicalDeviceFeatures = new()
-        {
-            SampleRateShading = Vk.True
-        };
+        PhysicalDeviceFeatures physicalDeviceFeatures;
+        _vk.GetPhysicalDeviceFeatures(physicalDevice.VkPhysicalDevice, &physicalDeviceFeatures);
 
         DeviceCreateInfo createInfo = new()
         {
@@ -455,20 +461,18 @@ public unsafe partial class Context
 
         KhrSwapchain swapchainExt = CreateDeviceExtension<KhrSwapchain>(device);
 
-        SurfaceKHR windowSurface = graphicsWindow.VkSurface!.Create<AllocationCallbacks>(_instance.ToHandle(), null).ToSurface();
-
         _alloter.Clear();
 
         GraphicsDevice graphicsDevice = new(this,
                                             physicalDevice,
                                             device,
                                             swapchainExt,
-                                            windowSurface,
+                                            window.VkSurface!,
                                             graphicsQueueFamilyIndex,
                                             computeQueueFamilyIndex,
                                             transferQueueFamilyIndex);
 
-        graphicsDevice.MainSwapchain.Resize((uint)graphicsWindow.Width, (uint)graphicsWindow.Height);
+        graphicsDevice.MainSwapchain.Resize((uint)window.FramebufferSize.X, (uint)window.FramebufferSize.Y);
 
         return graphicsDevice;
     }

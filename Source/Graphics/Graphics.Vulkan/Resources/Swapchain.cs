@@ -13,12 +13,14 @@ public unsafe class Swapchain : DeviceResource
     private SwapchainKHR? _swapchain;
     private Texture? _depthBuffer;
     private Framebuffer[]? _framebuffers;
+    private uint _width;
+    private uint _height;
 
     private uint _currentImageIndex;
 
     internal Swapchain(GraphicsDevice graphicsDevice, ref readonly SwapchainDescription description) : base(graphicsDevice)
     {
-        _target = description.Target;
+        _target = description.Target.Create<AllocationCallbacks>(Instance.ToHandle(), null).ToSurface();
         _depthFormat = description.DepthFormat;
         _imageAvailableFence = new Fence(graphicsDevice);
 
@@ -28,6 +30,10 @@ public unsafe class Swapchain : DeviceResource
     internal SwapchainKHR Handle => _swapchain ?? throw new InvalidOperationException("Swapchain is not initialized");
 
     internal uint CurrentImageIndex => _currentImageIndex;
+
+    public uint Width => _width;
+
+    public uint Height => _height;
 
     public Framebuffer Framebuffer => _framebuffers != null ? _framebuffers[_currentImageIndex] : throw new InvalidOperationException("Swapchain is not initialized");
 
@@ -133,6 +139,8 @@ public unsafe class Swapchain : DeviceResource
         _swapchain = swapchain;
         _depthBuffer = depthBuffer;
         _framebuffers = framebuffers;
+        _width = width;
+        _height = height;
 
         AcquireNextImage();
     }

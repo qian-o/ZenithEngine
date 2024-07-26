@@ -59,7 +59,7 @@ public unsafe class PhysicalDevice : ContextObject
 
     internal ExtensionProperties[] ExtensionProperties => _extensionProperties;
 
-    public uint FindMemoryTypeIndex(uint memoryTypeBits, MemoryPropertyFlags memoryPropertyFlags)
+    internal uint FindMemoryTypeIndex(uint memoryTypeBits, MemoryPropertyFlags memoryPropertyFlags)
     {
         for (uint i = 0; i < _memoryProperties.MemoryTypeCount; i++)
         {
@@ -72,7 +72,7 @@ public unsafe class PhysicalDevice : ContextObject
         throw new InvalidOperationException("Failed to find memory type index!");
     }
 
-    public Format FindSupportedFormat(Format[] candidates, ImageTiling tiling, FormatFeatureFlags features)
+    internal Format FindSupportedFormat(Format[] candidates, ImageTiling tiling, FormatFeatureFlags features)
     {
         foreach (Format format in candidates)
         {

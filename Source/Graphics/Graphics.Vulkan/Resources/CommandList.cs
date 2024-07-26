@@ -7,10 +7,18 @@ namespace Graphics.Vulkan;
 
 public unsafe class CommandList : DeviceResource
 {
+    private const uint MinStagingBufferSize = 1024 * 4;
+    private const uint MaxStagingBufferSize = 1024 * 1024 * 4;
+
     private readonly Queue _queue;
     private readonly Fence _fence;
     private readonly CommandPool _commandPool;
     private readonly CommandBuffer _commandBuffer;
+    private readonly object _disposablesLock;
+    private readonly List<DisposableObject> _disposables;
+    private readonly object _stagingResourcesLock;
+    private readonly List<DeviceBuffer> _availableStagingBuffers;
+    private readonly List<DeviceBuffer> _usedStagingBuffers;
 
     private bool _isRecording;
     private Framebuffer? _currentFramebuffer;
@@ -23,6 +31,11 @@ public unsafe class CommandList : DeviceResource
         _fence = fence;
         _commandPool = commandPool;
         _commandBuffer = commandPool.AllocateCommandBuffer();
+        _disposablesLock = new();
+        _disposables = [];
+        _stagingResourcesLock = new();
+        _availableStagingBuffers = [];
+        _usedStagingBuffers = [];
     }
 
     internal CommandBuffer Handle => _commandBuffer;
@@ -53,14 +66,11 @@ public unsafe class CommandList : DeviceResource
 
     public void SetFramebuffer(Framebuffer framebuffer)
     {
-        if (_isInRenderPass)
-        {
-            EndCurrentRenderPass();
-        }
+        EnsureRenderPassInactive();
 
         _currentFramebuffer = framebuffer;
 
-        BeginCurrentRenderPass();
+        EnsureRenderPassActive();
 
         SetFullViewports();
         SetFullScissorRects();
@@ -196,6 +206,70 @@ public unsafe class CommandList : DeviceResource
         ClearDepthStencil(depth, 0);
     }
 
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
+    {
+        uint sizeInBytes = (uint)(sizeof(T) * length);
+
+        if (bufferOffsetInBytes + sizeInBytes > buffer.SizeInBytes)
+        {
+            throw new ArgumentOutOfRangeException(nameof(bufferOffsetInBytes), "The buffer offset and size exceed the buffer size.");
+        }
+
+        if (sizeInBytes == 0)
+        {
+            return;
+        }
+
+        EnsureRenderPassInactive();
+
+        DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
+
+        void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
+
+        Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
+
+        stagingBuffer.Unmap();
+
+        BufferCopy bufferCopy = new()
+        {
+            SrcOffset = 0,
+            DstOffset = bufferOffsetInBytes,
+            Size = sizeInBytes
+        };
+
+        Vk.CmdCopyBuffer(Handle, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
+
+        RecordUsedStagingBuffer(stagingBuffer);
+
+        bool needToProtectUniformBuffer = buffer.Usage.HasFlag(BufferUsage.UniformBuffer);
+
+        MemoryBarrier memoryBarrier = new()
+        {
+            SType = StructureType.MemoryBarrier,
+            SrcAccessMask = AccessFlags.MemoryWriteBit,
+            DstAccessMask = needToProtectUniformBuffer ? AccessFlags.UniformReadBit : AccessFlags.VertexAttributeReadBit
+        };
+
+        Vk.CmdPipelineBarrier(_commandBuffer,
+                              PipelineStageFlags.TransferBit,
+                              needToProtectUniformBuffer ? Formats.AllShaderStages() : PipelineStageFlags.VertexInputBit,
+                              DependencyFlags.None,
+                              1,
+                              &memoryBarrier,
+                              0,
+                              null,
+                              0,
+                              null);
+    }
+
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
+    {
+        fixed (T* sourcePointer = source)
+        {
+            UpdateBuffer(buffer, bufferOffsetInBytes, sourcePointer, source.Length);
+        }
+    }
+
     public void SetVertexBuffer(uint index, DeviceBuffer buffer, uint offset)
     {
         VkBuffer vkBuffer = buffer.Handle;
@@ -255,6 +329,8 @@ public unsafe class CommandList : DeviceResource
 
     public void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart)
     {
+        EnsureRenderPassActive();
+
         Vk.CmdDrawIndexed(_commandBuffer, indexCount, instanceCount, indexStart, vertexOffset, instanceStart);
     }
 
@@ -342,8 +418,36 @@ public unsafe class CommandList : DeviceResource
         _isRecording = false;
     }
 
+    public void DisposeSubmitted(DisposableObject disposable)
+    {
+        lock (_disposablesLock)
+        {
+            _disposables.Add(disposable);
+        }
+    }
+
+    internal void Submitted()
+    {
+        lock (_disposablesLock)
+        {
+            foreach (DisposableObject disposable in _disposables)
+            {
+                disposable.Dispose();
+            }
+
+            _disposables.Clear();
+        }
+
+        ReturnUsedStagingResources();
+    }
+
     protected override void Destroy()
     {
+        foreach (DeviceBuffer deviceBuffer in _availableStagingBuffers)
+        {
+            deviceBuffer.Dispose();
+        }
+
         _commandPool.FreeCommandBuffer(_commandBuffer);
     }
 
@@ -399,5 +503,77 @@ public unsafe class CommandList : DeviceResource
                               null);
 
         _isInRenderPass = false;
+    }
+
+    private void EnsureRenderPassActive()
+    {
+        if (!_isInRenderPass)
+        {
+            BeginCurrentRenderPass();
+        }
+    }
+
+    private void EnsureRenderPassInactive()
+    {
+        if (_isInRenderPass)
+        {
+            EndCurrentRenderPass();
+        }
+    }
+
+    private DeviceBuffer GetStagingBuffer(uint sizeInBytes)
+    {
+        lock (_stagingResourcesLock)
+        {
+            foreach (DeviceBuffer deviceBuffer in _availableStagingBuffers)
+            {
+                if (deviceBuffer.SizeInBytes >= sizeInBytes)
+                {
+                    _availableStagingBuffers.Remove(deviceBuffer);
+
+                    return deviceBuffer;
+                }
+            }
+        }
+
+        uint bufferSize = Math.Max(MinStagingBufferSize, sizeInBytes);
+
+        return ResourceFactory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
+    }
+
+    private void RecordUsedStagingBuffer(DeviceBuffer stagingBuffer)
+    {
+        lock (_stagingResourcesLock)
+        {
+            _usedStagingBuffers.Add(stagingBuffer);
+        }
+    }
+
+    private void CacheStagingBuffer(DeviceBuffer stagingBuffer)
+    {
+        lock (_stagingResourcesLock)
+        {
+            if (stagingBuffer.SizeInBytes > MaxStagingBufferSize)
+            {
+                stagingBuffer.Dispose();
+            }
+            else
+            {
+                _availableStagingBuffers.Add(stagingBuffer);
+            }
+        }
+    }
+
+    private void ReturnUsedStagingResources()
+    {
+        lock (_stagingResourcesLock)
+        {
+            foreach (DeviceBuffer deviceBuffer in _usedStagingBuffers)
+            {
+                CacheStagingBuffer(deviceBuffer);
+            }
+
+            _usedStagingBuffers.Clear();
+        }
     }
 }
