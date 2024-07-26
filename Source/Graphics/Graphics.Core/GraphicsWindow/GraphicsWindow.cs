@@ -1,5 +1,7 @@
-﻿using Silk.NET.Core.Contexts;
+﻿using System.Numerics;
+using Silk.NET.Core.Contexts;
 using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.SDL;
 using Silk.NET.Windowing;
 
@@ -66,5 +68,32 @@ public unsafe partial class GraphicsWindow : DisposableObject
         window.Initialize();
 
         return new GraphicsWindow(window, window.CreateInput());
+    }
+
+    public static int GetDisplayCount()
+    {
+        return _sdl.GetNumVideoDisplays();
+    }
+
+    public static Display GetDisplay(int index)
+    {
+        string name = _sdl.GetDisplayNameS(index);
+
+        Rectangle<int> main;
+        _sdl.GetDisplayBounds(index, &main);
+
+        Rectangle<int> work;
+        _sdl.GetDisplayUsableBounds(index, &work);
+
+        float dpi;
+        _sdl.GetDisplayDPI(index, &dpi, null, null);
+
+        return new Display(index,
+                           name,
+                           new Vector2(main.Origin.X, main.Origin.Y),
+                           new Vector2(main.Size.X, main.Size.Y),
+                           new Vector2(work.Origin.X, work.Origin.Y),
+                           new Vector2(work.Size.X, work.Size.Y),
+                           dpi / 96.0f);
     }
 }

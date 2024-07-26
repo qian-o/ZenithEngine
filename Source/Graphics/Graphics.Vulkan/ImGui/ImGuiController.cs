@@ -14,6 +14,7 @@ public unsafe class ImGuiController : DisposableObject
     private readonly ImGuiRenderer _imGuiRenderer;
     private readonly List<ImGuiPlatform> _platforms;
     private readonly Dictionary<nint, ImGuiPlatform> _platformsByHandle;
+    private readonly List<nint> _imguiAllocMemory;
 
     private readonly PlatformCreateWindow _createWindow;
     private readonly PlatformDestroyWindow _destroyWindow;
@@ -41,6 +42,7 @@ public unsafe class ImGuiController : DisposableObject
         _imGuiRenderer = new ImGuiRenderer(graphicsDevice, colorSpaceHandling);
         _platforms = [];
         _platformsByHandle = [];
+        _imguiAllocMemory = [];
 
         _createWindow = CreateWindow;
         _destroyWindow = DestroyWindow;
@@ -133,6 +135,11 @@ public unsafe class ImGuiController : DisposableObject
 
     protected override void Destroy()
     {
+        foreach (nint ptr in _imguiAllocMemory)
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
+
         foreach (ImGuiPlatform platform in _platforms)
         {
             platform.Dispose();
@@ -191,10 +198,39 @@ public unsafe class ImGuiController : DisposableObject
 
     private void InitializePlatform()
     {
-        ImGuiViewport* mainViewport = ImGui.GetMainViewport();
+        ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
+
+        ImGuiPlatformMonitor[] monitors = new ImGuiPlatformMonitor[GraphicsWindow.GetDisplayCount()];
+        for (int i = 0; i < monitors.Length; i++)
+        {
+            Display display = GraphicsWindow.GetDisplay(i);
+
+            ImGuiPlatformMonitor monitor = new()
+            {
+                MainPos = display.MainPosition,
+                MainSize = display.MainSize,
+                WorkPos = display.WorkPosition,
+                WorkSize = display.WorkSize,
+                DpiScale = display.DpiScale
+            };
+
+            monitors[i] = monitor;
+        }
+
+        platformIO.Monitors.Size = monitors.Length;
+        platformIO.Monitors.Capacity = monitors.Length;
+        platformIO.Monitors.Data = (ImGuiPlatformMonitor*)Marshal.AllocHGlobal(Marshal.SizeOf<ImGuiPlatformMonitor>() * monitors.Length);
+        for (int i = 0; i < monitors.Length; i++)
+        {
+            platformIO.Monitors.Data[i] = monitors[i];
+        }
+
+        _imguiAllocMemory.Add((nint)platformIO.Monitors.Data);
+
+        ImGuiViewportPtr mainViewport = ImGui.GetMainViewport();
         ImGuiPlatform mainPlatform = new(mainViewport, _graphicsWindow, _graphicsDevice);
 
-        _platformsByHandle.Add((nint)mainViewport->PlatformHandle, mainPlatform);
+        _platformsByHandle.Add((nint)mainViewport.PlatformHandle, mainPlatform);
 
         InitializePlatformCallbacks();
     }
