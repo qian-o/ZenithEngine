@@ -67,6 +67,21 @@ unsafe partial class Window
         }
     }
 
+    public float Opacity
+    {
+        get
+        {
+            float opacity = 0;
+            _sdl.GetWindowOpacity((SDLWindow*)_window.Handle, &opacity);
+
+            return opacity;
+        }
+        set
+        {
+            _sdl.SetWindowOpacity((SDLWindow*)_window.Handle, value);
+        }
+    }
+
     public void Run()
     {
         _window.IsVisible = true;

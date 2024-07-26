@@ -50,6 +50,8 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     public byte IsMinimized => _window.WindowState == WindowState.Minimized ? (byte)1 : (byte)0;
 
+    public float Alpha { get => _window.Opacity; set => _window.Opacity = value; }
+
     public void Show()
     {
         if (_isExternalPlatform)
