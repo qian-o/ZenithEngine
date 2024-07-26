@@ -83,13 +83,17 @@ public unsafe class ImGuiController : DisposableObject
         SetPerFrameImGuiData(deltaSeconds);
 
         ImGui.NewFrame();
+        ImGuizmo.BeginFrame();
 
         ImGui.DockSpaceOverViewport();
+
+        ImGui.ShowDemoWindow();
     }
 
     public void Render(CommandList commandList)
     {
         ImGui.Render();
+        ImGui.EndFrame();
 
         _imGuiRenderer.RenderImDrawData(commandList, ImGui.GetDrawData());
 
@@ -173,7 +177,6 @@ public unsafe class ImGuiController : DisposableObject
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
-        io.ConfigViewportsNoAutoMerge = true;
 
         onConfigureIO?.Invoke();
 
