@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Graphics.Core;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
+using Silk.NET.SDL;
 
 namespace Graphics.Vulkan;
 
@@ -14,6 +15,7 @@ public unsafe class ImGuiController : DisposableObject
     private readonly ImGuiRenderer _imGuiRenderer;
     private readonly List<ImGuiPlatform> _platforms;
     private readonly Dictionary<nint, ImGuiPlatform> _platformsByHandle;
+    private readonly Dictionary<ImGuiMouseCursor, nint> _mouseCursors;
 
     private readonly PlatformCreateWindow _createWindow;
     private readonly PlatformDestroyWindow _destroyWindow;
@@ -41,6 +43,7 @@ public unsafe class ImGuiController : DisposableObject
         _imGuiRenderer = new ImGuiRenderer(graphicsDevice, colorSpaceHandling);
         _platforms = [];
         _platformsByHandle = [];
+        _mouseCursors = [];
 
         _createWindow = CreateWindow;
         _destroyWindow = DestroyWindow;
@@ -81,6 +84,7 @@ public unsafe class ImGuiController : DisposableObject
     public void Update(float deltaSeconds)
     {
         SetPerFrameImGuiData(deltaSeconds);
+        UpdateMouseCursor();
 
         ImGui.NewFrame();
         ImGuizmo.BeginFrame();
@@ -131,6 +135,11 @@ public unsafe class ImGuiController : DisposableObject
 
     protected override void Destroy()
     {
+        foreach (nint cursor in _mouseCursors.Values)
+        {
+            SdlWindow.FreeCursor((Cursor*)cursor);
+        }
+
         foreach (ImGuiPlatform platform in _platforms)
         {
             platform.Dispose();
@@ -155,6 +164,20 @@ public unsafe class ImGuiController : DisposableObject
         }
 
         io.DeltaTime = deltaSeconds;
+    }
+
+    private void UpdateMouseCursor()
+    {
+        ImGuiIOPtr io = ImGui.GetIO();
+
+        if (io.ConfigFlags.HasFlag(ImGuiConfigFlags.NoMouseCursorChange))
+        {
+            return;
+        }
+
+        ImGuiMouseCursor imguiCursor = ImGui.GetMouseCursor();
+
+        SdlWindow.SetCursor((Cursor*)_mouseCursors[imguiCursor]);
     }
 
     private void Initialize(ImGuiFontConfig? imGuiFontConfig, Action? onConfigureIO)
@@ -183,6 +206,11 @@ public unsafe class ImGuiController : DisposableObject
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
         io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
+
+        foreach (ImGuiMouseCursor imGuiMouseCursor in Enum.GetValues<ImGuiMouseCursor>())
+        {
+            _mouseCursors.Add(imGuiMouseCursor, (nint)SdlWindow.CreateCursor(MapMouseCursor(imGuiMouseCursor)));
+        }
 
         InitializePlatform();
     }
@@ -338,5 +366,21 @@ public unsafe class ImGuiController : DisposableObject
         ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
 
         platform.Update();
+    }
+
+    private static SystemCursor MapMouseCursor(ImGuiMouseCursor imguiCursor)
+    {
+        return imguiCursor switch
+        {
+            ImGuiMouseCursor.TextInput => SystemCursor.SystemCursorIbeam,
+            ImGuiMouseCursor.ResizeAll => SystemCursor.SystemCursorSizeall,
+            ImGuiMouseCursor.ResizeNs => SystemCursor.SystemCursorSizens,
+            ImGuiMouseCursor.ResizeEw => SystemCursor.SystemCursorSizewe,
+            ImGuiMouseCursor.ResizeNesw => SystemCursor.SystemCursorSizenesw,
+            ImGuiMouseCursor.ResizeNwse => SystemCursor.SystemCursorSizenwse,
+            ImGuiMouseCursor.Hand => SystemCursor.SystemCursorHand,
+            ImGuiMouseCursor.NotAllowed => SystemCursor.SystemCursorNo,
+            _ => SystemCursor.SystemCursorArrow
+        };
     }
 }

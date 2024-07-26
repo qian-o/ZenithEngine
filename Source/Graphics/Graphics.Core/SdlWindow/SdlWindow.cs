@@ -9,17 +9,12 @@ namespace Graphics.Core;
 
 public unsafe partial class SdlWindow : DisposableObject
 {
-    private static readonly Sdl _sdl;
+    private static readonly Sdl _sdl = Sdl.GetApi();
 
     private readonly IWindow _window;
     private readonly IInputContext _inputContext;
     private readonly IMouse _mouse;
     private readonly IKeyboard _keyboard;
-
-    static SdlWindow()
-    {
-        _sdl = Sdl.GetApi();
-    }
 
     internal SdlWindow(IWindow window, IInputContext inputContext)
     {
@@ -28,7 +23,7 @@ public unsafe partial class SdlWindow : DisposableObject
         _mouse = _inputContext.Mice[0];
         _keyboard = _inputContext.Keyboards[0];
 
-        Assembly();
+        Initialize();
     }
 
     public nint Handle => _window.Handle;
@@ -43,7 +38,7 @@ public unsafe partial class SdlWindow : DisposableObject
         _window.Dispose();
     }
 
-    private void Assembly()
+    private void Initialize()
     {
         AssemblyStatusEvent();
         AssemblyMouseEvent();
@@ -68,6 +63,21 @@ public unsafe partial class SdlWindow : DisposableObject
         window.Initialize();
 
         return new SdlWindow(window, window.CreateInput());
+    }
+
+    public static Cursor* CreateCursor(SystemCursor systemCursor)
+    {
+        return _sdl.CreateSystemCursor(systemCursor);
+    }
+
+    public static void SetCursor(Cursor* cursor)
+    {
+        _sdl.SetCursor(cursor);
+    }
+
+    public static void FreeCursor(Cursor* cursor)
+    {
+        _sdl.FreeCursor(cursor);
     }
 
     public static int GetDisplayCount()
