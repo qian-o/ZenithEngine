@@ -7,7 +7,7 @@ using Silk.NET.Windowing;
 
 namespace Graphics.Core;
 
-public unsafe partial class GraphicsWindow : DisposableObject
+public unsafe partial class SdlWindow : DisposableObject
 {
     private static readonly Sdl _sdl;
 
@@ -16,14 +16,12 @@ public unsafe partial class GraphicsWindow : DisposableObject
     private readonly IMouse _mouse;
     private readonly IKeyboard _keyboard;
 
-    static GraphicsWindow()
+    static SdlWindow()
     {
         _sdl = Sdl.GetApi();
-
-        SilkWindow.PrioritizeSdl();
     }
 
-    internal GraphicsWindow(IWindow window, IInputContext inputContext)
+    internal SdlWindow(IWindow window, IInputContext inputContext)
     {
         _window = window;
         _inputContext = inputContext;
@@ -52,8 +50,10 @@ public unsafe partial class GraphicsWindow : DisposableObject
         AssemblyKeyboardEvent();
     }
 
-    public static GraphicsWindow CreateWindowByVulkan()
+    public static SdlWindow CreateWindowByVulkan()
     {
+        SilkWindow.PrioritizeSdl();
+
         WindowOptions windowOptions = WindowOptions.DefaultVulkan;
         windowOptions.IsVisible = false;
         windowOptions.API = new GraphicsAPI()
@@ -67,7 +67,7 @@ public unsafe partial class GraphicsWindow : DisposableObject
         IWindow window = SilkWindow.Create(windowOptions);
         window.Initialize();
 
-        return new GraphicsWindow(window, window.CreateInput());
+        return new SdlWindow(window, window.CreateInput());
     }
 
     public static int GetDisplayCount()
