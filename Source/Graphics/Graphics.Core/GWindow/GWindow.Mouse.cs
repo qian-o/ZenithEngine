@@ -3,7 +3,7 @@ using Silk.NET.Input;
 
 namespace Graphics.Core;
 
-partial class SdlWindow
+partial class GWindow
 {
     public event EventHandler<MouseButtonEventArgs>? MouseDown;
     public event EventHandler<MouseButtonEventArgs>? MouseUp;

@@ -8,27 +8,27 @@ namespace Renderer;
 
 internal sealed unsafe class MainWindow : DisposableObject
 {
-    private readonly SdlWindow _sdlWindow;
+    private readonly GWindow _gWindow;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ImGuiController _imGuiController;
     private readonly CommandList _commandList;
     private readonly List<Control> _controls;
     private readonly List<Scene> _scenes;
 
-    public MainWindow(SdlWindow sdlWindow)
+    public MainWindow(GWindow gWindow)
     {
-        _sdlWindow = sdlWindow;
-        _graphicsDevice = App.Context.CreateGraphicsDevice(App.Context.EnumeratePhysicalDevices().First(), _sdlWindow);
-        _imGuiController = new ImGuiController(_sdlWindow,
+        _gWindow = gWindow;
+        _graphicsDevice = App.Context.CreateGraphicsDevice(App.Context.EnumeratePhysicalDevices().First(), _gWindow);
+        _imGuiController = new ImGuiController(_gWindow,
                                                _graphicsDevice,
                                                new ImGuiFontConfig("Assets/Fonts/MSYH.TTC", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
         _commandList = _graphicsDevice.ResourceFactory.CreateGraphicsCommandList();
         _controls = [];
         _scenes = [];
 
-        _sdlWindow.Update += Window_Update;
-        _sdlWindow.Render += Window_Render;
-        _sdlWindow.Resize += Window_Resize;
+        _gWindow.Update += Window_Update;
+        _gWindow.Render += Window_Render;
+        _gWindow.Resize += Window_Resize;
 
         Initialize();
     }

@@ -5,7 +5,7 @@ using Silk.NET.Windowing;
 
 namespace Graphics.Core;
 
-unsafe partial class SdlWindow
+unsafe partial class GWindow
 {
     public event EventHandler<LoadEventArgs>? Load;
     public event EventHandler<UpdateEventArgs>? Update;

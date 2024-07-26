@@ -9,7 +9,7 @@ namespace Graphics.Vulkan;
 
 public unsafe class ImGuiController : DisposableObject
 {
-    private readonly SdlWindow _sdlWindow;
+    private readonly GWindow _gWindow;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ImGuiContextPtr _imGuiContext;
     private readonly ImGuiRenderer _imGuiRenderer;
@@ -31,13 +31,13 @@ public unsafe class ImGuiController : DisposableObject
     private readonly PlatformUpdateWindow _updateWindow;
 
     #region Constructors
-    public ImGuiController(SdlWindow sdlWindow,
+    public ImGuiController(GWindow gWindow,
                            GraphicsDevice graphicsDevice,
                            ColorSpaceHandling colorSpaceHandling,
                            ImGuiFontConfig? imGuiFontConfig,
                            Action? onConfigureIO)
     {
-        _sdlWindow = sdlWindow;
+        _gWindow = gWindow;
         _graphicsDevice = graphicsDevice;
         _imGuiContext = ImGui.CreateContext();
         _imGuiRenderer = new ImGuiRenderer(graphicsDevice, colorSpaceHandling);
@@ -61,9 +61,9 @@ public unsafe class ImGuiController : DisposableObject
         Initialize(imGuiFontConfig, onConfigureIO);
     }
 
-    public ImGuiController(SdlWindow sdlWindow,
+    public ImGuiController(GWindow gWindow,
                            GraphicsDevice graphicsDevice,
-                           ImGuiFontConfig imGuiFontConfig) : this(sdlWindow,
+                           ImGuiFontConfig imGuiFontConfig) : this(gWindow,
                                                                    graphicsDevice,
                                                                    ColorSpaceHandling.Legacy,
                                                                    imGuiFontConfig,
@@ -71,8 +71,8 @@ public unsafe class ImGuiController : DisposableObject
     {
     }
 
-    public ImGuiController(SdlWindow sdlWindow,
-                           GraphicsDevice graphicsDevice) : this(sdlWindow,
+    public ImGuiController(GWindow gWindow,
+                           GraphicsDevice graphicsDevice) : this(gWindow,
                                                                  graphicsDevice,
                                                                  ColorSpaceHandling.Legacy,
                                                                  null,
@@ -137,7 +137,7 @@ public unsafe class ImGuiController : DisposableObject
     {
         foreach (nint cursor in _mouseCursors.Values)
         {
-            SdlWindow.FreeCursor((Cursor*)cursor);
+            GWindow.FreeCursor((Cursor*)cursor);
         }
 
         foreach (ImGuiPlatform platform in _platforms)
@@ -156,11 +156,11 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiIOPtr io = ImGui.GetIO();
 
-        io.DisplaySize = _sdlWindow.Size;
+        io.DisplaySize = _gWindow.Size;
 
-        if (_sdlWindow.Size.X > 0 && _sdlWindow.Size.Y > 0)
+        if (_gWindow.Size.X > 0 && _gWindow.Size.Y > 0)
         {
-            io.DisplayFramebufferScale = _sdlWindow.FramebufferSize / _sdlWindow.Size;
+            io.DisplayFramebufferScale = _gWindow.FramebufferSize / _gWindow.Size;
         }
 
         io.DeltaTime = deltaSeconds;
@@ -177,7 +177,7 @@ public unsafe class ImGuiController : DisposableObject
 
         ImGuiMouseCursor imguiCursor = ImGui.GetMouseCursor();
 
-        SdlWindow.SetCursor((Cursor*)_mouseCursors[imguiCursor]);
+        GWindow.SetCursor((Cursor*)_mouseCursors[imguiCursor]);
     }
 
     private void Initialize(ImGuiFontConfig? imGuiFontConfig, Action? onConfigureIO)
@@ -209,7 +209,7 @@ public unsafe class ImGuiController : DisposableObject
 
         foreach (ImGuiMouseCursor imGuiMouseCursor in Enum.GetValues<ImGuiMouseCursor>())
         {
-            _mouseCursors.Add(imGuiMouseCursor, (nint)SdlWindow.CreateCursor(MapMouseCursor(imGuiMouseCursor)));
+            _mouseCursors.Add(imGuiMouseCursor, (nint)GWindow.CreateCursor(MapMouseCursor(imGuiMouseCursor)));
         }
 
         InitializePlatform();
@@ -218,7 +218,7 @@ public unsafe class ImGuiController : DisposableObject
     private void InitializePlatform()
     {
         ImGuiViewportPtr mainViewport = ImGui.GetMainViewport();
-        ImGuiPlatform mainPlatform = new(mainViewport, _sdlWindow, _graphicsDevice);
+        ImGuiPlatform mainPlatform = new(mainViewport, _gWindow, _graphicsDevice);
 
         _platformsByHandle.Add((nint)mainViewport.PlatformHandle, mainPlatform);
 
@@ -230,7 +230,7 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
 
-        int displayCount = SdlWindow.GetDisplayCount();
+        int displayCount = GWindow.GetDisplayCount();
 
         platformIO.Monitors.Size = displayCount;
         platformIO.Monitors.Capacity = displayCount;
@@ -238,7 +238,7 @@ public unsafe class ImGuiController : DisposableObject
 
         for (int i = 0; i < displayCount; i++)
         {
-            Display display = SdlWindow.GetDisplay(i);
+            Display display = GWindow.GetDisplay(i);
 
             ImGuiPlatformMonitor monitor = new()
             {

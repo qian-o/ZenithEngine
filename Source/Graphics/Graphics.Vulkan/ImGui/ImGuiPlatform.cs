@@ -9,16 +9,16 @@ namespace Graphics.Vulkan;
 internal sealed unsafe class ImGuiPlatform : DisposableObject
 {
     private readonly ImGuiViewport* _viewport;
-    private readonly SdlWindow _sdlWindow;
+    private readonly GWindow _gWindow;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly bool _isExternalPlatform;
 
     private Swapchain? _swapchain;
 
-    public ImGuiPlatform(ImGuiViewport* viewport, SdlWindow sdlWindow, GraphicsDevice graphicsDevice)
+    public ImGuiPlatform(ImGuiViewport* viewport, GWindow gWindow, GraphicsDevice graphicsDevice)
     {
         _viewport = viewport;
-        _sdlWindow = sdlWindow;
+        _gWindow = gWindow;
         _graphicsDevice = graphicsDevice;
         _isExternalPlatform = true;
 
@@ -28,7 +28,7 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
     public ImGuiPlatform(ImGuiViewport* viewport, GraphicsDevice graphicsDevice)
     {
         _viewport = viewport;
-        _sdlWindow = SdlWindow.CreateWindowByVulkan();
+        _gWindow = GWindow.CreateWindowByVulkan();
         _graphicsDevice = graphicsDevice;
         _isExternalPlatform = false;
 
@@ -39,15 +39,15 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     public Swapchain? Swapchain => _swapchain;
 
-    public string Title { get => _sdlWindow.Title; set => _sdlWindow.Title = value; }
+    public string Title { get => _gWindow.Title; set => _gWindow.Title = value; }
 
-    public Vector2 Position { get => _sdlWindow.Position; set => _sdlWindow.Position = value; }
+    public Vector2 Position { get => _gWindow.Position; set => _gWindow.Position = value; }
 
-    public Vector2 Size { get => _sdlWindow.Size; set => _sdlWindow.Size = value; }
+    public Vector2 Size { get => _gWindow.Size; set => _gWindow.Size = value; }
 
-    public byte IsFocused => _sdlWindow.IsFocused ? (byte)1 : (byte)0;
+    public byte IsFocused => _gWindow.IsFocused ? (byte)1 : (byte)0;
 
-    public byte IsMinimized => _sdlWindow.WindowState == WindowState.Minimized ? (byte)1 : (byte)0;
+    public byte IsMinimized => _gWindow.WindowState == WindowState.Minimized ? (byte)1 : (byte)0;
 
     public void Show()
     {
@@ -56,12 +56,12 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
             return;
         }
 
-        _sdlWindow.Show();
+        _gWindow.Show();
     }
 
     public void Focus()
     {
-        _sdlWindow.Focus();
+        _gWindow.Focus();
     }
 
     public void Update()
@@ -71,12 +71,12 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
             return;
         }
 
-        _sdlWindow.PollEvents();
+        _gWindow.PollEvents();
 
         // sdl not trigger Resize event when size is changed actively.
-        if (_swapchain!.Width != _sdlWindow.FramebufferSize.X || _swapchain!.Height != _sdlWindow.FramebufferSize.Y)
+        if (_swapchain!.Width != _gWindow.FramebufferSize.X || _swapchain!.Height != _gWindow.FramebufferSize.Y)
         {
-            _swapchain.Resize((uint)_sdlWindow.FramebufferSize.X, (uint)_sdlWindow.FramebufferSize.Y);
+            _swapchain.Resize((uint)_gWindow.FramebufferSize.X, (uint)_gWindow.FramebufferSize.Y);
         }
     }
 
@@ -98,36 +98,36 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
         if (!_isExternalPlatform)
         {
-            _sdlWindow.Dispose();
+            _gWindow.Dispose();
         }
     }
 
     private void Initialize()
     {
-        _viewport->PlatformHandle = (void*)_sdlWindow.Handle;
+        _viewport->PlatformHandle = (void*)_gWindow.Handle;
 
         if (!_isExternalPlatform)
         {
             if (_viewport->Flags.HasFlag(ImGuiViewportFlags.NoTaskBarIcon))
             {
-                _sdlWindow.ShowInTaskbar = false;
+                _gWindow.ShowInTaskbar = false;
             }
 
             if (_viewport->Flags.HasFlag(ImGuiViewportFlags.NoDecoration))
             {
-                _sdlWindow.WindowBorder = WindowBorder.Hidden;
+                _gWindow.WindowBorder = WindowBorder.Hidden;
             }
 
             if (_viewport->Flags.HasFlag(ImGuiViewportFlags.TopMost))
             {
-                _sdlWindow.TopMost = true;
+                _gWindow.TopMost = true;
             }
 
             SwapchainDescription swapchainDescription = new()
             {
-                Target = _sdlWindow.VkSurface!,
-                Width = (uint)_sdlWindow.FramebufferSize.X,
-                Height = (uint)_sdlWindow.FramebufferSize.Y,
+                Target = _gWindow.VkSurface!,
+                Width = (uint)_gWindow.FramebufferSize.X,
+                Height = (uint)_gWindow.FramebufferSize.Y,
                 DepthFormat = _graphicsDevice.GetBestDepthFormat()
             };
 
@@ -139,30 +139,30 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     private void Register()
     {
-        _sdlWindow.MouseDown += MouseDown;
-        _sdlWindow.MouseUp += MouseUp;
-        _sdlWindow.MouseMove += MouseMove;
-        _sdlWindow.MouseWheel += MouseWheel;
-        _sdlWindow.KeyDown += KeyDown;
-        _sdlWindow.KeyUp += KeyUp;
-        _sdlWindow.KeyChar += KeyChar;
-        _sdlWindow.Move += Move;
-        _sdlWindow.Resize += Resize;
-        _sdlWindow.Closing += Closing;
+        _gWindow.MouseDown += MouseDown;
+        _gWindow.MouseUp += MouseUp;
+        _gWindow.MouseMove += MouseMove;
+        _gWindow.MouseWheel += MouseWheel;
+        _gWindow.KeyDown += KeyDown;
+        _gWindow.KeyUp += KeyUp;
+        _gWindow.KeyChar += KeyChar;
+        _gWindow.Move += Move;
+        _gWindow.Resize += Resize;
+        _gWindow.Closing += Closing;
     }
 
     private void Unregister()
     {
-        _sdlWindow.MouseDown -= MouseDown;
-        _sdlWindow.MouseUp -= MouseUp;
-        _sdlWindow.MouseMove -= MouseMove;
-        _sdlWindow.MouseWheel -= MouseWheel;
-        _sdlWindow.KeyDown -= KeyDown;
-        _sdlWindow.KeyUp -= KeyUp;
-        _sdlWindow.KeyChar -= KeyChar;
-        _sdlWindow.Move -= Move;
-        _sdlWindow.Resize -= Resize;
-        _sdlWindow.Closing -= Closing;
+        _gWindow.MouseDown -= MouseDown;
+        _gWindow.MouseUp -= MouseUp;
+        _gWindow.MouseMove -= MouseMove;
+        _gWindow.MouseWheel -= MouseWheel;
+        _gWindow.KeyDown -= KeyDown;
+        _gWindow.KeyUp -= KeyUp;
+        _gWindow.KeyChar -= KeyChar;
+        _gWindow.Move -= Move;
+        _gWindow.Resize -= Resize;
+        _gWindow.Closing -= Closing;
     }
 
     private static bool TryMapMouseButton(MouseButton button, out int result)

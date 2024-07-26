@@ -22,17 +22,17 @@ internal static class App
             return;
         }
 
-        using SdlWindow sdlWindow = SdlWindow.CreateWindowByVulkan();
-        sdlWindow.Load += Window_Load;
-        sdlWindow.Closing += Window_Closing;
+        using GWindow gWindow = GWindow.CreateWindowByVulkan();
+        gWindow.Load += Window_Load;
+        gWindow.Closing += Window_Closing;
 
-        sdlWindow.Run();
+        gWindow.Run();
     }
 
     private static void Window_Load(object? sender, LoadEventArgs e)
     {
         _context = new();
-        _mainWindow = new MainWindow((SdlWindow)sender!);
+        _mainWindow = new MainWindow((GWindow)sender!);
     }
 
     private static void Window_Closing(object? sender, ClosingEventArgs e)
