@@ -107,6 +107,11 @@ unsafe partial class Window
 
         _window.Render += (d) =>
         {
+            if (_window.WindowState == WindowState.Minimized)
+            {
+                return;
+            }
+
             Render?.Invoke(this, new RenderEventArgs((float)d, (float)_window.Time));
         };
 
