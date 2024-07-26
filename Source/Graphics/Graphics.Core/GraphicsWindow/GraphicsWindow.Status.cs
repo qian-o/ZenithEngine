@@ -1,10 +1,11 @@
 ﻿using System.Numerics;
 using Silk.NET.Maths;
+using Silk.NET.SDL;
 using Silk.NET.Windowing;
 
 namespace Graphics.Core;
 
-partial class GraphicsWindow
+unsafe partial class GraphicsWindow
 {
     public event EventHandler<LoadEventArgs>? Load;
     public event EventHandler<UpdateEventArgs>? Update;
@@ -56,7 +57,15 @@ partial class GraphicsWindow
 
     public bool ShowInTaskbar { get; set; } = true;
 
-    public bool IsFocused { get; private set; }
+    public bool IsFocused
+    {
+        get
+        {
+            WindowFlags windowFlags = (WindowFlags)_sdl.GetWindowFlags((SDLWindow*)_window.Handle);
+
+            return windowFlags.HasFlag(WindowFlags.InputFocus);
+        }
+    }
 
     public void Run()
     {
@@ -76,8 +85,7 @@ partial class GraphicsWindow
 
     public void Focus()
     {
-        // TODO: Focus
-        Console.WriteLine(_window);
+        _sdl.RaiseWindow((SDLWindow*)_window.Handle);
     }
 
     public void PollEvents()
@@ -116,8 +124,6 @@ partial class GraphicsWindow
         {
             Closing?.Invoke(this, new ClosingEventArgs());
         };
-
-        _window.FocusChanged += (b) => IsFocused = b;
     }
 
     private void DoLoad()

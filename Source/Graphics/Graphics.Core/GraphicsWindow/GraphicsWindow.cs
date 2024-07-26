@@ -1,15 +1,25 @@
 ﻿using Silk.NET.Core.Contexts;
 using Silk.NET.Input;
+using Silk.NET.SDL;
 using Silk.NET.Windowing;
 
 namespace Graphics.Core;
 
 public unsafe partial class GraphicsWindow : DisposableObject
 {
+    private static readonly Sdl _sdl;
+
     private readonly IWindow _window;
     private readonly IInputContext _inputContext;
     private readonly IMouse _mouse;
     private readonly IKeyboard _keyboard;
+
+    static GraphicsWindow()
+    {
+        _sdl = Sdl.GetApi();
+
+        SilkWindow.PrioritizeSdl();
+    }
 
     internal GraphicsWindow(IWindow window, IInputContext inputContext)
     {
@@ -42,8 +52,6 @@ public unsafe partial class GraphicsWindow : DisposableObject
 
     public static GraphicsWindow CreateWindowByVulkan()
     {
-        Window.PrioritizeSdl();
-
         WindowOptions windowOptions = WindowOptions.DefaultVulkan;
         windowOptions.IsVisible = false;
         windowOptions.API = new GraphicsAPI()
@@ -54,7 +62,7 @@ public unsafe partial class GraphicsWindow : DisposableObject
             Version = new APIVersion(1, 3)
         };
 
-        IWindow window = Window.Create(windowOptions);
+        IWindow window = SilkWindow.Create(windowOptions);
         window.Initialize();
 
         return new GraphicsWindow(window, window.CreateInput());
