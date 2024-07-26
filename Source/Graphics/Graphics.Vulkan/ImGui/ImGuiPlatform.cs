@@ -149,7 +149,6 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         _graphicsWindow.Move += Move;
         _graphicsWindow.Resize += Resize;
         _graphicsWindow.Closing += Closing;
-        _graphicsWindow.FocusChanged += FocusChanged;
     }
 
     private void Unregister()
@@ -164,7 +163,6 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         _graphicsWindow.Move -= Move;
         _graphicsWindow.Resize -= Resize;
         _graphicsWindow.Closing -= Closing;
-        _graphicsWindow.FocusChanged -= FocusChanged;
     }
 
     private static bool TryMapMouseButton(MouseButton button, out int result)
@@ -309,10 +307,5 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
     private void Closing(object? sender, ClosingEventArgs e)
     {
         _viewport->PlatformRequestClose = 1;
-    }
-
-    private void FocusChanged(object? sender, FocusChangedEventArgs e)
-    {
-        ImGui.GetIO().AddFocusEvent(e.IsFocused);
     }
 }

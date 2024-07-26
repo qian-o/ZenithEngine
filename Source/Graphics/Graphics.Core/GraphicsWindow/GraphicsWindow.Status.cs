@@ -13,7 +13,6 @@ unsafe partial class GraphicsWindow
     public event EventHandler<MoveEventArgs>? Move;
     public event EventHandler<ResizeEventArgs>? Resize;
     public event EventHandler<ClosingEventArgs>? Closing;
-    public event EventHandler<FocusChangedEventArgs>? FocusChanged;
 
     public string Title
     {
@@ -124,11 +123,6 @@ unsafe partial class GraphicsWindow
         _window.Closing += () =>
         {
             Closing?.Invoke(this, new ClosingEventArgs());
-        };
-
-        _window.FocusChanged += (b) =>
-        {
-            FocusChanged?.Invoke(this, new FocusChangedEventArgs(b));
         };
     }
 
