@@ -413,7 +413,7 @@ public unsafe class GraphicsDevice : ContextObject
 
 public unsafe partial class Context
 {
-    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice, GWindow gWindow)
+    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice, Window window)
     {
         float queuePriority = 1.0f;
 
@@ -467,12 +467,12 @@ public unsafe partial class Context
                                             physicalDevice,
                                             device,
                                             swapchainExt,
-                                            gWindow.VkSurface!,
+                                            window.VkSurface!,
                                             graphicsQueueFamilyIndex,
                                             computeQueueFamilyIndex,
                                             transferQueueFamilyIndex);
 
-        graphicsDevice.MainSwapchain.Resize((uint)gWindow.FramebufferSize.X, (uint)gWindow.FramebufferSize.Y);
+        graphicsDevice.MainSwapchain.Resize((uint)window.FramebufferSize.X, (uint)window.FramebufferSize.Y);
 
         return graphicsDevice;
     }

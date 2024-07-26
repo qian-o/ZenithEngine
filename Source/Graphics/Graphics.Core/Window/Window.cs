@@ -7,7 +7,7 @@ using Silk.NET.Windowing;
 
 namespace Graphics.Core;
 
-public unsafe partial class GWindow : DisposableObject
+public unsafe partial class Window : DisposableObject
 {
     private static readonly Sdl _sdl = Sdl.GetApi();
 
@@ -16,7 +16,7 @@ public unsafe partial class GWindow : DisposableObject
     private readonly IMouse _mouse;
     private readonly IKeyboard _keyboard;
 
-    internal GWindow(IWindow window, IInputContext inputContext)
+    internal Window(IWindow window, IInputContext inputContext)
     {
         _window = window;
         _inputContext = inputContext;
@@ -45,7 +45,7 @@ public unsafe partial class GWindow : DisposableObject
         AssemblyKeyboardEvent();
     }
 
-    public static GWindow CreateWindowByVulkan()
+    public static Window CreateWindowByVulkan()
     {
         SilkWindow.PrioritizeSdl();
 
@@ -62,7 +62,7 @@ public unsafe partial class GWindow : DisposableObject
         IWindow window = SilkWindow.Create(windowOptions);
         window.Initialize();
 
-        return new GWindow(window, window.CreateInput());
+        return new Window(window, window.CreateInput());
     }
 
     public static Cursor* CreateCursor(SystemCursor systemCursor)
