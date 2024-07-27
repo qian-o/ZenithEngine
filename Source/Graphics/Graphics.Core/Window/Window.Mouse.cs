@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using Silk.NET.Input;
 
 namespace Graphics.Core;
 
@@ -15,11 +14,6 @@ partial class Window
     public Vector2 MousePositionByWindow => _mouse.Position;
 
     public Vector2 MousePositionByScreen => Position + MousePositionByWindow;
-
-    public bool IsButtonPressed(MouseButton mouseButton)
-    {
-        return _mouse.IsButtonPressed(mouseButton);
-    }
 
     private void AssemblyMouseEvent()
     {

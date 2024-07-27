@@ -142,9 +142,6 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     private void Register()
     {
-        _window.MouseDown += MouseDown;
-        _window.MouseUp += MouseUp;
-        _window.MouseMove += MouseMove;
         _window.MouseWheel += MouseWheel;
         _window.KeyDown += KeyDown;
         _window.KeyUp += KeyUp;
@@ -156,9 +153,6 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     private void Unregister()
     {
-        _window.MouseDown -= MouseDown;
-        _window.MouseUp -= MouseUp;
-        _window.MouseMove -= MouseMove;
         _window.MouseWheel -= MouseWheel;
         _window.KeyDown -= KeyDown;
         _window.KeyUp -= KeyUp;
@@ -166,24 +160,6 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         _window.Move -= Move;
         _window.Resize -= Resize;
         _window.Closing -= Closing;
-    }
-
-    private static bool TryMapMouseButton(MouseButton button, out int result)
-    {
-        result = button switch
-        {
-            MouseButton.Left => 0,
-            MouseButton.Right => 1,
-            MouseButton.Middle => 2,
-            MouseButton.Button4 => 3,
-            MouseButton.Button5 => 4,
-            MouseButton.Button6 => 5,
-            MouseButton.Button7 => 6,
-            MouseButton.Button8 => 7,
-            _ => -1
-        };
-
-        return result != -1;
     }
 
     private static bool TryMapKey(Key key, out ImGuiKey result)
@@ -246,27 +222,6 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         };
 
         return result != ImGuiKey.None;
-    }
-
-    private void MouseDown(object? sender, MouseButtonEventArgs e)
-    {
-        if (TryMapMouseButton(e.MouseButton, out int result))
-        {
-            ImGui.GetIO().AddMouseButtonEvent(result, true);
-        }
-    }
-
-    private void MouseUp(object? sender, MouseButtonEventArgs e)
-    {
-        if (TryMapMouseButton(e.MouseButton, out int result))
-        {
-            ImGui.GetIO().AddMouseButtonEvent(result, false);
-        }
-    }
-
-    private void MouseMove(object? sender, MouseMoveEventArgs e)
-    {
-        ImGui.GetIO().AddMousePosEvent(e.PositionByScreen.X, e.PositionByScreen.Y);
     }
 
     private void MouseWheel(object? sender, MouseWheelEventArgs e)

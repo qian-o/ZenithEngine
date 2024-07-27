@@ -9,12 +9,24 @@ namespace Graphics.Core;
 
 public unsafe partial class Window : DisposableObject
 {
-    private static readonly Sdl _sdl = Sdl.GetApi();
+    private static readonly Sdl _sdl;
+    private static readonly Dictionary<MouseButton, uint> _buttonMasks;
 
     private readonly IWindow _window;
     private readonly IInputContext _inputContext;
     private readonly IMouse _mouse;
     private readonly IKeyboard _keyboard;
+
+    static Window()
+    {
+        _sdl = Sdl.GetApi();
+        _buttonMasks = [];
+        _buttonMasks[MouseButton.Left] = 1;
+        _buttonMasks[MouseButton.Middle] = 2;
+        _buttonMasks[MouseButton.Right] = 3;
+        _buttonMasks[MouseButton.Button4] = 4;
+        _buttonMasks[MouseButton.Button5] = 5;
+    }
 
     internal Window(IWindow window, IInputContext inputContext)
     {
@@ -63,6 +75,25 @@ public unsafe partial class Window : DisposableObject
         window.Initialize();
 
         return new Window(window, window.CreateInput());
+    }
+
+    public static MouseButton[] GetGlobalMouseState(out Vector2 position)
+    {
+        int x, y;
+        uint mask = _sdl.GetGlobalMouseState(&x, &y);
+
+        position = new Vector2(x, y);
+
+        List<MouseButton> buttons = [];
+        foreach (KeyValuePair<MouseButton, uint> pair in _buttonMasks)
+        {
+            if ((mask & (1 << (int)pair.Value - 1)) != 0)
+            {
+                buttons.Add(pair.Key);
+            }
+        }
+
+        return [.. buttons];
     }
 
     public static Cursor* CreateCursor(SystemCursor systemCursor)

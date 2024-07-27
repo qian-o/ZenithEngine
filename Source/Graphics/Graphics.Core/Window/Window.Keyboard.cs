@@ -1,17 +1,10 @@
-﻿using Silk.NET.Input;
-
-namespace Graphics.Core;
+﻿namespace Graphics.Core;
 
 partial class Window
 {
     public event EventHandler<KeyEventArgs>? KeyDown;
     public event EventHandler<KeyEventArgs>? KeyUp;
     public event EventHandler<KeyCharEventArgs>? KeyChar;
-
-    public bool IsKeyPressed(Key key)
-    {
-        return _keyboard.IsKeyPressed(key);
-    }
 
     private void AssemblyKeyboardEvent()
     {

@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Graphics.Core;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
+using Silk.NET.Input;
 using Silk.NET.SDL;
 using Window = Graphics.Core.Window;
 
@@ -87,6 +88,8 @@ public unsafe class ImGuiController : DisposableObject
     public void Update(float deltaSeconds)
     {
         SetPerFrameImGuiData(deltaSeconds);
+
+        UpdateMouseState();
         UpdateMouseCursor();
 
         ImGui.NewFrame();
@@ -167,6 +170,21 @@ public unsafe class ImGuiController : DisposableObject
         }
 
         io.DeltaTime = deltaSeconds;
+    }
+
+    private static void UpdateMouseState()
+    {
+        ImGuiIOPtr io = ImGui.GetIO();
+
+        MouseButton[] mouseButtons = Window.GetGlobalMouseState(out Vector2 position);
+
+        io.AddMouseButtonEvent(0, mouseButtons.Contains(MouseButton.Left));
+        io.AddMouseButtonEvent(1, mouseButtons.Contains(MouseButton.Right));
+        io.AddMouseButtonEvent(2, mouseButtons.Contains(MouseButton.Middle));
+        io.AddMouseButtonEvent(3, mouseButtons.Contains(MouseButton.Button4));
+        io.AddMouseButtonEvent(4, mouseButtons.Contains(MouseButton.Button5));
+
+        io.AddMousePosEvent(position.X, position.Y);
     }
 
     private void UpdateMouseCursor()
