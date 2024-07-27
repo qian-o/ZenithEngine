@@ -87,7 +87,7 @@ public unsafe partial class Window : DisposableObject
         List<MouseButton> buttons = [];
         foreach (KeyValuePair<MouseButton, uint> pair in _buttonMasks)
         {
-            if ((mask & (1 << (int)pair.Value - 1)) != 0)
+            if ((mask & (1 << ((int)pair.Value - 1))) != 0)
             {
                 buttons.Add(pair.Key);
             }
