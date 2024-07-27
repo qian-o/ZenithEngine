@@ -49,11 +49,13 @@ public unsafe partial class Context : DisposableObject
             {
                 SType = StructureType.DebugUtilsMessengerCreateInfoExt,
                 MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt
+                                  | DebugUtilsMessageSeverityFlagsEXT.InfoBitExt
                                   | DebugUtilsMessageSeverityFlagsEXT.WarningBitExt
                                   | DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
                 MessageType = DebugUtilsMessageTypeFlagsEXT.GeneralBitExt
                               | DebugUtilsMessageTypeFlagsEXT.ValidationBitExt
-                              | DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt,
+                              | DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt
+                              | DebugUtilsMessageTypeFlagsEXT.DeviceAddressBindingBitExt,
                 PfnUserCallback = (PfnDebugUtilsMessengerCallbackEXT)DebugMessageCallback
             };
 
@@ -198,7 +200,7 @@ public unsafe partial class Context : DisposableObject
                                       void* pUserData)
     {
         string message = Alloter.GetString(pCallbackData->PMessage);
-        string[] strings = message.Split('|', StringSplitOptions.TrimEntries);
+        string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{messageSeverity}] [{messageTypes}]");
