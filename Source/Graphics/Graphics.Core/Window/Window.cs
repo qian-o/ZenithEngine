@@ -10,7 +10,7 @@ namespace Graphics.Core;
 public unsafe partial class Window : DisposableObject
 {
     private static readonly Sdl _sdl;
-    private static readonly Dictionary<MouseButton, uint> _buttonMasks;
+    private static readonly Dictionary<MouseButton, int> _buttonMasks;
 
     private readonly IWindow _window;
     private readonly IInputContext _inputContext;
@@ -85,11 +85,11 @@ public unsafe partial class Window : DisposableObject
         position = new Vector2(x, y);
 
         List<MouseButton> buttons = [];
-        foreach (KeyValuePair<MouseButton, uint> pair in _buttonMasks)
+        foreach (KeyValuePair<MouseButton, int> buttonMask in _buttonMasks)
         {
-            if ((mask & (1 << ((int)pair.Value - 1))) != 0)
+            if ((mask & (1 << (buttonMask.Value - 1))) != 0)
             {
-                buttons.Add(pair.Key);
+                buttons.Add(buttonMask.Key);
             }
         }
 
