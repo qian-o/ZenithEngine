@@ -19,7 +19,7 @@ internal static unsafe class SpirvCompilation
         CompileOptions* options = _shaderc.CompileOptionsInitialize();
         CompilationResult* result;
 
-        _shaderc.CompileOptionsSetSourceLanguage(options, SourceLanguage.Glsl);
+        _shaderc.CompileOptionsSetSourceLanguage(options, SourceLanguage.Hlsl);
         _shaderc.CompileOptionsSetTargetEnv(options, TargetEnv.Vulkan, Vk.Version13);
 
         result = _shaderc.CompileIntoSpv(compiler,

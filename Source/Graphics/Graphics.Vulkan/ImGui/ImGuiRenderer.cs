@@ -9,62 +9,67 @@ namespace Graphics.Vulkan;
 internal sealed unsafe class ImGuiRenderer : DisposableObject
 {
     private const string VertexShader = @"
-#version 450
+[[vk::constant_id(0)]] const bool UseLegacyColorSpaceHandling = false;
 
-layout(location = 0) in vec2 Position;
-layout(location = 1) in vec2 UV;
-layout(location = 2) in vec4 Color;
-
-layout(location = 0) out struct
+struct UBO
 {
-    vec2 UV;
-    vec4 Color;
-}fsin;
+    float4x4 Projection;
+};
 
-layout(set = 0, std140, binding = 0) uniform UBO
+struct VSInput
 {
-    mat4 Projection;
-}ubo;
+    [[vk::location(0)]] float2 Position : POSITION0;
+    [[vk::location(1)]] float2 UV : NORMAL0;
+    [[vk::location(2)]] float4 Color : COLOR0;
+};
 
-layout (constant_id = 0) const bool UseLegacyColorSpaceHandling = false;
-
-vec3 SrgbToLinear(vec3 srgb)
+struct VSOutput
 {
-    return srgb * (srgb * (srgb * 0.305306011 + 0.682171111) + 0.012522878);
+    float4 Position : SV_POSITION;
+    [[vk::location(0)]] float2 UV : TEXCOORD0;
+    [[vk::location(1)]] float4 Color : COLOR0;
+};
+
+cbuffer ubo : register(b0, space0)
+{
+    UBO ubo;
+};
+
+float3 SrgbToLinear(float3 srgb)
+{
+    return srgb * (srgb * (srgb * 0.305306011f + 0.682171111f) + 0.012522878f);
 }
 
-void main()
+VSOutput main(VSInput input)
 {
-    gl_Position = ubo.Projection * vec4(Position, 0, 1);
-    fsin.UV = UV;
-    fsin.Color = Color;
+    VSOutput output;
+
+    output.Position = mul(ubo.Projection, float4(input.Position, 0.0f, 1.0f));
+    output.UV = input.UV;
+    output.Color = input.Color;
+
     if (UseLegacyColorSpaceHandling)
     {
-        fsin.Color.rgb = SrgbToLinear(fsin.Color.rgb);
+        output.Color.rgb = SrgbToLinear(output.Color.rgb);
     }
-    else
-    {
-        fsin.Color = fsin.Color;
-    }
+
+    return output;
 }";
 
     private const string FragmentShader = @"
-#version 450
-
-layout(location = 0) in struct
+struct VSOutput
 {
-    vec2 UV;
-    vec4 Color;
-}fsin;
+    float4 Position : SV_POSITION;
+    [[vk::location(0)]] float2 UV : TEXCOORD0;
+    [[vk::location(1)]] float4 Color : COLOR0;
+};
 
-layout(location = 0) out vec4 fsout_Color;
+SamplerState pointSampler : register(s1, space0);
+Texture2D textureColor : register(t0, space1);
 
-layout(set = 0, binding = 1) uniform sampler FontSampler;
-layout(set = 1, binding = 0) uniform texture2D FontTexture;
-
-void main()
+float4 main(VSOutput input) : SV_TARGET
 {
-    fsout_Color = fsin.Color * texture(sampler2D(FontTexture, FontSampler), fsin.UV.st);
+    return input.Color * textureColor.Sample(pointSampler, input.UV);
 }";
 
     private readonly GraphicsDevice _graphicsDevice;
@@ -331,10 +336,10 @@ void main()
                                                               new VertexElementDescription("UV", VertexElementFormat.Float2),
                                                               new VertexElementDescription("Color", VertexElementFormat.Byte4Norm));
 
-        ResourceLayoutDescription set0 = new(new ResourceLayoutElementDescription("UBO", ResourceKind.UniformBuffer, ShaderStages.Vertex),
-                                             new ResourceLayoutElementDescription("FontSampler", ResourceKind.Sampler, ShaderStages.Fragment));
+        ResourceLayoutDescription set0 = new(new ResourceLayoutElementDescription("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex),
+                                             new ResourceLayoutElementDescription("pointSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
-        ResourceLayoutDescription set1 = new(new ResourceLayoutElementDescription("FontTexture", ResourceKind.TextureReadOnly, ShaderStages.Fragment));
+        ResourceLayoutDescription set1 = new(new ResourceLayoutElementDescription("textureColor", ResourceKind.TextureReadOnly, ShaderStages.Fragment));
 
         _layout0 = _factory.CreateResourceLayout(set0);
         _layout1 = _factory.CreateResourceLayout(set1);

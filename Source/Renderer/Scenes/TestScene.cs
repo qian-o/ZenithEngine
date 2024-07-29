@@ -25,43 +25,58 @@ internal sealed class TestScene(MainWindow mainWindow) : Scene(mainWindow)
     #endregion
 
     private const string VertexCode = @"
-#version 450
-
-layout(location = 0) in vec2 Position;
-layout(location = 1) in vec4 Color;
-
-layout(location = 0) out vec4 fsin_Color;
-
-void main()
+struct VSInput
 {
-    gl_Position = vec4(Position, 0, 1);
-    fsin_Color = Color;
+    [[vk::location(0)]] float2 Position : POSITION0;
+    [[vk::location(1)]] float4 Color : COLOR0;
+};
+
+struct VSOutput
+{
+    float4 Position : SV_POSITION;
+    [[vk::location(0)]] float4 Color : COLOR0;
+};
+
+VSOutput main(VSInput input)
+{
+    VSOutput output;
+
+    output.Position = float4(input.Position, 0.0, 1.0);
+    output.Color = input.Color;
+
+    return output;
 }";
 
     private const string FragmentCode = @"
-#version 450
-
-layout(location = 0) in vec4 fsin_Color;
-layout(location = 0) out vec4 fsout_Color;
-
-layout(std140, binding = 0) uniform Begin
+struct UBO
 {
-    vec4 Color;
-}begin;
+    float4 Value;
+};
 
-layout(std140, binding = 1) uniform End
+struct VSOutput
 {
-    vec4 Color;
-}end;
+    float4 Position : SV_POSITION;
+    [[vk::location(0)]] float4 Color : COLOR0;
+};
 
-layout(std140, binding = 2) uniform Step
+cbuffer begin : register(b0, space0)
 {
-    vec4 Value;
-}step;
+    UBO begin;
+};
 
-void main()
+cbuffer end : register(b1, space0)
 {
-    fsout_Color = mix(fsin_Color, mix(begin.Color, end.Color, step.Value), 0.5);
+    UBO end;
+};
+
+cbuffer step : register(b2, space0)
+{
+    UBO step;
+};
+
+float4 main(VSOutput input) : SV_TARGET
+{
+    return lerp(input.Color, lerp(begin.Value, end.Value, step.Value), 0.5f);
 }";
 
     private DeviceBuffer _vertexBuffer = null!;
