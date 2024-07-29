@@ -14,7 +14,6 @@ public unsafe class ImGuiController : DisposableObject
     private readonly Window _window;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ImGuiContextPtr _imGuiContext;
-    private readonly ImGuiRenderer _imGuiRenderer;
     private readonly List<ImGuiPlatform> _platforms;
     private readonly Dictionary<nint, ImGuiPlatform> _platformsByHandle;
     private readonly Dictionary<ImGuiMouseCursor, nint> _mouseCursors;
@@ -33,6 +32,8 @@ public unsafe class ImGuiController : DisposableObject
     private readonly PlatformSetWindowAlpha _setWindowAlpha;
     private readonly PlatformUpdateWindow _updateWindow;
 
+    private ImGuiRenderer _imGuiRenderer = null!;
+
     #region Constructors
     public ImGuiController(Window window,
                            GraphicsDevice graphicsDevice,
@@ -43,7 +44,6 @@ public unsafe class ImGuiController : DisposableObject
         _window = window;
         _graphicsDevice = graphicsDevice;
         _imGuiContext = ImGui.CreateContext();
-        _imGuiRenderer = new ImGuiRenderer(graphicsDevice, colorSpaceHandling);
         _platforms = [];
         _platformsByHandle = [];
         _mouseCursors = [];
@@ -62,7 +62,7 @@ public unsafe class ImGuiController : DisposableObject
         _setWindowAlpha = SetWindowAlpha;
         _updateWindow = UpdateWindow;
 
-        Initialize(imGuiFontConfig, onConfigureIO);
+        Initialize(colorSpaceHandling, imGuiFontConfig, onConfigureIO);
     }
 
     public ImGuiController(Window window,
@@ -141,6 +141,8 @@ public unsafe class ImGuiController : DisposableObject
 
     protected override void Destroy()
     {
+        _imGuiRenderer.Dispose();
+
         foreach (nint cursor in _mouseCursors.Values)
         {
             Window.FreeCursor((Cursor*)cursor);
@@ -152,8 +154,6 @@ public unsafe class ImGuiController : DisposableObject
         }
 
         ImGui.DestroyPlatformWindows();
-
-        _imGuiRenderer.Dispose();
 
         ImGui.DestroyContext(_imGuiContext);
     }
@@ -201,7 +201,7 @@ public unsafe class ImGuiController : DisposableObject
         Window.SetCursor((Cursor*)_mouseCursors[imguiCursor]);
     }
 
-    private void Initialize(ImGuiFontConfig? imGuiFontConfig, Action? onConfigureIO)
+    private void Initialize(ColorSpaceHandling colorSpaceHandling, ImGuiFontConfig? imGuiFontConfig, Action? onConfigureIO)
     {
         ImGui.SetCurrentContext(_imGuiContext);
         ImGuizmo.SetImGuiContext(_imGuiContext);
@@ -234,6 +234,8 @@ public unsafe class ImGuiController : DisposableObject
         }
 
         InitializePlatform();
+
+        _imGuiRenderer = new ImGuiRenderer(_graphicsDevice, colorSpaceHandling);
     }
 
     private void InitializePlatform()
