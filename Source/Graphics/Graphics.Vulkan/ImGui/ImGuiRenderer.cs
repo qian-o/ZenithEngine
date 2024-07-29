@@ -236,10 +236,10 @@ void main()
                     commandList.SetGraphicsResourceSet(1, GetResourceSet(imDrawCmd.TextureId.Handle));
 
                     commandList.SetScissorRect(0,
-                                               (uint)(imDrawCmd.ClipRect.X - displayPos.X),
-                                               (uint)(imDrawCmd.ClipRect.Y - displayPos.Y),
-                                               (uint)(imDrawCmd.ClipRect.Z - imDrawCmd.ClipRect.X),
-                                               (uint)(imDrawCmd.ClipRect.W - imDrawCmd.ClipRect.Y));
+                                               (uint)Math.Max(0, imDrawCmd.ClipRect.X - displayPos.X),
+                                               (uint)Math.Max(0, imDrawCmd.ClipRect.Y - displayPos.Y),
+                                               (uint)Math.Max(0, imDrawCmd.ClipRect.Z - imDrawCmd.ClipRect.X),
+                                               (uint)Math.Max(0, imDrawCmd.ClipRect.W - imDrawCmd.ClipRect.Y));
 
                     commandList.DrawIndexed(imDrawCmd.ElemCount,
                                             1,
