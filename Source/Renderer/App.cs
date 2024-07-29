@@ -23,6 +23,7 @@ internal static class App
         }
 
         using Window window = Window.CreateWindowByVulkan();
+        window.MinimumSize = new(100, 100);
         window.Load += Window_Load;
         window.Closing += Window_Closing;
 

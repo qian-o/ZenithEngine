@@ -39,6 +39,31 @@ unsafe partial class Window
         get => new(_window.FramebufferSize.X, _window.FramebufferSize.Y);
     }
 
+    public Vector2 MinimumSize
+    {
+        get
+        {
+            int w, h;
+            _sdl.GetWindowMinimumSize((SDLWindow*)_window.Handle, &w, &h);
+
+            return new Vector2(w, h);
+        }
+        set
+        {
+            if (value.X <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), "X must be greater than zero.");
+            }
+
+            if (value.Y <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), "Y must be greater than zero.");
+            }
+
+            _sdl.SetWindowMinimumSize((SDLWindow*)_window.Handle, (int)value.X, (int)value.Y);
+        }
+    }
+
     public WindowState WindowState
     {
         get => _window.WindowState;
