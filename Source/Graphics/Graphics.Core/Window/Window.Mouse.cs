@@ -11,20 +11,18 @@ partial class Window
     public event EventHandler<MouseMoveEventArgs>? MouseMove;
     public event EventHandler<MouseWheelEventArgs>? MouseWheel;
 
-    public Vector2 MousePositionByWindow => _mouse.Position;
-
-    public Vector2 MousePositionByScreen => Position + MousePositionByWindow;
+    public Vector2 MousePosition => _mouse.Position;
 
     private void AssemblyMouseEvent()
     {
         _mouse.MouseDown += (m, b) =>
         {
-            MouseDown?.Invoke(this, new MouseButtonEventArgs(b, MousePositionByWindow));
+            MouseDown?.Invoke(this, new MouseButtonEventArgs(b, MousePosition));
         };
 
         _mouse.MouseUp += (m, b) =>
         {
-            MouseUp?.Invoke(this, new MouseButtonEventArgs(b, MousePositionByWindow));
+            MouseUp?.Invoke(this, new MouseButtonEventArgs(b, MousePosition));
         };
 
         _mouse.Click += (m, b, p) =>
@@ -39,7 +37,7 @@ partial class Window
 
         _mouse.MouseMove += (m, p) =>
         {
-            MouseMove?.Invoke(this, new MouseMoveEventArgs(p, Position + p));
+            MouseMove?.Invoke(this, new MouseMoveEventArgs(p));
         };
 
         _mouse.Scroll += (m, w) =>

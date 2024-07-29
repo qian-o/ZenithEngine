@@ -2,9 +2,7 @@
 
 namespace Graphics.Core;
 
-public class MouseMoveEventArgs(Vector2 positionByWindow, Vector2 positionByScreen) : EventArgs
+public class MouseMoveEventArgs(Vector2 position) : EventArgs
 {
-    public Vector2 PositionByWindow { get; } = positionByWindow;
-
-    public Vector2 PositionByScreen { get; } = positionByScreen;
+    public Vector2 Position { get; } = position;
 }

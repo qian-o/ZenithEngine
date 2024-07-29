@@ -7,6 +7,8 @@ namespace Graphics.Core;
 
 unsafe partial class Window
 {
+    private bool _swapchainExpired;
+
     public event EventHandler<LoadEventArgs>? Load;
     public event EventHandler<UpdateEventArgs>? Update;
     public event EventHandler<RenderEventArgs>? Render;
@@ -110,10 +112,7 @@ unsafe partial class Window
 
     private void AssemblyStatusEvent()
     {
-        _window.Load += () =>
-        {
-            DoLoad();
-        };
+        _window.Load += DoLoad;
 
         _window.Update += (d) =>
         {
@@ -122,11 +121,6 @@ unsafe partial class Window
 
         _window.Render += (d) =>
         {
-            if (_window.WindowState == WindowState.Minimized)
-            {
-                return;
-            }
-
             Render?.Invoke(this, new RenderEventArgs((float)d, (float)_window.Time));
         };
 
@@ -143,6 +137,23 @@ unsafe partial class Window
         _window.Closing += () =>
         {
             Closing?.Invoke(this, new ClosingEventArgs());
+        };
+
+        _window.StateChanged += (s) =>
+        {
+            if (s == WindowState.Minimized)
+            {
+                _swapchainExpired = true;
+            }
+            else
+            {
+                if (_swapchainExpired)
+                {
+                    Resize?.Invoke(this, new ResizeEventArgs((uint)_window.FramebufferSize.X, (uint)_window.FramebufferSize.Y));
+
+                    _swapchainExpired = false;
+                }
+            }
         };
     }
 
