@@ -21,7 +21,7 @@ internal sealed unsafe class MainWindow : DisposableObject
         _graphicsDevice = App.Context.CreateGraphicsDevice(App.Context.EnumeratePhysicalDevices().First(), _window);
         _imGuiController = new ImGuiController(_window,
                                                _graphicsDevice,
-                                               new ImGuiFontConfig("Assets/Fonts/MSYH.TTC", Convert.ToInt32(14.0f * _window.DpiScale), (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
+                                               new ImGuiFontConfig("Assets/Fonts/MSYH.TTC", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
         _commandList = _graphicsDevice.ResourceFactory.CreateGraphicsCommandList();
         _controls = [];
         _scenes = [];

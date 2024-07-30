@@ -34,6 +34,8 @@ public unsafe class ImGuiController : DisposableObject
 
     private ImGuiRenderer _imGuiRenderer = null!;
 
+    private float _currentDpiScale = 1.0f;
+
     #region Constructors
     public ImGuiController(Window window,
                            GraphicsDevice graphicsDevice,
@@ -89,6 +91,7 @@ public unsafe class ImGuiController : DisposableObject
     {
         SetPerFrameImGuiData(deltaSeconds);
 
+        UpdateDpiScale();
         UpdateMouseState();
         UpdateMouseCursor();
 
@@ -168,6 +171,21 @@ public unsafe class ImGuiController : DisposableObject
         io.DeltaTime = deltaSeconds;
     }
 
+    private void UpdateDpiScale()
+    {
+        float dpiScale = _window.DpiScale;
+
+        if (_currentDpiScale != dpiScale)
+        {
+            ImGuiStylePtr style = ImGui.GetStyle();
+
+            style.ScaleAllSizes(1.0f / _currentDpiScale);
+            style.ScaleAllSizes(dpiScale);
+
+            _currentDpiScale = dpiScale;
+        }
+    }
+
     private static void UpdateMouseState()
     {
         ImGuiIOPtr io = ImGui.GetIO();
@@ -203,7 +221,6 @@ public unsafe class ImGuiController : DisposableObject
         ImGuizmo.SetImGuiContext(_imGuiContext);
 
         ImGui.StyleColorsDark();
-        ImGui.GetStyle().ScaleAllSizes(_window.DpiScale);
 
         ImGuiIOPtr io = ImGui.GetIO();
 
