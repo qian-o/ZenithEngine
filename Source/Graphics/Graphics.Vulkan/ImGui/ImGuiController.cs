@@ -162,12 +162,8 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiIOPtr io = ImGui.GetIO();
 
-        io.DisplaySize = _window.Size;
-
-        if (_window.Size.X > 0 && _window.Size.Y > 0)
-        {
-            io.DisplayFramebufferScale = _window.FramebufferSize / _window.Size;
-        }
+        io.DisplaySize = _window.FramebufferSize;
+        io.DisplayFramebufferScale = _window.FramebufferSize / _window.Size;
 
         io.DeltaTime = deltaSeconds;
     }
@@ -207,6 +203,7 @@ public unsafe class ImGuiController : DisposableObject
         ImGuizmo.SetImGuiContext(_imGuiContext);
 
         ImGui.StyleColorsDark();
+        ImGui.GetStyle().ScaleAllSizes(_window.DpiScale);
 
         ImGuiIOPtr io = ImGui.GetIO();
 
