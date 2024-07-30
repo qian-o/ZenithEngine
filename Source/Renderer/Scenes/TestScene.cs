@@ -24,7 +24,12 @@ internal sealed class TestScene(MainWindow mainWindow) : Scene(mainWindow)
     }
     #endregion
 
-    private const string VertexCode = @"
+    private const string HLSL = @"
+struct UBO
+{
+    float4 Value;
+};
+
 struct VSInput
 {
     [[vk::location(0)]] float2 Position : POSITION0;
@@ -37,44 +42,21 @@ struct VSOutput
     [[vk::location(0)]] float4 Color : COLOR0;
 };
 
-VSOutput main(VSInput input)
+ConstantBuffer<UBO> begin : register(b0, space0);
+ConstantBuffer<UBO> end : register(b1, space0);
+ConstantBuffer<UBO> step : register(b2, space0);
+
+VSOutput mainVS(VSInput input)
 {
     VSOutput output;
-
+    
     output.Position = float4(input.Position, 0.0, 1.0);
     output.Color = input.Color;
-
+    
     return output;
-}";
+}
 
-    private const string FragmentCode = @"
-struct UBO
-{
-    float4 Value;
-};
-
-struct VSOutput
-{
-    float4 Position : SV_POSITION;
-    [[vk::location(0)]] float4 Color : COLOR0;
-};
-
-cbuffer begin : register(b0, space0)
-{
-    UBO begin;
-};
-
-cbuffer end : register(b1, space0)
-{
-    UBO end;
-};
-
-cbuffer step : register(b2, space0)
-{
-    UBO step;
-};
-
-float4 main(VSOutput input) : SV_TARGET
+float4 mainPS(VSOutput input) : SV_TARGET
 {
     return lerp(input.Color, lerp(begin.Value, end.Value, step.Value), 0.5f);
 }";
@@ -125,8 +107,8 @@ float4 main(VSOutput input) : SV_TARGET
 
         _resourceSet = _resourceFactory.CreateResourceSet(resourceSetDescription);
 
-        _shaders = _resourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(VertexCode), "main"),
-                                                    new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(FragmentCode), "main"));
+        _shaders = _resourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(HLSL), "mainVS"),
+                                                    new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(HLSL), "mainPS"));
 
         VertexElementDescription positionDescription = new("Position", VertexElementFormat.Float2);
         VertexElementDescription colorDescription = new("Color", VertexElementFormat.Float4);
