@@ -8,7 +8,7 @@ namespace Graphics.Vulkan;
 
 internal sealed unsafe class ImGuiRenderer : DisposableObject
 {
-    private const string VertexShader = @"
+    private const string HLSL = @"
 [[vk::constant_id(0)]] const bool UseLegacyColorSpaceHandling = false;
 
 struct UBO
@@ -30,17 +30,16 @@ struct VSOutput
     [[vk::location(1)]] float4 Color : COLOR0;
 };
 
-cbuffer ubo : register(b0, space0)
-{
-    UBO ubo;
-};
+ConstantBuffer<UBO> ubo : register(b0, space0);
+SamplerState pointSampler : register(s1, space0);
+Texture2D textureColor : register(t0, space1);
 
 float3 SrgbToLinear(float3 srgb)
 {
     return srgb * (srgb * (srgb * 0.305306011f + 0.682171111f) + 0.012522878f);
 }
 
-VSOutput main(VSInput input)
+VSOutput mainVS(VSInput input)
 {
     VSOutput output;
 
@@ -54,20 +53,9 @@ VSOutput main(VSInput input)
     }
 
     return output;
-}";
+}
 
-    private const string FragmentShader = @"
-struct VSOutput
-{
-    float4 Position : SV_POSITION;
-    [[vk::location(0)]] float2 UV : TEXCOORD0;
-    [[vk::location(1)]] float4 Color : COLOR0;
-};
-
-SamplerState pointSampler : register(s1, space0);
-Texture2D textureColor : register(t0, space1);
-
-float4 main(VSOutput input) : SV_TARGET
+float4 mainPS(VSOutput input) : SV_TARGET
 {
     return input.Color * textureColor.Sample(pointSampler, input.UV);
 }";
@@ -329,8 +317,8 @@ float4 main(VSOutput input) : SV_TARGET
         _indexBuffer = _factory.CreateBuffer(new BufferDescription(2000, BufferUsage.IndexBuffer));
         _uboBuffer = _factory.CreateBuffer(new BufferDescription((uint)sizeof(Matrix4x4), BufferUsage.UniformBuffer));
 
-        Shader[] shaders = _factory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(VertexShader), "main"),
-                                                    new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(FragmentShader), "main"));
+        Shader[] shaders = _factory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(HLSL), "mainVS"),
+                                                    new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(HLSL), "mainPS"));
 
         VertexLayoutDescription vertexLayoutDescription = new(new VertexElementDescription("Position", VertexElementFormat.Float2),
                                                               new VertexElementDescription("UV", VertexElementFormat.Float2),
