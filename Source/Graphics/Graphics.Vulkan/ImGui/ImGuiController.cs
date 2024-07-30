@@ -14,6 +14,7 @@ public unsafe class ImGuiController : DisposableObject
     private readonly Window _window;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ImGuiContextPtr _imGuiContext;
+    private readonly ImGuiFontConfig? _imGuiFontConfig;
     private readonly List<ImGuiPlatform> _platforms;
     private readonly Dictionary<nint, ImGuiPlatform> _platformsByHandle;
     private readonly Dictionary<ImGuiMouseCursor, nint> _mouseCursors;
@@ -46,6 +47,7 @@ public unsafe class ImGuiController : DisposableObject
         _window = window;
         _graphicsDevice = graphicsDevice;
         _imGuiContext = ImGui.CreateContext();
+        _imGuiFontConfig = imGuiFontConfig;
         _platforms = [];
         _platformsByHandle = [];
         _mouseCursors = [];
@@ -64,7 +66,7 @@ public unsafe class ImGuiController : DisposableObject
         _setWindowAlpha = SetWindowAlpha;
         _updateWindow = UpdateWindow;
 
-        Initialize(colorSpaceHandling, imGuiFontConfig, onConfigureIO);
+        Initialize(colorSpaceHandling, onConfigureIO);
     }
 
     public ImGuiController(Window window,
@@ -182,6 +184,17 @@ public unsafe class ImGuiController : DisposableObject
             style.ScaleAllSizes(1.0f / _currentDpiScale);
             style.ScaleAllSizes(dpiScale);
 
+            if (_imGuiFontConfig.HasValue)
+            {
+                ImGuiIOPtr io = ImGui.GetIO();
+
+                io.Fonts.Clear();
+                nint glyph_ranges = _imGuiFontConfig.Value.GetGlyphRange?.Invoke(io) ?? 0;
+                io.Fonts.AddFontFromFileTTF(_imGuiFontConfig.Value.FontPath, Convert.ToInt32(_imGuiFontConfig.Value.FontSize * dpiScale), null, (char*)glyph_ranges);
+            }
+
+            _imGuiRenderer.RecreateFontDeviceTexture();
+
             _currentDpiScale = dpiScale;
         }
     }
@@ -215,7 +228,7 @@ public unsafe class ImGuiController : DisposableObject
         Window.SetCursor((Cursor*)_mouseCursors[imguiCursor]);
     }
 
-    private void Initialize(ColorSpaceHandling colorSpaceHandling, ImGuiFontConfig? imGuiFontConfig, Action? onConfigureIO)
+    private void Initialize(ColorSpaceHandling colorSpaceHandling, Action? onConfigureIO)
     {
         ImGui.SetCurrentContext(_imGuiContext);
         ImGuizmo.SetImGuiContext(_imGuiContext);
@@ -224,10 +237,10 @@ public unsafe class ImGuiController : DisposableObject
 
         ImGuiIOPtr io = ImGui.GetIO();
 
-        if (imGuiFontConfig.HasValue)
+        if (_imGuiFontConfig.HasValue)
         {
-            nint glyph_ranges = imGuiFontConfig.Value.GetGlyphRange?.Invoke(io) ?? 0;
-            io.Fonts.AddFontFromFileTTF(imGuiFontConfig.Value.FontPath, imGuiFontConfig.Value.FontSize, null, (char*)glyph_ranges);
+            nint glyph_ranges = _imGuiFontConfig.Value.GetGlyphRange?.Invoke(io) ?? 0;
+            io.Fonts.AddFontFromFileTTF(_imGuiFontConfig.Value.FontPath, _imGuiFontConfig.Value.FontSize, null, (char*)glyph_ranges);
         }
 
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
