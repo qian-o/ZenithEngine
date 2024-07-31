@@ -13,7 +13,12 @@ public unsafe class ImGuiController : DisposableObject
 {
     private readonly Window _window;
     private readonly GraphicsDevice _graphicsDevice;
+    private readonly ImGuiRenderer _imGuiRenderer;
     private readonly ImGuiContextPtr _imGuiContext;
+    private readonly ImGuiFontConfig _imGuiFontConfig;
+    private readonly ImGuiSizeConfig _imGuiSizeConfig;
+    private readonly Dictionary<float, ImFontPtr> _dpiScaleFonts;
+    private readonly Dictionary<float, ImGuiSizeConfig> _dpiScaleSizes;
     private readonly List<ImGuiPlatform> _platforms;
     private readonly Dictionary<nint, ImGuiPlatform> _platformsByHandle;
     private readonly Dictionary<ImGuiMouseCursor, nint> _mouseCursors;
@@ -31,19 +36,27 @@ public unsafe class ImGuiController : DisposableObject
     private readonly PlatformSetWindowTitle _setWindowTitle;
     private readonly PlatformSetWindowAlpha _setWindowAlpha;
     private readonly PlatformUpdateWindow _updateWindow;
+    private readonly PlatformOnChangedViewport _onChangedViewport;
+    private readonly PlatformSetImeDataFn _setImeData;
 
-    private ImGuiRenderer _imGuiRenderer = null!;
+    private bool _frameBegun;
 
     #region Constructors
     public ImGuiController(Window window,
                            GraphicsDevice graphicsDevice,
                            ColorSpaceHandling colorSpaceHandling,
-                           ImGuiFontConfig? imGuiFontConfig,
+                           ImGuiFontConfig imGuiFontConfig,
+                           ImGuiSizeConfig imGuiSizeConfig,
                            Action? onConfigureIO)
     {
         _window = window;
         _graphicsDevice = graphicsDevice;
         _imGuiContext = ImGui.CreateContext();
+        _imGuiRenderer = new ImGuiRenderer(graphicsDevice, colorSpaceHandling);
+        _imGuiFontConfig = imGuiFontConfig;
+        _imGuiSizeConfig = imGuiSizeConfig;
+        _dpiScaleFonts = [];
+        _dpiScaleSizes = [];
         _platforms = [];
         _platformsByHandle = [];
         _mouseCursors = [];
@@ -61,8 +74,22 @@ public unsafe class ImGuiController : DisposableObject
         _setWindowTitle = SetWindowTitle;
         _setWindowAlpha = SetWindowAlpha;
         _updateWindow = UpdateWindow;
+        _onChangedViewport = OnChangedViewport;
+        _setImeData = SetImeData;
 
-        Initialize(colorSpaceHandling, imGuiFontConfig, onConfigureIO);
+        Initialize(onConfigureIO);
+    }
+
+    public ImGuiController(Window window,
+                           GraphicsDevice graphicsDevice,
+                           ImGuiFontConfig imGuiFontConfig,
+                           ImGuiSizeConfig imGuiSizeConfig) : this(window,
+                                                                   graphicsDevice,
+                                                                   ColorSpaceHandling.Legacy,
+                                                                   imGuiFontConfig,
+                                                                   imGuiSizeConfig,
+                                                                   null)
+    {
     }
 
     public ImGuiController(Window window,
@@ -71,22 +98,21 @@ public unsafe class ImGuiController : DisposableObject
                                                                    graphicsDevice,
                                                                    ColorSpaceHandling.Legacy,
                                                                    imGuiFontConfig,
+                                                                   ImGuiSizeConfig.Default,
                                                                    null)
-    {
-    }
-
-    public ImGuiController(Window window,
-                           GraphicsDevice graphicsDevice) : this(window,
-                                                                 graphicsDevice,
-                                                                 ColorSpaceHandling.Legacy,
-                                                                 null,
-                                                                 null)
     {
     }
     #endregion
 
     public void Update(float deltaSeconds)
     {
+        if (_frameBegun)
+        {
+            ImGui.Render();
+        }
+
+        _frameBegun = true;
+
         SetPerFrameImGuiData(deltaSeconds);
 
         UpdateMouseState();
@@ -96,23 +122,26 @@ public unsafe class ImGuiController : DisposableObject
         ImGuizmo.BeginFrame();
 
         ImGui.DockSpaceOverViewport();
-
-        ImGui.ShowDemoWindow();
     }
 
     public void Render(CommandList commandList)
     {
-        ImGui.Render();
-        ImGui.EndFrame();
-
-        _imGuiRenderer.RenderImDrawData(commandList, ImGui.GetDrawData());
-
-        ImGui.UpdatePlatformWindows();
-        foreach (ImGuiPlatform platform in _platforms)
+        if (_frameBegun)
         {
-            commandList.SetFramebuffer(platform.Swapchain!.Framebuffer);
+            _frameBegun = false;
 
-            _imGuiRenderer.RenderImDrawData(commandList, platform.Viewport->DrawData);
+            ImGui.Render();
+            ImGui.EndFrame();
+
+            _imGuiRenderer.RenderImDrawData(commandList, ImGui.GetDrawData());
+
+            ImGui.UpdatePlatformWindows();
+            foreach (ImGuiPlatform platform in _platforms)
+            {
+                commandList.SetFramebuffer(platform.Swapchain!.Framebuffer);
+
+                _imGuiRenderer.RenderImDrawData(commandList, platform.Viewport->DrawData);
+            }
         }
     }
 
@@ -141,8 +170,6 @@ public unsafe class ImGuiController : DisposableObject
 
     protected override void Destroy()
     {
-        _imGuiRenderer.Dispose();
-
         foreach (nint cursor in _mouseCursors.Values)
         {
             Window.FreeCursor((Cursor*)cursor);
@@ -155,6 +182,8 @@ public unsafe class ImGuiController : DisposableObject
 
         ImGui.DestroyPlatformWindows();
 
+        _imGuiRenderer.Dispose();
+
         ImGui.DestroyContext(_imGuiContext);
     }
 
@@ -162,29 +191,28 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiIOPtr io = ImGui.GetIO();
 
-        io.DisplaySize = _window.Size;
-
-        if (_window.Size.X > 0 && _window.Size.Y > 0)
-        {
-            io.DisplayFramebufferScale = _window.FramebufferSize / _window.Size;
-        }
+        io.DisplaySize = _window.FramebufferSize;
+        io.DisplayFramebufferScale = _window.FramebufferSize / _window.Size;
 
         io.DeltaTime = deltaSeconds;
     }
 
     private static void UpdateMouseState()
     {
-        ImGuiIOPtr io = ImGui.GetIO();
+        if (Window.IsMouseFocusOnWindow())
+        {
+            ImGuiIOPtr io = ImGui.GetIO();
 
-        MouseButton[] mouseButtons = Window.GetGlobalMouseState(out Vector2 position);
+            MouseButton[] mouseButtons = Window.GetGlobalMouseState(out Vector2 position);
 
-        io.AddMouseButtonEvent(0, mouseButtons.Contains(MouseButton.Left));
-        io.AddMouseButtonEvent(1, mouseButtons.Contains(MouseButton.Right));
-        io.AddMouseButtonEvent(2, mouseButtons.Contains(MouseButton.Middle));
-        io.AddMouseButtonEvent(3, mouseButtons.Contains(MouseButton.Button4));
-        io.AddMouseButtonEvent(4, mouseButtons.Contains(MouseButton.Button5));
+            io.AddMouseButtonEvent(0, mouseButtons.Contains(MouseButton.Left));
+            io.AddMouseButtonEvent(1, mouseButtons.Contains(MouseButton.Right));
+            io.AddMouseButtonEvent(2, mouseButtons.Contains(MouseButton.Middle));
+            io.AddMouseButtonEvent(3, mouseButtons.Contains(MouseButton.Button4));
+            io.AddMouseButtonEvent(4, mouseButtons.Contains(MouseButton.Button5));
 
-        io.AddMousePosEvent(position.X, position.Y);
+            io.AddMousePosEvent(position.X, position.Y);
+        }
     }
 
     private void UpdateMouseCursor()
@@ -201,7 +229,7 @@ public unsafe class ImGuiController : DisposableObject
         Window.SetCursor((Cursor*)_mouseCursors[imguiCursor]);
     }
 
-    private void Initialize(ColorSpaceHandling colorSpaceHandling, ImGuiFontConfig? imGuiFontConfig, Action? onConfigureIO)
+    private void Initialize(Action? onConfigureIO)
     {
         ImGui.SetCurrentContext(_imGuiContext);
         ImGuizmo.SetImGuiContext(_imGuiContext);
@@ -210,11 +238,7 @@ public unsafe class ImGuiController : DisposableObject
 
         ImGuiIOPtr io = ImGui.GetIO();
 
-        if (imGuiFontConfig.HasValue)
-        {
-            nint glyph_ranges = imGuiFontConfig.Value.GetGlyphRange?.Invoke(io) ?? 0;
-            io.Fonts.AddFontFromFileTTF(imGuiFontConfig.Value.FontPath, imGuiFontConfig.Value.FontSize, null, (char*)glyph_ranges);
-        }
+        io.Fonts.Clear();
 
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
@@ -235,7 +259,7 @@ public unsafe class ImGuiController : DisposableObject
 
         InitializePlatform();
 
-        _imGuiRenderer = new ImGuiRenderer(_graphicsDevice, colorSpaceHandling);
+        io.PlatformSetImeDataFn = (void*)Marshal.GetFunctionPointerForDelegate(_setImeData);
     }
 
     private void InitializePlatform()
@@ -245,8 +269,32 @@ public unsafe class ImGuiController : DisposableObject
 
         _platformsByHandle.Add((nint)mainViewport.PlatformHandle, mainPlatform);
 
+        InitializePlatformDpiScale();
         InitializePlatformMonitors();
         InitializePlatformCallbacks();
+    }
+
+    private void InitializePlatformDpiScale()
+    {
+        ImGuiIOPtr io = ImGui.GetIO();
+
+        int displayCount = Window.GetDisplayCount();
+
+        for (int i = 0; i < displayCount; i++)
+        {
+            Display display = Window.GetDisplay(i);
+
+            nint glyph_ranges = _imGuiFontConfig.GetGlyphRange?.Invoke(io) ?? 0;
+            ImFontPtr fontPtr = io.Fonts.AddFontFromFileTTF(_imGuiFontConfig.FontPath, Convert.ToInt32(_imGuiFontConfig.FontSize * display.DpiScale), null, (char*)glyph_ranges);
+
+            _dpiScaleFonts.Add(display.DpiScale, fontPtr);
+
+            ImGuiSizeConfig sizeConfig = _imGuiSizeConfig.Scale(display.DpiScale);
+
+            _dpiScaleSizes.Add(display.DpiScale, sizeConfig);
+        }
+
+        _imGuiRenderer.RecreateFontDeviceTexture();
     }
 
     private void InitializePlatformMonitors()
@@ -293,6 +341,7 @@ public unsafe class ImGuiController : DisposableObject
         platformIO.PlatformSetWindowTitle = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowTitle);
         platformIO.PlatformSetWindowAlpha = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowAlpha);
         platformIO.PlatformUpdateWindow = (void*)Marshal.GetFunctionPointerForDelegate(_updateWindow);
+        platformIO.PlatformOnChangedViewport = (void*)Marshal.GetFunctionPointerForDelegate(_onChangedViewport);
     }
 
     private void CreateWindow(ImGuiViewport* vp)
@@ -397,6 +446,26 @@ public unsafe class ImGuiController : DisposableObject
         ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
 
         platform.Update();
+    }
+
+    private void OnChangedViewport(ImGuiViewport* vp)
+    {
+        _dpiScaleSizes[vp->DpiScale].Apply(ImGui.GetStyle());
+
+        ImGui.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
+    }
+
+    private void SetImeData(ImGuiContext* ctx, ImGuiViewport* viewport, ImGuiPlatformImeData* data)
+    {
+        if (data->WantVisible == 1)
+        {
+            int x = Convert.ToInt32(data->InputPos.X - viewport->Pos.X);
+            int y = Convert.ToInt32(data->InputPos.Y - viewport->Pos.Y);
+            int w = 1;
+            int h = Convert.ToInt32(data->InputLineHeight);
+
+            Window.SetTextIputRect(x, y, w, h);
+        }
     }
 
     private static SystemCursor MapMouseCursor(ImGuiMouseCursor imguiCursor)

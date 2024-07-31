@@ -39,6 +39,19 @@ unsafe partial class Window
         get => new(_window.FramebufferSize.X, _window.FramebufferSize.Y);
     }
 
+    public float DpiScale
+    {
+        get
+        {
+            int displayIndex = _sdl.GetWindowDisplayIndex((SDLWindow*)_window.Handle);
+
+            float ddpi;
+            _sdl.GetDisplayDPI(displayIndex, &ddpi, null, null);
+
+            return ddpi / 96.0f;
+        }
+    }
+
     public Vector2 MinimumSize
     {
         get

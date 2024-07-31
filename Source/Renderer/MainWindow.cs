@@ -1,5 +1,6 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
+using Hexa.NET.ImGui;
 using Renderer.Components;
 using Renderer.Controls;
 using Renderer.Scenes;
@@ -97,6 +98,8 @@ internal sealed unsafe class MainWindow : DisposableObject
     private void Window_Render(object? sender, RenderEventArgs e)
     {
         _imGuiController.Update(e.DeltaTime);
+
+        ImGui.ShowDemoWindow();
 
         foreach (Control control in _controls)
         {

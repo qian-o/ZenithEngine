@@ -247,6 +247,15 @@ float4 mainPS(VSOutput input) : SV_TARGET
         }
     }
 
+    public void RecreateFontDeviceTexture()
+    {
+        RemoveImGuiBinding(GetOrCreateImGuiBinding(_factory, _fontTexture));
+
+        _fontTexture.Dispose();
+
+        CreateFontDeviceTexture();
+    }
+
     protected override void Destroy()
     {
         _vertexBuffer.Dispose();
@@ -279,7 +288,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         return resourceSet;
     }
 
-    private void RecreateFontDeviceTexture()
+    private void CreateFontDeviceTexture()
     {
         ImGuiIOPtr io = ImGui.GetIO();
 
@@ -349,11 +358,11 @@ float4 mainPS(VSOutput input) : SV_TARGET
         _pipeline = _factory.CreateGraphicsPipeline(pipelineDescription);
         _pipeline.Name = "ImGui Pipeline";
 
-        RecreateFontDeviceTexture();
-
         foreach (Shader shader in shaders)
         {
             shader.Dispose();
         }
+
+        CreateFontDeviceTexture();
     }
 }
