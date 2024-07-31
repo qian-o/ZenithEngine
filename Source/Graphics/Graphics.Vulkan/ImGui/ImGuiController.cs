@@ -16,7 +16,9 @@ public unsafe class ImGuiController : DisposableObject
     private readonly ImGuiRenderer _imGuiRenderer;
     private readonly ImGuiContextPtr _imGuiContext;
     private readonly ImGuiFontConfig _imGuiFontConfig;
+    private readonly ImGuiSizeConfig _imGuiSizeConfig;
     private readonly Dictionary<float, ImFontPtr> _dpiScaleFonts;
+    private readonly Dictionary<float, ImGuiSizeConfig> _dpiScaleSizes;
     private readonly List<ImGuiPlatform> _platforms;
     private readonly Dictionary<nint, ImGuiPlatform> _platformsByHandle;
     private readonly Dictionary<ImGuiMouseCursor, nint> _mouseCursors;
@@ -37,13 +39,13 @@ public unsafe class ImGuiController : DisposableObject
     private readonly PlatformOnChangedViewport _onChangedViewport;
 
     private bool _frameBegun;
-    private float _currentDpiScale = 1.0f;
 
     #region Constructors
     public ImGuiController(Window window,
                            GraphicsDevice graphicsDevice,
                            ColorSpaceHandling colorSpaceHandling,
                            ImGuiFontConfig imGuiFontConfig,
+                           ImGuiSizeConfig imGuiSizeConfig,
                            Action? onConfigureIO)
     {
         _window = window;
@@ -51,7 +53,9 @@ public unsafe class ImGuiController : DisposableObject
         _imGuiContext = ImGui.CreateContext();
         _imGuiRenderer = new ImGuiRenderer(graphicsDevice, colorSpaceHandling);
         _imGuiFontConfig = imGuiFontConfig;
+        _imGuiSizeConfig = imGuiSizeConfig;
         _dpiScaleFonts = [];
+        _dpiScaleSizes = [];
         _platforms = [];
         _platformsByHandle = [];
         _mouseCursors = [];
@@ -76,10 +80,23 @@ public unsafe class ImGuiController : DisposableObject
 
     public ImGuiController(Window window,
                            GraphicsDevice graphicsDevice,
+                           ImGuiFontConfig imGuiFontConfig,
+                           ImGuiSizeConfig imGuiSizeConfig) : this(window,
+                                                                   graphicsDevice,
+                                                                   ColorSpaceHandling.Legacy,
+                                                                   imGuiFontConfig,
+                                                                   imGuiSizeConfig,
+                                                                   null)
+    {
+    }
+
+    public ImGuiController(Window window,
+                           GraphicsDevice graphicsDevice,
                            ImGuiFontConfig imGuiFontConfig) : this(window,
                                                                    graphicsDevice,
                                                                    ColorSpaceHandling.Legacy,
                                                                    imGuiFontConfig,
+                                                                   ImGuiSizeConfig.Default,
                                                                    null)
     {
     }
@@ -243,12 +260,12 @@ public unsafe class ImGuiController : DisposableObject
 
         _platformsByHandle.Add((nint)mainViewport.PlatformHandle, mainPlatform);
 
-        InitializePlatformFonts();
+        InitializePlatformDpiScale();
         InitializePlatformMonitors();
         InitializePlatformCallbacks();
     }
 
-    private void InitializePlatformFonts()
+    private void InitializePlatformDpiScale()
     {
         ImGuiIOPtr io = ImGui.GetIO();
 
@@ -262,6 +279,10 @@ public unsafe class ImGuiController : DisposableObject
             ImFontPtr fontPtr = io.Fonts.AddFontFromFileTTF(_imGuiFontConfig.FontPath, Convert.ToInt32(_imGuiFontConfig.FontSize * display.DpiScale), null, (char*)glyph_ranges);
 
             _dpiScaleFonts.Add(display.DpiScale, fontPtr);
+
+            ImGuiSizeConfig sizeConfig = _imGuiSizeConfig.Scale(display.DpiScale);
+
+            _dpiScaleSizes.Add(display.DpiScale, sizeConfig);
         }
 
         _imGuiRenderer.RecreateFontDeviceTexture();
@@ -420,14 +441,9 @@ public unsafe class ImGuiController : DisposableObject
 
     private void OnChangedViewport(ImGuiViewport* vp)
     {
-        ImGuiStylePtr style = ImGui.GetStyle();
-
-        style.ScaleAllSizes(1.0f / _currentDpiScale);
-        style.ScaleAllSizes(vp->DpiScale);
+        _dpiScaleSizes[vp->DpiScale].Apply(ImGui.GetStyle());
 
         ImGui.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
-
-        _currentDpiScale = vp->DpiScale;
     }
 
     private static SystemCursor MapMouseCursor(ImGuiMouseCursor imguiCursor)
