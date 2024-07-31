@@ -3,55 +3,55 @@ using Hexa.NET.ImGui;
 
 namespace Graphics.Vulkan;
 
-public readonly record struct ImGuiSizeConfig
+public record struct ImGuiSizeConfig
 {
-    public Vector2 WindowPadding { get; init; }
+    public Vector2 WindowPadding { get; set; }
 
-    public float WindowRounding { get; init; }
+    public float WindowRounding { get; set; }
 
-    public Vector2 WindowMinSize { get; init; }
+    public Vector2 WindowMinSize { get; set; }
 
-    public float ChildRounding { get; init; }
+    public float ChildRounding { get; set; }
 
-    public float PopupRounding { get; init; }
+    public float PopupRounding { get; set; }
 
-    public Vector2 FramePadding { get; init; }
+    public Vector2 FramePadding { get; set; }
 
-    public float FrameRounding { get; init; }
+    public float FrameRounding { get; set; }
 
-    public Vector2 ItemSpacing { get; init; }
+    public Vector2 ItemSpacing { get; set; }
 
-    public Vector2 ItemInnerSpacing { get; init; }
+    public Vector2 ItemInnerSpacing { get; set; }
 
-    public Vector2 CellPadding { get; init; }
+    public Vector2 CellPadding { get; set; }
 
-    public Vector2 TouchExtraPadding { get; init; }
+    public Vector2 TouchExtraPadding { get; set; }
 
-    public float IndentSpacing { get; init; }
+    public float IndentSpacing { get; set; }
 
-    public float ColumnsMinSpacing { get; init; }
+    public float ColumnsMinSpacing { get; set; }
 
-    public float ScrollbarSize { get; init; }
+    public float ScrollbarSize { get; set; }
 
-    public float ScrollbarRounding { get; init; }
+    public float ScrollbarRounding { get; set; }
 
-    public float GrabMinSize { get; init; }
+    public float GrabMinSize { get; set; }
 
-    public float GrabRounding { get; init; }
+    public float GrabRounding { get; set; }
 
-    public float LogSliderDeadzone { get; init; }
+    public float LogSliderDeadzone { get; set; }
 
-    public float TabRounding { get; init; }
+    public float TabRounding { get; set; }
 
-    public float TabMinWidthForCloseButton { get; init; }
+    public float TabMinWidthForCloseButton { get; set; }
 
-    public Vector2 SeparatorTextPadding { get; init; }
+    public Vector2 SeparatorTextPadding { get; set; }
 
-    public Vector2 DisplayWindowPadding { get; init; }
+    public Vector2 DisplayWindowPadding { get; set; }
 
-    public Vector2 DisplaySafeAreaPadding { get; init; }
+    public Vector2 DisplaySafeAreaPadding { get; set; }
 
-    public float MouseCursorScale { get; init; }
+    public float MouseCursorScale { get; set; }
 
     public static ImGuiSizeConfig Default => new()
     {
