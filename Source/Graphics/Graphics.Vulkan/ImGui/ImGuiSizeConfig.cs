@@ -5,57 +5,6 @@ namespace Graphics.Vulkan;
 
 public readonly record struct ImGuiSizeConfig
 {
-    public ImGuiSizeConfig(Vector2 windowPadding,
-                           float windowRounding,
-                           Vector2 windowMinSize,
-                           float childRounding,
-                           float popupRounding,
-                           Vector2 framePadding,
-                           float frameRounding,
-                           Vector2 itemSpacing,
-                           Vector2 itemInnerSpacing,
-                           Vector2 cellPadding,
-                           Vector2 touchExtraPadding,
-                           float indentSpacing,
-                           float columnsMinSpacing,
-                           float scrollbarSize,
-                           float scrollbarRounding,
-                           float grabMinSize,
-                           float grabRounding,
-                           float logSliderDeadzone,
-                           float tabRounding,
-                           float tabMinWidthForCloseButton,
-                           Vector2 separatorTextPadding,
-                           Vector2 displayWindowPadding,
-                           Vector2 displaySafeAreaPadding,
-                           float mouseCursorScale)
-    {
-        WindowPadding = windowPadding;
-        WindowRounding = windowRounding;
-        WindowMinSize = windowMinSize;
-        ChildRounding = childRounding;
-        PopupRounding = popupRounding;
-        FramePadding = framePadding;
-        FrameRounding = frameRounding;
-        ItemSpacing = itemSpacing;
-        ItemInnerSpacing = itemInnerSpacing;
-        CellPadding = cellPadding;
-        TouchExtraPadding = touchExtraPadding;
-        IndentSpacing = indentSpacing;
-        ColumnsMinSpacing = columnsMinSpacing;
-        ScrollbarSize = scrollbarSize;
-        ScrollbarRounding = scrollbarRounding;
-        GrabMinSize = grabMinSize;
-        GrabRounding = grabRounding;
-        LogSliderDeadzone = logSliderDeadzone;
-        TabRounding = tabRounding;
-        TabMinWidthForCloseButton = tabMinWidthForCloseButton;
-        SeparatorTextPadding = separatorTextPadding;
-        DisplayWindowPadding = displayWindowPadding;
-        DisplaySafeAreaPadding = displaySafeAreaPadding;
-        MouseCursorScale = mouseCursorScale;
-    }
-
     public Vector2 WindowPadding { get; init; }
 
     public float WindowRounding { get; init; }
