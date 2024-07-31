@@ -233,6 +233,8 @@ public unsafe class ImGuiController : DisposableObject
 
         ImGuiIOPtr io = ImGui.GetIO();
 
+        io.Fonts.Clear();
+
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
