@@ -36,6 +36,7 @@ public unsafe class ImGuiController : DisposableObject
     private readonly PlatformUpdateWindow _updateWindow;
     private readonly PlatformOnChangedViewport _onChangedViewport;
 
+    private bool _frameBegun;
     private float _currentDpiScale = 1.0f;
 
     #region Constructors
@@ -86,6 +87,13 @@ public unsafe class ImGuiController : DisposableObject
 
     public void Update(float deltaSeconds)
     {
+        if (_frameBegun)
+        {
+            ImGui.Render();
+        }
+
+        _frameBegun = true;
+
         SetPerFrameImGuiData(deltaSeconds);
 
         UpdateMouseState();
@@ -95,23 +103,26 @@ public unsafe class ImGuiController : DisposableObject
         ImGuizmo.BeginFrame();
 
         ImGui.DockSpaceOverViewport();
-
-        ImGui.ShowDemoWindow();
     }
 
     public void Render(CommandList commandList)
     {
-        ImGui.Render();
-        ImGui.EndFrame();
-
-        _imGuiRenderer.RenderImDrawData(commandList, ImGui.GetDrawData());
-
-        ImGui.UpdatePlatformWindows();
-        foreach (ImGuiPlatform platform in _platforms)
+        if (_frameBegun)
         {
-            commandList.SetFramebuffer(platform.Swapchain!.Framebuffer);
+            _frameBegun = false;
 
-            _imGuiRenderer.RenderImDrawData(commandList, platform.Viewport->DrawData);
+            ImGui.Render();
+            ImGui.EndFrame();
+
+            _imGuiRenderer.RenderImDrawData(commandList, ImGui.GetDrawData());
+
+            ImGui.UpdatePlatformWindows();
+            foreach (ImGuiPlatform platform in _platforms)
+            {
+                commandList.SetFramebuffer(platform.Swapchain!.Framebuffer);
+
+                _imGuiRenderer.RenderImDrawData(commandList, platform.Viewport->DrawData);
+            }
         }
     }
 
