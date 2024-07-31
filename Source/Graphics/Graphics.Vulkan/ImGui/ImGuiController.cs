@@ -258,6 +258,8 @@ public unsafe class ImGuiController : DisposableObject
         }
 
         InitializePlatform();
+
+        io.PlatformSetImeDataFn = (void*)Marshal.GetFunctionPointerForDelegate(_setImeData);
     }
 
     private void InitializePlatform()
@@ -340,10 +342,6 @@ public unsafe class ImGuiController : DisposableObject
         platformIO.PlatformSetWindowAlpha = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowAlpha);
         platformIO.PlatformUpdateWindow = (void*)Marshal.GetFunctionPointerForDelegate(_updateWindow);
         platformIO.PlatformOnChangedViewport = (void*)Marshal.GetFunctionPointerForDelegate(_onChangedViewport);
-
-        ImGuiIOPtr imGuiIO = ImGui.GetIO();
-
-        imGuiIO.PlatformSetImeDataFn = (void*)Marshal.GetFunctionPointerForDelegate(_setImeData);
     }
 
     private void CreateWindow(ImGuiViewport* vp)

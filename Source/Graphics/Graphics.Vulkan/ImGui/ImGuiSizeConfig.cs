@@ -5,6 +5,34 @@ namespace Graphics.Vulkan;
 
 public record struct ImGuiSizeConfig
 {
+    public static ImGuiSizeConfig Default => new()
+    {
+        WindowPadding = new Vector2(8, 8),
+        WindowRounding = 0.0f,
+        WindowMinSize = new Vector2(32, 32),
+        ChildRounding = 0.0f,
+        PopupRounding = 0.0f,
+        FramePadding = new Vector2(4, 3),
+        FrameRounding = 0.0f,
+        ItemSpacing = new Vector2(8, 4),
+        ItemInnerSpacing = new Vector2(4, 4),
+        CellPadding = new Vector2(4, 2),
+        TouchExtraPadding = new Vector2(0, 0),
+        IndentSpacing = 21.0f,
+        ColumnsMinSpacing = 6.0f,
+        ScrollbarSize = 14.0f,
+        ScrollbarRounding = 9.0f,
+        GrabMinSize = 12.0f,
+        GrabRounding = 0.0f,
+        LogSliderDeadzone = 4.0f,
+        TabRounding = 4.0f,
+        TabMinWidthForCloseButton = 0.0f,
+        SeparatorTextPadding = new Vector2(20, 3),
+        DisplayWindowPadding = new Vector2(19, 19),
+        DisplaySafeAreaPadding = new Vector2(3, 3),
+        MouseCursorScale = 1.0f
+    };
+
     public Vector2 WindowPadding { get; set; }
 
     public float WindowRounding { get; set; }
@@ -53,35 +81,7 @@ public record struct ImGuiSizeConfig
 
     public float MouseCursorScale { get; set; }
 
-    public static ImGuiSizeConfig Default => new()
-    {
-        WindowPadding = new Vector2(8, 8),
-        WindowRounding = 0.0f,
-        WindowMinSize = new Vector2(32, 32),
-        ChildRounding = 0.0f,
-        PopupRounding = 0.0f,
-        FramePadding = new Vector2(4, 3),
-        FrameRounding = 0.0f,
-        ItemSpacing = new Vector2(8, 4),
-        ItemInnerSpacing = new Vector2(4, 4),
-        CellPadding = new Vector2(4, 2),
-        TouchExtraPadding = new Vector2(0, 0),
-        IndentSpacing = 21.0f,
-        ColumnsMinSpacing = 6.0f,
-        ScrollbarSize = 14.0f,
-        ScrollbarRounding = 9.0f,
-        GrabMinSize = 12.0f,
-        GrabRounding = 0.0f,
-        LogSliderDeadzone = 4.0f,
-        TabRounding = 4.0f,
-        TabMinWidthForCloseButton = 0.0f,
-        SeparatorTextPadding = new Vector2(20, 3),
-        DisplayWindowPadding = new Vector2(19, 19),
-        DisplaySafeAreaPadding = new Vector2(3, 3),
-        MouseCursorScale = 1.0f
-    };
-
-    public readonly ImGuiSizeConfig Scale(float scale)
+    public ImGuiSizeConfig Scale(float scale)
     {
         ImGuiSizeConfig imGuiSizeConfig = new()
         {
