@@ -39,8 +39,6 @@ public unsafe class ImGuiController : DisposableObject
     private readonly PlatformOnChangedViewport _onChangedViewport;
     private readonly PlatformSetImeDataFn _setImeData;
 
-    private bool _frameBegun;
-
     #region Constructors
     public ImGuiController(Window window,
                            GraphicsDevice graphicsDevice,
@@ -106,13 +104,6 @@ public unsafe class ImGuiController : DisposableObject
 
     public void Update(float deltaSeconds)
     {
-        if (_frameBegun)
-        {
-            ImGui.Render();
-        }
-
-        _frameBegun = true;
-
         SetPerFrameImGuiData(deltaSeconds);
 
         UpdateMouseState();
@@ -126,22 +117,17 @@ public unsafe class ImGuiController : DisposableObject
 
     public void Render(CommandList commandList)
     {
-        if (_frameBegun)
+        ImGui.Render();
+
+        _imGuiRenderer.RenderImDrawData(commandList, ImGui.GetDrawData());
+
+        ImGui.UpdatePlatformWindows();
+
+        foreach (ImGuiPlatform platform in _platforms)
         {
-            _frameBegun = false;
+            commandList.SetFramebuffer(platform.Swapchain!.Framebuffer);
 
-            ImGui.Render();
-            ImGui.EndFrame();
-
-            _imGuiRenderer.RenderImDrawData(commandList, ImGui.GetDrawData());
-
-            ImGui.UpdatePlatformWindows();
-            foreach (ImGuiPlatform platform in _platforms)
-            {
-                commandList.SetFramebuffer(platform.Swapchain!.Framebuffer);
-
-                _imGuiRenderer.RenderImDrawData(commandList, platform.Viewport->DrawData);
-            }
+            _imGuiRenderer.RenderImDrawData(commandList, platform.Viewport->DrawData);
         }
     }
 
