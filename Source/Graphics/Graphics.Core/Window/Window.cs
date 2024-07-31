@@ -77,6 +77,11 @@ public unsafe partial class Window : DisposableObject
         return new Window(window, window.CreateInput());
     }
 
+    public static bool IsMouseFocusOnWindow()
+    {
+        return _sdl.GetMouseFocus() != null;
+    }
+
     public static MouseButton[] GetGlobalMouseState(out Vector2 position)
     {
         int x, y;
@@ -109,6 +114,13 @@ public unsafe partial class Window : DisposableObject
     public static void FreeCursor(Cursor* cursor)
     {
         _sdl.FreeCursor(cursor);
+    }
+
+    public static void SetTextIputRect(int x, int y, int w, int h)
+    {
+        Rectangle<int> rect = new(x, y, w, h);
+
+        _sdl.SetTextInputRect(&rect);
     }
 
     public static int GetDisplayCount()

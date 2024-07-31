@@ -37,6 +37,7 @@ public unsafe class ImGuiController : DisposableObject
     private readonly PlatformSetWindowAlpha _setWindowAlpha;
     private readonly PlatformUpdateWindow _updateWindow;
     private readonly PlatformOnChangedViewport _onChangedViewport;
+    private readonly PlatformSetImeDataFn _setImeData;
 
     private bool _frameBegun;
 
@@ -74,6 +75,7 @@ public unsafe class ImGuiController : DisposableObject
         _setWindowAlpha = SetWindowAlpha;
         _updateWindow = UpdateWindow;
         _onChangedViewport = OnChangedViewport;
+        _setImeData = SetImeData;
 
         Initialize(onConfigureIO);
     }
@@ -197,17 +199,20 @@ public unsafe class ImGuiController : DisposableObject
 
     private static void UpdateMouseState()
     {
-        ImGuiIOPtr io = ImGui.GetIO();
+        if (Window.IsMouseFocusOnWindow())
+        {
+            ImGuiIOPtr io = ImGui.GetIO();
 
-        MouseButton[] mouseButtons = Window.GetGlobalMouseState(out Vector2 position);
+            MouseButton[] mouseButtons = Window.GetGlobalMouseState(out Vector2 position);
 
-        io.AddMouseButtonEvent(0, mouseButtons.Contains(MouseButton.Left));
-        io.AddMouseButtonEvent(1, mouseButtons.Contains(MouseButton.Right));
-        io.AddMouseButtonEvent(2, mouseButtons.Contains(MouseButton.Middle));
-        io.AddMouseButtonEvent(3, mouseButtons.Contains(MouseButton.Button4));
-        io.AddMouseButtonEvent(4, mouseButtons.Contains(MouseButton.Button5));
+            io.AddMouseButtonEvent(0, mouseButtons.Contains(MouseButton.Left));
+            io.AddMouseButtonEvent(1, mouseButtons.Contains(MouseButton.Right));
+            io.AddMouseButtonEvent(2, mouseButtons.Contains(MouseButton.Middle));
+            io.AddMouseButtonEvent(3, mouseButtons.Contains(MouseButton.Button4));
+            io.AddMouseButtonEvent(4, mouseButtons.Contains(MouseButton.Button5));
 
-        io.AddMousePosEvent(position.X, position.Y);
+            io.AddMousePosEvent(position.X, position.Y);
+        }
     }
 
     private void UpdateMouseCursor()
@@ -335,6 +340,10 @@ public unsafe class ImGuiController : DisposableObject
         platformIO.PlatformSetWindowAlpha = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowAlpha);
         platformIO.PlatformUpdateWindow = (void*)Marshal.GetFunctionPointerForDelegate(_updateWindow);
         platformIO.PlatformOnChangedViewport = (void*)Marshal.GetFunctionPointerForDelegate(_onChangedViewport);
+
+        ImGuiIOPtr imGuiIO = ImGui.GetIO();
+
+        imGuiIO.PlatformSetImeDataFn = (void*)Marshal.GetFunctionPointerForDelegate(_setImeData);
     }
 
     private void CreateWindow(ImGuiViewport* vp)
@@ -446,6 +455,19 @@ public unsafe class ImGuiController : DisposableObject
         _dpiScaleSizes[vp->DpiScale].Apply(ImGui.GetStyle());
 
         ImGui.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
+    }
+
+    private void SetImeData(ImGuiContext* ctx, ImGuiViewport* viewport, ImGuiPlatformImeData* data)
+    {
+        if (data->WantVisible == 1)
+        {
+            int x = Convert.ToInt32(data->InputPos.X - viewport->Pos.X);
+            int y = Convert.ToInt32(data->InputPos.Y - viewport->Pos.Y);
+            int w = 1;
+            int h = Convert.ToInt32(data->InputLineHeight);
+
+            Window.SetTextIputRect(x, y, w, h);
+        }
     }
 
     private static SystemCursor MapMouseCursor(ImGuiMouseCursor imguiCursor)
