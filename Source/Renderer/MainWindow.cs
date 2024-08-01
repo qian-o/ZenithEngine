@@ -69,6 +69,8 @@ internal sealed unsafe class MainWindow : DisposableObject
 
     private void Window_Update(object? sender, UpdateEventArgs e)
     {
+        _imGuiController.Update(e.DeltaTime);
+
         if (App.Settings.IsMultiThreadedRendering)
         {
             Parallel.ForEach(_controls, (control) =>
@@ -97,8 +99,6 @@ internal sealed unsafe class MainWindow : DisposableObject
 
     private void Window_Render(object? sender, RenderEventArgs e)
     {
-        _imGuiController.Update(e.DeltaTime);
-
         ImGui.ShowDemoWindow();
 
         foreach (Control control in _controls)

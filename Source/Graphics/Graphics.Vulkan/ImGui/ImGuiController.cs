@@ -43,6 +43,8 @@ public unsafe class ImGuiController : DisposableObject
     private readonly PlatformOnChangedViewport _onChangedViewport;
     private readonly PlatformSetImeDataFn _setImeData;
 
+    private bool _frameBegun;
+
     #region Constructors
     public ImGuiController(Window window,
                            GraphicsDevice graphicsDevice,
@@ -110,6 +112,11 @@ public unsafe class ImGuiController : DisposableObject
 
     public void Update(float deltaSeconds)
     {
+        if (_frameBegun)
+        {
+            ImGui.Render();
+        }
+
         ImGui.SetCurrentContext(_imGuiContext);
         ImPlot.SetCurrentContext(_imPlotContext);
         ImNodes.SetCurrentContext(_imNodesContext);
@@ -127,21 +134,28 @@ public unsafe class ImGuiController : DisposableObject
         ImGuizmo.BeginFrame();
 
         ImGui.DockSpaceOverViewport();
+
+        _frameBegun = true;
     }
 
     public void Render(CommandList commandList)
     {
-        ImGui.Render();
-
-        _imGuiRenderer.RenderImDrawData(commandList, ImGui.GetDrawData());
-
-        ImGui.UpdatePlatformWindows();
-
-        foreach (ImGuiPlatform platform in _platforms)
+        if (_frameBegun)
         {
-            commandList.SetFramebuffer(platform.Swapchain!.Framebuffer);
+            ImGui.Render();
 
-            _imGuiRenderer.RenderImDrawData(commandList, platform.Viewport->DrawData);
+            _imGuiRenderer.RenderImDrawData(commandList, ImGui.GetDrawData());
+
+            ImGui.UpdatePlatformWindows();
+
+            foreach (ImGuiPlatform platform in _platforms)
+            {
+                commandList.SetFramebuffer(platform.Swapchain!.Framebuffer);
+
+                _imGuiRenderer.RenderImDrawData(commandList, platform.Viewport->DrawData);
+            }
+
+            _frameBegun = false;
         }
     }
 
