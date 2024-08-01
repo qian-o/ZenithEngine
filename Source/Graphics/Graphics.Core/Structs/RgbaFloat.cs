@@ -45,4 +45,9 @@ public readonly record struct RgbaFloat
     public float B { get; init; }
 
     public float A { get; init; }
+
+    public override string ToString()
+    {
+        return $"RgbaFloat: R: {R}, G: {G}, B: {B}, A: {A}";
+    }
 }

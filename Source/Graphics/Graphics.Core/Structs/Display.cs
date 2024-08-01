@@ -34,4 +34,9 @@ public readonly record struct Display
     public Vector2 WorkSize { get; init; }
 
     public float DpiScale { get; init; }
+
+    public override string ToString()
+    {
+        return $"Display {Index}: Name: {Name}, Main: {MainPosition} - {MainSize}, Work: {WorkPosition} - {WorkSize}, DPI: {DpiScale}";
+    }
 }

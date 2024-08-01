@@ -23,4 +23,9 @@ public readonly record struct Viewport
     public float MinDepth { get; init; }
 
     public float MaxDepth { get; init; }
+
+    public override string ToString()
+    {
+        return $"Viewport: X: {X}, Y: {Y}, Width: {Width}, Height: {Height}, MinDepth: {MinDepth}, MaxDepth: {MaxDepth}";
+    }
 }

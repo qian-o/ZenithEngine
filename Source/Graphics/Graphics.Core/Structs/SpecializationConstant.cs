@@ -66,6 +66,7 @@ public readonly record struct SpecializationConstant
     {
         ulong ret;
         Unsafe.Write(&ret, value);
+
         return ret;
     }
 }
