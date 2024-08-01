@@ -469,9 +469,12 @@ public unsafe class ImGuiController : DisposableObject
 
     private void OnChangedViewport(ImGuiViewport* vp)
     {
-        _dpiScaleSizes[vp->DpiScale].Apply(ImGui.GetStyle());
+        if (_frameBegun)
+        {
+            _dpiScaleSizes[vp->DpiScale].Apply(ImGui.GetStyle());
 
-        ImGui.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
+            ImGui.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
+        }
     }
 
     private void SetImeData(ImGuiContext* ctx, ImGuiViewport* viewport, ImGuiPlatformImeData* data)
