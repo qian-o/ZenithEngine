@@ -18,7 +18,6 @@ public unsafe class ImGuiController : DisposableObject
     private readonly ImGuiContextPtr _imGuiContext;
     private readonly ImPlotContextPtr _imPlotContext;
     private readonly ImNodesContextPtr _imNodesContext;
-    private readonly ImGuiRenderer _imGuiRenderer;
     private readonly ImGuiFontConfig _imGuiFontConfig;
     private readonly ImGuiSizeConfig _imGuiSizeConfig;
     private readonly Dictionary<float, ImFontPtr> _dpiScaleFonts;
@@ -26,6 +25,7 @@ public unsafe class ImGuiController : DisposableObject
     private readonly List<ImGuiPlatform> _platforms;
     private readonly Dictionary<nint, ImGuiPlatform> _platformsByHandle;
     private readonly Dictionary<ImGuiMouseCursor, nint> _mouseCursors;
+    private readonly ImGuiRenderer _imGuiRenderer;
 
     private readonly PlatformCreateWindow _createWindow;
     private readonly PlatformDestroyWindow _destroyWindow;
@@ -58,7 +58,6 @@ public unsafe class ImGuiController : DisposableObject
         _imGuiContext = ImGui.CreateContext();
         _imPlotContext = ImPlot.CreateContext();
         _imNodesContext = ImNodes.CreateContext();
-        _imGuiRenderer = new ImGuiRenderer(graphicsDevice, colorSpaceHandling);
         _imGuiFontConfig = imGuiFontConfig;
         _imGuiSizeConfig = imGuiSizeConfig;
         _dpiScaleFonts = [];
@@ -66,6 +65,7 @@ public unsafe class ImGuiController : DisposableObject
         _platforms = [];
         _platformsByHandle = [];
         _mouseCursors = [];
+        _imGuiRenderer = new ImGuiRenderer(graphicsDevice, colorSpaceHandling);
 
         _createWindow = CreateWindow;
         _destroyWindow = DestroyWindow;
@@ -184,6 +184,8 @@ public unsafe class ImGuiController : DisposableObject
 
     protected override void Destroy()
     {
+        _imGuiRenderer.Dispose();
+
         foreach (nint cursor in _mouseCursors.Values)
         {
             Window.FreeCursor((Cursor*)cursor);
@@ -193,8 +195,6 @@ public unsafe class ImGuiController : DisposableObject
         {
             platform.Dispose();
         }
-
-        _imGuiRenderer.Dispose();
 
         ImNodes.DestroyContext(_imNodesContext);
         ImPlot.DestroyContext(_imPlotContext);

@@ -162,6 +162,49 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         _window.Closing -= Closing;
     }
 
+    private void MouseWheel(object? sender, MouseWheelEventArgs e)
+    {
+        ImGui.GetIO().AddMouseWheelEvent(e.ScrollWheel.X, e.ScrollWheel.Y);
+    }
+
+    private void KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (TryMapKey(e.Key, out ImGuiKey result))
+        {
+            ImGui.GetIO().AddKeyEvent(result, true);
+        }
+    }
+
+    private void KeyUp(object? sender, KeyEventArgs e)
+    {
+        if (TryMapKey(e.Key, out ImGuiKey result))
+        {
+            ImGui.GetIO().AddKeyEvent(result, false);
+        }
+    }
+
+    private void KeyChar(object? sender, KeyCharEventArgs e)
+    {
+        ImGui.GetIO().AddInputCharacter(e.KeyChar);
+    }
+
+    private void Move(object? sender, MoveEventArgs e)
+    {
+        _viewport->PlatformRequestMove = 1;
+    }
+
+    private void Resize(object? sender, ResizeEventArgs e)
+    {
+        _viewport->PlatformRequestResize = 1;
+
+        _swapchain?.Resize(e.Width, e.Height);
+    }
+
+    private void Closing(object? sender, ClosingEventArgs e)
+    {
+        _viewport->PlatformRequestClose = 1;
+    }
+
     private static bool TryMapKey(Key key, out ImGuiKey result)
     {
         static ImGuiKey KeyToImGuiKeyShortcut(Key keyToConvert, Key startKey1, ImGuiKey startKey2)
@@ -222,48 +265,5 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         };
 
         return result != ImGuiKey.None;
-    }
-
-    private void MouseWheel(object? sender, MouseWheelEventArgs e)
-    {
-        ImGui.GetIO().AddMouseWheelEvent(e.ScrollWheel.X, e.ScrollWheel.Y);
-    }
-
-    private void KeyDown(object? sender, KeyEventArgs e)
-    {
-        if (TryMapKey(e.Key, out ImGuiKey result))
-        {
-            ImGui.GetIO().AddKeyEvent(result, true);
-        }
-    }
-
-    private void KeyUp(object? sender, KeyEventArgs e)
-    {
-        if (TryMapKey(e.Key, out ImGuiKey result))
-        {
-            ImGui.GetIO().AddKeyEvent(result, false);
-        }
-    }
-
-    private void KeyChar(object? sender, KeyCharEventArgs e)
-    {
-        ImGui.GetIO().AddInputCharacter(e.KeyChar);
-    }
-
-    private void Move(object? sender, MoveEventArgs e)
-    {
-        _viewport->PlatformRequestMove = 1;
-    }
-
-    private void Resize(object? sender, ResizeEventArgs e)
-    {
-        _viewport->PlatformRequestResize = 1;
-
-        _swapchain?.Resize(e.Width, e.Height);
-    }
-
-    private void Closing(object? sender, ClosingEventArgs e)
-    {
-        _viewport->PlatformRequestClose = 1;
     }
 }
