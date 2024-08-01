@@ -15,10 +15,10 @@ public unsafe class ImGuiController : DisposableObject
 {
     private readonly Window _window;
     private readonly GraphicsDevice _graphicsDevice;
-    private readonly ImGuiRenderer _imGuiRenderer;
     private readonly ImGuiContextPtr _imGuiContext;
     private readonly ImPlotContextPtr _imPlotContext;
     private readonly ImNodesContextPtr _imNodesContext;
+    private readonly ImGuiRenderer _imGuiRenderer;
     private readonly ImGuiFontConfig _imGuiFontConfig;
     private readonly ImGuiSizeConfig _imGuiSizeConfig;
     private readonly Dictionary<float, ImFontPtr> _dpiScaleFonts;
@@ -180,10 +180,10 @@ public unsafe class ImGuiController : DisposableObject
             platform.Dispose();
         }
 
-        ImGui.DestroyPlatformWindows();
-
         _imGuiRenderer.Dispose();
 
+        ImNodes.DestroyContext(_imNodesContext);
+        ImPlot.DestroyContext(_imPlotContext);
         ImGui.DestroyContext(_imGuiContext);
     }
 
