@@ -114,9 +114,9 @@ public unsafe class ImGuiController : DisposableObject
         ImPlot.SetCurrentContext(_imPlotContext);
         ImNodes.SetCurrentContext(_imNodesContext);
 
-        ImGuizmo.SetImGuiContext(_imGuiContext);
         ImPlot.SetImGuiContext(_imGuiContext);
         ImNodes.SetImGuiContext(_imGuiContext);
+        ImGuizmo.SetImGuiContext(_imGuiContext);
 
         SetPerFrameImGuiData(deltaSeconds);
 
@@ -235,9 +235,9 @@ public unsafe class ImGuiController : DisposableObject
         ImPlot.SetCurrentContext(_imPlotContext);
         ImNodes.SetCurrentContext(_imNodesContext);
 
-        ImGuizmo.SetImGuiContext(_imGuiContext);
         ImPlot.SetImGuiContext(_imGuiContext);
         ImNodes.SetImGuiContext(_imGuiContext);
+        ImGuizmo.SetImGuiContext(_imGuiContext);
 
         ImGui.StyleColorsDark();
 
