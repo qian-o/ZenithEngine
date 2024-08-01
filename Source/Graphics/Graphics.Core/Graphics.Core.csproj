@@ -15,6 +15,8 @@
 	<ItemGroup>
 		<PackageReference Include="Hexa.NET.ImGui" Version="1.1.0" />
 		<PackageReference Include="Hexa.NET.ImGuizmo" Version="1.1.0" />
+		<PackageReference Include="Hexa.NET.ImNodes" Version="1.1.0" />
+		<PackageReference Include="Hexa.NET.ImPlot" Version="1.1.0" />
 		<PackageReference Include="Silk.NET.Input" Version="2.21.0" />
 		<PackageReference Include="Silk.NET.Maths" Version="2.21.0" />
 		<PackageReference Include="Silk.NET.Shaderc" Version="2.21.0" />

@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 using Graphics.Core;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
+using Hexa.NET.ImNodes;
+using Hexa.NET.ImPlot;
 using Silk.NET.Input;
 using Silk.NET.SDL;
 using Window = Graphics.Core.Window;
@@ -15,6 +17,8 @@ public unsafe class ImGuiController : DisposableObject
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ImGuiRenderer _imGuiRenderer;
     private readonly ImGuiContextPtr _imGuiContext;
+    private readonly ImPlotContextPtr _imPlotContext;
+    private readonly ImNodesContextPtr _imNodesContext;
     private readonly ImGuiFontConfig _imGuiFontConfig;
     private readonly ImGuiSizeConfig _imGuiSizeConfig;
     private readonly Dictionary<float, ImFontPtr> _dpiScaleFonts;
@@ -50,6 +54,8 @@ public unsafe class ImGuiController : DisposableObject
         _window = window;
         _graphicsDevice = graphicsDevice;
         _imGuiContext = ImGui.CreateContext();
+        _imPlotContext = ImPlot.CreateContext();
+        _imNodesContext = ImNodes.CreateContext();
         _imGuiRenderer = new ImGuiRenderer(graphicsDevice, colorSpaceHandling);
         _imGuiFontConfig = imGuiFontConfig;
         _imGuiSizeConfig = imGuiSizeConfig;
@@ -104,6 +110,14 @@ public unsafe class ImGuiController : DisposableObject
 
     public void Update(float deltaSeconds)
     {
+        ImGui.SetCurrentContext(_imGuiContext);
+        ImPlot.SetCurrentContext(_imPlotContext);
+        ImNodes.SetCurrentContext(_imNodesContext);
+
+        ImGuizmo.SetImGuiContext(_imGuiContext);
+        ImPlot.SetImGuiContext(_imGuiContext);
+        ImNodes.SetImGuiContext(_imGuiContext);
+
         SetPerFrameImGuiData(deltaSeconds);
 
         UpdateMouseState();
@@ -218,7 +232,12 @@ public unsafe class ImGuiController : DisposableObject
     private void Initialize(Action? onConfigureIO)
     {
         ImGui.SetCurrentContext(_imGuiContext);
+        ImPlot.SetCurrentContext(_imPlotContext);
+        ImNodes.SetCurrentContext(_imNodesContext);
+
         ImGuizmo.SetImGuiContext(_imGuiContext);
+        ImPlot.SetImGuiContext(_imGuiContext);
+        ImNodes.SetImGuiContext(_imGuiContext);
 
         ImGui.StyleColorsDark();
 
