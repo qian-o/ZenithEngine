@@ -1,6 +1,5 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
-using Hexa.NET.ImGui;
 using Renderer.Components;
 using Renderer.Controls;
 using Renderer.Scenes;
@@ -57,14 +56,9 @@ internal sealed unsafe class MainWindow : DisposableObject
 
     private void Initialize()
     {
-        MenuBar menuBar = new(this);
+        _controls.Add(new MenuBar(this));
 
-        _controls.Add(menuBar);
-
-        for (int i = 0; i < 4; i++)
-        {
-            _scenes.Add(new TestScene(this) { Title = $"Scene {i + 1}" });
-        }
+        _scenes.Add(new TestScene(this));
     }
 
     private void Window_Update(object? sender, UpdateEventArgs e)
@@ -99,8 +93,6 @@ internal sealed unsafe class MainWindow : DisposableObject
 
     private void Window_Render(object? sender, RenderEventArgs e)
     {
-        ImGui.ShowDemoWindow();
-
         foreach (Control control in _controls)
         {
             control.Render(e);
