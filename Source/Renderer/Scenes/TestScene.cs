@@ -70,7 +70,8 @@ float4 mainPS(VSOutput input) : SV_TARGET
     private ResourceSet _resourceSet = null!;
     private Shader[] _shaders = null!;
     private VertexLayoutDescription[] _vertexLayoutDescriptions = null!;
-    private Pipeline _pipeline = null!;
+
+    private Pipeline? _pipeline;
 
     protected override void Initialize()
     {
@@ -116,7 +117,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription, colorDescription)];
     }
 
-    protected override void UpdatePipeline(Framebuffer framebuffer)
+    protected override void RecreatePipeline(Framebuffer framebuffer)
     {
         _pipeline?.Dispose();
 
@@ -141,6 +142,11 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     protected override void RenderCore(CommandList commandList, Framebuffer framebuffer, RenderEventArgs e)
     {
+        if (_pipeline == null)
+        {
+            return;
+        }
+
         commandList.ClearColorTarget(0, RgbaFloat.CornflowerBlue);
         commandList.ClearDepthStencil(1.0f);
 
@@ -160,11 +166,13 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     protected override void Destroy()
     {
-        _pipeline.Dispose();
+        _pipeline?.Dispose();
+
         foreach (Shader shader in _shaders)
         {
             shader.Dispose();
         }
+
         _resourceSet.Dispose();
         _resourceLayout.Dispose();
         _stepBuffer.Dispose();
