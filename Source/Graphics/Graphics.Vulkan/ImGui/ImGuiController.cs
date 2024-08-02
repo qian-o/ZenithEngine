@@ -40,6 +40,7 @@ public unsafe class ImGuiController : DisposableObject
     private readonly PlatformSetWindowTitle _setWindowTitle;
     private readonly PlatformSetWindowAlpha _setWindowAlpha;
     private readonly PlatformUpdateWindow _updateWindow;
+    private readonly PlatformGetWindowDpiScale _getWindowDpiScale;
     private readonly PlatformOnChangedViewport _onChangedViewport;
     private readonly PlatformSetImeDataFn _setImeData;
 
@@ -80,6 +81,7 @@ public unsafe class ImGuiController : DisposableObject
         _setWindowTitle = SetWindowTitle;
         _setWindowAlpha = SetWindowAlpha;
         _updateWindow = UpdateWindow;
+        _getWindowDpiScale = GetWindowDpiScale;
         _onChangedViewport = OnChangedViewport;
         _setImeData = SetImeData;
 
@@ -360,6 +362,7 @@ public unsafe class ImGuiController : DisposableObject
         platformIO.PlatformSetWindowTitle = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowTitle);
         platformIO.PlatformSetWindowAlpha = (void*)Marshal.GetFunctionPointerForDelegate(_setWindowAlpha);
         platformIO.PlatformUpdateWindow = (void*)Marshal.GetFunctionPointerForDelegate(_updateWindow);
+        platformIO.PlatformGetWindowDpiScale = (void*)Marshal.GetFunctionPointerForDelegate(_getWindowDpiScale);
         platformIO.PlatformOnChangedViewport = (void*)Marshal.GetFunctionPointerForDelegate(_onChangedViewport);
     }
 
@@ -467,14 +470,18 @@ public unsafe class ImGuiController : DisposableObject
         platform.Update();
     }
 
+    private float GetWindowDpiScale(ImGuiViewport* vp)
+    {
+        ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
+
+        return platform.DpiScale;
+    }
+
     private void OnChangedViewport(ImGuiViewport* vp)
     {
-        if (_frameBegun)
-        {
-            _dpiScaleSizes[vp->DpiScale].Apply(ImGui.GetStyle());
+        _dpiScaleSizes[vp->DpiScale].Apply(ImGui.GetStyle());
 
-            ImGui.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
-        }
+        ImGui.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
     }
 
     private void SetImeData(ImGuiContext* ctx, ImGuiViewport* viewport, ImGuiPlatformImeData* data)

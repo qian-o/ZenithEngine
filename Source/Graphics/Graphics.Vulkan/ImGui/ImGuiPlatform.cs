@@ -46,6 +46,8 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     public Vector2 Size { get => _window.Size; set => _window.Size = value; }
 
+    public float DpiScale => _window.DpiScale;
+
     public byte IsFocused => _window.IsFocused ? (byte)1 : (byte)0;
 
     public byte IsMinimized => _window.WindowState == WindowState.Minimized ? (byte)1 : (byte)0;
