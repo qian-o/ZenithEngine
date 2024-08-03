@@ -151,7 +151,7 @@ public unsafe class GraphicsDevice : ContextObject
         }
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ReadOnlySpan<T> source) where T : unmanaged
     {
         fixed (T* sourcePointer = source)
         {
@@ -245,7 +245,7 @@ public unsafe class GraphicsDevice : ContextObject
     }
 
     public void UpdateTexture<T>(Texture texture,
-                                 T[] source,
+                                 ReadOnlySpan<T> source,
                                  uint x,
                                  uint y,
                                  uint z,

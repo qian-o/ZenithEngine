@@ -7,7 +7,7 @@ using Renderer.Components;
 
 namespace Renderer.Scenes;
 
-internal sealed class TestScene(MainWindow mainWindow) : Scene(mainWindow)
+internal sealed unsafe class TestScene(MainWindow mainWindow) : Scene(mainWindow)
 {
     #region Structs
     private struct Vertex(Vector2 position, Vector4 color)
@@ -15,6 +15,7 @@ internal sealed class TestScene(MainWindow mainWindow) : Scene(mainWindow)
         public const uint SizeInBytes = 24;
 
         public Vector2 Position = position;
+
         public Vector4 Color = color;
     }
 
@@ -92,8 +93,8 @@ float4 mainPS(VSOutput input) : SV_TARGET
         _endBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
         _stepBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
-        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, triangleVertices);
-        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, triangleIndices);
+        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, (Vertex*)Unsafe.AsPointer(ref triangleVertices[0]), triangleVertices.Length);
+        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, (ushort*)Unsafe.AsPointer(ref triangleIndices[0]), triangleIndices.Length);
         _graphicsDevice.UpdateBuffer(_beginBuffer, 0, [new Ubo { Value = new Vector4(1.0f, 0.0f, 0.0f, 1.0f) }]);
         _graphicsDevice.UpdateBuffer(_endBuffer, 0, [new Ubo { Value = new Vector4(0.0f, 0.0f, 1.0f, 1.0f) }]);
         _graphicsDevice.UpdateBuffer(_stepBuffer, 0, [new Ubo { Value = new Vector4(0.2f) }]);

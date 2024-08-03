@@ -20,6 +20,8 @@
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 		<PackageReference Include="SharpGLTF.Core" Version="1.0.1" />
+		<PackageReference Include="SharpGLTF.Toolkit" Version="1.0.1" />
+		<PackageReference Include="StbiSharp" Version="1.2.1" />
 	</ItemGroup>
 
 	<ItemGroup>
