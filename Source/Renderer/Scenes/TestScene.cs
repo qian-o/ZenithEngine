@@ -165,6 +165,10 @@ float4 mainPS(VSOutput input) : SV_TARGET
                                 instanceStart: 0);
     }
 
+    protected override void ImGuiRender()
+    {
+    }
+
     protected override void Destroy()
     {
         _pipeline?.Dispose();

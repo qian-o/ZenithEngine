@@ -446,6 +446,18 @@ public unsafe partial class Context
         PhysicalDeviceFeatures physicalDeviceFeatures;
         _vk.GetPhysicalDeviceFeatures(physicalDevice.VkPhysicalDevice, &physicalDeviceFeatures);
 
+        PhysicalDeviceVulkan13Features physicalDeviceVulkan13Features = new()
+        {
+            SType = StructureType.PhysicalDeviceVulkan13Features
+        };
+        PhysicalDeviceFeatures2 physicalDeviceFeatures2 = new()
+        {
+            SType = StructureType.PhysicalDeviceFeatures2,
+            Features = physicalDeviceFeatures,
+            PNext = &physicalDeviceVulkan13Features
+        };
+        _vk.GetPhysicalDeviceFeatures2(physicalDevice.VkPhysicalDevice, &physicalDeviceFeatures2);
+
         DeviceCreateInfo createInfo = new()
         {
             SType = StructureType.DeviceCreateInfo,
@@ -453,7 +465,7 @@ public unsafe partial class Context
             PQueueCreateInfos = _alloter.Allocate(createInfos),
             EnabledExtensionCount = (uint)deviceExtensions.Length,
             PpEnabledExtensionNames = _alloter.Allocate(deviceExtensions),
-            PEnabledFeatures = &physicalDeviceFeatures
+            PNext = &physicalDeviceFeatures2
         };
 
         Device device;
