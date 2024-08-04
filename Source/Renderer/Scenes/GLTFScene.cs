@@ -313,6 +313,37 @@ internal sealed unsafe class GLTFScene(MainWindow mainWindow) : Scene(mainWindow
 
     protected override void Destroy()
     {
+        if (_pipelines != null)
+        {
+            foreach (Pipeline pipeline in _pipelines)
+            {
+                pipeline.Dispose();
+            }
+        }
+
+        foreach (Shader shader in _shaders)
+        {
+            shader.Dispose();
+        }
+
+        foreach (ResourceSet resourceSet in _materialSets)
+        {
+            resourceSet.Dispose();
+        }
+
+        _materialLayout.Dispose();
+
+        _uboSet.Dispose();
+        _uboLayout.Dispose();
+        _uboBuffer.Dispose();
+        _indexBuffer.Dispose();
+        _vertexBuffer.Dispose();
+
+        foreach (TextureView textureView in _textureViews)
+        {
+            textureView.Dispose();
+        }
+
         foreach (Texture texture in _textures)
         {
             texture.Dispose();
