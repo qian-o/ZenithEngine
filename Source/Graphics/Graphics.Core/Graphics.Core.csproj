@@ -23,7 +23,6 @@
 		<PackageReference Include="Silk.NET.Shaderc.Native" Version="2.21.0" />
 		<PackageReference Include="Silk.NET.Windowing" Version="2.21.0" />
 		<PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.21.0" />
-		<PackageReference Include="StbiSharp" Version="1.2.1" />
 	</ItemGroup>
 
 </Project>

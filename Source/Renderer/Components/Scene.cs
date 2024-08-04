@@ -91,7 +91,7 @@ internal abstract class Scene : MVVM
 
                     if (isUpdatePipelineRequired)
                     {
-                        UpdatePipeline(_fbo.Framebuffer);
+                        RecreatePipeline(_fbo.Framebuffer);
                     }
                 }
 
@@ -126,7 +126,7 @@ internal abstract class Scene : MVVM
 
     protected abstract void Initialize();
 
-    protected abstract void UpdatePipeline(Framebuffer framebuffer);
+    protected abstract void RecreatePipeline(Framebuffer framebuffer);
 
     protected abstract void UpdateCore(UpdateEventArgs e);
 

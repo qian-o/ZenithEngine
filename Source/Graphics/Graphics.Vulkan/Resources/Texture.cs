@@ -17,14 +17,15 @@ public unsafe class Texture : DeviceResource, IBindableResource
     private readonly uint _depth;
     private readonly uint _mipLevels;
     private readonly uint _arrayLayers;
+    private readonly ImageLayout[] _imageLayouts;
     private readonly DeviceMemory? _deviceMemory;
     private readonly bool _isSwapchainImage;
-
-    private ImageLayout _layout;
 
     internal Texture(GraphicsDevice graphicsDevice, ref readonly TextureDescription description) : base(graphicsDevice)
     {
         bool isCube = description.Usage.HasFlag(TextureUsage.Cubemap);
+        uint arrayLayers = (isCube ? 6u : 1u) * description.Depth;
+        uint subresourceCount = arrayLayers * description.MipLevels;
 
         ImageCreateInfo createInfo = new()
         {
@@ -37,7 +38,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
                 Depth = description.Depth
             },
             MipLevels = description.MipLevels,
-            ArrayLayers = (isCube ? 6u : 1u) * description.Depth,
+            ArrayLayers = arrayLayers,
             InitialLayout = ImageLayout.Preinitialized,
             Usage = Formats.GetImageUsageFlags(description.Usage),
             Tiling = ImageTiling.Optimal,
@@ -65,6 +66,9 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
         Vk.BindImageMemory(Device, image, deviceMemory.Handle, 0).ThrowCode();
 
+        ImageLayout[] imageLayouts = new ImageLayout[subresourceCount];
+        Array.Fill(imageLayouts, ImageLayout.Preinitialized);
+
         _image = image;
         _type = description.Type;
         _format = description.Format;
@@ -75,9 +79,9 @@ public unsafe class Texture : DeviceResource, IBindableResource
         _width = description.Width;
         _height = description.Height;
         _depth = description.Depth;
-        _layout = ImageLayout.Preinitialized;
         _mipLevels = description.MipLevels;
         _arrayLayers = createInfo.ArrayLayers;
+        _imageLayouts = imageLayouts;
         _deviceMemory = deviceMemory;
         _isSwapchainImage = false;
     }
@@ -94,9 +98,9 @@ public unsafe class Texture : DeviceResource, IBindableResource
         _width = width;
         _height = height;
         _depth = 1;
-        _layout = ImageLayout.PresentSrcKhr;
         _mipLevels = 1;
         _arrayLayers = 1;
+        _imageLayouts = [ImageLayout.PresentSrcKhr];
         _deviceMemory = null;
         _isSwapchainImage = true;
     }
@@ -125,125 +129,138 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
     public uint ArrayLayers => _arrayLayers;
 
+    internal void TransitionLayout(CommandBuffer commandBuffer, uint baseMipLevel, uint levelCount, uint baseArrayLayer, uint layerCount, ImageLayout newLayout)
+    {
+        for (uint level = baseMipLevel; level < baseMipLevel + levelCount; level++)
+        {
+            for (uint layer = baseArrayLayer; layer < baseArrayLayer + layerCount; layer++)
+            {
+                uint index = (layer * _mipLevels) + level;
+
+                ImageLayout oldLayout = _imageLayouts[index];
+
+                if (oldLayout != newLayout)
+                {
+                    ImageMemoryBarrier barrier = new()
+                    {
+                        SType = StructureType.ImageMemoryBarrier,
+                        Image = _image,
+                        SubresourceRange = new ImageSubresourceRange
+                        {
+                            BaseMipLevel = level,
+                            LevelCount = 1,
+                            BaseArrayLayer = layer,
+                            LayerCount = 1
+                        },
+                        OldLayout = ImageLayout.Undefined,
+                        NewLayout = newLayout,
+                    };
+
+                    if (newLayout == ImageLayout.DepthStencilAttachmentOptimal)
+                    {
+                        barrier.SubresourceRange.AspectMask = ImageAspectFlags.DepthBit;
+
+                        if (HasStencilComponent(_format))
+                        {
+                            barrier.SubresourceRange.AspectMask |= ImageAspectFlags.StencilBit;
+                        }
+                    }
+                    else
+                    {
+                        barrier.SubresourceRange.AspectMask = ImageAspectFlags.ColorBit;
+                    }
+
+                    PipelineStageFlags srcStageFlags;
+                    PipelineStageFlags dstStageFlags;
+
+                    // Transition layouts.
+                    {
+                        if (oldLayout == ImageLayout.Preinitialized)
+                        {
+                            barrier.SrcAccessMask = AccessFlags.None;
+                            srcStageFlags = PipelineStageFlags.TopOfPipeBit;
+                        }
+                        else if (oldLayout == ImageLayout.TransferSrcOptimal)
+                        {
+                            barrier.SrcAccessMask = AccessFlags.TransferReadBit;
+                            srcStageFlags = PipelineStageFlags.TransferBit;
+                        }
+                        else if (oldLayout == ImageLayout.TransferDstOptimal)
+                        {
+                            barrier.SrcAccessMask = AccessFlags.TransferWriteBit;
+                            srcStageFlags = PipelineStageFlags.TransferBit;
+                        }
+                        else if (oldLayout == ImageLayout.ShaderReadOnlyOptimal)
+                        {
+                            barrier.SrcAccessMask = AccessFlags.ShaderReadBit;
+                            srcStageFlags = PipelineStageFlags.FragmentShaderBit;
+                        }
+                        else if (oldLayout == ImageLayout.ColorAttachmentOptimal)
+                        {
+                            barrier.SrcAccessMask = AccessFlags.ColorAttachmentWriteBit;
+                            srcStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
+                        }
+                        else if (oldLayout == ImageLayout.DepthStencilAttachmentOptimal)
+                        {
+                            barrier.SrcAccessMask = AccessFlags.DepthStencilAttachmentWriteBit;
+                            srcStageFlags = PipelineStageFlags.EarlyFragmentTestsBit;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Unsupported layout transition.");
+                        }
+
+                        if (newLayout == ImageLayout.TransferSrcOptimal)
+                        {
+                            barrier.DstAccessMask = AccessFlags.TransferReadBit;
+                            dstStageFlags = PipelineStageFlags.TransferBit;
+                        }
+                        else if (newLayout == ImageLayout.TransferDstOptimal)
+                        {
+                            barrier.DstAccessMask = AccessFlags.TransferWriteBit;
+                            dstStageFlags = PipelineStageFlags.TransferBit;
+                        }
+                        else if (newLayout == ImageLayout.ShaderReadOnlyOptimal)
+                        {
+                            barrier.DstAccessMask = AccessFlags.ShaderReadBit;
+                            dstStageFlags = PipelineStageFlags.FragmentShaderBit;
+                        }
+                        else if (newLayout == ImageLayout.ColorAttachmentOptimal)
+                        {
+                            barrier.DstAccessMask = AccessFlags.ColorAttachmentWriteBit;
+                            dstStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
+                        }
+                        else if (newLayout == ImageLayout.DepthStencilAttachmentOptimal)
+                        {
+                            barrier.DstAccessMask = AccessFlags.DepthStencilAttachmentWriteBit;
+                            dstStageFlags = PipelineStageFlags.EarlyFragmentTestsBit;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Unsupported layout transition.");
+                        }
+                    }
+
+                    Vk.CmdPipelineBarrier(commandBuffer,
+                                          srcStageFlags,
+                                          dstStageFlags,
+                                          DependencyFlags.None,
+                                          0,
+                                          null,
+                                          0,
+                                          null,
+                                          1,
+                                          &barrier);
+
+                    _imageLayouts[index] = newLayout;
+                }
+            }
+        }
+    }
+
     internal void TransitionLayout(CommandBuffer commandBuffer, ImageLayout newLayout)
     {
-        if (_layout == newLayout)
-        {
-            return;
-        }
-
-        ImageMemoryBarrier barrier = new()
-        {
-            SType = StructureType.ImageMemoryBarrier,
-            Image = _image,
-            SubresourceRange = new ImageSubresourceRange
-            {
-                BaseMipLevel = 0,
-                LevelCount = _mipLevels,
-                BaseArrayLayer = 0,
-                LayerCount = _arrayLayers
-            },
-            OldLayout = ImageLayout.Undefined,
-            NewLayout = newLayout,
-        };
-
-        if (newLayout == ImageLayout.DepthStencilAttachmentOptimal)
-        {
-            barrier.SubresourceRange.AspectMask = ImageAspectFlags.DepthBit;
-
-            if (HasStencilComponent(_format))
-            {
-                barrier.SubresourceRange.AspectMask |= ImageAspectFlags.StencilBit;
-            }
-        }
-        else
-        {
-            barrier.SubresourceRange.AspectMask = ImageAspectFlags.ColorBit;
-        }
-
-        PipelineStageFlags srcStageFlags;
-        PipelineStageFlags dstStageFlags;
-
-        // Transition layouts.
-        {
-            if (_layout == ImageLayout.Preinitialized)
-            {
-                barrier.SrcAccessMask = AccessFlags.None;
-                srcStageFlags = PipelineStageFlags.TopOfPipeBit;
-            }
-            else if (_layout == ImageLayout.TransferSrcOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.TransferReadBit;
-                srcStageFlags = PipelineStageFlags.TransferBit;
-            }
-            else if (_layout == ImageLayout.TransferDstOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.TransferWriteBit;
-                srcStageFlags = PipelineStageFlags.TransferBit;
-            }
-            else if (_layout == ImageLayout.ShaderReadOnlyOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.ShaderReadBit;
-                srcStageFlags = PipelineStageFlags.FragmentShaderBit;
-            }
-            else if (_layout == ImageLayout.ColorAttachmentOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.ColorAttachmentWriteBit;
-                srcStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
-            }
-            else if (_layout == ImageLayout.DepthStencilAttachmentOptimal)
-            {
-                barrier.SrcAccessMask = AccessFlags.DepthStencilAttachmentWriteBit;
-                srcStageFlags = PipelineStageFlags.EarlyFragmentTestsBit;
-            }
-            else
-            {
-                throw new InvalidOperationException("Unsupported layout transition.");
-            }
-
-            if (newLayout == ImageLayout.TransferSrcOptimal)
-            {
-                barrier.DstAccessMask = AccessFlags.TransferReadBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
-            }
-            else if (newLayout == ImageLayout.TransferDstOptimal)
-            {
-                barrier.DstAccessMask = AccessFlags.TransferWriteBit;
-                dstStageFlags = PipelineStageFlags.TransferBit;
-            }
-            else if (newLayout == ImageLayout.ShaderReadOnlyOptimal)
-            {
-                barrier.DstAccessMask = AccessFlags.ShaderReadBit;
-                dstStageFlags = PipelineStageFlags.FragmentShaderBit;
-            }
-            else if (newLayout == ImageLayout.ColorAttachmentOptimal)
-            {
-                barrier.DstAccessMask = AccessFlags.ColorAttachmentWriteBit;
-                dstStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
-            }
-            else if (newLayout == ImageLayout.DepthStencilAttachmentOptimal)
-            {
-                barrier.DstAccessMask = AccessFlags.DepthStencilAttachmentWriteBit;
-                dstStageFlags = PipelineStageFlags.EarlyFragmentTestsBit;
-            }
-            else
-            {
-                throw new InvalidOperationException("Unsupported layout transition.");
-            }
-        }
-
-        Vk.CmdPipelineBarrier(commandBuffer,
-                              srcStageFlags,
-                              dstStageFlags,
-                              DependencyFlags.None,
-                              0,
-                              null,
-                              0,
-                              null,
-                              1,
-                              &barrier);
-
-        _layout = newLayout;
+        TransitionLayout(commandBuffer, 0, _mipLevels, 0, _arrayLayers, newLayout);
     }
 
     internal void TransitionToBestLayout(CommandBuffer commandBuffer)
@@ -264,104 +281,6 @@ public unsafe class Texture : DeviceResource, IBindableResource
         }
 
         TransitionLayout(commandBuffer, newLayout);
-    }
-
-    internal void GenerateMipmaps(CommandBuffer commandBuffer)
-    {
-        for (uint layer = 0; layer < _arrayLayers; layer++)
-        {
-            ImageMemoryBarrier barrier = new()
-            {
-                SType = StructureType.ImageMemoryBarrier,
-                Image = _image,
-                SubresourceRange = new ImageSubresourceRange
-                {
-                    AspectMask = ImageAspectFlags.ColorBit,
-                    BaseArrayLayer = layer,
-                    LayerCount = 1,
-                    LevelCount = 1
-                }
-            };
-
-            int mipWidth = (int)_width;
-            int mipHeight = (int)_height;
-
-            for (uint i = 0; i < _mipLevels; i++)
-            {
-                barrier.SubresourceRange.BaseMipLevel = i;
-                barrier.SrcAccessMask = AccessFlags.TransferWriteBit;
-                barrier.DstAccessMask = AccessFlags.TransferReadBit;
-                barrier.OldLayout = ImageLayout.TransferDstOptimal;
-                barrier.NewLayout = ImageLayout.TransferSrcOptimal;
-
-                Vk.CmdPipelineBarrier(commandBuffer,
-                                      PipelineStageFlags.TransferBit,
-                                      PipelineStageFlags.TransferBit,
-                                      DependencyFlags.None,
-                                      0,
-                                      null,
-                                      0,
-                                      null,
-                                      1,
-                                      &barrier);
-
-                ImageBlit blit = new()
-                {
-                    SrcOffsets = new ImageBlit.SrcOffsetsBuffer()
-                    {
-                        Element0 = new Offset3D { X = 0, Y = 0, Z = 0 },
-                        Element1 = new Offset3D { X = mipWidth, Y = mipHeight, Z = 1 }
-                    },
-                    SrcSubresource = new ImageSubresourceLayers
-                    {
-                        AspectMask = ImageAspectFlags.ColorBit,
-                        MipLevel = i,
-                        BaseArrayLayer = layer,
-                        LayerCount = 1
-                    },
-                    DstOffsets = new ImageBlit.DstOffsetsBuffer()
-                    {
-                        Element0 = new Offset3D { X = 0, Y = 0, Z = 0 },
-                        Element1 = new Offset3D { X = Math.Max(1, mipWidth / 2), Y = Math.Max(1, mipHeight / 2), Z = 1 }
-                    },
-                    DstSubresource = new ImageSubresourceLayers
-                    {
-                        AspectMask = ImageAspectFlags.ColorBit,
-                        MipLevel = i + 1,
-                        BaseArrayLayer = layer,
-                        LayerCount = 1
-                    }
-                };
-
-                Vk.CmdBlitImage(commandBuffer,
-                                _image,
-                                ImageLayout.TransferSrcOptimal,
-                                _image,
-                                ImageLayout.TransferDstOptimal,
-                                1,
-                                &blit,
-                                Filter.Linear);
-
-                barrier.SrcAccessMask = AccessFlags.TransferReadBit;
-                barrier.DstAccessMask = AccessFlags.ShaderReadBit;
-                barrier.OldLayout = ImageLayout.TransferSrcOptimal;
-                barrier.NewLayout = ImageLayout.ShaderReadOnlyOptimal;
-
-                Vk.CmdPipelineBarrier(commandBuffer,
-                                      PipelineStageFlags.TransferBit,
-                                      PipelineStageFlags.FragmentShaderBit,
-                                      DependencyFlags.None,
-                                      0,
-                                      null,
-                                      0,
-                                      null,
-                                      1,
-                                      &barrier);
-
-                mipWidth = Math.Max(1, mipWidth / 2);
-                mipHeight = Math.Max(1, mipHeight / 2);
-            }
-        }
     }
 
     protected override void Destroy()

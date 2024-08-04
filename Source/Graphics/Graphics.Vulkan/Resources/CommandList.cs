@@ -7,9 +7,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class CommandList : DeviceResource
 {
-    private const uint MinStagingBufferSize = 1024 * 4;
-    private const uint MaxStagingBufferSize = 1024 * 1024 * 4;
-
     private readonly Queue _queue;
     private readonly Fence _fence;
     private readonly CommandPool _commandPool;
@@ -262,11 +259,107 @@ public unsafe class CommandList : DeviceResource
                               null);
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ReadOnlySpan<T> source) where T : unmanaged
     {
         fixed (T* sourcePointer = source)
         {
             UpdateBuffer(buffer, bufferOffsetInBytes, sourcePointer, source.Length);
+        }
+    }
+
+    public void UpdateTexture<T>(Texture texture,
+                                 T* source,
+                                 int length,
+                                 uint x,
+                                 uint y,
+                                 uint z,
+                                 uint width,
+                                 uint height,
+                                 uint depth,
+                                 uint mipLevel,
+                                 uint arrayLayer) where T : unmanaged
+    {
+        uint sizeInBytes = (uint)(sizeof(T) * length);
+
+        if (x + width > texture.Width)
+        {
+            throw new ArgumentOutOfRangeException(nameof(width), "The width exceeds the texture width.");
+        }
+
+        if (y + height > texture.Height)
+        {
+            throw new ArgumentOutOfRangeException(nameof(height), "The height exceeds the texture height.");
+        }
+
+        if (z + depth > texture.Depth)
+        {
+            throw new ArgumentOutOfRangeException(nameof(depth), "The depth exceeds the texture depth.");
+        }
+
+        if (mipLevel >= texture.MipLevels)
+        {
+            throw new ArgumentOutOfRangeException(nameof(mipLevel), "The mip level exceeds the texture mip levels.");
+        }
+
+        if (arrayLayer >= texture.ArrayLayers)
+        {
+            throw new ArgumentOutOfRangeException(nameof(arrayLayer), "The array layer exceeds the texture array layers.");
+        }
+
+        if (sizeInBytes == 0)
+        {
+            return;
+        }
+
+        EnsureRenderPassInactive();
+
+        DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
+
+        void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
+
+        Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
+
+        stagingBuffer.Unmap();
+
+        texture.TransitionLayout(_commandBuffer, ImageLayout.TransferDstOptimal);
+
+        BufferImageCopy bufferImageCopy = new()
+        {
+            BufferOffset = 0,
+            BufferRowLength = 0,
+            BufferImageHeight = 0,
+            ImageSubresource = new ImageSubresourceLayers
+            {
+                AspectMask = ImageAspectFlags.ColorBit,
+                MipLevel = mipLevel,
+                BaseArrayLayer = arrayLayer,
+                LayerCount = 1
+            },
+            ImageOffset = new Offset3D((int)x, (int)y, (int)z),
+            ImageExtent = new Extent3D(width, height, depth)
+        };
+
+        Vk.CmdCopyBufferToImage(_commandBuffer, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
+
+        RecordUsedStagingBuffer(stagingBuffer);
+
+        texture.TransitionToBestLayout(_commandBuffer);
+    }
+
+    public void UpdateTexture<T>(Texture texture,
+                                 ReadOnlySpan<T> source,
+                                 uint x,
+                                 uint y,
+                                 uint z,
+                                 uint width,
+                                 uint height,
+                                 uint depth,
+                                 uint mipLevel,
+                                 uint arrayLayer) where T : unmanaged
+    {
+        fixed (T* sourcePointer = source)
+        {
+            UpdateTexture(texture, sourcePointer, source.Length, x, y, z, width, height, depth, mipLevel, arrayLayer);
         }
     }
 
@@ -351,10 +444,7 @@ public unsafe class CommandList : DeviceResource
             throw new InvalidOperationException("Destination texture must not be multisampled.");
         }
 
-        if (_isInRenderPass)
-        {
-            EndCurrentRenderPass();
-        }
+        EnsureRenderPassInactive();
 
         source.TransitionLayout(_commandBuffer, ImageLayout.TransferSrcOptimal);
         destination.TransitionLayout(_commandBuffer, ImageLayout.TransferDstOptimal);
@@ -401,6 +491,78 @@ public unsafe class CommandList : DeviceResource
         destination.TransitionToBestLayout(_commandBuffer);
     }
 
+    public void GenerateMipmaps(Texture texture)
+    {
+        if (!texture.Usage.HasFlag(TextureUsage.GenerateMipmaps))
+        {
+            throw new InvalidOperationException("Texture does not support mipmap generation.");
+        }
+
+        if (texture.MipLevels > 1)
+        {
+            EnsureRenderPassInactive();
+
+            uint width = texture.Width;
+            uint height = texture.Height;
+            uint depth = texture.Depth;
+            uint mipLevels = texture.MipLevels;
+            uint arrayLayers = texture.ArrayLayers;
+
+            for (uint level = 1; level < mipLevels; level++)
+            {
+                texture.TransitionLayout(_commandBuffer, level - 1, 1, 0, arrayLayers, ImageLayout.TransferSrcOptimal);
+                texture.TransitionLayout(_commandBuffer, level, 1, 0, arrayLayers, ImageLayout.TransferDstOptimal);
+
+                uint mipWidth = Math.Max(1, width >> 1);
+                uint mipHeight = Math.Max(1, height >> 1);
+                uint mipDepth = Math.Max(1, depth >> 1);
+
+                ImageBlit blit = new()
+                {
+                    SrcOffsets = new ImageBlit.SrcOffsetsBuffer()
+                    {
+                        Element0 = new Offset3D { X = 0, Y = 0, Z = 0 },
+                        Element1 = new Offset3D { X = (int)width, Y = (int)height, Z = (int)depth }
+                    },
+                    SrcSubresource = new ImageSubresourceLayers
+                    {
+                        AspectMask = ImageAspectFlags.ColorBit,
+                        MipLevel = level - 1,
+                        BaseArrayLayer = 0,
+                        LayerCount = arrayLayers
+                    },
+                    DstOffsets = new ImageBlit.DstOffsetsBuffer()
+                    {
+                        Element0 = new Offset3D { X = 0, Y = 0, Z = 0 },
+                        Element1 = new Offset3D { X = (int)mipWidth, Y = (int)mipHeight, Z = (int)mipDepth }
+                    },
+                    DstSubresource = new ImageSubresourceLayers
+                    {
+                        AspectMask = ImageAspectFlags.ColorBit,
+                        MipLevel = level,
+                        BaseArrayLayer = 0,
+                        LayerCount = arrayLayers
+                    }
+                };
+
+                Vk.CmdBlitImage(_commandBuffer,
+                                texture.Handle,
+                                ImageLayout.TransferSrcOptimal,
+                                texture.Handle,
+                                ImageLayout.TransferDstOptimal,
+                                1,
+                                &blit,
+                                Filter.Linear);
+
+                width = mipWidth;
+                height = mipHeight;
+                depth = mipDepth;
+            }
+
+            texture.TransitionToBestLayout(_commandBuffer);
+        }
+    }
+
     public void End()
     {
         if (!_isRecording)
@@ -408,10 +570,7 @@ public unsafe class CommandList : DeviceResource
             throw new InvalidOperationException("Command list is not recording");
         }
 
-        if (_isInRenderPass)
-        {
-            EndCurrentRenderPass();
-        }
+        EnsureRenderPassInactive();
 
         Vk.EndCommandBuffer(_commandBuffer).ThrowCode();
 
@@ -443,6 +602,8 @@ public unsafe class CommandList : DeviceResource
 
     protected override void Destroy()
     {
+        ReturnUsedStagingResources();
+
         foreach (DeviceBuffer deviceBuffer in _availableStagingBuffers)
         {
             deviceBuffer.Dispose();
@@ -451,65 +612,42 @@ public unsafe class CommandList : DeviceResource
         _commandPool.FreeCommandBuffer(_commandBuffer);
     }
 
-    private void BeginCurrentRenderPass()
-    {
-        ClearColorValue[] clearColorValues = new ClearColorValue[_currentFramebuffer!.AttachmentCount];
-        for (int i = 0; i < clearColorValues.Length; i++)
-        {
-            clearColorValues[i] = new ClearColorValue(0, 0, 0, 0);
-        }
-
-        if (_currentFramebuffer.DepthAttachmentCount != 0)
-        {
-            clearColorValues[^1] = new ClearColorValue(1, 0);
-        }
-
-        RenderPassBeginInfo beginInfo = new()
-        {
-            SType = StructureType.RenderPassBeginInfo,
-            RenderPass = _currentFramebuffer.RenderPass,
-            Framebuffer = _currentFramebuffer.Handle,
-            RenderArea = new Rect2D
-            {
-                Offset = new Offset2D(),
-                Extent = new Extent2D
-                {
-                    Width = _currentFramebuffer.Width,
-                    Height = _currentFramebuffer.Height
-                }
-            },
-            ClearValueCount = (uint)clearColorValues.Length,
-            PClearValues = (ClearValue*)Unsafe.AsPointer(ref clearColorValues[0])
-        };
-
-        Vk.CmdBeginRenderPass(_commandBuffer, &beginInfo, SubpassContents.Inline);
-
-        _isInRenderPass = true;
-    }
-
-    private void EndCurrentRenderPass()
-    {
-        Vk.CmdEndRenderPass(_commandBuffer);
-
-        Vk.CmdPipelineBarrier(_commandBuffer,
-                              PipelineStageFlags.BottomOfPipeBit,
-                              PipelineStageFlags.TopOfPipeBit,
-                              DependencyFlags.None,
-                              0,
-                              null,
-                              0,
-                              null,
-                              0,
-                              null);
-
-        _isInRenderPass = false;
-    }
-
     private void EnsureRenderPassActive()
     {
         if (!_isInRenderPass)
         {
-            BeginCurrentRenderPass();
+            ClearColorValue[] clearColorValues = new ClearColorValue[_currentFramebuffer!.AttachmentCount];
+            for (int i = 0; i < clearColorValues.Length; i++)
+            {
+                clearColorValues[i] = new ClearColorValue(0, 0, 0, 0);
+            }
+
+            if (_currentFramebuffer.DepthAttachmentCount != 0)
+            {
+                clearColorValues[^1] = new ClearColorValue(1, 0);
+            }
+
+            RenderPassBeginInfo beginInfo = new()
+            {
+                SType = StructureType.RenderPassBeginInfo,
+                RenderPass = _currentFramebuffer.RenderPass,
+                Framebuffer = _currentFramebuffer.Handle,
+                RenderArea = new Rect2D
+                {
+                    Offset = new Offset2D(),
+                    Extent = new Extent2D
+                    {
+                        Width = _currentFramebuffer.Width,
+                        Height = _currentFramebuffer.Height
+                    }
+                },
+                ClearValueCount = (uint)clearColorValues.Length,
+                PClearValues = (ClearValue*)Unsafe.AsPointer(ref clearColorValues[0])
+            };
+
+            Vk.CmdBeginRenderPass(_commandBuffer, &beginInfo, SubpassContents.Inline);
+
+            _isInRenderPass = true;
         }
     }
 
@@ -517,7 +655,20 @@ public unsafe class CommandList : DeviceResource
     {
         if (_isInRenderPass)
         {
-            EndCurrentRenderPass();
+            Vk.CmdEndRenderPass(_commandBuffer);
+
+            Vk.CmdPipelineBarrier(_commandBuffer,
+                                  PipelineStageFlags.BottomOfPipeBit,
+                                  PipelineStageFlags.TopOfPipeBit,
+                                  DependencyFlags.None,
+                                  0,
+                                  null,
+                                  0,
+                                  null,
+                                  0,
+                                  null);
+
+            _isInRenderPass = false;
         }
     }
 
@@ -536,7 +687,7 @@ public unsafe class CommandList : DeviceResource
             }
         }
 
-        uint bufferSize = Math.Max(MinStagingBufferSize, sizeInBytes);
+        uint bufferSize = Math.Max(GraphicsDevice.MinStagingBufferSize, sizeInBytes);
 
         return ResourceFactory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
     }
@@ -553,7 +704,7 @@ public unsafe class CommandList : DeviceResource
     {
         lock (_stagingResourcesLock)
         {
-            if (stagingBuffer.SizeInBytes > MaxStagingBufferSize)
+            if (stagingBuffer.SizeInBytes > GraphicsDevice.MaxStagingBufferSize)
             {
                 stagingBuffer.Dispose();
             }

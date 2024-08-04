@@ -7,7 +7,7 @@ using Renderer.Components;
 
 namespace Renderer.Scenes;
 
-internal sealed class TestScene(MainWindow mainWindow) : Scene(mainWindow)
+internal sealed unsafe class TestScene(MainWindow mainWindow) : Scene(mainWindow)
 {
     #region Structs
     private struct Vertex(Vector2 position, Vector4 color)
@@ -15,6 +15,7 @@ internal sealed class TestScene(MainWindow mainWindow) : Scene(mainWindow)
         public const uint SizeInBytes = 24;
 
         public Vector2 Position = position;
+
         public Vector4 Color = color;
     }
 
@@ -70,7 +71,8 @@ float4 mainPS(VSOutput input) : SV_TARGET
     private ResourceSet _resourceSet = null!;
     private Shader[] _shaders = null!;
     private VertexLayoutDescription[] _vertexLayoutDescriptions = null!;
-    private Pipeline _pipeline = null!;
+
+    private Pipeline? _pipeline;
 
     protected override void Initialize()
     {
@@ -91,8 +93,8 @@ float4 mainPS(VSOutput input) : SV_TARGET
         _endBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
         _stepBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
-        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, triangleVertices);
-        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, triangleIndices);
+        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, [.. triangleVertices]);
+        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, [.. triangleIndices]);
         _graphicsDevice.UpdateBuffer(_beginBuffer, 0, [new Ubo { Value = new Vector4(1.0f, 0.0f, 0.0f, 1.0f) }]);
         _graphicsDevice.UpdateBuffer(_endBuffer, 0, [new Ubo { Value = new Vector4(0.0f, 0.0f, 1.0f, 1.0f) }]);
         _graphicsDevice.UpdateBuffer(_stepBuffer, 0, [new Ubo { Value = new Vector4(0.2f) }]);
@@ -116,7 +118,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription, colorDescription)];
     }
 
-    protected override void UpdatePipeline(Framebuffer framebuffer)
+    protected override void RecreatePipeline(Framebuffer framebuffer)
     {
         _pipeline?.Dispose();
 
@@ -141,6 +143,11 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     protected override void RenderCore(CommandList commandList, Framebuffer framebuffer, RenderEventArgs e)
     {
+        if (_pipeline == null)
+        {
+            return;
+        }
+
         commandList.ClearColorTarget(0, RgbaFloat.CornflowerBlue);
         commandList.ClearDepthStencil(1.0f);
 
@@ -160,11 +167,13 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     protected override void Destroy()
     {
-        _pipeline.Dispose();
+        _pipeline?.Dispose();
+
         foreach (Shader shader in _shaders)
         {
             shader.Dispose();
         }
+
         _resourceSet.Dispose();
         _resourceLayout.Dispose();
         _stepBuffer.Dispose();

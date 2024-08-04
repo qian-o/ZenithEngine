@@ -9,8 +9,8 @@ namespace Graphics.Vulkan;
 
 public unsafe class GraphicsDevice : ContextObject
 {
-    private const uint MinStagingBufferSize = 1024 * 4;
-    private const uint MaxStagingBufferSize = 1024 * 1024 * 4;
+    internal const uint MinStagingBufferSize = 1024 * 4;
+    internal const uint MaxStagingBufferSize = 1024 * 1024 * 4;
 
     private readonly PhysicalDevice _physicalDevice;
     private readonly Device _device;
@@ -151,7 +151,7 @@ public unsafe class GraphicsDevice : ContextObject
         }
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ReadOnlySpan<T> source) where T : unmanaged
     {
         fixed (T* sourcePointer = source)
         {
@@ -245,7 +245,7 @@ public unsafe class GraphicsDevice : ContextObject
     }
 
     public void UpdateTexture<T>(Texture texture,
-                                 T[] source,
+                                 ReadOnlySpan<T> source,
                                  uint x,
                                  uint y,
                                  uint z,
@@ -446,6 +446,18 @@ public unsafe partial class Context
         PhysicalDeviceFeatures physicalDeviceFeatures;
         _vk.GetPhysicalDeviceFeatures(physicalDevice.VkPhysicalDevice, &physicalDeviceFeatures);
 
+        PhysicalDeviceVulkan13Features physicalDeviceVulkan13Features = new()
+        {
+            SType = StructureType.PhysicalDeviceVulkan13Features
+        };
+        PhysicalDeviceFeatures2 physicalDeviceFeatures2 = new()
+        {
+            SType = StructureType.PhysicalDeviceFeatures2,
+            Features = physicalDeviceFeatures,
+            PNext = &physicalDeviceVulkan13Features
+        };
+        _vk.GetPhysicalDeviceFeatures2(physicalDevice.VkPhysicalDevice, &physicalDeviceFeatures2);
+
         DeviceCreateInfo createInfo = new()
         {
             SType = StructureType.DeviceCreateInfo,
@@ -453,7 +465,7 @@ public unsafe partial class Context
             PQueueCreateInfos = _alloter.Allocate(createInfos),
             EnabledExtensionCount = (uint)deviceExtensions.Length,
             PpEnabledExtensionNames = _alloter.Allocate(deviceExtensions),
-            PEnabledFeatures = &physicalDeviceFeatures
+            PNext = &physicalDeviceFeatures2
         };
 
         Device device;
