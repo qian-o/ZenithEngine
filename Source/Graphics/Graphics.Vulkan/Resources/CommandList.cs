@@ -7,9 +7,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class CommandList : DeviceResource
 {
-    private const uint MinStagingBufferSize = 1024 * 4;
-    private const uint MaxStagingBufferSize = 1024 * 1024 * 4;
-
     private readonly Queue _queue;
     private readonly Fence _fence;
     private readonly CommandPool _commandPool;
@@ -270,6 +267,102 @@ public unsafe class CommandList : DeviceResource
         }
     }
 
+    public void UpdateTexture<T>(Texture texture,
+                                 T* source,
+                                 int length,
+                                 uint x,
+                                 uint y,
+                                 uint z,
+                                 uint width,
+                                 uint height,
+                                 uint depth,
+                                 uint mipLevel,
+                                 uint arrayLayer) where T : unmanaged
+    {
+        uint sizeInBytes = (uint)(sizeof(T) * length);
+
+        if (x + width > texture.Width)
+        {
+            throw new ArgumentOutOfRangeException(nameof(width), "The width exceeds the texture width.");
+        }
+
+        if (y + height > texture.Height)
+        {
+            throw new ArgumentOutOfRangeException(nameof(height), "The height exceeds the texture height.");
+        }
+
+        if (z + depth > texture.Depth)
+        {
+            throw new ArgumentOutOfRangeException(nameof(depth), "The depth exceeds the texture depth.");
+        }
+
+        if (mipLevel >= texture.MipLevels)
+        {
+            throw new ArgumentOutOfRangeException(nameof(mipLevel), "The mip level exceeds the texture mip levels.");
+        }
+
+        if (arrayLayer >= texture.ArrayLayers)
+        {
+            throw new ArgumentOutOfRangeException(nameof(arrayLayer), "The array layer exceeds the texture array layers.");
+        }
+
+        if (sizeInBytes == 0)
+        {
+            return;
+        }
+
+        EnsureRenderPassInactive();
+
+        DeviceBuffer stagingBuffer = GetStagingBuffer(sizeInBytes);
+
+        void* stagingBufferPointer = stagingBuffer.Map(sizeInBytes);
+
+        Unsafe.CopyBlock(stagingBufferPointer, source, sizeInBytes);
+
+        stagingBuffer.Unmap();
+
+        texture.TransitionLayout(_commandBuffer, ImageLayout.TransferDstOptimal);
+
+        BufferImageCopy bufferImageCopy = new()
+        {
+            BufferOffset = 0,
+            BufferRowLength = 0,
+            BufferImageHeight = 0,
+            ImageSubresource = new ImageSubresourceLayers
+            {
+                AspectMask = ImageAspectFlags.ColorBit,
+                MipLevel = mipLevel,
+                BaseArrayLayer = arrayLayer,
+                LayerCount = 1
+            },
+            ImageOffset = new Offset3D((int)x, (int)y, (int)z),
+            ImageExtent = new Extent3D(width, height, depth)
+        };
+
+        Vk.CmdCopyBufferToImage(_commandBuffer, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
+
+        RecordUsedStagingBuffer(stagingBuffer);
+
+        texture.TransitionToBestLayout(_commandBuffer);
+    }
+
+    public void UpdateTexture<T>(Texture texture,
+                                 ReadOnlySpan<T> source,
+                                 uint x,
+                                 uint y,
+                                 uint z,
+                                 uint width,
+                                 uint height,
+                                 uint depth,
+                                 uint mipLevel,
+                                 uint arrayLayer) where T : unmanaged
+    {
+        fixed (T* sourcePointer = source)
+        {
+            UpdateTexture(texture, sourcePointer, source.Length, x, y, z, width, height, depth, mipLevel, arrayLayer);
+        }
+    }
+
     public void SetVertexBuffer(uint index, DeviceBuffer buffer, uint offset)
     {
         VkBuffer vkBuffer = buffer.Handle;
@@ -509,6 +602,8 @@ public unsafe class CommandList : DeviceResource
 
     protected override void Destroy()
     {
+        ReturnUsedStagingResources();
+
         foreach (DeviceBuffer deviceBuffer in _availableStagingBuffers)
         {
             deviceBuffer.Dispose();
@@ -592,7 +687,7 @@ public unsafe class CommandList : DeviceResource
             }
         }
 
-        uint bufferSize = Math.Max(MinStagingBufferSize, sizeInBytes);
+        uint bufferSize = Math.Max(GraphicsDevice.MinStagingBufferSize, sizeInBytes);
 
         return ResourceFactory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
     }
@@ -609,7 +704,7 @@ public unsafe class CommandList : DeviceResource
     {
         lock (_stagingResourcesLock)
         {
-            if (stagingBuffer.SizeInBytes > MaxStagingBufferSize)
+            if (stagingBuffer.SizeInBytes > GraphicsDevice.MaxStagingBufferSize)
             {
                 stagingBuffer.Dispose();
             }

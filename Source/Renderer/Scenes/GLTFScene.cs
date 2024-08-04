@@ -142,8 +142,7 @@ internal sealed unsafe class GLTFScene(MainWindow mainWindow) : Scene(mainWindow
             TextureView textureView = _resourceFactory.CreateTextureView(texture);
             textureView.Name = gltfTexture.Name;
 
-            _graphicsDevice.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
-
+            commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
             commandList.GenerateMipmaps(texture);
 
             _textures.Add(texture);
@@ -154,6 +153,8 @@ internal sealed unsafe class GLTFScene(MainWindow mainWindow) : Scene(mainWindow
         commandList.End();
 
         _graphicsDevice.SubmitCommands(commandList);
+
+        commandList.Dispose();
 
         foreach (GLTFMaterial gltfMaterial in root.LogicalMaterials)
         {
