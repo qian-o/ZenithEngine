@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
-using Hexa.NET.ImGui;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
 using StbiSharp;
@@ -114,8 +113,6 @@ internal sealed unsafe class GLTFScene(MainWindow mainWindow) : Scene(mainWindow
 
     private Pipeline[]? _pipelines;
 
-    private Vector3 pos = new(7.8f, 2.1f, 0.0f);
-
     protected override void Initialize()
     {
         Title = "GLTF Scene";
@@ -194,12 +191,12 @@ internal sealed unsafe class GLTFScene(MainWindow mainWindow) : Scene(mainWindow
         }
 
         _vertexBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Count), BufferUsage.VertexBuffer));
-        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, new ReadOnlySpan<Vertex>([.. vertices]));
+        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
 
         _indexBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
-        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, new ReadOnlySpan<uint>([.. indices]));
+        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, [.. indices]);
 
-        _uboBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(UBO), BufferUsage.UniformBuffer));
+        _uboBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(UBO), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("UBO", ResourceKind.UniformBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription materialLayoutDescription = new(new ResourceLayoutElementDescription("textureColorMap", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
@@ -271,10 +268,10 @@ internal sealed unsafe class GLTFScene(MainWindow mainWindow) : Scene(mainWindow
         UBO ubo = new()
         {
             Projection = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, Width / (float)Height, 0.1f, 1000.0f),
-            View = Matrix4x4.CreateLookAt(pos, Vector3.Zero, Vector3.UnitY),
+            View = Matrix4x4.CreateLookAt(new Vector3(7.8f, 2.1f, 0.0f), Vector3.Zero, Vector3.UnitY),
             Model = _nodes[0].LocalTransform,
-            LightPos = new Vector4(0.0f, 2.5f, 0.0f, 1.0f),
-            ViewPos = new Vector4(pos, 1.0f)
+            LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(e.TotalTime))),
+            ViewPos = new Vector4(new Vector3(7.8f, 2.1f, 0.0f), 1.0f)
         };
 
         _graphicsDevice.UpdateBuffer(_uboBuffer, 0, [ubo]);
@@ -297,18 +294,6 @@ internal sealed unsafe class GLTFScene(MainWindow mainWindow) : Scene(mainWindow
         {
             DrawNode(commandList, node);
         }
-    }
-
-    protected override void ImGuiRender()
-    {
-        ImGui.Begin("Settings");
-        {
-            ImGui.Text("Camera Position");
-            ImGui.SliderFloat("X", ref pos.X, -10.0f, 10.0f);
-            ImGui.SliderFloat("Y", ref pos.Y, -10.0f, 10.0f);
-            ImGui.SliderFloat("Z", ref pos.Z, -10.0f, 10.0f);
-        }
-        ImGui.End();
     }
 
     protected override void Destroy()

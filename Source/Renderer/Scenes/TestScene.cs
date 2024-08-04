@@ -93,8 +93,8 @@ float4 mainPS(VSOutput input) : SV_TARGET
         _endBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
         _stepBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
-        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, (Vertex*)Unsafe.AsPointer(ref triangleVertices[0]), triangleVertices.Length);
-        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, (ushort*)Unsafe.AsPointer(ref triangleIndices[0]), triangleIndices.Length);
+        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, [.. triangleVertices]);
+        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, [.. triangleIndices]);
         _graphicsDevice.UpdateBuffer(_beginBuffer, 0, [new Ubo { Value = new Vector4(1.0f, 0.0f, 0.0f, 1.0f) }]);
         _graphicsDevice.UpdateBuffer(_endBuffer, 0, [new Ubo { Value = new Vector4(0.0f, 0.0f, 1.0f, 1.0f) }]);
         _graphicsDevice.UpdateBuffer(_stepBuffer, 0, [new Ubo { Value = new Vector4(0.2f) }]);
@@ -163,10 +163,6 @@ float4 mainPS(VSOutput input) : SV_TARGET
                                 indexStart: 0,
                                 vertexOffset: 0,
                                 instanceStart: 0);
-    }
-
-    protected override void ImGuiRender()
-    {
     }
 
     protected override void Destroy()

@@ -116,8 +116,6 @@ internal abstract class Scene : MVVM
 
             ImGui.End();
         }
-
-        ImGuiRender();
     }
 
     protected override void Destroy()
@@ -133,6 +131,4 @@ internal abstract class Scene : MVVM
     protected abstract void UpdateCore(UpdateEventArgs e);
 
     protected abstract void RenderCore(CommandList commandList, Framebuffer framebuffer, RenderEventArgs e);
-
-    protected abstract void ImGuiRender();
 }
