@@ -124,12 +124,17 @@ internal sealed unsafe class GLTFScene(MainWindow mainWindow) : Scene(mainWindow
 
         ModelRoot root = ModelRoot.Load("Assets/Models/Sponza/glTF/Sponza.gltf");
 
+        CommandList commandList = _resourceFactory.CreateGraphicsCommandList();
+
+        commandList.Begin();
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
         {
             Stbi.InfoFromMemory(gltfTexture.PrimaryImage.Content.Content.Span, out int width, out int height, out _);
             StbiImage image = Stbi.LoadFromMemory(gltfTexture.PrimaryImage.Content.Content.Span, 4);
 
-            TextureDescription description = TextureDescription.Texture2D((uint)width, (uint)height, 1, PixelFormat.R8G8B8A8UNorm, TextureUsage.Sampled);
+            uint mipLevels = Math.Max(1, (uint)MathF.Log2(Math.Max(width, height))) + 1;
+
+            TextureDescription description = TextureDescription.Texture2D((uint)width, (uint)height, mipLevels, PixelFormat.R8G8B8A8UNorm, TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
 
             Texture texture = _resourceFactory.CreateTexture(in description);
             texture.Name = gltfTexture.Name;
@@ -139,11 +144,16 @@ internal sealed unsafe class GLTFScene(MainWindow mainWindow) : Scene(mainWindow
 
             _graphicsDevice.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
 
+            commandList.GenerateMipmaps(texture);
+
             _textures.Add(texture);
             _textureViews.Add(textureView);
 
             image.Dispose();
         }
+        commandList.End();
+
+        _graphicsDevice.SubmitCommands(commandList);
 
         foreach (GLTFMaterial gltfMaterial in root.LogicalMaterials)
         {
