@@ -203,6 +203,7 @@ public unsafe class CommandList : DeviceResource
         ClearDepthStencil(depth, 0);
     }
 
+    #region UpdateBuffer
     public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T* source, int length) where T : unmanaged
     {
         uint sizeInBytes = (uint)(sizeof(T) * length);
@@ -227,36 +228,42 @@ public unsafe class CommandList : DeviceResource
 
         stagingBuffer.Unmap();
 
-        BufferCopy bufferCopy = new()
+        // Copy the staging buffer to the target buffer
         {
-            SrcOffset = 0,
-            DstOffset = bufferOffsetInBytes,
-            Size = sizeInBytes
-        };
+            BufferCopy bufferCopy = new()
+            {
+                SrcOffset = 0,
+                DstOffset = bufferOffsetInBytes,
+                Size = sizeInBytes
+            };
 
-        Vk.CmdCopyBuffer(Handle, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
+            Vk.CmdCopyBuffer(Handle, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
+        }
+
+        // Add a memory barrier to ensure that the buffer is ready to be used
+        {
+            bool needToProtectUniformBuffer = buffer.Usage.HasFlag(BufferUsage.UniformBuffer);
+
+            MemoryBarrier memoryBarrier = new()
+            {
+                SType = StructureType.MemoryBarrier,
+                SrcAccessMask = AccessFlags.MemoryWriteBit,
+                DstAccessMask = needToProtectUniformBuffer ? AccessFlags.UniformReadBit : AccessFlags.VertexAttributeReadBit
+            };
+
+            Vk.CmdPipelineBarrier(_commandBuffer,
+                                  PipelineStageFlags.TransferBit,
+                                  needToProtectUniformBuffer ? Formats.AllShaderStages() : PipelineStageFlags.VertexInputBit,
+                                  DependencyFlags.None,
+                                  1,
+                                  &memoryBarrier,
+                                  0,
+                                  null,
+                                  0,
+                                  null);
+        }
 
         RecordUsedStagingBuffer(stagingBuffer);
-
-        bool needToProtectUniformBuffer = buffer.Usage.HasFlag(BufferUsage.UniformBuffer);
-
-        MemoryBarrier memoryBarrier = new()
-        {
-            SType = StructureType.MemoryBarrier,
-            SrcAccessMask = AccessFlags.MemoryWriteBit,
-            DstAccessMask = needToProtectUniformBuffer ? AccessFlags.UniformReadBit : AccessFlags.VertexAttributeReadBit
-        };
-
-        Vk.CmdPipelineBarrier(_commandBuffer,
-                              PipelineStageFlags.TransferBit,
-                              needToProtectUniformBuffer ? Formats.AllShaderStages() : PipelineStageFlags.VertexInputBit,
-                              DependencyFlags.None,
-                              1,
-                              &memoryBarrier,
-                              0,
-                              null,
-                              0,
-                              null);
     }
 
     public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ReadOnlySpan<T> source) where T : unmanaged
@@ -266,7 +273,9 @@ public unsafe class CommandList : DeviceResource
             UpdateBuffer(buffer, bufferOffsetInBytes, sourcePointer, source.Length);
         }
     }
+    #endregion
 
+    #region UpdateTexture
     public void UpdateTexture<T>(Texture texture,
                                  T* source,
                                  int length,
@@ -362,6 +371,7 @@ public unsafe class CommandList : DeviceResource
             UpdateTexture(texture, sourcePointer, source.Length, x, y, z, width, height, depth, mipLevel, arrayLayer);
         }
     }
+    #endregion
 
     public void SetVertexBuffer(uint index, DeviceBuffer buffer, uint offset)
     {
