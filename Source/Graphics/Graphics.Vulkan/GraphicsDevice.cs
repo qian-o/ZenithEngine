@@ -217,25 +217,25 @@ public unsafe class GraphicsDevice : ContextObject
         CommandBuffer commandBuffer = sharedCommandPool.BeginNewCommandBuffer();
 
         texture.TransitionLayout(commandBuffer, ImageLayout.TransferDstOptimal);
-
-        BufferImageCopy bufferImageCopy = new()
         {
-            BufferOffset = 0,
-            BufferRowLength = 0,
-            BufferImageHeight = 0,
-            ImageSubresource = new ImageSubresourceLayers
+            BufferImageCopy bufferImageCopy = new()
             {
-                AspectMask = ImageAspectFlags.ColorBit,
-                MipLevel = mipLevel,
-                BaseArrayLayer = arrayLayer,
-                LayerCount = 1
-            },
-            ImageOffset = new Offset3D((int)x, (int)y, (int)z),
-            ImageExtent = new Extent3D(width, height, depth)
-        };
+                BufferOffset = 0,
+                BufferRowLength = 0,
+                BufferImageHeight = 0,
+                ImageSubresource = new ImageSubresourceLayers
+                {
+                    AspectMask = ImageAspectFlags.ColorBit,
+                    MipLevel = mipLevel,
+                    BaseArrayLayer = arrayLayer,
+                    LayerCount = 1
+                },
+                ImageOffset = new Offset3D((int)x, (int)y, (int)z),
+                ImageExtent = new Extent3D(width, height, depth)
+            };
 
-        Vk.CmdCopyBufferToImage(commandBuffer, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
-
+            Vk.CmdCopyBufferToImage(commandBuffer, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
+        }
         texture.TransitionToBestLayout(commandBuffer);
 
         sharedCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
@@ -332,18 +332,18 @@ public unsafe class GraphicsDevice : ContextObject
             sharedCommandPool.Dispose();
         }
 
-        _mainSwapChain.Dispose();
-
-        _pointSampler.Dispose();
         _linearSampler.Dispose();
+        _pointSampler.Dispose();
+
+        _mainSwapChain.Dispose();
 
         _descriptorPoolManager.Dispose();
 
-        _computeFence.Dispose();
-        _graphicsFence.Dispose();
-
         _computeCommandPool.Dispose();
         _graphicsCommandPool.Dispose();
+
+        _computeFence.Dispose();
+        _graphicsFence.Dispose();
 
         _swapchainExt.Dispose();
 

@@ -322,28 +322,28 @@ public unsafe class CommandList : DeviceResource
         stagingBuffer.Unmap();
 
         texture.TransitionLayout(_commandBuffer, ImageLayout.TransferDstOptimal);
-
-        BufferImageCopy bufferImageCopy = new()
         {
-            BufferOffset = 0,
-            BufferRowLength = 0,
-            BufferImageHeight = 0,
-            ImageSubresource = new ImageSubresourceLayers
+            BufferImageCopy bufferImageCopy = new()
             {
-                AspectMask = ImageAspectFlags.ColorBit,
-                MipLevel = mipLevel,
-                BaseArrayLayer = arrayLayer,
-                LayerCount = 1
-            },
-            ImageOffset = new Offset3D((int)x, (int)y, (int)z),
-            ImageExtent = new Extent3D(width, height, depth)
-        };
+                BufferOffset = 0,
+                BufferRowLength = 0,
+                BufferImageHeight = 0,
+                ImageSubresource = new ImageSubresourceLayers
+                {
+                    AspectMask = ImageAspectFlags.ColorBit,
+                    MipLevel = mipLevel,
+                    BaseArrayLayer = arrayLayer,
+                    LayerCount = 1
+                },
+                ImageOffset = new Offset3D((int)x, (int)y, (int)z),
+                ImageExtent = new Extent3D(width, height, depth)
+            };
 
-        Vk.CmdCopyBufferToImage(_commandBuffer, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
+            Vk.CmdCopyBufferToImage(_commandBuffer, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
+        }
+        texture.TransitionToBestLayout(_commandBuffer);
 
         RecordUsedStagingBuffer(stagingBuffer);
-
-        texture.TransitionToBestLayout(_commandBuffer);
     }
 
     public void UpdateTexture<T>(Texture texture,

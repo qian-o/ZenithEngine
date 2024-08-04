@@ -81,7 +81,7 @@ internal abstract class Scene : MVVM
             {
                 if (_fbo == null || _fbo.Width != _width || _fbo.Height != _height || _fbo.SampleCount != App.Settings.SampleCount)
                 {
-                    bool isUpdatePipelineRequired = _fbo == null || _fbo.SampleCount != App.Settings.SampleCount;
+                    bool isRecreatePipelineRequired = _fbo == null || _fbo.SampleCount != App.Settings.SampleCount;
 
                     _fbo?.Dispose();
                     _imGuiController.RemoveImGuiBinding(_presentTextureHandle);
@@ -89,7 +89,7 @@ internal abstract class Scene : MVVM
                     _fbo = new FBO(_resourceFactory, _width, _height, sampleCount: App.Settings.SampleCount);
                     _presentTextureHandle = _imGuiController.GetOrCreateImGuiBinding(_resourceFactory, _fbo.PresentTexture);
 
-                    if (isUpdatePipelineRequired)
+                    if (isRecreatePipelineRequired)
                     {
                         RecreatePipeline(_fbo.Framebuffer);
                     }
