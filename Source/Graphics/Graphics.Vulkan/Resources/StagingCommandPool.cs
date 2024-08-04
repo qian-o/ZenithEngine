@@ -14,7 +14,7 @@ internal sealed unsafe class StagingCommandPool : DeviceResource
         {
             SType = StructureType.CommandPoolCreateInfo,
             QueueFamilyIndex = transferQueue.FamilyIndex,
-            Flags = CommandPoolCreateFlags.TransientBit | CommandPoolCreateFlags.ResetCommandBufferBit
+            Flags = CommandPoolCreateFlags.TransientBit
         };
 
         VkCommandPool commandPool;
@@ -63,6 +63,8 @@ internal sealed unsafe class StagingCommandPool : DeviceResource
         Vk.QueueSubmit(_transferQueue.Handle, 1, &submitInfo, _fence.Handle).ThrowCode();
 
         _fence.WaitAndReset();
+
+        Vk.FreeCommandBuffers(Device, _commandPool, 1, &commandBuffer);
     }
 
     protected override void Destroy()
