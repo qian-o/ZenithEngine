@@ -3,14 +3,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
-using SharpGLTF.Materials;
-using SharpGLTF.Schema2;
-using StbiSharp;
-using GLTFMaterial = SharpGLTF.Schema2.Material;
-using GLTFNode = SharpGLTF.Schema2.Node;
-using GLTFTexture = SharpGLTF.Schema2.Texture;
+using Renderer.Enums;
+using Renderer.Models;
+using Renderer.Structs;
 using Scene = Renderer.Components.Scene;
-using Texture = Graphics.Vulkan.Texture;
 
 namespace Renderer.Scenes;
 
@@ -35,74 +31,9 @@ internal sealed unsafe class GLTFScene : Scene
         [FieldOffset(208)]
         public Vector4 ViewPos;
     }
-
-    private struct Vertex(Vector3 position, Vector3 normal, Vector2 texCoord, Vector3 color, Vector4 tangent)
-    {
-        public Vector3 Position = position;
-
-        public Vector3 Normal = normal;
-
-        public Vector2 TexCoord = texCoord;
-
-        public Vector3 Color = color;
-
-        public Vector4 Tangent = tangent;
-    }
-
-    private struct Primitive(uint firstIndex, uint indexCount, int materialIndex)
-    {
-        public uint FirstIndex = firstIndex;
-
-        public uint IndexCount = indexCount;
-
-        public int MaterialIndex = materialIndex;
-    }
     #endregion
 
-    #region Classes
-    private sealed class Mesh
-    {
-        public List<Primitive> Primitives { get; } = [];
-    }
-
-    private sealed class Node
-    {
-        public string Name { get; set; } = string.Empty;
-
-        public Node? Parent { get; set; }
-
-        public List<Node> Children { get; } = [];
-
-        public Mesh? Mesh { get; set; }
-
-        public Matrix4x4 LocalTransform { get; set; } = Matrix4x4.Identity;
-
-        public bool IsVisible { get; set; } = true;
-    }
-
-    private sealed class Material
-    {
-        public Vector4 BaseColorFactor { get; set; } = Vector4.One;
-
-        public uint BaseColorTextureIndex { get; set; }
-
-        public uint NormalTextureIndex { get; set; }
-
-        public string AlphaMode { get; set; } = "OPAQUE";
-
-        public float AlphaCutoff { get; set; } = 0.5f;
-
-        public bool DoubleSided { get; set; }
-    }
-    #endregion
-
-    private readonly List<Texture> _textures = [];
-    private readonly List<TextureView> _textureViews = [];
-    private readonly List<Material> _materials = [];
-    private readonly List<Node> _nodes = [];
-
-    private DeviceBuffer _vertexBuffer = null!;
-    private DeviceBuffer _indexBuffer = null!;
+    private GLTF _sponza = null!;
     private DeviceBuffer _uboBuffer = null!;
     private ResourceLayout _uboLayout = null!;
     private ResourceSet _uboSet = null!;
@@ -119,83 +50,7 @@ internal sealed unsafe class GLTFScene : Scene
 
         string hlsl = File.ReadAllText("Assets/Shaders/GLTF.hlsl");
 
-        ModelRoot root = ModelRoot.Load("Assets/Models/Sponza/glTF/Sponza.gltf");
-
-        CommandList commandList = App.ResourceFactory.CreateGraphicsCommandList();
-
-        commandList.Begin();
-        foreach (GLTFTexture gltfTexture in root.LogicalTextures)
-        {
-            Stbi.InfoFromMemory(gltfTexture.PrimaryImage.Content.Content.Span, out int width, out int height, out _);
-            StbiImage image = Stbi.LoadFromMemory(gltfTexture.PrimaryImage.Content.Content.Span, 4);
-
-            uint mipLevels = Math.Max(1, (uint)MathF.Log2(Math.Max(width, height))) + 1;
-
-            TextureDescription description = TextureDescription.Texture2D((uint)width, (uint)height, mipLevels, PixelFormat.R8G8B8A8UNorm, TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
-
-            Texture texture = App.ResourceFactory.CreateTexture(in description);
-            texture.Name = gltfTexture.Name;
-
-            TextureView textureView = App.ResourceFactory.CreateTextureView(texture);
-            textureView.Name = gltfTexture.Name;
-
-            commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
-            commandList.GenerateMipmaps(texture);
-
-            _textures.Add(texture);
-            _textureViews.Add(textureView);
-
-            image.Dispose();
-        }
-        commandList.End();
-
-        App.GraphicsDevice.SubmitCommands(commandList);
-
-        commandList.Dispose();
-
-        foreach (GLTFMaterial gltfMaterial in root.LogicalMaterials)
-        {
-            Material material = new();
-
-            if (gltfMaterial.FindChannel(KnownChannel.BaseColor.ToString()) is MaterialChannel baseColor)
-            {
-                material.BaseColorFactor = baseColor.Color;
-
-                if (baseColor.Texture != null)
-                {
-                    material.BaseColorTextureIndex = (uint)baseColor.Texture.LogicalIndex;
-                }
-            }
-
-            if (gltfMaterial.FindChannel(KnownChannel.Normal.ToString()) is MaterialChannel normal)
-            {
-                if (normal.Texture != null)
-                {
-                    material.NormalTextureIndex = (uint)normal.Texture.LogicalIndex;
-                }
-            }
-
-            material.AlphaMode = gltfMaterial.Alpha.ToString();
-            material.AlphaCutoff = gltfMaterial.AlphaCutoff;
-            material.DoubleSided = gltfMaterial.DoubleSided;
-
-            _materials.Add(material);
-        }
-
-        List<Vertex> vertices = [];
-        List<uint> indices = [];
-
-        foreach (GLTFNode gltfNode in root.LogicalNodes)
-        {
-            LoadNode(gltfNode, null, vertices, indices);
-        }
-
-        _vertexBuffer = App.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Count), BufferUsage.VertexBuffer));
-        App.GraphicsDevice.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
-
-        _indexBuffer = App.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
-        App.GraphicsDevice.UpdateBuffer(_indexBuffer, 0, [.. indices]);
-
+        _sponza = GLTF.Load("Assets/Models/Sponza/glTF/Sponza.gltf");
         _uboBuffer = App.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(UBO), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("UBO", ResourceKind.UniformBuffer, ShaderStages.Vertex));
@@ -208,13 +63,13 @@ internal sealed unsafe class GLTFScene : Scene
         _uboSet = App.ResourceFactory.CreateResourceSet(new ResourceSetDescription(_uboLayout, _uboBuffer));
 
         _materialLayout = App.ResourceFactory.CreateResourceLayout(in materialLayoutDescription);
-        _materialSets = new ResourceSet[_materials.Count];
-        for (int i = 0; i < _materials.Count; i++)
+        _materialSets = new ResourceSet[_sponza.Materials.Length];
+        for (int i = 0; i < _sponza.Materials.Length; i++)
         {
             ResourceSetDescription materialSetDescription = new(_materialLayout,
-                                                                _textureViews[(int)_materials[i].BaseColorTextureIndex],
+                                                                _sponza.TextureViews[(int)_sponza.Materials[i].BaseColorTextureIndex],
                                                                 App.GraphicsDevice.LinearSampler,
-                                                                _textureViews[(int)_materials[i].NormalTextureIndex],
+                                                                _sponza.TextureViews[(int)_sponza.Materials[i].NormalTextureIndex],
                                                                 App.GraphicsDevice.LinearSampler);
 
             _materialSets[i] = App.ResourceFactory.CreateResourceSet(in materialSetDescription);
@@ -242,17 +97,17 @@ internal sealed unsafe class GLTFScene : Scene
             }
         }
 
-        _pipelines = new Pipeline[_materials.Count];
-        for (int i = 0; i < _materials.Count; i++)
+        _pipelines = new Pipeline[_sponza.Materials.Length];
+        for (int i = 0; i < _sponza.Materials.Length; i++)
         {
-            bool alphaMask = _materials[i].AlphaMode == "MASK";
-            float alphaCutoff = _materials[i].AlphaCutoff;
+            bool alphaMask = _sponza.Materials[i].AlphaMode == AlphaMode.Mask;
+            float alphaCutoff = _sponza.Materials[i].AlphaCutoff;
 
             GraphicsPipelineDescription pipelineDescription = new()
             {
                 BlendState = BlendStateDescription.SingleAlphaBlend,
                 DepthStencilState = DepthStencilStateDescription.DepthOnlyLessEqual,
-                RasterizerState = _materials[i].DoubleSided ? RasterizerStateDescription.CullNone : RasterizerStateDescription.Default,
+                RasterizerState = _sponza.Materials[i].DoubleSided ? RasterizerStateDescription.CullNone : RasterizerStateDescription.Default,
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
                 ResourceLayouts = [_uboLayout, _materialLayout],
                 ShaderSet = new ShaderSetDescription(_vertexLayoutDescriptions, _shaders, [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
@@ -269,7 +124,7 @@ internal sealed unsafe class GLTFScene : Scene
         {
             Projection = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, Width / (float)Height, 0.1f, 1000.0f),
             View = Matrix4x4.CreateLookAt(new Vector3(7.8f, 2.1f, 0.0f), Vector3.Zero, Vector3.UnitY),
-            Model = _nodes[0].LocalTransform,
+            Model = _sponza.Nodes[0].LocalTransform,
             LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(e.TotalTime))),
             ViewPos = new Vector4(new Vector3(7.8f, 2.1f, 0.0f), 1.0f)
         };
@@ -287,10 +142,10 @@ internal sealed unsafe class GLTFScene : Scene
         commandList.ClearColorTarget(0, RgbaFloat.CornflowerBlue);
         commandList.ClearDepthStencil(1.0f);
 
-        commandList.SetVertexBuffer(0, _vertexBuffer);
-        commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U32);
+        commandList.SetVertexBuffer(0, _sponza.VertexBuffer);
+        commandList.SetIndexBuffer(_sponza.IndexBuffer, IndexFormat.U32);
 
-        foreach (Node node in _nodes)
+        foreach (Node node in _sponza.Nodes)
         {
             DrawNode(commandList, node);
         }
@@ -321,137 +176,19 @@ internal sealed unsafe class GLTFScene : Scene
         _uboSet.Dispose();
         _uboLayout.Dispose();
         _uboBuffer.Dispose();
-        _indexBuffer.Dispose();
-        _vertexBuffer.Dispose();
-
-        foreach (TextureView textureView in _textureViews)
-        {
-            textureView.Dispose();
-        }
-
-        foreach (Texture texture in _textures)
-        {
-            texture.Dispose();
-        }
+        _sponza.Dispose();
 
         base.Destroy();
     }
 
-    private void LoadNode(GLTFNode gltfNode, Node? parent, List<Vertex> vertices, List<uint> indices)
-    {
-        Node node = new()
-        {
-            Name = gltfNode.Name,
-            LocalTransform = gltfNode.LocalTransform.Matrix
-        };
-
-        foreach (GLTFNode children in gltfNode.VisualChildren)
-        {
-            LoadNode(children, node, vertices, indices);
-        }
-
-        if (gltfNode.Mesh != null)
-        {
-            foreach (MeshPrimitive primitive in gltfNode.Mesh.Primitives)
-            {
-                uint firsetIndex = (uint)indices.Count;
-                uint vertexOffset = (uint)vertices.Count;
-                int indexCount = 0;
-
-                // Vertices
-                {
-                    IList<Vector3>? positionBuffer = null;
-                    IList<Vector3>? normalBuffer = null;
-                    IList<Vector2>? texCoordBuffer = null;
-                    IList<Vector3>? colorBuffer = null;
-                    IList<Vector4>? tangentBuffer = null;
-                    uint vertexCount = 0;
-
-                    if (primitive.VertexAccessors.TryGetValue("POSITION", out Accessor? positionAccessor))
-                    {
-                        positionBuffer = positionAccessor.AsVector3Array();
-                        vertexCount = (uint)positionAccessor.Count;
-                    }
-
-                    if (primitive.VertexAccessors.TryGetValue("NORMAL", out Accessor? normalAccessor))
-                    {
-                        normalBuffer = normalAccessor.AsVector3Array();
-                    }
-
-                    if (primitive.VertexAccessors.TryGetValue("TEXCOORD_0", out Accessor? texCoordAccessor))
-                    {
-                        texCoordBuffer = texCoordAccessor.AsVector2Array();
-                    }
-
-                    if (primitive.VertexAccessors.TryGetValue("COLOR_0", out Accessor? colorAccessor))
-                    {
-                        colorBuffer = colorAccessor.AsVector3Array();
-                    }
-
-                    if (primitive.VertexAccessors.TryGetValue("TANGENT", out Accessor? tangentAccessor))
-                    {
-                        tangentBuffer = tangentAccessor.AsVector4Array();
-                    }
-
-                    for (uint i = 0; i < vertexCount; i++)
-                    {
-                        Vector3 position = positionBuffer != null ? positionBuffer[(int)i] : Vector3.Zero;
-                        Vector3 normal = normalBuffer != null ? normalBuffer[(int)i] : Vector3.Zero;
-                        Vector2 texCoord = texCoordBuffer != null ? texCoordBuffer[(int)i] : Vector2.Zero;
-                        Vector3 color = colorBuffer != null ? colorBuffer[(int)i] : Vector3.One;
-                        Vector4 tangent = tangentBuffer != null ? tangentBuffer[(int)i] : Vector4.Zero;
-
-                        vertices.Add(new Vertex(position, normal, texCoord, color, tangent));
-                    }
-                }
-
-                // Indices
-                {
-                    if (primitive.IndexAccessor != null)
-                    {
-                        indexCount = primitive.IndexAccessor.Count;
-
-                        IList<uint>? indexBuffer = primitive.IndexAccessor.AsIndicesArray();
-
-                        for (int i = 0; i < indexCount; i++)
-                        {
-                            indices.Add(indexBuffer[i] + vertexOffset);
-                        }
-                    }
-                }
-
-                node.Mesh ??= new();
-                node.Mesh.Primitives.Add(new Primitive(firsetIndex, (uint)indexCount, primitive.Material.LogicalIndex));
-            }
-        }
-
-        if (parent != null)
-        {
-            node.Parent = parent;
-            parent.Children.Add(node);
-        }
-        else
-        {
-            _nodes.Add(node);
-        }
-    }
-
     private void DrawNode(CommandList commandList, Node node)
     {
-        if (!node.IsVisible)
+        foreach (Primitive primitive in node.Primitives)
         {
-            return;
-        }
-
-        if (node.Mesh != null)
-        {
-            foreach (Primitive primitive in node.Mesh.Primitives)
-            {
-                commandList.SetPipeline(_pipelines![primitive.MaterialIndex]);
-                commandList.SetGraphicsResourceSet(0, _uboSet);
-                commandList.SetGraphicsResourceSet(1, _materialSets[primitive.MaterialIndex]);
-                commandList.DrawIndexed(primitive.IndexCount, 1, primitive.FirstIndex, 0, 0);
-            }
+            commandList.SetPipeline(_pipelines![primitive.MaterialIndex]);
+            commandList.SetGraphicsResourceSet(0, _uboSet);
+            commandList.SetGraphicsResourceSet(1, _materialSets[primitive.MaterialIndex]);
+            commandList.DrawIndexed(primitive.IndexCount, 1, primitive.FirstIndex, 0, 0);
         }
 
         foreach (Node children in node.Children)

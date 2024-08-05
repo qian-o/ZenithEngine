@@ -1,33 +1,63 @@
 ﻿using System.Numerics;
-using Renderer.Enums;
+using SharpGLTF.Materials;
+using SharpGLTF.Schema2;
+using AlphaMode = Renderer.Enums.AlphaMode;
+using GltfAlphaMode = SharpGLTF.Schema2.AlphaMode;
+using GltfMaterial = SharpGLTF.Schema2.Material;
 
 namespace Renderer.Models;
 
-internal sealed class Material(string name,
-                               Vector4 baseColorFactor,
-                               uint baseColorTextureIndex,
-                               uint baseColorSamplerIndex,
-                               uint normalTextureIndex,
-                               uint normalSamplerIndex,
-                               AlphaMode alphaMode,
-                               float alphaCutoff,
-                               bool doubleSided)
+internal sealed class Material
 {
-    public string Name { get; } = name;
+    public Material(GltfMaterial gltfMaterial)
+    {
+        Name = gltfMaterial.Name;
 
-    public Vector4 BaseColorFactor { get; } = baseColorFactor;
+        if (gltfMaterial.FindChannel(KnownChannel.BaseColor.ToString()) is MaterialChannel baseColor)
+        {
+            BaseColorFactor = baseColor.Color;
 
-    public uint BaseColorTextureIndex { get; } = baseColorTextureIndex;
+            if (baseColor.Texture != null)
+            {
+                BaseColorTextureIndex = (uint)baseColor.Texture.LogicalIndex;
+            }
+        }
 
-    public uint BaseColorSamplerIndex { get; } = baseColorSamplerIndex;
+        if (gltfMaterial.FindChannel(KnownChannel.Normal.ToString()) is MaterialChannel normal)
+        {
+            if (normal.Texture != null)
+            {
+                NormalTextureIndex = (uint)normal.Texture.LogicalIndex;
+            }
+        }
 
-    public uint NormalTextureIndex { get; } = normalTextureIndex;
+        AlphaMode = ToAlphaMode(gltfMaterial.Alpha);
+        AlphaCutoff = gltfMaterial.AlphaCutoff;
+        DoubleSided = gltfMaterial.DoubleSided;
+    }
 
-    public uint NormalSamplerIndex { get; } = normalSamplerIndex;
+    public string Name { get; }
 
-    public AlphaMode AlphaMode { get; } = alphaMode;
+    public Vector4 BaseColorFactor { get; }
 
-    public float AlphaCutoff { get; } = alphaCutoff;
+    public uint BaseColorTextureIndex { get; }
 
-    public bool DoubleSided { get; } = doubleSided;
+    public uint NormalTextureIndex { get; }
+
+    public AlphaMode AlphaMode { get; }
+
+    public float AlphaCutoff { get; }
+
+    public bool DoubleSided { get; }
+
+    private static AlphaMode ToAlphaMode(GltfAlphaMode alphaMode)
+    {
+        return alphaMode switch
+        {
+            GltfAlphaMode.MASK => AlphaMode.Mask,
+            GltfAlphaMode.OPAQUE => AlphaMode.Opaque,
+            GltfAlphaMode.BLEND => AlphaMode.Blend,
+            _ => throw new ArgumentOutOfRangeException(nameof(alphaMode), alphaMode, null)
+        };
+    }
 }
