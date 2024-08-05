@@ -323,13 +323,9 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
 
-        int displayCount = Window.GetDisplayCount();
+        platformIO.Monitors.Resize(Window.GetDisplayCount());
 
-        platformIO.Monitors.Size = displayCount;
-        platformIO.Monitors.Capacity = displayCount;
-        platformIO.Monitors.Data = (ImGuiPlatformMonitor*)Marshal.AllocHGlobal(Marshal.SizeOf<ImGuiPlatformMonitor>() * displayCount);
-
-        for (int i = 0; i < displayCount; i++)
+        for (int i = 0; i < platformIO.Monitors.Size; i++)
         {
             Display display = Window.GetDisplay(i);
 
