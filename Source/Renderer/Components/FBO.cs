@@ -15,8 +15,7 @@ internal sealed class FBO : DisposableObject
     private readonly Framebuffer _framebuffer;
     private readonly Texture _presentTexture;
 
-    public FBO(ResourceFactory resourceFactory,
-               uint width,
+    public FBO(uint width,
                uint height,
                PixelFormat colorFormat = PixelFormat.R8G8B8A8UNorm,
                PixelFormat depthFormat = PixelFormat.D32FloatS8UInt,
@@ -27,29 +26,29 @@ internal sealed class FBO : DisposableObject
         _colorFormat = colorFormat;
         _depthFormat = depthFormat;
         _sampleCount = sampleCount;
-        _colorTexture = resourceFactory.CreateTexture(TextureDescription.Texture2D(width,
-                                                                                   height,
-                                                                                   1,
-                                                                                   colorFormat,
-                                                                                   sampleCount == TextureSampleCount.Count1
-                                                                                       ? TextureUsage.RenderTarget | TextureUsage.Sampled
-                                                                                       : TextureUsage.RenderTarget,
-                                                                                   sampleCount));
-        _depthTexture = resourceFactory.CreateTexture(TextureDescription.Texture2D(width,
-                                                                                   height,
-                                                                                   1,
-                                                                                   depthFormat,
-                                                                                   TextureUsage.DepthStencil,
-                                                                                   sampleCount));
-        _framebuffer = resourceFactory.CreateFramebuffer(new FramebufferDescription(_depthTexture, _colorTexture));
+        _colorTexture = App.ResourceFactory.CreateTexture(TextureDescription.Texture2D(width,
+                                                                                       height,
+                                                                                       1,
+                                                                                       colorFormat,
+                                                                                       sampleCount == TextureSampleCount.Count1
+                                                                                           ? TextureUsage.RenderTarget | TextureUsage.Sampled
+                                                                                           : TextureUsage.RenderTarget,
+                                                                                       sampleCount));
+        _depthTexture = App.ResourceFactory.CreateTexture(TextureDescription.Texture2D(width,
+                                                                                       height,
+                                                                                       1,
+                                                                                       depthFormat,
+                                                                                       TextureUsage.DepthStencil,
+                                                                                       sampleCount));
+        _framebuffer = App.ResourceFactory.CreateFramebuffer(new FramebufferDescription(_depthTexture, _colorTexture));
         _presentTexture = sampleCount == TextureSampleCount.Count1
             ? _colorTexture
-            : resourceFactory.CreateTexture(TextureDescription.Texture2D(width,
-                                                                         height,
-                                                                         1,
-                                                                         colorFormat,
-                                                                         TextureUsage.Sampled,
-                                                                         TextureSampleCount.Count1));
+            : App.ResourceFactory.CreateTexture(TextureDescription.Texture2D(width,
+                                                                             height,
+                                                                             1,
+                                                                             colorFormat,
+                                                                             TextureUsage.Sampled,
+                                                                             TextureSampleCount.Count1));
     }
 
     public uint Width => _width;

@@ -87,29 +87,29 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
         ushort[] triangleIndices = [0, 1, 2];
 
-        _vertexBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)(Vertex.SizeInBytes * triangleVertices.Length), BufferUsage.VertexBuffer));
-        _indexBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(ushort) * triangleIndices.Length), BufferUsage.IndexBuffer));
-        _beginBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
-        _endBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
-        _stepBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _vertexBuffer = App.ResourceFactory.CreateBuffer(new BufferDescription((uint)(Vertex.SizeInBytes * triangleVertices.Length), BufferUsage.VertexBuffer));
+        _indexBuffer = App.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(ushort) * triangleIndices.Length), BufferUsage.IndexBuffer));
+        _beginBuffer = App.ResourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
+        _endBuffer = App.ResourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer));
+        _stepBuffer = App.ResourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Ubo>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
-        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, [.. triangleVertices]);
-        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, [.. triangleIndices]);
-        _graphicsDevice.UpdateBuffer(_beginBuffer, 0, [new Ubo { Value = new Vector4(1.0f, 0.0f, 0.0f, 1.0f) }]);
-        _graphicsDevice.UpdateBuffer(_endBuffer, 0, [new Ubo { Value = new Vector4(0.0f, 0.0f, 1.0f, 1.0f) }]);
-        _graphicsDevice.UpdateBuffer(_stepBuffer, 0, [new Ubo { Value = new Vector4(0.2f) }]);
+        App.GraphicsDevice.UpdateBuffer(_vertexBuffer, 0, [.. triangleVertices]);
+        App.GraphicsDevice.UpdateBuffer(_indexBuffer, 0, [.. triangleIndices]);
+        App.GraphicsDevice.UpdateBuffer(_beginBuffer, 0, [new Ubo { Value = new Vector4(1.0f, 0.0f, 0.0f, 1.0f) }]);
+        App.GraphicsDevice.UpdateBuffer(_endBuffer, 0, [new Ubo { Value = new Vector4(0.0f, 0.0f, 1.0f, 1.0f) }]);
+        App.GraphicsDevice.UpdateBuffer(_stepBuffer, 0, [new Ubo { Value = new Vector4(0.2f) }]);
 
         ResourceLayoutDescription resourceLayoutDescription = new(new ResourceLayoutElementDescription("Begin", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                                                                   new ResourceLayoutElementDescription("End", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                                                                   new ResourceLayoutElementDescription("Step", ResourceKind.UniformBuffer, ShaderStages.Fragment));
 
-        _resourceLayout = _resourceFactory.CreateResourceLayout(resourceLayoutDescription);
+        _resourceLayout = App.ResourceFactory.CreateResourceLayout(resourceLayoutDescription);
 
         ResourceSetDescription resourceSetDescription = new(_resourceLayout, _beginBuffer, _endBuffer, _stepBuffer);
 
-        _resourceSet = _resourceFactory.CreateResourceSet(resourceSetDescription);
+        _resourceSet = App.ResourceFactory.CreateResourceSet(resourceSetDescription);
 
-        _shaders = _resourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(HLSL), "mainVS"),
+        _shaders = App.ResourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(HLSL), "mainVS"),
                                                     new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(HLSL), "mainPS"));
 
         VertexElementDescription positionDescription = new("Position", VertexElementFormat.Float2);
@@ -133,12 +133,12 @@ float4 mainPS(VSOutput input) : SV_TARGET
             Outputs = framebuffer.OutputDescription
         };
 
-        _pipeline = _resourceFactory.CreateGraphicsPipeline(graphicsPipelineDescription);
+        _pipeline = App.ResourceFactory.CreateGraphicsPipeline(graphicsPipelineDescription);
     }
 
     protected override void UpdateCore(UpdateEventArgs e)
     {
-        _graphicsDevice.UpdateBuffer(_stepBuffer, 0, [new Ubo { Value = new Vector4(((float)Math.Sin(e.TotalTime) * 0.5f) + 0.5f) }]);
+        App.GraphicsDevice.UpdateBuffer(_stepBuffer, 0, [new Ubo { Value = new Vector4(((float)Math.Sin(e.TotalTime) * 0.5f) + 0.5f) }]);
     }
 
     protected override void RenderCore(CommandList commandList, Framebuffer framebuffer, RenderEventArgs e)

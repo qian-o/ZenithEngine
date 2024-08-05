@@ -121,7 +121,7 @@ internal sealed unsafe class GLTFScene : Scene
 
         ModelRoot root = ModelRoot.Load("Assets/Models/Sponza/glTF/Sponza.gltf");
 
-        CommandList commandList = _resourceFactory.CreateGraphicsCommandList();
+        CommandList commandList = App.ResourceFactory.CreateGraphicsCommandList();
 
         commandList.Begin();
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
@@ -133,10 +133,10 @@ internal sealed unsafe class GLTFScene : Scene
 
             TextureDescription description = TextureDescription.Texture2D((uint)width, (uint)height, mipLevels, PixelFormat.R8G8B8A8UNorm, TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
 
-            Texture texture = _resourceFactory.CreateTexture(in description);
+            Texture texture = App.ResourceFactory.CreateTexture(in description);
             texture.Name = gltfTexture.Name;
 
-            TextureView textureView = _resourceFactory.CreateTextureView(texture);
+            TextureView textureView = App.ResourceFactory.CreateTextureView(texture);
             textureView.Name = gltfTexture.Name;
 
             commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
@@ -149,7 +149,7 @@ internal sealed unsafe class GLTFScene : Scene
         }
         commandList.End();
 
-        _graphicsDevice.SubmitCommands(commandList);
+        App.GraphicsDevice.SubmitCommands(commandList);
 
         commandList.Dispose();
 
@@ -190,13 +190,13 @@ internal sealed unsafe class GLTFScene : Scene
             LoadNode(gltfNode, null, vertices, indices);
         }
 
-        _vertexBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Count), BufferUsage.VertexBuffer));
-        _graphicsDevice.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
+        _vertexBuffer = App.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Count), BufferUsage.VertexBuffer));
+        App.GraphicsDevice.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
 
-        _indexBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
-        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, [.. indices]);
+        _indexBuffer = App.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
+        App.GraphicsDevice.UpdateBuffer(_indexBuffer, 0, [.. indices]);
 
-        _uboBuffer = _resourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(UBO), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _uboBuffer = App.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(UBO), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("UBO", ResourceKind.UniformBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription materialLayoutDescription = new(new ResourceLayoutElementDescription("textureColorMap", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
@@ -204,20 +204,20 @@ internal sealed unsafe class GLTFScene : Scene
                                                                   new ResourceLayoutElementDescription("textureNormalMap", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
                                                                   new ResourceLayoutElementDescription("normalSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
-        _uboLayout = _resourceFactory.CreateResourceLayout(in uboLayoutDescription);
-        _uboSet = _resourceFactory.CreateResourceSet(new ResourceSetDescription(_uboLayout, _uboBuffer));
+        _uboLayout = App.ResourceFactory.CreateResourceLayout(in uboLayoutDescription);
+        _uboSet = App.ResourceFactory.CreateResourceSet(new ResourceSetDescription(_uboLayout, _uboBuffer));
 
-        _materialLayout = _resourceFactory.CreateResourceLayout(in materialLayoutDescription);
+        _materialLayout = App.ResourceFactory.CreateResourceLayout(in materialLayoutDescription);
         _materialSets = new ResourceSet[_materials.Count];
         for (int i = 0; i < _materials.Count; i++)
         {
             ResourceSetDescription materialSetDescription = new(_materialLayout,
                                                                 _textureViews[(int)_materials[i].BaseColorTextureIndex],
-                                                                _graphicsDevice.LinearSampler,
+                                                                App.GraphicsDevice.LinearSampler,
                                                                 _textureViews[(int)_materials[i].NormalTextureIndex],
-                                                                _graphicsDevice.LinearSampler);
+                                                                App.GraphicsDevice.LinearSampler);
 
-            _materialSets[i] = _resourceFactory.CreateResourceSet(in materialSetDescription);
+            _materialSets[i] = App.ResourceFactory.CreateResourceSet(in materialSetDescription);
         }
 
         VertexElementDescription positionDescription = new("Position", VertexElementFormat.Float3);
@@ -226,8 +226,8 @@ internal sealed unsafe class GLTFScene : Scene
         VertexElementDescription colorDescription = new("Color", VertexElementFormat.Float3);
         VertexElementDescription tangentDescription = new("Tangent", VertexElementFormat.Float4);
 
-        _shaders = _resourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
-                                                    new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
+        _shaders = App.ResourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
+                                                       new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
         _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription, normalDescription, texCoordDescription, colorDescription, tangentDescription)];
     }
@@ -259,7 +259,7 @@ internal sealed unsafe class GLTFScene : Scene
                 Outputs = framebuffer.OutputDescription
             };
 
-            _pipelines[i] = _resourceFactory.CreateGraphicsPipeline(ref pipelineDescription);
+            _pipelines[i] = App.ResourceFactory.CreateGraphicsPipeline(ref pipelineDescription);
         }
     }
 
@@ -274,7 +274,7 @@ internal sealed unsafe class GLTFScene : Scene
             ViewPos = new Vector4(new Vector3(7.8f, 2.1f, 0.0f), 1.0f)
         };
 
-        _graphicsDevice.UpdateBuffer(_uboBuffer, 0, [ubo]);
+        App.GraphicsDevice.UpdateBuffer(_uboBuffer, 0, [ubo]);
     }
 
     protected override void RenderCore(CommandList commandList, Framebuffer framebuffer, RenderEventArgs e)

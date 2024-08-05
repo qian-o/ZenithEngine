@@ -7,10 +7,6 @@ namespace Renderer.Components;
 
 internal abstract class Scene : MVVM
 {
-    protected readonly GraphicsDevice _graphicsDevice;
-    protected readonly ResourceFactory _resourceFactory;
-    protected readonly ImGuiController _imGuiController;
-
     private readonly CommandList _commandList;
 
     private FBO? _fbo;
@@ -26,11 +22,7 @@ internal abstract class Scene : MVVM
 
     protected Scene()
     {
-        _graphicsDevice = App.MainWindow.GraphicsDevice;
-        _resourceFactory = App.MainWindow.ResourceFactory;
-        _imGuiController = App.MainWindow.ImGuiController;
-
-        _commandList = _resourceFactory.CreateGraphicsCommandList();
+        _commandList = App.ResourceFactory.CreateGraphicsCommandList();
 
         Initialize();
     }
@@ -84,10 +76,10 @@ internal abstract class Scene : MVVM
                     bool isRecreatePipelineRequired = _fbo == null || _fbo.SampleCount != App.Settings.SampleCount;
 
                     _fbo?.Dispose();
-                    _imGuiController.RemoveImGuiBinding(_presentTextureHandle);
+                    App.ImGuiController.RemoveImGuiBinding(_presentTextureHandle);
 
-                    _fbo = new FBO(_resourceFactory, _width, _height, sampleCount: App.Settings.SampleCount);
-                    _presentTextureHandle = _imGuiController.GetOrCreateImGuiBinding(_resourceFactory, _fbo.PresentTexture);
+                    _fbo = new FBO(_width, _height, sampleCount: App.Settings.SampleCount);
+                    _presentTextureHandle = App.ImGuiController.GetOrCreateImGuiBinding(App.ResourceFactory, _fbo.PresentTexture);
 
                     if (isRecreatePipelineRequired)
                     {
@@ -105,7 +97,7 @@ internal abstract class Scene : MVVM
                 }
                 _commandList.End();
 
-                _graphicsDevice.SubmitCommands(_commandList);
+                App.GraphicsDevice.SubmitCommands(_commandList);
 
                 ImGui.Image(_presentTextureHandle, size, Vector2.Zero, Vector2.One, Vector4.One, Vector4.Zero);
             }

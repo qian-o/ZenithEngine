@@ -14,17 +14,15 @@ internal sealed class GLTF : DisposableObject
     {
     }
 
-    public static GLTF Load(GraphicsDevice graphicsDevice, string path)
+    public static GLTF Load(string path)
     {
-        ResourceFactory resourceFactory = graphicsDevice.ResourceFactory;
-
         ModelRoot root = ModelRoot.Load(path);
 
         List<Texture> textures = [];
         List<TextureView> textureViews = [];
         List<Sampler> samplers = [];
 
-        CommandList commandList = resourceFactory.CreateGraphicsCommandList();
+        CommandList commandList = App.ResourceFactory.CreateGraphicsCommandList();
 
         commandList.Begin();
         foreach (GltfTexture gltfTexture in root.LogicalTextures)
@@ -39,8 +37,8 @@ internal sealed class GLTF : DisposableObject
                                                                           PixelFormat.R8G8B8A8UNorm,
                                                                           TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
 
-            Texture texture = resourceFactory.CreateTexture(in description);
-            TextureView textureView = resourceFactory.CreateTextureView(texture);
+            Texture texture = App.ResourceFactory.CreateTexture(in description);
+            TextureView textureView = App.ResourceFactory.CreateTextureView(texture);
 
             commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
             commandList.GenerateMipmaps(texture);
@@ -48,7 +46,7 @@ internal sealed class GLTF : DisposableObject
             image.Dispose();
         }
         commandList.End();
-        graphicsDevice.SubmitCommands(commandList);
+        App.GraphicsDevice.SubmitCommands(commandList);
 
         foreach (GltfSampler gltfSampler in root.LogicalTextureSamplers)
         {
