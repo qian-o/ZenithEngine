@@ -14,7 +14,7 @@ using Texture = Graphics.Vulkan.Texture;
 
 namespace Renderer.Scenes;
 
-internal sealed unsafe class GLTFScene(MainWindow mainWindow) : Scene(mainWindow)
+internal sealed unsafe class GLTFScene : Scene
 {
     #region Structs
     [StructLayout(LayoutKind.Explicit)]

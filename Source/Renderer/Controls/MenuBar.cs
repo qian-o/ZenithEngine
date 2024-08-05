@@ -4,7 +4,7 @@ using Renderer.Components;
 
 namespace Renderer.Controls;
 
-internal sealed class MenuBar(MainWindow mainWindow) : Control(mainWindow)
+internal sealed class MenuBar : Control
 {
     protected override void Initialize()
     {

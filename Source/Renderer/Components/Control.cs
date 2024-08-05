@@ -1,16 +1,11 @@
 ﻿using Graphics.Core;
-using Graphics.Vulkan;
 
 namespace Renderer.Components;
 
 internal abstract class Control : MVVM
 {
-    protected readonly ImGuiController _imGuiController;
-
-    public Control(MainWindow mainWindow)
+    public Control()
     {
-        _imGuiController = mainWindow.ImGuiController;
-
         Initialize();
     }
 

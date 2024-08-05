@@ -7,7 +7,7 @@ using Renderer.Components;
 
 namespace Renderer.Scenes;
 
-internal sealed unsafe class TestScene(MainWindow mainWindow) : Scene(mainWindow)
+internal sealed unsafe class TestScene : Scene
 {
     #region Structs
     private struct Vertex(Vector2 position, Vector4 color)

@@ -24,11 +24,11 @@ internal abstract class Scene : MVVM
     private bool _isMiddleClicked;
     private nint _presentTextureHandle = -1;
 
-    protected Scene(MainWindow mainWindow)
+    protected Scene()
     {
-        _graphicsDevice = mainWindow.GraphicsDevice;
-        _resourceFactory = mainWindow.ResourceFactory;
-        _imGuiController = mainWindow.ImGuiController;
+        _graphicsDevice = App.MainWindow.GraphicsDevice;
+        _resourceFactory = App.MainWindow.ResourceFactory;
+        _imGuiController = App.MainWindow.ImGuiController;
 
         _commandList = _resourceFactory.CreateGraphicsCommandList();
 

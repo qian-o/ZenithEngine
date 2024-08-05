@@ -56,10 +56,10 @@ internal sealed unsafe class MainWindow : DisposableObject
 
     private void Initialize()
     {
-        _controls.Add(new MenuBar(this));
+        _controls.Add(new MenuBar());
 
-        _scenes.Add(new TestScene(this));
-        _scenes.Add(new GLTFScene(this));
+        _scenes.Add(new TestScene());
+        _scenes.Add(new GLTFScene());
     }
 
     private void Window_Update(object? sender, UpdateEventArgs e)
