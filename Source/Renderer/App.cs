@@ -7,7 +7,7 @@ using Renderer.Scenes;
 
 namespace Renderer;
 
-internal unsafe static class App
+internal static unsafe class App
 {
     private static readonly Window _window;
     private static readonly Context _context;
