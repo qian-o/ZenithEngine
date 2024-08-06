@@ -3,6 +3,7 @@ using Graphics.Vulkan;
 using Renderer.Structs;
 using SharpGLTF.Schema2;
 using StbiSharp;
+using GltfAnimation = SharpGLTF.Schema2.Animation;
 using GltfTexture = SharpGLTF.Schema2.Texture;
 using Texture = Graphics.Vulkan.Texture;
 
@@ -109,6 +110,14 @@ internal sealed unsafe class GLTF : DisposableObject
         {
             App.GraphicsDevice.UpdateBuffer(vertexBuffer, 0, [.. vertices]);
             App.GraphicsDevice.UpdateBuffer(indexBuffer, 0, [.. indices]);
+        }
+
+        // Animation
+        {
+            foreach (GltfAnimation gltfAnimation in root.LogicalAnimations)
+            {
+
+            }
         }
 
         return new GLTF([.. nodes], [.. materials], vertexBuffer, indexBuffer, [.. textures], [.. textureViews]);

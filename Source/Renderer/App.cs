@@ -62,6 +62,7 @@ internal static unsafe class App
 
         _scenes.Add(new TestScene());
         _scenes.Add(new GLTFScene());
+        _scenes.Add(new GLTFAnimationScene());
     }
 
     private static void Window_Update(object? sender, UpdateEventArgs e)
