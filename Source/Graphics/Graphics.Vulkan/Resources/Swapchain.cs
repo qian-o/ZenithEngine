@@ -145,7 +145,7 @@ public unsafe class Swapchain : DeviceResource
         AcquireNextImage();
     }
 
-    public void AcquireNextImage()
+    internal void AcquireNextImage()
     {
         if (_swapchain == null)
         {

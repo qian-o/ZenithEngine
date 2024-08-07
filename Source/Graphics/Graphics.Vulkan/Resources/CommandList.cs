@@ -8,7 +8,6 @@ namespace Graphics.Vulkan;
 public unsafe class CommandList : DeviceResource
 {
     private readonly Queue _queue;
-    private readonly Fence _fence;
     private readonly CommandPool _commandPool;
     private readonly CommandBuffer _commandBuffer;
     private readonly object _disposablesLock;
@@ -22,10 +21,9 @@ public unsafe class CommandList : DeviceResource
     private Pipeline? _currentPipeline;
     private bool _isInRenderPass;
 
-    internal CommandList(GraphicsDevice graphicsDevice, Queue queue, Fence fence, CommandPool commandPool) : base(graphicsDevice)
+    internal CommandList(GraphicsDevice graphicsDevice, Queue queue, CommandPool commandPool) : base(graphicsDevice)
     {
         _queue = queue;
-        _fence = fence;
         _commandPool = commandPool;
         _commandBuffer = commandPool.AllocateCommandBuffer();
         _disposablesLock = new();
@@ -38,8 +36,6 @@ public unsafe class CommandList : DeviceResource
     internal CommandBuffer Handle => _commandBuffer;
 
     internal Queue Queue => _queue;
-
-    internal Fence Fence => _fence;
 
     public void Begin()
     {

@@ -90,7 +90,6 @@ public class ResourceFactory : ContextObject
     {
         return new CommandList(_graphicsDevice,
                                _graphicsDevice.GraphicsQueue,
-                               _graphicsDevice.GraphicsFence,
                                _graphicsDevice.GraphicsCommandPool);
     }
 

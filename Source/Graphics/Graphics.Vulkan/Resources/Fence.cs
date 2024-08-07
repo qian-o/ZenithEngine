@@ -23,26 +23,13 @@ internal sealed unsafe class Fence : DeviceResource
 
     public VkFence Handle => _fence;
 
-    public void Wait()
+    public void WaitAndReset()
     {
         fixed (VkFence* fence = &_fence)
         {
             Vk.WaitForFences(Device, 1, fence, Vk.True, ulong.MaxValue).ThrowCode();
-        }
-    }
-
-    public void Reset()
-    {
-        fixed (VkFence* fence = &_fence)
-        {
             Vk.ResetFences(Device, 1, fence).ThrowCode();
         }
-    }
-
-    public void WaitAndReset()
-    {
-        Wait();
-        Reset();
     }
 
     protected override void Destroy()

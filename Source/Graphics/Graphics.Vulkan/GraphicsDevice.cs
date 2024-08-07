@@ -19,8 +19,6 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly Queue _graphicsQueue;
     private readonly Queue _computeQueue;
     private readonly Queue _transferQueue;
-    private readonly Fence _graphicsFence;
-    private readonly Fence _computeFence;
     private readonly CommandPool _graphicsCommandPool;
     private readonly CommandPool _computeCommandPool;
     private readonly DescriptorPoolManager _descriptorPoolManager;
@@ -30,6 +28,7 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly object _stagingResourcesLock;
     private readonly List<StagingCommandPool> _availableStagingCommandPools;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
+    private readonly List<Fence> _availableStagingFences;
 
     internal GraphicsDevice(Context context,
                             PhysicalDevice physicalDevice,
@@ -47,8 +46,6 @@ public unsafe class GraphicsDevice : ContextObject
         _graphicsQueue = new Queue(this, graphicsQueueFamilyIndex);
         _computeQueue = new Queue(this, computeQueueFamilyIndex);
         _transferQueue = new Queue(this, transferQueueFamilyIndex);
-        _graphicsFence = new Fence(this);
-        _computeFence = new Fence(this);
         _graphicsCommandPool = new CommandPool(this, graphicsQueueFamilyIndex);
         _computeCommandPool = new CommandPool(this, computeQueueFamilyIndex);
         _descriptorPoolManager = new DescriptorPoolManager(this);
@@ -58,6 +55,7 @@ public unsafe class GraphicsDevice : ContextObject
         _stagingResourcesLock = new object();
         _availableStagingCommandPools = [];
         _availableStagingBuffers = [];
+        _availableStagingFences = [];
     }
 
     public ResourceFactory ResourceFactory => _resourceFactory;
@@ -79,10 +77,6 @@ public unsafe class GraphicsDevice : ContextObject
     internal Queue ComputeQueue => _computeQueue;
 
     internal Queue TransferQueue => _transferQueue;
-
-    internal Fence GraphicsFence => _graphicsFence;
-
-    internal Fence ComputeFence => _computeFence;
 
     internal CommandPool GraphicsCommandPool => _graphicsCommandPool;
 
@@ -264,9 +258,70 @@ public unsafe class GraphicsDevice : ContextObject
 
     public void SubmitCommands(CommandList commandList)
     {
+        Fence fence = GetStagingFence();
+
+        SubmitCommandsCore(commandList, fence);
+
+        fence.WaitAndReset();
+
+        commandList.Submitted();
+
+        CacheStagingFence(fence);
+    }
+
+    public void SwapBuffers(Swapchain swapchain)
+    {
+        SwapBuffersCore(swapchain);
+    }
+
+    public void SwapBuffers()
+    {
+        if (_mainSwapChain == null)
+        {
+            throw new InvalidOperationException("The swap chain is not initialized.");
+        }
+
+        SwapBuffers(_mainSwapChain);
+    }
+
+    protected override void Destroy()
+    {
+        foreach (Fence fence in _availableStagingFences)
+        {
+            fence.Dispose();
+        }
+
+        foreach (DeviceBuffer deviceBuffer in _availableStagingBuffers)
+        {
+            deviceBuffer.Dispose();
+        }
+
+        foreach (StagingCommandPool sharedCommandPool in _availableStagingCommandPools)
+        {
+            sharedCommandPool.Dispose();
+        }
+
+        _linearSampler.Dispose();
+        _pointSampler.Dispose();
+
+        _mainSwapChain.Dispose();
+
+        _descriptorPoolManager.Dispose();
+
+        _computeCommandPool.Dispose();
+        _graphicsCommandPool.Dispose();
+
+        _swapchainExt.Dispose();
+
+        _resourceFactory.Dispose();
+
+        Vk.DestroyDevice(_device, null);
+    }
+
+    private void SubmitCommandsCore(CommandList commandList, Fence fence)
+    {
         CommandBuffer commandBuffer = commandList.Handle;
         Queue queue = commandList.Queue;
-        Fence fence = commandList.Fence;
 
         SubmitInfo submitInfo = new()
         {
@@ -276,13 +331,9 @@ public unsafe class GraphicsDevice : ContextObject
         };
 
         Vk.QueueSubmit(queue.Handle, 1, &submitInfo, fence.Handle);
-
-        fence.WaitAndReset();
-
-        commandList.Submitted();
     }
 
-    public void SwapBuffers(Swapchain swapchain)
+    private void SwapBuffersCore(Swapchain swapchain)
     {
         SwapchainKHR swapchainKHR = swapchain.Handle;
         uint imageIndex = swapchain.CurrentImageIndex;
@@ -308,48 +359,6 @@ public unsafe class GraphicsDevice : ContextObject
                 result.ThrowCode("Failed to present the swap chain image.");
             }
         }
-    }
-
-    public void SwapBuffers()
-    {
-        if (_mainSwapChain == null)
-        {
-            throw new InvalidOperationException("The swap chain is not initialized.");
-        }
-
-        SwapBuffers(_mainSwapChain);
-    }
-
-    protected override void Destroy()
-    {
-        foreach (DeviceBuffer deviceBuffer in _availableStagingBuffers)
-        {
-            deviceBuffer.Dispose();
-        }
-
-        foreach (StagingCommandPool sharedCommandPool in _availableStagingCommandPools)
-        {
-            sharedCommandPool.Dispose();
-        }
-
-        _linearSampler.Dispose();
-        _pointSampler.Dispose();
-
-        _mainSwapChain.Dispose();
-
-        _descriptorPoolManager.Dispose();
-
-        _computeCommandPool.Dispose();
-        _graphicsCommandPool.Dispose();
-
-        _computeFence.Dispose();
-        _graphicsFence.Dispose();
-
-        _swapchainExt.Dispose();
-
-        _resourceFactory.Dispose();
-
-        Vk.DestroyDevice(_device, null);
     }
 
     private StagingCommandPool GetStagingCommandPool()
@@ -392,7 +401,7 @@ public unsafe class GraphicsDevice : ContextObject
 
         uint bufferSize = Math.Max(MinStagingBufferSize, sizeInBytes);
 
-        return ResourceFactory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
+        return _resourceFactory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
     }
 
     private void CacheStagingBuffer(DeviceBuffer stagingBuffer)
@@ -407,6 +416,29 @@ public unsafe class GraphicsDevice : ContextObject
             {
                 _availableStagingBuffers.Add(stagingBuffer);
             }
+        }
+    }
+
+    private Fence GetStagingFence()
+    {
+        lock (_stagingResourcesLock)
+        {
+            foreach (Fence stagingFence in _availableStagingFences)
+            {
+                _availableStagingFences.Remove(stagingFence);
+
+                return stagingFence;
+            }
+        }
+
+        return new Fence(this);
+    }
+
+    private void CacheStagingFence(Fence stagingFence)
+    {
+        lock (_stagingResourcesLock)
+        {
+            _availableStagingFences.Add(stagingFence);
         }
     }
 }
