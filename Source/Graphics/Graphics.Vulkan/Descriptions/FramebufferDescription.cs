@@ -23,5 +23,5 @@ public readonly record struct FramebufferDescription
     /// <summary>
     /// An array of color texture attachments.
     /// </summary>
-    public FramebufferAttachmentDescription[] ColorTargets { get; init; } = [];
+    public FramebufferAttachmentDescription[] ColorTargets { get; init; }
 }

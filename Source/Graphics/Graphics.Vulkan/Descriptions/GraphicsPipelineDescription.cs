@@ -49,7 +49,7 @@ public readonly record struct GraphicsPipelineDescription
     /// <summary>
     /// This controls the resource layout of the shaders.
     /// </summary>
-    public ResourceLayout[] ResourceLayouts { get; init; } = [];
+    public ResourceLayout[] ResourceLayouts { get; init; }
 
     /// <summary>
     /// Describes the color and depth stencil outputs.

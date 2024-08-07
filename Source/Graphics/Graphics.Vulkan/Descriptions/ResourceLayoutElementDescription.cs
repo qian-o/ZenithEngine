@@ -24,7 +24,7 @@ public readonly record struct ResourceLayoutElementDescription
     /// <summary>
     /// The name of the element.
     /// </summary>
-    public string Name { get; init; } = string.Empty;
+    public string Name { get; init; }
 
     /// <summary>
     /// The kind of resource.

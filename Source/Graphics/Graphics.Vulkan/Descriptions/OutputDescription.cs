@@ -29,7 +29,7 @@ public readonly record struct OutputDescription
     /// <summary>
     /// An array of attachment descriptions, one for each color attachment. May be empty.
     /// </summary>
-    public OutputAttachmentDescription[] ColorAttachments { get; init; } = [];
+    public OutputAttachmentDescription[] ColorAttachments { get; init; }
 
     /// <summary>
     /// The number of samples in each target attachment.

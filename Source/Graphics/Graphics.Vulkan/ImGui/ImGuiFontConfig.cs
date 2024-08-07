@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public record struct ImGuiFontConfig
+public readonly record struct ImGuiFontConfig
 {
     public ImGuiFontConfig(string fontPath, int fontSize, Func<ImGuiIOPtr, nint>? getGlyphRange = null)
     {
@@ -13,9 +13,9 @@ public record struct ImGuiFontConfig
         GetGlyphRange = getGlyphRange;
     }
 
-    public string FontPath { get; set; }
+    public string FontPath { get; init; }
 
-    public int FontSize { get; set; }
+    public int FontSize { get; init; }
 
-    public Func<ImGuiIOPtr, nint>? GetGlyphRange { get; set; }
+    public Func<ImGuiIOPtr, nint>? GetGlyphRange { get; init; }
 }

@@ -18,7 +18,7 @@ public readonly record struct VertexElementDescription
     /// <summary>
     /// The name of the element.
     /// </summary>
-    public string Name { get; init; } = string.Empty;
+    public string Name { get; init; }
 
     /// <summary>
     /// The format of the element.

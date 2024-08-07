@@ -19,16 +19,16 @@ public readonly record struct ShaderSetDescription
     /// An array describing the layout of each vertex buffer.
     /// Each element describes the layout of a buffer, including a description of each vertex attribute.
     /// </summary>
-    public VertexLayoutDescription[] VertexLayouts { get; init; } = [];
+    public VertexLayoutDescription[] VertexLayouts { get; init; }
 
     /// <summary>
     /// An array describing the layout of each shader.
     /// Each element describes the layout of a shader, including the inputs and outputs of each shader.
     /// </summary>
-    public Shader[] Shaders { get; init; } = [];
+    public Shader[] Shaders { get; init; }
 
     /// <summary>
     /// An array describing the value of each specialization constant.
     /// </summary>
-    public SpecializationConstant[] Specializations { get; init; } = [];
+    public SpecializationConstant[] Specializations { get; init; }
 }

@@ -20,10 +20,10 @@ public readonly record struct ShaderDescription
     /// An array containing the raw shader bytes.
     /// Shader bytecode in SPIR-V format or UTF8-encoded GLSL source code.
     /// </summary>
-    public byte[] ShaderBytes { get; init; } = [];
+    public byte[] ShaderBytes { get; init; }
 
     /// <summary>
     /// The name of the entry point function in the shader module to be used in this stage.
     /// </summary>
-    public string EntryPoint { get; init; } = string.Empty;
+    public string EntryPoint { get; init; }
 }

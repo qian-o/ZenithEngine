@@ -50,7 +50,7 @@ public readonly record struct BlendStateDescription
     /// <summary>
     /// The Array describes the blend state for each render target.
     /// </summary>
-    public BlendAttachmentDescription[] AttachmentStates { get; init; } = [];
+    public BlendAttachmentDescription[] AttachmentStates { get; init; }
 
     /// <summary>
     /// Enables alpha-to-coverage, which causes a fragment's alpha value to be used when determining multi-sample coverage.

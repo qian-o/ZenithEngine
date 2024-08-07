@@ -17,5 +17,5 @@ public readonly record struct ResourceSetDescription
     /// Bound resources.
     /// Resource count and types must match the descriptions in Layout.
     /// </summary>
-    public IBindableResource[] BoundResources { get; init; } = [];
+    public IBindableResource[] BoundResources { get; init; }
 }
