@@ -13,6 +13,10 @@
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\Tests.Core\Tests.Core.csproj" />
 	</ItemGroup>
