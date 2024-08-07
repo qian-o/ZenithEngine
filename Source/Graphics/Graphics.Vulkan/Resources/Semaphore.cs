@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 
-namespace Graphics.Vulkan.Resources;
+namespace Graphics.Vulkan;
 
 internal sealed unsafe class Semaphore : DeviceResource
 {
