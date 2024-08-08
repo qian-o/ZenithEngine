@@ -115,7 +115,7 @@ internal sealed unsafe class Program
     private static void Main(string[] _)
     {
         using Window window = Window.CreateWindowByVulkan();
-        window.Title = "Tests.MultiViewports";
+        window.Title = "Tests.GLTFScene";
         window.MinimumSize = new(100, 100);
 
         using Context context = new();
@@ -308,6 +308,40 @@ internal sealed unsafe class Program
 
     private static void Window_Closing(object? sender, ClosingEventArgs e)
     {
+        _commandList.Dispose();
+
+        foreach (Pipeline pipeline in _pipelines)
+        {
+            pipeline.Dispose();
+        }
+
+        foreach (Shader shader in _shaders)
+        {
+            shader.Dispose();
+        }
+
+        foreach (ResourceSet materialSet in _materialSets)
+        {
+            materialSet.Dispose();
+        }
+        _materialLayout.Dispose();
+
+        _uboSet.Dispose();
+        _uboLayout.Dispose();
+
+        _uboBuffer.Dispose();
+        _indexBuffer.Dispose();
+        _vertexBuffer.Dispose();
+
+        foreach (TextureView textureView in _textureViews)
+        {
+            textureView.Dispose();
+        }
+
+        foreach (Texture texture in _textures)
+        {
+            texture.Dispose();
+        }
     }
 
     private static void LoadNode(GLTFNode gltfNode, Node? parent, List<Vertex> vertices, List<uint> indices)
