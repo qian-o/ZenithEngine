@@ -245,7 +245,7 @@ internal sealed unsafe class Program
                                                            new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
         _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription, normalDescription, texCoordDescription, colorDescription, tangentDescription)];
-        
+
         _pipelines = new Pipeline[_materials.Count];
         for (int i = 0; i < _materials.Count; i++)
         {
