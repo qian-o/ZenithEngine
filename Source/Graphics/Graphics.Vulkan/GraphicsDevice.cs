@@ -28,6 +28,7 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly object _stagingResourcesLock;
     private readonly List<StagingCommandPool> _availableStagingCommandPools;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
+    private readonly List<Semaphore> _availableStagingSemaphores;
     private readonly List<Fence> _availableStagingFences;
 
     internal GraphicsDevice(Context context,
@@ -55,6 +56,7 @@ public unsafe class GraphicsDevice : ContextObject
         _stagingResourcesLock = new object();
         _availableStagingCommandPools = [];
         _availableStagingBuffers = [];
+        _availableStagingSemaphores = [];
         _availableStagingFences = [];
     }
 
@@ -258,20 +260,20 @@ public unsafe class GraphicsDevice : ContextObject
 
     public void SubmitCommands(CommandList commandList)
     {
-        Fence fence = GetStagingFence();
+        Fence stagingFence = GetStagingFence();
 
-        SubmitCommandsCore(commandList, fence);
+        SubmitCommandsCore(commandList, null, stagingFence);
 
-        fence.WaitAndReset();
+        stagingFence.WaitAndReset();
 
         commandList.Submitted();
 
-        CacheStagingFence(fence);
+        CacheStagingFence(stagingFence);
     }
 
     public void SwapBuffers(Swapchain swapchain)
     {
-        SwapBuffersCore(swapchain);
+        SwapBuffersCore(swapchain, null, true);
     }
 
     public void SwapBuffers()
@@ -284,11 +286,35 @@ public unsafe class GraphicsDevice : ContextObject
         SwapBuffers(_mainSwapChain);
     }
 
+    public void SubmitCommandsAndSwapBuffers(CommandList commandList, Swapchain swapchain)
+    {
+        Semaphore stagingSemaphore = GetStagingSemaphore();
+        Fence stagingFence = GetStagingFence();
+
+        SubmitCommandsCore(commandList, stagingSemaphore, stagingFence);
+
+        Fence[] fences = SwapBuffersCore(swapchain,
+                                         stagingSemaphore,
+                                         false) ? [stagingFence, swapchain.ImageAvailableFence] : [stagingFence];
+
+        WaitAndResetFences(fences);
+
+        commandList.Submitted();
+
+        CacheStagingFence(stagingFence);
+        CacheStagingSemaphore(stagingSemaphore);
+    }
+
     protected override void Destroy()
     {
         foreach (Fence fence in _availableStagingFences)
         {
             fence.Dispose();
+        }
+
+        foreach (Semaphore semaphore in _availableStagingSemaphores)
+        {
+            semaphore.Dispose();
         }
 
         foreach (DeviceBuffer deviceBuffer in _availableStagingBuffers)
@@ -318,7 +344,7 @@ public unsafe class GraphicsDevice : ContextObject
         Vk.DestroyDevice(_device, null);
     }
 
-    private void SubmitCommandsCore(CommandList commandList, Fence fence)
+    private void SubmitCommandsCore(CommandList commandList, Semaphore? signalSemaphore, Fence fence)
     {
         CommandBuffer commandBuffer = commandList.Handle;
         Queue queue = commandList.Queue;
@@ -330,10 +356,18 @@ public unsafe class GraphicsDevice : ContextObject
             PCommandBuffers = &commandBuffer
         };
 
+        if (signalSemaphore != null)
+        {
+            VkSemaphore signalSemaphoreHandle = signalSemaphore.Handle;
+
+            submitInfo.SignalSemaphoreCount = 1;
+            submitInfo.PSignalSemaphores = &signalSemaphoreHandle;
+        }
+
         Vk.QueueSubmit(queue.Handle, 1, &submitInfo, fence.Handle);
     }
 
-    private void SwapBuffersCore(Swapchain swapchain)
+    private bool SwapBuffersCore(Swapchain swapchain, Semaphore? waitSemaphore, bool waitAcquireNextImage)
     {
         SwapchainKHR swapchainKHR = swapchain.Handle;
         uint imageIndex = swapchain.CurrentImageIndex;
@@ -346,11 +380,21 @@ public unsafe class GraphicsDevice : ContextObject
             PImageIndices = &imageIndex
         };
 
+        if (waitSemaphore != null)
+        {
+            VkSemaphore waitSemaphoreHandle = waitSemaphore.Handle;
+
+            presentInfo.WaitSemaphoreCount = 1;
+            presentInfo.PWaitSemaphores = &waitSemaphoreHandle;
+        }
+
         Result result = _swapchainExt.QueuePresent(_graphicsQueue.Handle, &presentInfo);
 
         if (result == Result.Success)
         {
-            swapchain.AcquireNextImage();
+            swapchain.AcquireNextImage(waitAcquireNextImage);
+
+            return true;
         }
         else
         {
@@ -358,6 +402,19 @@ public unsafe class GraphicsDevice : ContextObject
             {
                 result.ThrowCode("Failed to present the swap chain image.");
             }
+
+            return false;
+        }
+    }
+
+    private void WaitAndResetFences(Fence[] fences)
+    {
+        VkFence[] vkFences = fences.Select(f => f.Handle).ToArray();
+
+        fixed (VkFence* vkFencesPointer = vkFences)
+        {
+            Vk.WaitForFences(_device, (uint)vkFences.Length, vkFencesPointer, true, ulong.MaxValue);
+            Vk.ResetFences(_device, (uint)vkFences.Length, vkFencesPointer);
         }
     }
 
@@ -416,6 +473,29 @@ public unsafe class GraphicsDevice : ContextObject
             {
                 _availableStagingBuffers.Add(stagingBuffer);
             }
+        }
+    }
+
+    private Semaphore GetStagingSemaphore()
+    {
+        lock (_stagingResourcesLock)
+        {
+            foreach (Semaphore stagingSemaphore in _availableStagingSemaphores)
+            {
+                _availableStagingSemaphores.Remove(stagingSemaphore);
+
+                return stagingSemaphore;
+            }
+        }
+
+        return new Semaphore(this);
+    }
+
+    private void CacheStagingSemaphore(Semaphore stagingSemaphore)
+    {
+        lock (_stagingResourcesLock)
+        {
+            _availableStagingSemaphores.Add(stagingSemaphore);
         }
     }
 

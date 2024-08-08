@@ -42,9 +42,8 @@ internal sealed unsafe class Program
             }
             commandList.End();
 
-            device.SubmitCommands(commandList);
+            device.SubmitCommandsAndSwapBuffers(commandList, device.MainSwapchain);
 
-            device.SwapBuffers();
             imGuiController.PlatformSwapBuffers();
         }
 

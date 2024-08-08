@@ -31,6 +31,8 @@ public unsafe class Swapchain : DeviceResource
 
     internal uint CurrentImageIndex => _currentImageIndex;
 
+    internal Fence ImageAvailableFence => _imageAvailableFence;
+
     public uint Width => _width;
 
     public uint Height => _height;
@@ -145,7 +147,7 @@ public unsafe class Swapchain : DeviceResource
         AcquireNextImage();
     }
 
-    internal void AcquireNextImage()
+    internal void AcquireNextImage(bool waitFence = true)
     {
         if (_swapchain == null)
         {
@@ -160,7 +162,10 @@ public unsafe class Swapchain : DeviceResource
                                       _imageAvailableFence.Handle,
                                       &currentImageIndex).ThrowCode();
 
-        _imageAvailableFence.WaitAndReset();
+        if (waitFence)
+        {
+            _imageAvailableFence.WaitAndReset();
+        }
 
         _currentImageIndex = currentImageIndex;
     }
