@@ -413,7 +413,7 @@ public unsafe class GraphicsDevice : ContextObject
 
         fixed (VkFence* vkFencesPointer = vkFences)
         {
-            Vk.WaitForFences(_device, (uint)vkFences.Length, vkFencesPointer, true, ulong.MaxValue);
+            Vk.WaitForFences(_device, (uint)vkFences.Length, vkFencesPointer, Vk.True, ulong.MaxValue);
             Vk.ResetFences(_device, (uint)vkFences.Length, vkFencesPointer);
         }
     }
