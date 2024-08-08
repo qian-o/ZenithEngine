@@ -18,7 +18,19 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="SharpGLTF.Core" Version="1.0.1" />
+		<PackageReference Include="SharpGLTF.Toolkit" Version="1.0.1" />
+		<PackageReference Include="StbiSharp" Version="1.2.1" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\Tests.Core\Tests.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="Assets\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 </Project>
