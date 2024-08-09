@@ -228,7 +228,7 @@ internal sealed unsafe class Program
         {
             ResourceSetDescription materialSetDescription = new(_materialLayout,
                                                                 _textureViews[(int)_materials[i].BaseColorTextureIndex],
-                                                                _device.LinearSampler,
+                                                                _device.Aniso4xSampler,
                                                                 _textureViews[(int)_materials[i].NormalTextureIndex],
                                                                 _device.LinearSampler);
 

@@ -25,6 +25,7 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly Swapchain _mainSwapChain;
     private readonly Sampler _pointSampler;
     private readonly Sampler _linearSampler;
+    private readonly Sampler _aniso4xSampler;
     private readonly object _stagingResourcesLock;
     private readonly List<StagingCommandPool> _availableStagingCommandPools;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
@@ -53,6 +54,7 @@ public unsafe class GraphicsDevice : ContextObject
         _mainSwapChain = _resourceFactory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, GetBestDepthFormat()));
         _pointSampler = _resourceFactory.CreateSampler(SamplerDescription.Point);
         _linearSampler = _resourceFactory.CreateSampler(SamplerDescription.Linear);
+        _aniso4xSampler = _resourceFactory.CreateSampler(SamplerDescription.Aniso4x);
         _stagingResourcesLock = new object();
         _availableStagingCommandPools = [];
         _availableStagingBuffers = [];
@@ -67,6 +69,8 @@ public unsafe class GraphicsDevice : ContextObject
     public Sampler PointSampler => _pointSampler;
 
     public Sampler LinearSampler => _linearSampler;
+
+    public Sampler Aniso4xSampler => _aniso4xSampler;
 
     internal PhysicalDevice PhysicalDevice => _physicalDevice;
 
@@ -327,6 +331,7 @@ public unsafe class GraphicsDevice : ContextObject
             sharedCommandPool.Dispose();
         }
 
+        _aniso4xSampler.Dispose();
         _linearSampler.Dispose();
         _pointSampler.Dispose();
 
