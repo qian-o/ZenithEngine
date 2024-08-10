@@ -119,7 +119,7 @@ internal sealed unsafe class Program
     private static void Main(string[] _)
     {
         using Window window = Window.CreateWindowByVulkan();
-        window.Title = "Tests.GLTFScene";
+        window.Title = "Tests.GLTFAnimation";
         window.MinimumSize = new(100, 100);
 
         using Context context = new();
@@ -140,7 +140,7 @@ internal sealed unsafe class Program
     {
         string hlsl = File.ReadAllText("Assets/Shaders/GLTF.hlsl");
 
-        ModelRoot root = ModelRoot.Load("Assets/Models/Sponza/glTF/Sponza.gltf");
+        ModelRoot root = ModelRoot.Load("Assets/Models/buster_drone/scene.gltf");
 
         using CommandList commandList = _device.ResourceFactory.CreateGraphicsCommandList();
 
@@ -280,9 +280,9 @@ internal sealed unsafe class Program
         _ubo = new()
         {
             Projection = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, window.FramebufferSize.X / window.FramebufferSize.Y, 0.1f, 1000.0f),
-            View = Matrix4x4.CreateLookAt(new Vector3(7.8f, 2.1f, 0.0f), Vector3.Zero, Vector3.UnitY),
+            View = Matrix4x4.CreateLookAt(new Vector3(0.0f, 1.0f, 5.0f), Vector3.Zero, Vector3.UnitY),
             LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(e.TotalTime))),
-            ViewPos = new Vector4(new Vector3(7.8f, 2.1f, 0.0f), 1.0f)
+            ViewPos = new Vector4(new Vector3(0.0f, 1.0f, 5.0f), 1.0f)
         };
     }
 
