@@ -100,7 +100,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
         _depth = 1;
         _mipLevels = 1;
         _arrayLayers = 1;
-        _imageLayouts = [ImageLayout.PresentSrcKhr];
+        _imageLayouts = [ImageLayout.Undefined];
         _deviceMemory = null;
         _isSwapchainImage = true;
     }
@@ -152,7 +152,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
                             BaseArrayLayer = layer,
                             LayerCount = 1
                         },
-                        OldLayout = ImageLayout.Undefined,
+                        OldLayout = oldLayout,
                         NewLayout = newLayout,
                     };
 
@@ -175,10 +175,15 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
                     // Transition layouts.
                     {
-                        if (oldLayout == ImageLayout.Preinitialized)
+                        if (oldLayout == ImageLayout.Undefined)
                         {
                             barrier.SrcAccessMask = AccessFlags.None;
                             srcStageFlags = PipelineStageFlags.TopOfPipeBit;
+                        }
+                        else if (oldLayout == ImageLayout.Preinitialized)
+                        {
+                            barrier.SrcAccessMask = AccessFlags.HostWriteBit;
+                            srcStageFlags = PipelineStageFlags.HostBit;
                         }
                         else if (oldLayout == ImageLayout.TransferSrcOptimal)
                         {
@@ -205,12 +210,27 @@ public unsafe class Texture : DeviceResource, IBindableResource
                             barrier.SrcAccessMask = AccessFlags.DepthStencilAttachmentWriteBit;
                             srcStageFlags = PipelineStageFlags.EarlyFragmentTestsBit;
                         }
+                        else if (oldLayout == ImageLayout.PresentSrcKhr)
+                        {
+                            barrier.SrcAccessMask = AccessFlags.ColorAttachmentReadBit;
+                            srcStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
+                        }
                         else
                         {
                             throw new InvalidOperationException("Unsupported layout transition.");
                         }
 
-                        if (newLayout == ImageLayout.TransferSrcOptimal)
+                        if (newLayout == ImageLayout.Undefined)
+                        {
+                            barrier.DstAccessMask = AccessFlags.None;
+                            dstStageFlags = PipelineStageFlags.TopOfPipeBit;
+                        }
+                        else if (newLayout == ImageLayout.Preinitialized)
+                        {
+                            barrier.DstAccessMask = AccessFlags.HostWriteBit;
+                            dstStageFlags = PipelineStageFlags.HostBit;
+                        }
+                        else if (newLayout == ImageLayout.TransferSrcOptimal)
                         {
                             barrier.DstAccessMask = AccessFlags.TransferReadBit;
                             dstStageFlags = PipelineStageFlags.TransferBit;
@@ -234,6 +254,11 @@ public unsafe class Texture : DeviceResource, IBindableResource
                         {
                             barrier.DstAccessMask = AccessFlags.DepthStencilAttachmentWriteBit;
                             dstStageFlags = PipelineStageFlags.EarlyFragmentTestsBit;
+                        }
+                        else if (newLayout == ImageLayout.PresentSrcKhr)
+                        {
+                            barrier.DstAccessMask = AccessFlags.ColorAttachmentReadBit;
+                            dstStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
                         }
                         else
                         {
