@@ -12,7 +12,6 @@ public unsafe class Framebuffer : DeviceResource
     private readonly Texture? _depth;
     private readonly TextureView[] _colorViews;
     private readonly TextureView? _depthView;
-    private readonly bool _isPresented;
     private readonly VkFramebuffer _framebuffer;
     private readonly uint _colorAttachmentCount;
     private readonly uint _depthAttachmentCount;
@@ -20,6 +19,7 @@ public unsafe class Framebuffer : DeviceResource
     private readonly uint _width;
     private readonly uint _height;
     private readonly OutputDescription _outputDescription;
+    private readonly bool _isPresented;
 
     internal Framebuffer(GraphicsDevice graphicsDevice, ref readonly FramebufferDescription description, bool isPresented) : base(graphicsDevice)
     {
@@ -204,7 +204,6 @@ public unsafe class Framebuffer : DeviceResource
         VkFramebuffer framebuffer;
         Vk.CreateFramebuffer(graphicsDevice.Device, &framebufferCreateInfo, null, &framebuffer).ThrowCode();
 
-        _isPresented = isPresented;
         _renderPassClear = renderPassClear;
         _renderPassLoad = renderPassLoad;
         _colors = colors;
@@ -218,6 +217,7 @@ public unsafe class Framebuffer : DeviceResource
         _width = width;
         _height = height;
         _outputDescription = OutputDescription.CreateFromFramebufferDescription(in description);
+        _isPresented = isPresented;
     }
 
     internal VkFramebuffer Handle => _framebuffer;
