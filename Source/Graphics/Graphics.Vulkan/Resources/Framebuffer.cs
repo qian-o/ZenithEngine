@@ -266,7 +266,7 @@ public unsafe class Framebuffer : DeviceResource
         if (_depth != null)
         {
             ImageLayout finalLayout = _depth.Usage.HasFlag(TextureUsage.Sampled)
-                ? ImageLayout.DepthStencilReadOnlyOptimal
+                ? ImageLayout.ShaderReadOnlyOptimal
                 : ImageLayout.DepthStencilAttachmentOptimal;
 
             _depth.TransitionLayout(commandBuffer, finalLayout);
