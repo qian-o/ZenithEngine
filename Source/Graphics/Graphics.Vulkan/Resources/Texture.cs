@@ -212,7 +212,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
                         }
                         else if (oldLayout == ImageLayout.PresentSrcKhr)
                         {
-                            barrier.SrcAccessMask = AccessFlags.ColorAttachmentReadBit;
+                            barrier.SrcAccessMask = AccessFlags.ColorAttachmentWriteBit;
                             srcStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
                         }
                         else
@@ -257,7 +257,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
                         }
                         else if (newLayout == ImageLayout.PresentSrcKhr)
                         {
-                            barrier.DstAccessMask = AccessFlags.ColorAttachmentReadBit;
+                            barrier.SrcAccessMask = AccessFlags.ColorAttachmentWriteBit;
                             dstStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
                         }
                         else
