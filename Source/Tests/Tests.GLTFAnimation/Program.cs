@@ -15,7 +15,14 @@ internal sealed unsafe class Program
 {
     #region Structs
     [StructLayout(LayoutKind.Explicit)]
-    private struct UBO
+    private struct PerObject
+    {
+        [FieldOffset(0)]
+        public Matrix4x4 Model;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    private struct Frame
     {
         [FieldOffset(0)]
         public Matrix4x4 Projection;
@@ -24,12 +31,9 @@ internal sealed unsafe class Program
         public Matrix4x4 View;
 
         [FieldOffset(128)]
-        public Matrix4x4 Model;
-
-        [FieldOffset(192)]
         public Vector4 LightPos;
 
-        [FieldOffset(208)]
+        [FieldOffset(144)]
         public Vector4 ViewPos;
     }
 
@@ -77,6 +81,67 @@ internal sealed unsafe class Program
         public Matrix4x4 WorldTransform { get; set; } = Matrix4x4.Identity;
 
         public bool IsVisible { get; set; } = true;
+
+        public int Count
+        {
+            get
+            {
+                int count = 1;
+
+                foreach (Node children in Children)
+                {
+                    count += children.Count;
+                }
+
+                return count;
+            }
+        }
+
+        public Matrix4x4[] Matrices
+        {
+            get
+            {
+                Matrix4x4[] matrices = new Matrix4x4[Count];
+                int index = 0;
+
+                void Traverse(Node node)
+                {
+                    matrices[index++] = node.WorldTransform;
+
+                    foreach (Node children in node.Children)
+                    {
+                        Traverse(children);
+                    }
+                }
+
+                Traverse(this);
+
+                return matrices;
+            }
+        }
+
+        public Node[] Nodes
+        {
+            get
+            {
+                Node[] nodes = new Node[Count];
+                int index = 0;
+
+                void Traverse(Node node)
+                {
+                    nodes[index++] = node;
+
+                    foreach (Node children in node.Children)
+                    {
+                        Traverse(children);
+                    }
+                }
+
+                Traverse(this);
+
+                return nodes;
+            }
+        }
     }
 
     private sealed class Material
@@ -102,19 +167,19 @@ internal sealed unsafe class Program
     private static readonly List<Material> _materials = [];
     private static readonly List<Node> _nodes = [];
 
+    private static List<Node> _tiles = [];
     private static DeviceBuffer _vertexBuffer = null!;
     private static DeviceBuffer _indexBuffer = null!;
-    private static DeviceBuffer _uboBuffer = null!;
+    private static DeviceBuffer _perObjectBuffer = null!;
+    private static DeviceBuffer _frameBuffer = null!;
     private static ResourceLayout _uboLayout = null!;
-    private static ResourceSet _uboSet = null!;
+    private static ResourceSet[] _uboSets = null!;
     private static ResourceLayout _materialLayout = null!;
     private static ResourceSet[] _materialSets = null!;
     private static Shader[] _shaders = null!;
     private static VertexLayoutDescription[] _vertexLayoutDescriptions = null!;
     private static Pipeline[] _pipelines = null!;
     private static CommandList _commandList = null!;
-
-    private static UBO _ubo;
 
     private static void Main(string[] _)
     {
@@ -209,22 +274,37 @@ internal sealed unsafe class Program
             LoadNode(gltfNode, null, vertices, indices);
         }
 
+        _tiles = [.. _nodes[0].Nodes];
+
         _vertexBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Count), BufferUsage.VertexBuffer));
         _device.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
 
         _indexBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
         _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
 
-        _uboBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(UBO), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _perObjectBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(PerObject) * _tiles.Count), BufferUsage.UniformBuffer));
+        _device.UpdateBuffer(_perObjectBuffer, 0, [.. _tiles.Select(item => item.WorldTransform)]);
 
-        ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("UBO", ResourceKind.UniformBuffer, ShaderStages.Vertex));
+        _frameBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(Frame), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+
+        ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("perObject", ResourceKind.UniformBuffer, ShaderStages.Vertex),
+                                                             new ResourceLayoutElementDescription("frame", ResourceKind.UniformBuffer, ShaderStages.Vertex));
+
         ResourceLayoutDescription materialLayoutDescription = new(new ResourceLayoutElementDescription("textureColorMap", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
                                                                   new ResourceLayoutElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment),
                                                                   new ResourceLayoutElementDescription("textureNormalMap", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
                                                                   new ResourceLayoutElementDescription("normalSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
         _uboLayout = _device.ResourceFactory.CreateResourceLayout(in uboLayoutDescription);
-        _uboSet = _device.ResourceFactory.CreateResourceSet(new ResourceSetDescription(_uboLayout, _uboBuffer));
+        _uboSets = new ResourceSet[_tiles.Count];
+        for (int i = 0; i < _tiles.Count; i++)
+        {
+            ResourceSetDescription uboSetDescription = new(_uboLayout,
+                                                           new DeviceBufferRange(_perObjectBuffer, (uint)(i * sizeof(PerObject)), (uint)sizeof(PerObject)),
+                                                           _frameBuffer);
+
+            _uboSets[i] = _device.ResourceFactory.CreateResourceSet(in uboSetDescription);
+        }
 
         _materialLayout = _device.ResourceFactory.CreateResourceLayout(in materialLayoutDescription);
         _materialSets = new ResourceSet[_materials.Count];
@@ -277,13 +357,15 @@ internal sealed unsafe class Program
     {
         Window window = (Window)sender!;
 
-        _ubo = new()
+        Frame frame = new()
         {
             Projection = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, window.FramebufferSize.X / window.FramebufferSize.Y, 0.1f, 1000.0f),
             View = Matrix4x4.CreateLookAt(new Vector3(0.0f, 1.0f, 5.0f), Vector3.Zero, Vector3.UnitY),
-            LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(e.TotalTime))),
+            LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationZ(MathF.Sin(e.TotalTime))),
             ViewPos = new Vector4(new Vector3(0.0f, 1.0f, 5.0f), 1.0f)
         };
+
+        _device.UpdateBuffer(_frameBuffer, 0, [frame]);
     }
 
     private static void Window_Render(object? sender, RenderEventArgs e)
@@ -297,9 +379,26 @@ internal sealed unsafe class Program
         _commandList.SetVertexBuffer(0, _vertexBuffer);
         _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U32);
 
-        foreach (Node node in _nodes)
+        for (int i = 0; i < _tiles.Count; i++)
         {
-            DrawNode(_commandList, node);
+            Node node = _tiles[i];
+
+            if (!node.IsVisible)
+            {
+                continue;
+            }
+
+            if (node.Mesh != null)
+            {
+                foreach (Primitive primitive in node.Mesh.Primitives)
+                {
+                    _commandList.SetPipeline(_pipelines![primitive.MaterialIndex]);
+                    _commandList.SetGraphicsResourceSet(0, _uboSets[i]);
+                    _commandList.SetGraphicsResourceSet(1, _materialSets[primitive.MaterialIndex]);
+
+                    _commandList.DrawIndexed(primitive.IndexCount, 1, primitive.FirstIndex, 0, 0);
+                }
+            }
         }
 
         _commandList.End();
@@ -327,10 +426,14 @@ internal sealed unsafe class Program
         }
         _materialLayout.Dispose();
 
-        _uboSet.Dispose();
+        foreach (ResourceSet uboSet in _uboSets)
+        {
+            uboSet.Dispose();
+        }
         _uboLayout.Dispose();
 
-        _uboBuffer.Dispose();
+        _frameBuffer.Dispose();
+        _perObjectBuffer.Dispose();
         _indexBuffer.Dispose();
         _vertexBuffer.Dispose();
 
@@ -442,34 +545,6 @@ internal sealed unsafe class Program
         else
         {
             _nodes.Add(node);
-        }
-    }
-
-    private static void DrawNode(CommandList commandList, Node node)
-    {
-        if (!node.IsVisible)
-        {
-            return;
-        }
-
-        if (node.Mesh != null)
-        {
-            _ubo.Model = node.WorldTransform;
-
-            commandList.UpdateBuffer(_uboBuffer, 0, [_ubo]);
-
-            foreach (Primitive primitive in node.Mesh.Primitives)
-            {
-                commandList.SetPipeline(_pipelines![primitive.MaterialIndex]);
-                commandList.SetGraphicsResourceSet(0, _uboSet);
-                commandList.SetGraphicsResourceSet(1, _materialSets[primitive.MaterialIndex]);
-                commandList.DrawIndexed(primitive.IndexCount, 1, primitive.FirstIndex, 0, 0);
-            }
-        }
-
-        foreach (Node children in node.Children)
-        {
-            DrawNode(commandList, children);
         }
     }
 }

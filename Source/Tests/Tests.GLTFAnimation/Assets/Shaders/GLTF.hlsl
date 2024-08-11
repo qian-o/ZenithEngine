@@ -1,11 +1,15 @@
 ﻿[[vk::constant_id(0)]] const bool AlphaMask = false;
 [[vk::constant_id(1)]] const float AlphaCutoff = 0.0;
 
-struct UBO
+struct PerObject
+{
+    float4x4 Model;
+};
+
+struct Frame
 {
     float4x4 Projection;
     float4x4 View;
-    float4x4 Model;
     float4 LightPos;
     float4 ViewPos;
 };
@@ -30,7 +34,8 @@ struct VSOutput
     [[vk::location(5)]] float4 Tangent : TEXCOORD3;
 };
 
-ConstantBuffer<UBO> ubo : register(b0, space0);
+ConstantBuffer<PerObject> perObject : register(b0, space0);
+ConstantBuffer<Frame> frame : register(b1, space0);
 Texture2D textureColorMap : register(t0, space1);
 SamplerState textureSampler : register(s1, space1);
 Texture2D textureNormalMap : register(t2, space1);
@@ -38,16 +43,16 @@ SamplerState normalSampler : register(s3, space1);
 
 VSOutput mainVS(VSInput input)
 {
-    float4 position = mul(ubo.Model, float4(input.Position, 1.0));
+    float4 position = mul(perObject.Model, float4(input.Position, 1.0));
     
     VSOutput output;
     
-    output.Position = mul(ubo.Projection, mul(ubo.View, position));
-    output.Normal = normalize(mul(ubo.Model, float4(input.Normal, 0.0)).xyz);
+    output.Position = mul(frame.Projection, mul(frame.View, position));
+    output.Normal = normalize(mul(perObject.Model, float4(input.Normal, 0.0)).xyz);
     output.TexCoord = input.TexCoord;
     output.Color = input.Color;
-    output.ViewVec = ubo.ViewPos.xyz - position.xyz;
-    output.LightVec = ubo.LightPos.xyz - position.xyz;
+    output.ViewVec = frame.ViewPos.xyz - position.xyz;
+    output.LightVec = frame.LightPos.xyz - position.xyz;
     output.Tangent = input.Tangent;
     
     return output;
