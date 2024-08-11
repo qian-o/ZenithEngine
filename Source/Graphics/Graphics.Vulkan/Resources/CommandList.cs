@@ -59,11 +59,11 @@ public unsafe class CommandList : DeviceResource
 
     public void SetFramebuffer(Framebuffer framebuffer)
     {
-        EnsureRenderPassInactive();
+        EndRenderPass();
 
         _currentFramebuffer = framebuffer;
 
-        EnsureRenderPassActive();
+        BeginRenderPass();
 
         SetFullViewports();
         SetFullScissorRects();
@@ -576,7 +576,7 @@ public unsafe class CommandList : DeviceResource
             throw new InvalidOperationException("Command list is not recording");
         }
 
-        EnsureRenderPassInactive();
+        EndRenderPass();
 
         Vk.EndCommandBuffer(_commandBuffer).ThrowCode();
 
@@ -618,7 +618,31 @@ public unsafe class CommandList : DeviceResource
         _commandPool.FreeCommandBuffer(_commandBuffer);
     }
 
-    private void EnsureRenderPassActive()
+    private void BeginRenderPass()
+    {
+        if (_currentFramebuffer == null)
+        {
+            return;
+        }
+
+        _currentFramebuffer.TransitionToInitialLayout(_commandBuffer);
+
+        EnsureRenderPassActive(true);
+    }
+
+    private void EndRenderPass()
+    {
+        if (_currentFramebuffer == null)
+        {
+            return;
+        }
+
+        EnsureRenderPassInactive();
+
+        _currentFramebuffer.TransitionToFinalLayout(_commandBuffer);
+    }
+
+    private void EnsureRenderPassActive(bool useClearRenderPass = false)
     {
         if (!_isInRenderPass)
         {
@@ -636,7 +660,7 @@ public unsafe class CommandList : DeviceResource
             RenderPassBeginInfo beginInfo = new()
             {
                 SType = StructureType.RenderPassBeginInfo,
-                RenderPass = _currentFramebuffer.RenderPass,
+                RenderPass = useClearRenderPass ? _currentFramebuffer.RenderPassClear : _currentFramebuffer.RenderPassLoad,
                 Framebuffer = _currentFramebuffer.Handle,
                 RenderArea = new Rect2D
                 {

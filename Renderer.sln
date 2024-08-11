@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.MultiViewports", "Sou
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.GLTFScene", "Source\Tests\Tests.GLTFScene\Tests.GLTFScene.csproj", "{9C2972D4-CF2D-4403-8E4B-02CCB838954F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.GLTFAnimation", "Source\Tests\Tests.GLTFAnimation\Tests.GLTFAnimation.csproj", "{DDEABA56-F564-48E3-8E8D-BC7E89EC1E95}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{9C2972D4-CF2D-4403-8E4B-02CCB838954F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C2972D4-CF2D-4403-8E4B-02CCB838954F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C2972D4-CF2D-4403-8E4B-02CCB838954F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDEABA56-F564-48E3-8E8D-BC7E89EC1E95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDEABA56-F564-48E3-8E8D-BC7E89EC1E95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDEABA56-F564-48E3-8E8D-BC7E89EC1E95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDEABA56-F564-48E3-8E8D-BC7E89EC1E95}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,6 +59,7 @@ Global
 		{E088FB5C-C38C-4E4F-B3AF-43B7520E5213} = {9991D7BA-8978-43C5-ADEA-9A49774D81C7}
 		{2141E514-84AC-4C63-8E69-49199506FC50} = {9991D7BA-8978-43C5-ADEA-9A49774D81C7}
 		{9C2972D4-CF2D-4403-8E4B-02CCB838954F} = {9991D7BA-8978-43C5-ADEA-9A49774D81C7}
+		{DDEABA56-F564-48E3-8E8D-BC7E89EC1E95} = {9991D7BA-8978-43C5-ADEA-9A49774D81C7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9E825F8E-7765-4846-9A97-27E9C8C8CE2F}
