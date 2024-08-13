@@ -80,6 +80,8 @@ internal sealed unsafe class Program
 
         public Matrix4x4 WorldTransform { get; set; } = Matrix4x4.Identity;
 
+        public int SkinIndex { get; set; }
+
         public bool IsVisible { get; set; } = true;
 
         public int Count
@@ -94,29 +96,6 @@ internal sealed unsafe class Program
                 }
 
                 return count;
-            }
-        }
-
-        public Matrix4x4[] Matrices
-        {
-            get
-            {
-                Matrix4x4[] matrices = new Matrix4x4[Count];
-                int index = 0;
-
-                void Traverse(Node node)
-                {
-                    matrices[index++] = node.WorldTransform;
-
-                    foreach (Node children in node.Children)
-                    {
-                        Traverse(children);
-                    }
-                }
-
-                Traverse(this);
-
-                return matrices;
             }
         }
 
@@ -454,7 +433,8 @@ internal sealed unsafe class Program
         {
             Name = gltfNode.Name,
             LocalTransform = gltfNode.LocalTransform.Matrix,
-            WorldTransform = gltfNode.WorldMatrix
+            WorldTransform = gltfNode.WorldMatrix,
+            SkinIndex = gltfNode.Skin != null ? gltfNode.Skin.LogicalIndex : -1,
         };
 
         foreach (GLTFNode children in gltfNode.VisualChildren)
