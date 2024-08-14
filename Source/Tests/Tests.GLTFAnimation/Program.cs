@@ -3,9 +3,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
+using SharpGLTF.Animations;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
 using StbiSharp;
+using GLTFAnimation = SharpGLTF.Schema2.Animation;
 using GLTFMaterial = SharpGLTF.Schema2.Material;
 using GLTFNode = SharpGLTF.Schema2.Node;
 using GLTFTexture = SharpGLTF.Schema2.Texture;
@@ -61,6 +63,11 @@ internal sealed unsafe class Program
     #endregion
 
     #region Classes
+    private sealed class Scene
+    {
+        public Matrix4x4 WorldTransform { get; set; } = Matrix4x4.Identity;
+    }
+
     private sealed class Mesh
     {
         public List<Primitive> Primitives { get; } = [];
@@ -68,6 +75,8 @@ internal sealed unsafe class Program
 
     private sealed class Node
     {
+        public int LogicalIndex { get; set; }
+
         public string Name { get; set; } = string.Empty;
 
         public Node? Parent { get; set; }
@@ -137,13 +146,45 @@ internal sealed unsafe class Program
 
         public bool DoubleSided { get; set; }
     }
+
+    private sealed class Channel
+    {
+        public ICurveSampler<Vector3>? Scale { get; set; }
+
+        public ICurveSampler<Quaternion>? Rotation { get; set; }
+
+        public ICurveSampler<Vector3>? Translation { get; set; }
+
+        public Matrix4x4 this[float offset]
+        {
+            get
+            {
+                Vector3 scale = Scale?.GetPoint(offset) ?? Vector3.One;
+                Quaternion rotation = Rotation?.GetPoint(offset) ?? Quaternion.Identity;
+                Vector3 translation = Translation?.GetPoint(offset) ?? Vector3.Zero;
+
+                return Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(rotation) * Matrix4x4.CreateTranslation(translation);
+            }
+        }
+    }
+
+    private sealed class Animation
+    {
+        public string Name { get; set; } = string.Empty;
+
+        public float Duration { get; set; }
+
+        public Dictionary<int, Channel> Channels { get; } = [];
+    }
     #endregion
 
     private static GraphicsDevice _device = null!;
 
+    private static readonly List<Scene> _scenes = [];
     private static readonly List<Texture> _textures = [];
     private static readonly List<TextureView> _textureViews = [];
     private static readonly List<Material> _materials = [];
+    private static readonly List<Animation> _animations = [];
     private static readonly List<Node> _nodes = [];
 
     private static List<Node> _tiles = [];
@@ -185,6 +226,11 @@ internal sealed unsafe class Program
         string hlsl = File.ReadAllText("Assets/Shaders/GLTF.hlsl");
 
         ModelRoot root = ModelRoot.Load("Assets/Models/buster_drone/scene.gltf");
+
+        foreach (SharpGLTF.Schema2.Scene? item in root.LogicalScenes)
+        {
+            _scenes.Add(new Scene() { WorldTransform = item.VisualChildren.First().LocalMatrix });
+        }
 
         using CommandList commandList = _device.ResourceFactory.CreateGraphicsCommandList();
 
@@ -245,6 +291,44 @@ internal sealed unsafe class Program
             _materials.Add(material);
         }
 
+        foreach (GLTFAnimation gltfAnimation in root.LogicalAnimations)
+        {
+            Animation animation = new()
+            {
+                Name = gltfAnimation.Name,
+                Duration = gltfAnimation.Duration
+            };
+
+            foreach (AnimationChannel animationChannel in gltfAnimation.Channels)
+            {
+                int nodeIndex = animationChannel.TargetNode.LogicalIndex;
+
+                if (!animation.Channels.TryGetValue(nodeIndex, out Channel? channel))
+                {
+                    channel = new();
+
+                    animation.Channels.Add(nodeIndex, channel);
+                }
+
+                if (animationChannel.GetScaleSampler() is IAnimationSampler<Vector3> scaleSampler)
+                {
+                    channel.Scale = scaleSampler.CreateCurveSampler();
+                }
+
+                if (animationChannel.GetRotationSampler() is IAnimationSampler<Quaternion> rotationSampler)
+                {
+                    channel.Rotation = rotationSampler.CreateCurveSampler();
+                }
+
+                if (animationChannel.GetTranslationSampler() is IAnimationSampler<Vector3> translationSampler)
+                {
+                    channel.Translation = translationSampler.CreateCurveSampler();
+                }
+            }
+
+            _animations.Add(animation);
+        }
+
         List<Vertex> vertices = [];
         List<uint> indices = [];
 
@@ -261,7 +345,7 @@ internal sealed unsafe class Program
         _indexBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
         _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
 
-        _perObjectBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(PerObject) * _tiles.Count), BufferUsage.UniformBuffer));
+        _perObjectBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(PerObject) * _tiles.Count), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
         _device.UpdateBuffer(_perObjectBuffer, 0, [.. _tiles.Select(item => item.WorldTransform)]);
 
         _frameBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(Frame), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
@@ -345,6 +429,13 @@ internal sealed unsafe class Program
         };
 
         _device.UpdateBuffer(_frameBuffer, 0, [frame]);
+
+        foreach (Node item in _nodes)
+        {
+            TransformNodes(item, Matrix4x4.Identity, e.TotalTime);
+        }
+
+        _device.UpdateBuffer(_perObjectBuffer, 0, [.. _tiles.Select(item => item.WorldTransform)]);
     }
 
     private static void Window_Render(object? sender, RenderEventArgs e)
@@ -431,8 +522,9 @@ internal sealed unsafe class Program
     {
         Node node = new()
         {
+            LogicalIndex = gltfNode.LogicalIndex,
             Name = gltfNode.Name,
-            LocalTransform = gltfNode.LocalTransform.Matrix,
+            LocalTransform = gltfNode.WorldMatrix,
             WorldTransform = gltfNode.WorldMatrix,
             SkinIndex = gltfNode.Skin != null ? gltfNode.Skin.LogicalIndex : -1,
         };
@@ -525,6 +617,26 @@ internal sealed unsafe class Program
         else
         {
             _nodes.Add(node);
+        }
+    }
+
+    private static void TransformNodes(Node node, Matrix4x4 parentTransform, float offset)
+    {
+        Matrix4x4 animation;
+        if (_animations[0].Channels.TryGetValue(node.LogicalIndex, out Channel? channel))
+        {
+            animation = channel[offset];
+        }
+        else
+        {
+            animation = node.LocalTransform;
+        }
+
+        node.WorldTransform = animation * parentTransform;
+
+        foreach (Node children in node.Children)
+        {
+            TransformNodes(children, node.WorldTransform, offset);
         }
     }
 }

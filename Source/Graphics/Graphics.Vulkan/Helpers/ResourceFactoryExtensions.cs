@@ -6,7 +6,7 @@ public static class ResourceFactoryExtensions
     {
         Shader[] shaders = new Shader[descriptions.Length];
 
-        for (var i = 0; i < descriptions.Length; i++)
+        for (int i = 0; i < descriptions.Length; i++)
         {
             ShaderDescription description = descriptions[i];
 
