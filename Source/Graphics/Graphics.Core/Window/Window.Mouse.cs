@@ -2,7 +2,7 @@
 
 namespace Graphics.Core;
 
-partial class Window
+public partial class Window
 {
     public event EventHandler<MouseButtonEventArgs>? MouseDown;
     public event EventHandler<MouseButtonEventArgs>? MouseUp;

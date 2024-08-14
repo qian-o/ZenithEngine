@@ -320,6 +320,6 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
     private static bool HasStencilComponent(PixelFormat format)
     {
-        return format == PixelFormat.D24UNormS8UInt || format == PixelFormat.D32FloatS8UInt;
+        return format is PixelFormat.D24UNormS8UInt or PixelFormat.D32FloatS8UInt;
     }
 }

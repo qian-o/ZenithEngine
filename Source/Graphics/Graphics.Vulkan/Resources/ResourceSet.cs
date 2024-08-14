@@ -28,10 +28,10 @@ public unsafe class ResourceSet : DeviceResource
                 DstSet = token.Set
             };
 
-            if (type == DescriptorType.UniformBuffer
-                || type == DescriptorType.UniformBufferDynamic
-                || type == DescriptorType.StorageBuffer
-                || type == DescriptorType.StorageBufferDynamic)
+            if (type is DescriptorType.UniformBuffer
+                or DescriptorType.UniformBufferDynamic
+                or DescriptorType.StorageBuffer
+                or DescriptorType.StorageBufferDynamic)
             {
                 DeviceBufferRange range = Util.GetBufferRange(description.BoundResources[i], 0);
 
