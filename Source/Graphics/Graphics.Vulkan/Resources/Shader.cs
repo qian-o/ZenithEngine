@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Graphics.Core;
+﻿using Graphics.Core;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
@@ -16,7 +15,7 @@ public unsafe class Shader : DeviceResource
         {
             SType = StructureType.ShaderModuleCreateInfo,
             CodeSize = (uint)description.ShaderBytes.Length,
-            PCode = (uint*)Unsafe.AsPointer(ref description.ShaderBytes[0])
+            PCode = (uint*)description.ShaderBytes.AsPointer()
         };
 
         VkShaderModule shaderModule;

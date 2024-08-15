@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Graphics.Core;
+﻿using Graphics.Core;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
@@ -88,12 +87,12 @@ public unsafe class Framebuffer : DeviceResource
         if (colorAttachmentCount > 0)
         {
             subpass.ColorAttachmentCount = colorAttachmentCount;
-            subpass.PColorAttachments = (AttachmentReference*)Unsafe.AsPointer(ref references[0]);
+            subpass.PColorAttachments = references.AsPointer();
         }
 
         if (hasDepth)
         {
-            subpass.PDepthStencilAttachment = (AttachmentReference*)Unsafe.AsPointer(ref references[^1]);
+            subpass.PDepthStencilAttachment = UnsafeHelpers.AsPointer(ref references[^1]);
         }
 
         SubpassDependency subpassDependency = new()
@@ -110,7 +109,7 @@ public unsafe class Framebuffer : DeviceResource
         {
             SType = StructureType.RenderPassCreateInfo,
             AttachmentCount = attachmentCount,
-            PAttachments = (AttachmentDescription*)Unsafe.AsPointer(ref attachments[0]),
+            PAttachments = attachments.AsPointer(),
             SubpassCount = 1,
             PSubpasses = &subpass,
             DependencyCount = 1,
@@ -195,7 +194,7 @@ public unsafe class Framebuffer : DeviceResource
             SType = StructureType.FramebufferCreateInfo,
             RenderPass = renderPassClear,
             AttachmentCount = attachmentCount,
-            PAttachments = (VkImageView*)Unsafe.AsPointer(ref imageViews[0]),
+            PAttachments = imageViews.AsPointer(),
             Width = width,
             Height = height,
             Layers = 1

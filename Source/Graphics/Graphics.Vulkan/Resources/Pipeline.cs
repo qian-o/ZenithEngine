@@ -47,7 +47,7 @@ public unsafe class Pipeline : DeviceResource
             }
 
             blendStateCreateInfo.AttachmentCount = attachmentCount;
-            blendStateCreateInfo.PAttachments = (PipelineColorBlendAttachmentState*)Unsafe.AsPointer(ref colorBlendAttachmentStates[0]);
+            blendStateCreateInfo.PAttachments = colorBlendAttachmentStates.AsPointer();
             blendStateCreateInfo.BlendConstants[0] = description.BlendState.BlendFactor.R;
             blendStateCreateInfo.BlendConstants[1] = description.BlendState.BlendFactor.G;
             blendStateCreateInfo.BlendConstants[2] = description.BlendState.BlendFactor.B;
@@ -81,7 +81,7 @@ public unsafe class Pipeline : DeviceResource
             DynamicState[] dynamicStates = [DynamicState.Viewport, DynamicState.Scissor];
 
             dynamicStateCreateInfo.DynamicStateCount = (uint)dynamicStates.Length;
-            dynamicStateCreateInfo.PDynamicStates = (DynamicState*)Unsafe.AsPointer(ref dynamicStates[0]);
+            dynamicStateCreateInfo.PDynamicStates = dynamicStates.AsPointer();
 
             createInfo.PDynamicState = &dynamicStateCreateInfo;
         }
@@ -189,9 +189,9 @@ public unsafe class Pipeline : DeviceResource
             {
                 SType = StructureType.PipelineVertexInputStateCreateInfo,
                 VertexBindingDescriptionCount = bindingCount,
-                PVertexBindingDescriptions = (VertexInputBindingDescription*)Unsafe.AsPointer(ref bindingDescriptions[0]),
+                PVertexBindingDescriptions = bindingDescriptions.AsPointer(),
                 VertexAttributeDescriptionCount = attributeCount,
-                PVertexAttributeDescriptions = (VertexInputAttributeDescription*)Unsafe.AsPointer(ref attributeDescriptions[0])
+                PVertexAttributeDescriptions = attributeDescriptions.AsPointer()
             };
 
             createInfo.PVertexInputState = &vertexInputStateCreateInfo;
@@ -232,7 +232,7 @@ public unsafe class Pipeline : DeviceResource
                 }
 
                 specializationInfo.MapEntryCount = (uint)specializations.Length;
-                specializationInfo.PMapEntries = (SpecializationMapEntry*)Unsafe.AsPointer(ref specializationMapEntries[0]);
+                specializationInfo.PMapEntries = specializationMapEntries.AsPointer();
                 specializationInfo.DataSize = specDataSize;
                 specializationInfo.PData = specData;
             }
@@ -253,7 +253,7 @@ public unsafe class Pipeline : DeviceResource
             }
 
             createInfo.StageCount = (uint)shaders.Length;
-            createInfo.PStages = (PipelineShaderStageCreateInfo*)Unsafe.AsPointer(ref shaderStageCreateInfos[0]);
+            createInfo.PStages = shaderStageCreateInfos.AsPointer();
         }
 
         // viewport state
@@ -285,7 +285,7 @@ public unsafe class Pipeline : DeviceResource
             }
 
             layoutCreateInfo.SetLayoutCount = descriptorSetLayoutCount;
-            layoutCreateInfo.PSetLayouts = (DescriptorSetLayout*)Unsafe.AsPointer(ref descriptorSetLayouts[0]);
+            layoutCreateInfo.PSetLayouts = descriptorSetLayouts.AsPointer();
 
             PipelineLayout pipelineLayout;
             Vk.CreatePipelineLayout(Device, &layoutCreateInfo, null, &pipelineLayout).ThrowCode();
@@ -360,12 +360,12 @@ public unsafe class Pipeline : DeviceResource
             if (colorAttachmentCount > 0)
             {
                 subpass.ColorAttachmentCount = colorAttachmentCount;
-                subpass.PColorAttachments = (AttachmentReference*)Unsafe.AsPointer(ref references[0]);
+                subpass.PColorAttachments = references.AsPointer();
             }
 
             if (hasDepth)
             {
-                subpass.PDepthStencilAttachment = (AttachmentReference*)Unsafe.AsPointer(ref references[^1]);
+                subpass.PDepthStencilAttachment = UnsafeHelpers.AsPointer(ref references[^1]);
             }
 
             SubpassDependency subpassDependency = new()
@@ -379,7 +379,7 @@ public unsafe class Pipeline : DeviceResource
             };
 
             renderPassCreateInfo.AttachmentCount = attachmentCount;
-            renderPassCreateInfo.PAttachments = (AttachmentDescription*)Unsafe.AsPointer(ref attachments[0]);
+            renderPassCreateInfo.PAttachments = attachments.AsPointer();
             renderPassCreateInfo.SubpassCount = 1;
             renderPassCreateInfo.PSubpasses = &subpass;
             renderPassCreateInfo.DependencyCount = 1;

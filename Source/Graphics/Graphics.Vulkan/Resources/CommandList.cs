@@ -672,7 +672,7 @@ public unsafe class CommandList : DeviceResource
                     }
                 },
                 ClearValueCount = (uint)clearColorValues.Length,
-                PClearValues = (ClearValue*)Unsafe.AsPointer(ref clearColorValues[0])
+                PClearValues = (ClearValue*)clearColorValues.AsPointer()
             };
 
             Vk.CmdBeginRenderPass(_commandBuffer, &beginInfo, SubpassContents.Inline);

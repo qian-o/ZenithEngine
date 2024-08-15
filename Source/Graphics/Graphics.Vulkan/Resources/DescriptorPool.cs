@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Graphics.Core;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
@@ -64,7 +64,7 @@ internal sealed unsafe class DescriptorPool : DeviceResource
             SType = StructureType.DescriptorPoolCreateInfo,
             MaxSets = maxSets,
             PoolSizeCount = poolSizeCount,
-            PPoolSizes = (DescriptorPoolSize*)Unsafe.AsPointer(ref sizes[0]),
+            PPoolSizes = sizes.AsPointer(),
             Flags = DescriptorPoolCreateFlags.FreeDescriptorSetBit
         };
 

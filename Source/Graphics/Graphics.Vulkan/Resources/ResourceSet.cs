@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Graphics.Core;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
@@ -15,7 +15,7 @@ public unsafe class ResourceSet : DeviceResource
         DescriptorImageInfo[] imageInfos = new DescriptorImageInfo[description.BoundResources.Length];
         VkWriteDescriptorSet[] sets = new VkWriteDescriptorSet[description.BoundResources.Length];
 
-        for (uint i = 0; i < description.BoundResources.Length; i++)
+        for (int i = 0; i < description.BoundResources.Length; i++)
         {
             DescriptorType type = description.Layout.DescriptorTypes[i];
 
@@ -24,7 +24,7 @@ public unsafe class ResourceSet : DeviceResource
                 SType = StructureType.WriteDescriptorSet,
                 DescriptorCount = 1,
                 DescriptorType = type,
-                DstBinding = i,
+                DstBinding = (uint)i,
                 DstSet = token.Set
             };
 
@@ -42,7 +42,7 @@ public unsafe class ResourceSet : DeviceResource
                     Range = range.SizeInBytes
                 };
 
-                set.PBufferInfo = (DescriptorBufferInfo*)Unsafe.AsPointer(ref bufferInfos[i]);
+                set.PBufferInfo = bufferInfos.AsPointer(i);
             }
             else if (type == DescriptorType.SampledImage)
             {
@@ -54,7 +54,7 @@ public unsafe class ResourceSet : DeviceResource
                     ImageLayout = ImageLayout.ShaderReadOnlyOptimal
                 };
 
-                set.PImageInfo = (DescriptorImageInfo*)Unsafe.AsPointer(ref imageInfos[i]);
+                set.PImageInfo = imageInfos.AsPointer(i);
             }
             else if (type == DescriptorType.StorageImage)
             {
@@ -66,7 +66,7 @@ public unsafe class ResourceSet : DeviceResource
                     ImageLayout = ImageLayout.General
                 };
 
-                set.PImageInfo = (DescriptorImageInfo*)Unsafe.AsPointer(ref imageInfos[i]);
+                set.PImageInfo = imageInfos.AsPointer(i);
             }
             else if (type == DescriptorType.Sampler)
             {
@@ -77,7 +77,7 @@ public unsafe class ResourceSet : DeviceResource
                     Sampler = sampler.Handle
                 };
 
-                set.PImageInfo = (DescriptorImageInfo*)Unsafe.AsPointer(ref imageInfos[i]);
+                set.PImageInfo = imageInfos.AsPointer(i);
             }
             else
             {
@@ -89,7 +89,7 @@ public unsafe class ResourceSet : DeviceResource
 
         Vk.UpdateDescriptorSets(Device,
                                 (uint)sets.Length,
-                                (VkWriteDescriptorSet*)Unsafe.AsPointer(ref sets[0]),
+                                sets.AsPointer(),
                                 0,
                                 null);
 

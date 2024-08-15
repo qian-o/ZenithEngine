@@ -63,11 +63,6 @@ internal sealed unsafe class Program
     #endregion
 
     #region Classes
-    private sealed class Scene
-    {
-        public Matrix4x4 WorldTransform { get; set; } = Matrix4x4.Identity;
-    }
-
     private sealed class Mesh
     {
         public List<Primitive> Primitives { get; } = [];
@@ -246,11 +241,6 @@ internal sealed unsafe class Program
         string hlsl = File.ReadAllText("Assets/Shaders/GLTF.hlsl");
 
         ModelRoot root = ModelRoot.Load("Assets/Models/buster_drone/scene.gltf");
-
-        foreach (SharpGLTF.Schema2.Scene? item in root.LogicalScenes)
-        {
-            _scenes.Add(new Scene() { WorldTransform = item.VisualChildren.First().LocalMatrix });
-        }
 
         using CommandList commandList = _device.ResourceFactory.CreateGraphicsCommandList();
 

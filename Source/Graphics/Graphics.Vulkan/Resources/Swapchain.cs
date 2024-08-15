@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Graphics.Core;
+﻿using Graphics.Core;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
@@ -65,7 +64,7 @@ public unsafe class Swapchain : DeviceResource
         SurfaceExt.GetPhysicalDeviceSurfaceFormats(VkPhysicalDevice,
                                                    _target,
                                                    &surfaceFormatCount,
-                                                   (SurfaceFormatKHR*)Unsafe.AsPointer(ref surfaceFormats[0])).ThrowCode();
+                                                   surfaceFormats.AsPointer()).ThrowCode();
 
         uint presentModeCount;
         SurfaceExt.GetPhysicalDeviceSurfacePresentModes(VkPhysicalDevice,
@@ -77,7 +76,7 @@ public unsafe class Swapchain : DeviceResource
         SurfaceExt.GetPhysicalDeviceSurfacePresentModes(VkPhysicalDevice,
                                                         _target,
                                                         &presentModeCount,
-                                                        (PresentModeKHR*)Unsafe.AsPointer(ref presentModes[0])).ThrowCode();
+                                                        presentModes.AsPointer()).ThrowCode();
 
         SwapchainCreateInfoKHR createInfo = new()
         {
@@ -107,7 +106,7 @@ public unsafe class Swapchain : DeviceResource
         SwapchainExt.GetSwapchainImages(Device,
                                         swapchain,
                                         &imageCount,
-                                        (VkImage*)Unsafe.AsPointer(ref images[0])).ThrowCode();
+                                        images.AsPointer()).ThrowCode();
 
         Texture? depthBuffer = null;
         if (_depthFormat != null)

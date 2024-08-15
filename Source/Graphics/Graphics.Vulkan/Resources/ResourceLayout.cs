@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Graphics.Core;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
@@ -68,7 +68,7 @@ public unsafe class ResourceLayout : DeviceResource
         {
             SType = StructureType.DescriptorSetLayoutCreateInfo,
             BindingCount = (uint)bindings.Length,
-            PBindings = (DescriptorSetLayoutBinding*)Unsafe.AsPointer(ref bindings[0])
+            PBindings = bindings.AsPointer()
         };
 
         VkDescriptorSetLayout descriptorSetLayout;
