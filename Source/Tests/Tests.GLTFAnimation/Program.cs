@@ -175,6 +175,25 @@ internal sealed unsafe class Program
         public float Duration { get; set; }
 
         public Dictionary<int, Channel> Channels { get; } = [];
+
+        public Dictionary<int, Matrix4x4> Current { get; } = [];
+
+        public void Update(float totalTime)
+        {
+            float offset = totalTime % Duration;
+
+            Current.Clear();
+
+            foreach (int key in Channels.Keys)
+            {
+                Current.Add(key, Matrix4x4.Identity);
+            }
+
+            Parallel.ForEach(Channels, item =>
+            {
+                Current[item.Key] = item.Value[offset];
+            });
+        }
     }
     #endregion
 
@@ -430,9 +449,11 @@ internal sealed unsafe class Program
 
         _device.UpdateBuffer(_frameBuffer, 0, [frame]);
 
+        _animations[0].Update(e.TotalTime);
+
         foreach (Node item in _nodes)
         {
-            TransformNodes(item, Matrix4x4.Identity, e.TotalTime);
+            TransformNodes(item, Matrix4x4.Identity);
         }
 
         _device.UpdateBuffer(_perObjectBuffer, 0, [.. _tiles.Select(item => item.WorldTransform)]);
@@ -524,8 +545,7 @@ internal sealed unsafe class Program
         {
             LogicalIndex = gltfNode.LogicalIndex,
             Name = gltfNode.Name,
-            LocalTransform = gltfNode.WorldMatrix,
-            WorldTransform = gltfNode.WorldMatrix,
+            LocalTransform = gltfNode.LocalMatrix,
             SkinIndex = gltfNode.Skin != null ? gltfNode.Skin.LogicalIndex : -1,
         };
 
@@ -620,23 +640,18 @@ internal sealed unsafe class Program
         }
     }
 
-    private static void TransformNodes(Node node, Matrix4x4 parentTransform, float offset)
+    private static void TransformNodes(Node node, Matrix4x4 parentTransform)
     {
-        Matrix4x4 animation;
-        if (_animations[0].Channels.TryGetValue(node.LogicalIndex, out Channel? channel))
+        if (!_animations[0].Current.TryGetValue(node.LogicalIndex, out Matrix4x4 localTransform))
         {
-            animation = channel[offset];
-        }
-        else
-        {
-            animation = node.LocalTransform;
+            localTransform = node.LocalTransform;
         }
 
-        node.WorldTransform = animation * parentTransform;
+        node.WorldTransform = localTransform * parentTransform;
 
         foreach (Node children in node.Children)
         {
-            TransformNodes(children, node.WorldTransform, offset);
+            TransformNodes(children, node.WorldTransform);
         }
     }
 }
