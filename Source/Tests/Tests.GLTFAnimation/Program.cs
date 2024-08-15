@@ -182,11 +182,12 @@ internal sealed unsafe class Program
         {
             float offset = totalTime % Duration;
 
-            Current.Clear();
-
-            foreach (int key in Channels.Keys)
+            if (Current.Count == 0)
             {
-                Current.Add(key, Matrix4x4.Identity);
+                foreach (int key in Channels.Keys)
+                {
+                    Current.Add(key, Matrix4x4.Identity);
+                }
             }
 
             Parallel.ForEach(Channels, item =>
