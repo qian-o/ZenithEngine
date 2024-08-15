@@ -70,61 +70,15 @@ internal sealed unsafe class Program
 
     private sealed class Node
     {
-        public int LogicalIndex { get; set; }
-
         public string Name { get; set; } = string.Empty;
 
-        public Node? Parent { get; set; }
-
-        public List<Node> Children { get; } = [];
+        public List<int> Children { get; } = [];
 
         public Mesh? Mesh { get; set; }
 
         public Matrix4x4 LocalTransform { get; set; } = Matrix4x4.Identity;
 
-        public Matrix4x4 WorldTransform { get; set; } = Matrix4x4.Identity;
-
         public int SkinIndex { get; set; }
-
-        public bool IsVisible { get; set; } = true;
-
-        public int Count
-        {
-            get
-            {
-                int count = 1;
-
-                foreach (Node children in Children)
-                {
-                    count += children.Count;
-                }
-
-                return count;
-            }
-        }
-
-        public Node[] Nodes
-        {
-            get
-            {
-                Node[] nodes = new Node[Count];
-                int index = 0;
-
-                void Traverse(Node node)
-                {
-                    nodes[index++] = node;
-
-                    foreach (Node children in node.Children)
-                    {
-                        Traverse(children);
-                    }
-                }
-
-                Traverse(this);
-
-                return nodes;
-            }
-        }
     }
 
     private sealed class Material
@@ -199,9 +153,10 @@ internal sealed unsafe class Program
     private static readonly List<TextureView> _textureViews = [];
     private static readonly List<Material> _materials = [];
     private static readonly List<Animation> _animations = [];
+    private static readonly Node _root = new();
     private static readonly List<Node> _nodes = [];
 
-    private static List<Node> _tiles = [];
+    private static Matrix4x4[] _worldSpaceMats = null!;
     private static DeviceBuffer _vertexBuffer = null!;
     private static DeviceBuffer _indexBuffer = null!;
     private static DeviceBuffer _perObjectBuffer = null!;
@@ -341,12 +296,15 @@ internal sealed unsafe class Program
         List<Vertex> vertices = [];
         List<uint> indices = [];
 
+        _root.Name = root.DefaultScene.Name;
+        _root.Children.AddRange(root.DefaultScene.VisualChildren.Select(item => item.LogicalIndex));
+
         foreach (GLTFNode gltfNode in root.LogicalNodes)
         {
-            LoadNode(gltfNode, null, vertices, indices);
+            LoadNode(gltfNode, vertices, indices);
         }
 
-        _tiles = [.. _nodes[0].Nodes];
+        _worldSpaceMats = new Matrix4x4[_nodes.Count];
 
         _vertexBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Count), BufferUsage.VertexBuffer));
         _device.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
@@ -354,8 +312,8 @@ internal sealed unsafe class Program
         _indexBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
         _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
 
-        _perObjectBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(PerObject) * _tiles.Count), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-        _device.UpdateBuffer(_perObjectBuffer, 0, [.. _tiles.Select(item => item.WorldTransform)]);
+        _perObjectBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(PerObject) * _worldSpaceMats.Length), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _device.UpdateBuffer(_perObjectBuffer, 0, _worldSpaceMats.AsPointer(), _worldSpaceMats.Length);
 
         _frameBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(Frame), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
@@ -368,8 +326,8 @@ internal sealed unsafe class Program
                                                                   new ResourceLayoutElementDescription("normalSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
         _uboLayout = _device.ResourceFactory.CreateResourceLayout(in uboLayoutDescription);
-        _uboSets = new ResourceSet[_tiles.Count];
-        for (int i = 0; i < _tiles.Count; i++)
+        _uboSets = new ResourceSet[_worldSpaceMats.Length];
+        for (int i = 0; i < _worldSpaceMats.Length; i++)
         {
             ResourceSetDescription uboSetDescription = new(_uboLayout,
                                                            new DeviceBufferRange(_perObjectBuffer, (uint)(i * sizeof(PerObject)), (uint)sizeof(PerObject)),
@@ -441,12 +399,9 @@ internal sealed unsafe class Program
 
         _animations[0].Update(e.TotalTime);
 
-        foreach (Node item in _nodes)
-        {
-            TransformNodes(item, Matrix4x4.Identity);
-        }
+        TransformNodes(_root.Children, Matrix4x4.Identity);
 
-        _device.UpdateBuffer(_perObjectBuffer, 0, [.. _tiles.Select(item => item.WorldTransform)]);
+        _device.UpdateBuffer(_perObjectBuffer, 0, _worldSpaceMats.AsPointer(), _worldSpaceMats.Length);
     }
 
     private static void Window_Render(object? sender, RenderEventArgs e)
@@ -460,14 +415,9 @@ internal sealed unsafe class Program
         _commandList.SetVertexBuffer(0, _vertexBuffer);
         _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U32);
 
-        for (int i = 0; i < _tiles.Count; i++)
+        for (int i = 0; i < _nodes.Count; i++)
         {
-            Node node = _tiles[i];
-
-            if (!node.IsVisible)
-            {
-                continue;
-            }
+            Node node = _nodes[i];
 
             if (node.Mesh != null)
             {
@@ -529,11 +479,10 @@ internal sealed unsafe class Program
         }
     }
 
-    private static void LoadNode(GLTFNode gltfNode, Node? parent, List<Vertex> vertices, List<uint> indices)
+    private static void LoadNode(GLTFNode gltfNode, List<Vertex> vertices, List<uint> indices)
     {
         Node node = new()
         {
-            LogicalIndex = gltfNode.LogicalIndex,
             Name = gltfNode.Name,
             LocalTransform = gltfNode.LocalMatrix,
             SkinIndex = gltfNode.Skin != null ? gltfNode.Skin.LogicalIndex : -1,
@@ -541,7 +490,7 @@ internal sealed unsafe class Program
 
         foreach (GLTFNode children in gltfNode.VisualChildren)
         {
-            LoadNode(children, node, vertices, indices);
+            node.Children.Add(children.LogicalIndex);
         }
 
         if (gltfNode.Mesh != null)
@@ -619,29 +568,25 @@ internal sealed unsafe class Program
             }
         }
 
-        if (parent != null)
-        {
-            node.Parent = parent;
-            parent.Children.Add(node);
-        }
-        else
-        {
-            _nodes.Add(node);
-        }
+        _nodes.Add(node);
     }
 
-    private static void TransformNodes(Node node, Matrix4x4 parentTransform)
+    private static void TransformNodes(List<int> nodes, Matrix4x4 parentTransform)
     {
-        if (!_animations[0].Current.TryGetValue(node.LogicalIndex, out Matrix4x4 localTransform))
+        for (int i = 0; i < nodes.Count; i++)
         {
-            localTransform = node.LocalTransform;
-        }
+            int index = nodes[i];
 
-        node.WorldTransform = localTransform * parentTransform;
+            Node node = _nodes[index];
 
-        foreach (Node children in node.Children)
-        {
-            TransformNodes(children, node.WorldTransform);
+            if (!_animations[0].Current.TryGetValue(index, out Matrix4x4 localTransform))
+            {
+                localTransform = node.LocalTransform;
+            }
+
+            _worldSpaceMats[index] = localTransform * parentTransform;
+
+            TransformNodes(node.Children, _worldSpaceMats[index]);
         }
     }
 }
