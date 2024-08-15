@@ -195,7 +195,6 @@ internal sealed unsafe class Program
 
     private static GraphicsDevice _device = null!;
 
-    private static readonly List<Scene> _scenes = [];
     private static readonly List<Texture> _textures = [];
     private static readonly List<TextureView> _textureViews = [];
     private static readonly List<Material> _materials = [];
