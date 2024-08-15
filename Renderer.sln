@@ -17,7 +17,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.MultiViewports", "Sou
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.GLTFScene", "Source\Tests\Tests.GLTFScene\Tests.GLTFScene.csproj", "{9C2972D4-CF2D-4403-8E4B-02CCB838954F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.GLTFAnimation", "Source\Tests\Tests.GLTFAnimation\Tests.GLTFAnimation.csproj", "{DDEABA56-F564-48E3-8E8D-BC7E89EC1E95}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.GLTFAnimation", "Source\Tests\Tests.GLTFAnimation\Tests.GLTFAnimation.csproj", "{DDEABA56-F564-48E3-8E8D-BC7E89EC1E95}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F345DD19-B398-46B5-AAAC-22BF8F1FDB24}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
