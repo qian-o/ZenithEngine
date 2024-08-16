@@ -24,8 +24,9 @@ public abstract class View : DisposableObject
         ImGui.Begin($"{Title}##{_id}");
         {
             Vector2 size = ImGui.GetContentRegionAvail();
-            uint width = Convert.ToUInt32(size.X);
-            uint height = Convert.ToUInt32(size.Y);
+
+            uint width = Convert.ToUInt32(Math.Max(1, size.X));
+            uint height = Convert.ToUInt32(Math.Max(1, size.Y));
 
             if (Width != width || Height != height)
             {
