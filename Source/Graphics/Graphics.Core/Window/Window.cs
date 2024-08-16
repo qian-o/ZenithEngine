@@ -59,8 +59,6 @@ public unsafe partial class Window : DisposableObject
 
     public static Window CreateWindowByVulkan()
     {
-        SilkWindow.PrioritizeSdl();
-
         WindowOptions windowOptions = WindowOptions.DefaultVulkan;
         windowOptions.IsVisible = false;
         windowOptions.API = new GraphicsAPI()
