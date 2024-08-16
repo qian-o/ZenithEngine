@@ -20,7 +20,7 @@
 	<ItemGroup>
 		<PackageReference Include="SharpGLTF.Core" Version="1.0.1" />
 		<PackageReference Include="SharpGLTF.Toolkit" Version="1.0.1" />
-		<PackageReference Include="StbiSharp" Version="1.2.1" />
+		<PackageReference Include="StbImageSharp" Version="2.27.14" />
 	</ItemGroup>
 
 	<ItemGroup>

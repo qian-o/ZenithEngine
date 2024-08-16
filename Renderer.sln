@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.GLTFScene", "Source\T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.GLTFAnimation", "Source\Tests\Tests.GLTFAnimation\Tests.GLTFAnimation.csproj", "{DDEABA56-F564-48E3-8E8D-BC7E89EC1E95}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.SDFFontTexture", "Source\Tests\Tests.SDFFontTexture\Tests.SDFFontTexture.csproj", "{753AA179-EE51-4794-9B89-5A754CA8D6F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.SDFFontTexture", "Source\Tests\Tests.SDFFontTexture\Tests.SDFFontTexture.csproj", "{753AA179-EE51-4794-9B89-5A754CA8D6F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

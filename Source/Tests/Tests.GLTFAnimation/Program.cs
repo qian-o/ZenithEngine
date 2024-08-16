@@ -6,7 +6,7 @@ using Graphics.Vulkan;
 using SharpGLTF.Animations;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
-using StbiSharp;
+using StbImageSharp;
 using GLTFAnimation = SharpGLTF.Schema2.Animation;
 using GLTFMaterial = SharpGLTF.Schema2.Material;
 using GLTFNode = SharpGLTF.Schema2.Node;
@@ -201,8 +201,17 @@ internal sealed unsafe class Program
         commandList.Begin();
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
         {
-            Stbi.InfoFromMemory(gltfTexture.PrimaryImage.Content.Content.Span, out int width, out int height, out _);
-            StbiImage image = Stbi.LoadFromMemory(gltfTexture.PrimaryImage.Content.Content.Span, 4);
+            using MemoryStream stream = new(gltfTexture.PrimaryImage.Content.Content.Span.ToArray());
+
+            if (ImageInfo.FromStream(stream) is not ImageInfo imageInfo)
+            {
+                continue;
+            }
+
+            int width = imageInfo.Width;
+            int height = imageInfo.Height;
+
+            ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
 
             uint mipLevels = Math.Max(1, (uint)MathF.Log2(Math.Max(width, height))) + 1;
 
@@ -214,13 +223,11 @@ internal sealed unsafe class Program
             TextureView textureView = _device.ResourceFactory.CreateTextureView(texture);
             textureView.Name = gltfTexture.Name;
 
-            commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
+            commandList.UpdateTexture(texture, image.Data.AsPointer(), image.Data.Length, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
             commandList.GenerateMipmaps(texture);
 
             _textures.Add(texture);
             _textureViews.Add(textureView);
-
-            image.Dispose();
         }
         commandList.End();
 
