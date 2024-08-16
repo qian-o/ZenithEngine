@@ -1,10 +1,13 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
+using Tests.Core;
+
+namespace Tests.SDFFontTexture;
 
 internal sealed unsafe class Program
 {
     private static GraphicsDevice _device = null!;
-    private static CommandList _mainCommandList = null!;
+    private static View[] _views = null!;
 
     private static void Main(string[] _)
     {
@@ -30,13 +33,13 @@ internal sealed unsafe class Program
 
         window.Render += (a, b) =>
         {
+            Render(a, b);
+
             commandList.Begin();
             {
                 commandList.SetFramebuffer(device.MainSwapchain.Framebuffer);
                 commandList.ClearColorTarget(0, RgbaFloat.Black);
                 commandList.ClearDepthStencil(1.0f);
-
-                Render(a, b);
 
                 imGuiController.Render(commandList);
             }
@@ -55,23 +58,29 @@ internal sealed unsafe class Program
         };
 
         _device = device;
-        _mainCommandList = commandList;
 
         window.Run();
     }
 
     private static void Load(object? sender, LoadEventArgs e)
     {
-        Console.WriteLine("Device: " + _device);
-        Console.WriteLine("MainCommandList: " + _mainCommandList);
+        _views = [new MainView(_device)];
     }
 
     private static void Update(object? sender, UpdateEventArgs e)
     {
+        foreach (View view in _views)
+        {
+            view.Update(e);
+        }
     }
 
     private static void Render(object? sender, RenderEventArgs e)
     {
+        foreach (View view in _views)
+        {
+            view.Render(e);
+        }
     }
 
     private static void Resize(object? sender, ResizeEventArgs e)
