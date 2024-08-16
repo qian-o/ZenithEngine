@@ -169,7 +169,7 @@ internal sealed unsafe class Program
             TextureView textureView = _device.ResourceFactory.CreateTextureView(texture);
             textureView.Name = gltfTexture.Name;
 
-            commandList.UpdateTexture(texture, image.Data.AsPointer(), image.Data.Length, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
+            commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
             commandList.GenerateMipmaps(texture);
 
             _textures.Add(texture);

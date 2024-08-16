@@ -223,7 +223,7 @@ internal sealed unsafe class Program
             TextureView textureView = _device.ResourceFactory.CreateTextureView(texture);
             textureView.Name = gltfTexture.Name;
 
-            commandList.UpdateTexture(texture, image.Data.AsPointer(), image.Data.Length, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
+            commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
             commandList.GenerateMipmaps(texture);
 
             _textures.Add(texture);
@@ -320,7 +320,7 @@ internal sealed unsafe class Program
         _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
 
         _perObjectBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(PerObject) * _worldSpaceMats.Length), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-        _device.UpdateBuffer(_perObjectBuffer, 0, _worldSpaceMats.AsPointer(), _worldSpaceMats.Length);
+        _device.UpdateBuffer(_perObjectBuffer, 0, _worldSpaceMats);
 
         _frameBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(Frame), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
@@ -408,7 +408,7 @@ internal sealed unsafe class Program
 
         TransformNodes(_root.Children, Matrix4x4.Identity);
 
-        _device.UpdateBuffer(_perObjectBuffer, 0, _worldSpaceMats.AsPointer(), _worldSpaceMats.Length);
+        _device.UpdateBuffer(_perObjectBuffer, 0, _worldSpaceMats);
     }
 
     private static void Window_Render(object? sender, RenderEventArgs e)

@@ -262,7 +262,7 @@ public unsafe class CommandList : DeviceResource
         RecordUsedStagingBuffer(stagingBuffer);
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ReadOnlySpan<T> source) where T : unmanaged
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
     {
         fixed (T* sourcePointer = source)
         {
@@ -352,7 +352,7 @@ public unsafe class CommandList : DeviceResource
     }
 
     public void UpdateTexture<T>(Texture texture,
-                                 ReadOnlySpan<T> source,
+                                 T[] source,
                                  uint x,
                                  uint y,
                                  uint z,
