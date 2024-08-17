@@ -33,7 +33,7 @@ internal sealed unsafe class MainView : View
     {
         if (ImGui.Begin("Font Texture"))
         {
-            if (ImGui.InputText("SDF Character", ref chars, 10))
+            if (ImGui.InputText("SDF Character", ref chars, 10) && !string.IsNullOrEmpty(chars))
             {
                 Character character = _fontController.GetCharacter(chars[0]);
 
