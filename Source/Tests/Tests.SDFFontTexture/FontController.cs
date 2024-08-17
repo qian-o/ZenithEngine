@@ -3,7 +3,7 @@ using static StbTrueTypeSharp.StbTrueType;
 
 namespace Tests.SDFFontTexture;
 
-internal unsafe class FontController : DisposableObject
+internal sealed unsafe class FontController : DisposableObject
 {
     private const int CacheSize = 256;
 

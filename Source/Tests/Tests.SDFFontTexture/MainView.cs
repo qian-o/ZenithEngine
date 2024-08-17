@@ -21,9 +21,7 @@ internal sealed unsafe class MainView : View
 
         _device = device;
         _fontController = new FontController("Assets/Fonts/MSYH.TTC", 0, 64);
-
         _fontTexture = device.ResourceFactory.CreateTexture(TextureDescription.Texture2D(128, 128, 1, PixelFormat.B8G8R8A8UNorm, TextureUsage.Sampled));
-
         _fontTextureId = imGuiController.GetOrCreateImGuiBinding(device.ResourceFactory, _fontTexture);
     }
 
