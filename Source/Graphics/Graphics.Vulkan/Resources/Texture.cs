@@ -58,11 +58,9 @@ public unsafe class Texture : DeviceResource, IBindableResource
         MemoryRequirements memoryRequirements;
         Vk.GetImageMemoryRequirements(Device, image, &memoryRequirements);
 
-        bool isStaging = description.Usage.HasFlag(TextureUsage.Staging);
-
         DeviceMemory deviceMemory = new(graphicsDevice,
                                         in memoryRequirements,
-                                        isStaging ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit);
+                                        MemoryPropertyFlags.DeviceLocalBit);
 
         Vk.BindImageMemory(Device, image, deviceMemory.Handle, 0).ThrowCode();
 
@@ -84,6 +82,8 @@ public unsafe class Texture : DeviceResource, IBindableResource
         _imageLayouts = imageLayouts;
         _deviceMemory = deviceMemory;
         _isSwapchainImage = false;
+
+        TransitionToBestLayout();
     }
 
     internal Texture(GraphicsDevice graphicsDevice, VkImage image, Format format, uint width, uint height) : base(graphicsDevice)
@@ -306,6 +306,17 @@ public unsafe class Texture : DeviceResource, IBindableResource
         }
 
         TransitionLayout(commandBuffer, newLayout);
+    }
+
+    internal void TransitionToBestLayout()
+    {
+        using StagingCommandPool stagingCommandPool = new(GraphicsDevice, TransferQueue);
+
+        CommandBuffer commandBuffer = stagingCommandPool.BeginNewCommandBuffer();
+
+        TransitionToBestLayout(commandBuffer);
+
+        stagingCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
     }
 
     protected override void Destroy()

@@ -7,6 +7,7 @@ namespace Tests.SDFFontTexture;
 internal sealed unsafe class Program
 {
     private static GraphicsDevice _device = null!;
+    private static ImGuiController _imGuiController = null!;
     private static View[] _views = null!;
 
     private static void Main(string[] _)
@@ -17,10 +18,11 @@ internal sealed unsafe class Program
 
         using Context context = new();
         using GraphicsDevice device = context.CreateGraphicsDevice(context.EnumeratePhysicalDevices().First(), window);
-        using CommandList commandList = device.ResourceFactory.CreateGraphicsCommandList();
         using ImGuiController imGuiController = new(window,
                                                     device,
                                                     new ImGuiFontConfig("Assets/Fonts/MSYH.TTC", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
+
+        using CommandList commandList = device.ResourceFactory.CreateGraphicsCommandList();
 
         window.Load += Load;
 
@@ -57,14 +59,17 @@ internal sealed unsafe class Program
             Resize(a, b);
         };
 
+        window.Closing += Closing;
+
         _device = device;
+        _imGuiController = imGuiController;
 
         window.Run();
     }
 
     private static void Load(object? sender, LoadEventArgs e)
     {
-        _views = [new MainView(_device)];
+        _views = [new MainView(_device, _imGuiController)];
     }
 
     private static void Update(object? sender, UpdateEventArgs e)
@@ -85,5 +90,13 @@ internal sealed unsafe class Program
 
     private static void Resize(object? sender, ResizeEventArgs e)
     {
+    }
+
+    private static void Closing(object? sender, ClosingEventArgs e)
+    {
+        foreach (View view in _views)
+        {
+            view.Dispose();
+        }
     }
 }
