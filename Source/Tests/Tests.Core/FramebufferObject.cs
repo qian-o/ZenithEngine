@@ -41,7 +41,7 @@ public class FramebufferObject : DisposableObject
                                                                              TextureUsage.Sampled,
                                                                              TextureSampleCount.Count1));
 
-        _framebuffer = factory.CreateFramebuffer(new FramebufferDescription(_colorTexture, _depthTexture));
+        _framebuffer = factory.CreateFramebuffer(new FramebufferDescription(_depthTexture, _colorTexture));
     }
 
     public int Width => _width;
