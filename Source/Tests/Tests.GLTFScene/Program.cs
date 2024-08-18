@@ -463,7 +463,7 @@ internal sealed unsafe class Program
         {
             _ubo.Model = node.WorldTransform;
 
-            commandList.UpdateBuffer(_uboBuffer, 0, [_ubo]);
+            commandList.UpdateBuffer(_uboBuffer, 0, ref _ubo);
 
             foreach (Primitive primitive in node.Mesh.Primitives)
             {

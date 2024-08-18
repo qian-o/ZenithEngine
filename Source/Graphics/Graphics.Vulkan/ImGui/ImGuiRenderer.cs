@@ -208,7 +208,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
                                                                               -1.0f,
                                                                               1.0f);
 
-            commandList.UpdateBuffer(_uboBuffer, 0, &orthoProjection, 1);
+            commandList.UpdateBuffer(_uboBuffer, 0, ref orthoProjection);
         }
 
         commandList.SetVertexBuffer(0, _vertexBuffer);

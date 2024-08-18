@@ -269,6 +269,14 @@ public unsafe class CommandList : DeviceResource
             UpdateBuffer(buffer, bufferOffsetInBytes, sourcePointer, source.Length);
         }
     }
+
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ref readonly T source) where T : unmanaged
+    {
+        fixed (T* sourcePointer = &source)
+        {
+            UpdateBuffer(buffer, bufferOffsetInBytes, sourcePointer, 1);
+        }
+    }
     #endregion
 
     #region UpdateTexture

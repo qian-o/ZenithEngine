@@ -62,7 +62,7 @@ internal sealed unsafe class FontController : DisposableObject
                                                                                                 (uint)character.Height,
                                                                                                 1,
                                                                                                 PixelFormat.B8G8R8A8UNorm,
-                                                                                                TextureUsage.Sampled));
+                                                                                                TextureUsage.Sampled | TextureUsage.GenerateMipmaps));
         _device.UpdateTexture(newTexture,
                               character.Pixels,
                               0,

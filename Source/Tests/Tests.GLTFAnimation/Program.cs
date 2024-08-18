@@ -402,7 +402,7 @@ internal sealed unsafe class Program
             ViewPos = new Vector4(new Vector3(0.0f, 1.0f, 5.0f), 1.0f)
         };
 
-        _device.UpdateBuffer(_frameBuffer, 0, [frame]);
+        _device.UpdateBuffer(_frameBuffer, 0, ref frame);
 
         _animations[0].Update(e.TotalTime);
 

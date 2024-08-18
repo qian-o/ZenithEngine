@@ -159,8 +159,8 @@ internal sealed unsafe class MainView : View
 
                 _commandList.Begin();
 
-                _commandList.UpdateBuffer(_uniformBuffer, 0, [ubo]);
-                _commandList.UpdateBuffer(_normalBuffer, 0, [properties]);
+                _commandList.UpdateBuffer(_uniformBuffer, 0, ref ubo);
+                _commandList.UpdateBuffer(_normalBuffer, 0, ref properties);
 
                 _commandList.SetFramebuffer(framebufferObject.Framebuffer);
                 _commandList.ClearColorTarget(0, RgbaFloat.Black);
