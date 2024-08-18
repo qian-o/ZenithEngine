@@ -1,6 +1,5 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
-using Hexa.NET.ImGui;
 using Tests.Core;
 
 namespace Tests.SDFFontTexture;
@@ -87,8 +86,6 @@ internal sealed unsafe class Program
         {
             view.Render(e);
         }
-
-        ImGui.Text($"FPS: {ImGui.GetIO().Framerate}");
     }
 
     private static void Resize(object? sender, ResizeEventArgs e)
