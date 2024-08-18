@@ -1,7 +1,9 @@
 ﻿namespace Tests.SDFFontTexture;
 
-internal readonly unsafe struct Character(int width, int height, int xoff, int yoff)
+internal readonly unsafe struct Character(char @char, int width, int height, int xoff, int yoff)
 {
+    public char Char { get; } = @char;
+
     public int Width { get; } = width;
 
     public int Height { get; } = height;

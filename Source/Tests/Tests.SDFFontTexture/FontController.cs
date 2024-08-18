@@ -1,59 +1,93 @@
 ﻿using Graphics.Core;
+using Graphics.Vulkan;
 using static StbTrueTypeSharp.StbTrueType;
 
 namespace Tests.SDFFontTexture;
 
 internal sealed unsafe class FontController : DisposableObject
 {
-    private const int CacheSize = 256;
-
+    private readonly GraphicsDevice _device;
     private readonly stbtt_fontinfo _fontinfo;
     private readonly float _scale;
     private readonly int _padding;
     private readonly byte _onedgeValue;
     private readonly float _pixelDistScale;
-    private readonly Dictionary<char, Character> _cache;
+    private readonly Dictionary<char, Character> _characters;
+    private readonly Dictionary<char, Texture> _textures;
 
-    public FontController(string fontPath, int fontIndex, int fontPixelHeight)
+    public FontController(GraphicsDevice device, string fontPath, int fontIndex, int fontPixelHeight)
     {
         byte[] bytes = File.ReadAllBytes(fontPath);
 
+        _device = device;
         _fontinfo = CreateFont(bytes, stbtt_GetFontOffsetForIndex(bytes.AsPointer(), fontIndex));
         _scale = stbtt_ScaleForPixelHeight(_fontinfo, fontPixelHeight);
         _padding = 4;
         _onedgeValue = 128;
         _pixelDistScale = 64.0f;
-        _cache = [];
+        _characters = [];
+        _textures = [];
     }
 
-    public Character GetCharacter(char c)
+    public Character GetCharacter(char @char)
     {
-        if (_cache.TryGetValue(c, out Character character))
+        if (_characters.TryGetValue(@char, out Character character))
         {
             return character;
         }
 
         int width, height, xoff, yoff;
-        byte* bitmap = stbtt_GetCodepointSDF(_fontinfo, _scale, c, _padding, _onedgeValue, _pixelDistScale, &width, &height, &xoff, &yoff);
+        byte* bitmap = stbtt_GetCodepointSDF(_fontinfo, _scale, @char, _padding, _onedgeValue, _pixelDistScale, &width, &height, &xoff, &yoff);
 
-        Character newCharacter = new(width, height, xoff, yoff);
+        Character newCharacter = new(@char, width, height, xoff, yoff);
         newCharacter.CopyPixels(bitmap);
 
         stbtt_FreeSDF(bitmap, null);
 
-        if (_cache.Count >= CacheSize)
-        {
-            _cache.Clear();
-        }
-
-        _cache.Add(c, newCharacter);
+        _characters.Add(@char, newCharacter);
 
         return newCharacter;
     }
 
+    public Texture GetTexture(char @char)
+    {
+        if (_textures.TryGetValue(@char, out Texture? texture))
+        {
+            return texture;
+        }
+
+        Character character = GetCharacter(@char);
+
+        Texture newTexture = _device.ResourceFactory.CreateTexture(TextureDescription.Texture2D((uint)character.Width,
+                                                                                                (uint)character.Height,
+                                                                                                1,
+                                                                                                PixelFormat.B8G8R8A8UNorm,
+                                                                                                TextureUsage.Sampled));
+        _device.UpdateTexture(newTexture,
+                              character.Pixels,
+                              0,
+                              0,
+                              0,
+                              (uint)character.Width,
+                              (uint)character.Height,
+                              1,
+                              0,
+                              0);
+
+        _textures.Add(@char, newTexture);
+
+        return newTexture;
+    }
+
     protected override void Destroy()
     {
-        _cache.Clear();
+        foreach (Texture texture in _textures.Values)
+        {
+            texture.Dispose();
+        }
+
+        _textures.Clear();
+        _characters.Clear();
 
         _fontinfo.Dispose();
     }

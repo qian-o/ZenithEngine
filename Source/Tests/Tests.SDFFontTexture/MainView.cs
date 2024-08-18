@@ -9,9 +9,8 @@ namespace Tests.SDFFontTexture;
 internal sealed unsafe class MainView : View
 {
     private readonly GraphicsDevice _device;
+    private readonly ImGuiController _imGuiController;
     private readonly FontController _fontController;
-    private readonly Texture _fontTexture;
-    private readonly nint _fontTextureId;
 
     private string chars = "";
 
@@ -20,9 +19,8 @@ internal sealed unsafe class MainView : View
         Title = "SDF Font Texture";
 
         _device = device;
-        _fontController = new FontController("Assets/Fonts/MSYH.TTC", 0, 64);
-        _fontTexture = device.ResourceFactory.CreateTexture(TextureDescription.Texture2D(128, 128, 1, PixelFormat.B8G8R8A8UNorm, TextureUsage.Sampled));
-        _fontTextureId = imGuiController.GetOrCreateImGuiBinding(device.ResourceFactory, _fontTexture);
+        _imGuiController = imGuiController;
+        _fontController = new FontController(device, "Assets/Fonts/MSYH.TTC", 0, 128);
     }
 
     protected override void OnUpdate(UpdateEventArgs e)
@@ -33,18 +31,19 @@ internal sealed unsafe class MainView : View
     {
         if (ImGui.Begin("Font Texture"))
         {
-            if (ImGui.InputText("SDF Character", ref chars, 10) && !string.IsNullOrEmpty(chars))
-            {
-                Character character = _fontController.GetCharacter(chars[0]);
+            ImGui.InputText("SDF Character", ref chars, 10);
 
-                _device.UpdateTexture(_fontTexture, character.Pixels, 0, 0, 0, (uint)character.Width, (uint)character.Height, 1, 0, 0);
-            }
+            chars = chars.Trim();
 
             ImGui.End();
         }
 
+        if (!string.IsNullOrEmpty(chars))
+        {
+            Texture texture = _fontController.GetTexture(chars[0]);
 
-        ImGui.Image(_fontTextureId, new Vector2(_fontTexture.Width, _fontTexture.Height));
+            ImGui.Image(_imGuiController.GetOrCreateImGuiBinding(_device.ResourceFactory, texture), new Vector2(texture.Width, texture.Height));
+        }
     }
 
     protected override void OnResize(ResizeEventArgs e)
@@ -53,6 +52,6 @@ internal sealed unsafe class MainView : View
 
     protected override void Destroy()
     {
-        _fontTexture.Dispose();
+        _fontController.Dispose();
     }
 }
