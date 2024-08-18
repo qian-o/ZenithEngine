@@ -615,6 +615,8 @@ public unsafe class CommandList : DeviceResource
             deviceBuffer.Dispose();
         }
 
+        _availableStagingBuffers.Clear();
+
         _commandPool.FreeCommandBuffer(_commandBuffer);
     }
 

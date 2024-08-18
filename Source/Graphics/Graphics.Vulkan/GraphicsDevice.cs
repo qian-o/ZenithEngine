@@ -331,6 +331,11 @@ public unsafe class GraphicsDevice : ContextObject
             sharedCommandPool.Dispose();
         }
 
+        _availableStagingFences.Clear();
+        _availableStagingSemaphores.Clear();
+        _availableStagingBuffers.Clear();
+        _availableStagingCommandPools.Clear();
+
         _aniso4xSampler.Dispose();
         _linearSampler.Dispose();
         _pointSampler.Dispose();
