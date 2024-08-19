@@ -7,8 +7,7 @@
 
 struct Properties
 {
-    float DistanceMark;
-    float SmoothDelta;
+    float PxRange;
 };
 
 struct VSInput
@@ -38,12 +37,32 @@ VSOutput mainVS(VSInput input)
     return output;
 }
 
+float median(float a, float b, float c)
+{
+    return max(min(a, b), min(max(a, b), c));
+}
+
+float screenPxRange(float2 texCoord)
+{
+    uint width, height, numberOfLevels;
+    textureSDF.GetDimensions(0, width, height, numberOfLevels);
+    
+    float2 unitRange = float2(properties.PxRange) / float2(width, height);
+    float2 screenTexSize = float2(1.0) / fwidth(texCoord);
+    
+    return max(0.5 * dot(unitRange, screenTexSize), 1.0);
+}
+
 float4 mainPS(VSOutput input) : SV_TARGET
 {
     float4 sdf = textureSDF.Sample(textureSampler, input.TexCoord);
     
-    float alpha = smoothstep(properties.DistanceMark - properties.SmoothDelta, properties.DistanceMark + properties.SmoothDelta, sdf.a);
-    float3 rgb = lerp(float3(0.0), float3(1.0), alpha);
+    float sd = median(sdf.r, sdf.g, sdf.b);
+    float screenPxDistance = screenPxRange(input.TexCoord) * (sd - 0.5);
+    float opacity = saturate(screenPxDistance + 0.5);
     
-    return float4(rgb, alpha);
+    float4 bgColor = float4(0.0, 0.0, 0.0, 1.0);
+    float4 fgColor = float4(1.0, 1.0, 1.0, 1.0);
+    
+    return lerp(bgColor, fgColor, opacity);
 }

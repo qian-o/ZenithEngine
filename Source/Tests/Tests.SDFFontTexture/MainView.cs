@@ -28,9 +28,7 @@ internal sealed unsafe class MainView : View
 
     private struct Properties
     {
-        public float DistanceMark;
-
-        public float SmoothDelta;
+        public float PxRange;
     }
     #endregion
 
@@ -56,7 +54,7 @@ internal sealed unsafe class MainView : View
 
     private string chars = "A";
     private Vector3 position = Vector3.Zero;
-    private Properties properties = new() { DistanceMark = 0.5f, SmoothDelta = 0.01f };
+    private Properties properties = new() { PxRange = 5.0f };
 
     public MainView(GraphicsDevice device, ImGuiController imGuiController)
     {
@@ -120,9 +118,6 @@ internal sealed unsafe class MainView : View
             ImGui.InputText("SDF Character", ref chars, 10);
             ImGui.DragFloat3("Position", ref position, 0.1f);
 
-            ImGui.DragFloat("Distance Mark", ref properties.DistanceMark, 0.01f, 0.0f, 1.0f);
-            ImGui.DragFloat("Smooth Delta", ref properties.SmoothDelta, 0.001f, 0.0f, 1.0f);
-
             chars = chars.Trim();
 
             ImGui.End();
@@ -156,6 +151,8 @@ internal sealed unsafe class MainView : View
                     View = Matrix4x4.CreateLookAt(new Vector3(0.0f, 0.0f, 2.0f), Vector3.Zero, Vector3.UnitY),
                     Projection = Matrix4x4.CreatePerspectiveFieldOfView((float)Math.PI / 4, (float)framebufferObject.Width / framebufferObject.Height, 0.1f, 1000.0f)
                 };
+
+                properties.PxRange = Math.Max(framebufferObject.Width, framebufferObject.Height);
 
                 _commandList.Begin();
 
