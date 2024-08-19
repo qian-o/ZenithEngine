@@ -22,9 +22,9 @@ internal sealed unsafe class FontController : DisposableObject
         _device = device;
         _fontinfo = CreateFont(bytes, stbtt_GetFontOffsetForIndex(bytes.AsPointer(), fontIndex));
         _scale = stbtt_ScaleForPixelHeight(_fontinfo, fontPixelHeight);
-        _padding = 4;
-        _onedgeValue = 128;
-        _pixelDistScale = 64.0f;
+        _padding = 5;
+        _onedgeValue = 180;
+        _pixelDistScale = _onedgeValue / _padding;
         _characters = [];
         _textures = [];
     }
