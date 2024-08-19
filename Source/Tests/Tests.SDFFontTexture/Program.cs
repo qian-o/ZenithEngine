@@ -20,7 +20,7 @@ internal sealed unsafe class Program
         using GraphicsDevice device = context.CreateGraphicsDevice(context.EnumeratePhysicalDevices().First(), window);
         using ImGuiController imGuiController = new(window,
                                                     device,
-                                                    new ImGuiFontConfig("Assets/Fonts/MSYH.TTC", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
+                                                    new ImGuiFontConfig("Assets/Fonts/simhei.ttf", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
 
         using CommandList commandList = device.ResourceFactory.CreateGraphicsCommandList();
 

@@ -62,7 +62,7 @@ internal sealed unsafe class MainView : View
 
         _device = device;
         _imGuiController = imGuiController;
-        _fontController = new FontController(device, "Assets/Fonts/MSYH.TTC", 0, 128);
+        _fontController = new FontController(device, "Assets/Fonts/simhei.ttf", 0, 128);
 
         Vertex[] vertices =
         [
