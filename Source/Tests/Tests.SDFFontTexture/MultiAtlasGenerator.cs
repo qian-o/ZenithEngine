@@ -8,7 +8,7 @@ namespace Tests.SDFFontTexture;
 internal sealed class MultiAtlasGenerator
 {
     public static readonly string ToolPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Tools", "msdf-atlas-gen.exe");
-    public static readonly string OutputPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Fonts");
+    public static readonly string OutputPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Tools", "Fonts");
 
     private readonly string _font;
 

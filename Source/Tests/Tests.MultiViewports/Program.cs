@@ -15,7 +15,7 @@ internal sealed unsafe class Program
         using CommandList commandList = device.ResourceFactory.CreateGraphicsCommandList();
         using ImGuiController imGuiController = new(window,
                                                     device,
-                                                    new ImGuiFontConfig("Assets/Fonts/simhei.ttf", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
+                                                    new ImGuiFontConfig("Assets/Fonts/SIMYOU.TTF", 14, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()));
 
         window.Update += Window_Update;
         window.Render += Window_Render;

@@ -54,7 +54,7 @@ internal sealed unsafe class MainView : View
     private FramebufferObject? framebufferObject;
     private Pipeline? pipeline;
 
-    private string @char = "A";
+    private string str = "ABC";
     private Vector3 position = Vector3.Zero;
     private Properties properties = new() { PxRange = 5.0f };
 
@@ -64,11 +64,11 @@ internal sealed unsafe class MainView : View
 
         _device = device;
         _imGuiController = imGuiController;
-        _multiAtlasGenerator = new("Assets/Fonts/simhei.ttf")
+        _multiAtlasGenerator = new("Assets/Fonts/SIMYOU.TTF")
         {
             AtlasType = AtlasType.MTSDF,
             EmSize = 64,
-            Padding = 2,
+            Padding = 2
         };
 
         _layout = _multiAtlasGenerator.Generate();
@@ -135,7 +135,7 @@ internal sealed unsafe class MainView : View
     {
         if (ImGui.Begin("Settings"))
         {
-            ImGui.InputText("Char", ref @char, 10);
+            ImGui.InputText("Char", ref str, 20);
             ImGui.DragFloat3("Position", ref position, 0.1f);
 
             ImGui.End();
@@ -143,42 +143,7 @@ internal sealed unsafe class MainView : View
 
         if (framebufferObject != null)
         {
-            char c = 'A';
-            if (!string.IsNullOrEmpty(@char))
-            {
-                c = @char[0];
-            }
-
-            Glyph? glyph = _layout.Glyphs!.FirstOrDefault(x => x.UniCode == c);
-            glyph ??= _layout.Glyphs!.First(x => x.UniCode == '?');
-
-            float beginU = (glyph.AtlasBounds.Left + _multiAtlasGenerator.Padding) / _layout.Atlas!.Width;
-            float endU = (glyph.AtlasBounds.Right - _multiAtlasGenerator.Padding) / _layout.Atlas!.Width;
-            float beginV = (_layout.Atlas!.Height - glyph.AtlasBounds.Top + _multiAtlasGenerator.Padding) / _layout.Atlas!.Height;
-            float endV = (_layout.Atlas!.Height - glyph.AtlasBounds.Bottom - _multiAtlasGenerator.Padding) / _layout.Atlas!.Height;
-
-            Vertex[] vertices =
-            [
-                new() { Position = new Vector3(-0.5f, -0.5f, 0.0f), TexCoord = new Vector2(beginU, endV) },
-                new() { Position = new Vector3(0.5f, -0.5f, 0.0f), TexCoord = new Vector2(endU, endV) },
-                new() { Position = new Vector3(0.5f, 0.5f, 0.0f), TexCoord = new Vector2(endU, beginV) },
-                new() { Position = new Vector3(-0.5f, 0.5f, 0.0f), TexCoord = new Vector2(beginU, beginV) }
-            ];
-
-            UniformBufferObject ubo = new()
-            {
-                Model = Matrix4x4.CreateScale(new Vector3((float)glyph.AtlasBounds.Width / glyph.AtlasBounds.Height, 1.0f, 1.0f)) * Matrix4x4.CreateTranslation(position),
-                View = Matrix4x4.CreateLookAt(new Vector3(0.0f, 0.0f, 2.0f), Vector3.Zero, Vector3.UnitY),
-                Projection = Matrix4x4.CreatePerspectiveFieldOfView((float)Math.PI / 4, (float)framebufferObject.Width / framebufferObject.Height, 0.1f, 1000.0f)
-            };
-
-            properties.PxRange = _layout.Atlas!.DistanceRange;
-
             _commandList.Begin();
-
-            _commandList.UpdateBuffer(_vertexBuffer, 0, vertices);
-            _commandList.UpdateBuffer(_uniformBuffer, 0, ref ubo);
-            _commandList.UpdateBuffer(_normalBuffer, 0, ref properties);
 
             _commandList.SetFramebuffer(framebufferObject.Framebuffer);
             _commandList.ClearColorTarget(0, RgbaFloat.Black);
@@ -189,7 +154,56 @@ internal sealed unsafe class MainView : View
             _commandList.SetPipeline(pipeline!);
             _commandList.SetGraphicsResourceSet(0, _resourceSet);
 
-            _commandList.DrawIndexed(_indexBuffer.SizeInBytes / sizeof(uint), 1, 0, 0, 0);
+            float offset = 0.0f;
+            foreach (char @char in str)
+            {
+                if (char.IsWhiteSpace(@char))
+                {
+                    offset += 0.5f;
+                    continue;
+                }
+
+                Glyph? glyph = _layout.Glyphs!.FirstOrDefault(x => x.UniCode == @char);
+                glyph ??= _layout.Glyphs!.First(x => x.UniCode == '?');
+
+                float vertex1 = glyph.PlaneBounds.Left;
+                float vertex2 = glyph.PlaneBounds.Right;
+                float vertex3 = glyph.PlaneBounds.Top;
+                float vertex4 = glyph.PlaneBounds.Bottom;
+
+                float beginU = (glyph.AtlasBounds.Left + _multiAtlasGenerator.Padding) / _layout.Atlas!.Width;
+                float endU = (glyph.AtlasBounds.Right - _multiAtlasGenerator.Padding) / _layout.Atlas!.Width;
+                float beginV = (_layout.Atlas!.Height - glyph.AtlasBounds.Top + _multiAtlasGenerator.Padding) / _layout.Atlas!.Height;
+                float endV = (_layout.Atlas!.Height - glyph.AtlasBounds.Bottom - _multiAtlasGenerator.Padding) / _layout.Atlas!.Height;
+
+                Vertex[] vertices =
+                [
+                    new() { Position = new Vector3(vertex1, vertex4, 0.0f), TexCoord = new Vector2(beginU, endV) },
+                    new() { Position = new Vector3(vertex2, vertex4, 0.0f), TexCoord = new Vector2(endU, endV) },
+                    new() { Position = new Vector3(vertex2, vertex3, 0.0f), TexCoord = new Vector2(endU, beginV) },
+                    new() { Position = new Vector3(vertex1, vertex3, 0.0f), TexCoord = new Vector2(beginU, beginV) }
+                ];
+
+                Matrix4x4 translation = Matrix4x4.CreateTranslation(new Vector3(offset, 0.0f, 0.0f));
+                Matrix4x4 model = translation;
+
+                UniformBufferObject ubo = new()
+                {
+                    Model = model * Matrix4x4.CreateTranslation(position),
+                    View = Matrix4x4.CreateLookAt(new Vector3(0.0f, 0.0f, 2.0f), Vector3.Zero, Vector3.UnitY),
+                    Projection = Matrix4x4.CreatePerspectiveFieldOfView((float)Math.PI / 4, (float)framebufferObject.Width / framebufferObject.Height, 0.1f, 1000.0f)
+                };
+
+                properties.PxRange = _layout.Atlas!.DistanceRange;
+
+                _commandList.UpdateBuffer(_vertexBuffer, 0, vertices);
+                _commandList.UpdateBuffer(_uniformBuffer, 0, ref ubo);
+                _commandList.UpdateBuffer(_normalBuffer, 0, ref properties);
+
+                _commandList.DrawIndexed(_indexBuffer.SizeInBytes / sizeof(uint), 1, 0, 0, 0);
+
+                offset += glyph.Advance;
+            }
 
             framebufferObject.Present(_commandList);
 

@@ -61,7 +61,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
     float screenPxDistance = screenPxRange(input.TexCoord) * (sd - 0.5);
     float opacity = saturate(screenPxDistance + 0.5);
     
-    float4 bgColor = float4(0.0, 0.0, 0.0, 1.0);
+    float4 bgColor = float4(0.0, 0.0, 0.0, 0.0);
     float4 fgColor = float4(1.0, 1.0, 1.0, 1.0);
     
     return lerp(bgColor, fgColor, opacity);
