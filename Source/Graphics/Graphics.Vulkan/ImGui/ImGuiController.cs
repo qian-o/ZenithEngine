@@ -199,6 +199,9 @@ public unsafe class ImGuiController : DisposableObject
             platform.Dispose();
         }
 
+        _mouseCursors.Clear();
+        _platforms.Clear();
+
         ImNodes.DestroyContext(_imNodesContext);
         ImPlot.DestroyContext(_imPlotContext);
         ImGui.DestroyContext(_imGuiContext);

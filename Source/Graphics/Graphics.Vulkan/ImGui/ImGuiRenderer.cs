@@ -66,6 +66,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
     #region Resource Management
     private readonly object _lock = new();
     private readonly Dictionary<TextureView, nint> _mapped = [];
+    private readonly Dictionary<Texture, nint> _mappedTextures = [];
     private readonly Dictionary<nint, ResourceSet> _selfSets = [];
     private readonly Dictionary<nint, TextureView> _selfViews = [];
     #endregion
@@ -110,11 +111,15 @@ float4 mainPS(VSOutput input) : SV_TARGET
     {
         lock (_lock)
         {
-            TextureView textureView = factory.CreateTextureView(texture);
+            if (!_mappedTextures.TryGetValue(texture, out nint binding))
+            {
+                TextureView textureView = factory.CreateTextureView(texture);
 
-            nint binding = GetOrCreateImGuiBinding(factory, textureView);
+                binding = GetOrCreateImGuiBinding(factory, textureView);
 
-            _selfViews[binding] = textureView;
+                _mappedTextures[texture] = binding;
+                _selfViews[binding] = textureView;
+            }
 
             return binding;
         }
@@ -135,6 +140,10 @@ float4 mainPS(VSOutput input) : SV_TARGET
                 textureView.Dispose();
                 _selfViews.Remove(binding);
             }
+
+            _mappedTextures.Keys.Where(k => _mappedTextures[k] == binding)
+                                .ToList()
+                                .ForEach(k => _mappedTextures.Remove(k));
 
             if (textureView != null)
             {
@@ -199,7 +208,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
                                                                               -1.0f,
                                                                               1.0f);
 
-            commandList.UpdateBuffer(_uboBuffer, 0, &orthoProjection, 1);
+            commandList.UpdateBuffer(_uboBuffer, 0, ref orthoProjection);
         }
 
         commandList.SetVertexBuffer(0, _vertexBuffer);
@@ -276,6 +285,11 @@ float4 mainPS(VSOutput input) : SV_TARGET
         {
             textureView.Dispose();
         }
+
+        _selfSets.Clear();
+        _selfViews.Clear();
+        _mappedTextures.Clear();
+        _mapped.Clear();
     }
 
     private ResourceSet GetResourceSet(nint handle)

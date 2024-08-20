@@ -6,7 +6,7 @@ using Graphics.Vulkan;
 using SharpGLTF.Animations;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
-using StbiSharp;
+using StbImageSharp;
 using GLTFAnimation = SharpGLTF.Schema2.Animation;
 using GLTFMaterial = SharpGLTF.Schema2.Material;
 using GLTFNode = SharpGLTF.Schema2.Node;
@@ -201,8 +201,17 @@ internal sealed unsafe class Program
         commandList.Begin();
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
         {
-            Stbi.InfoFromMemory(gltfTexture.PrimaryImage.Content.Content.Span, out int width, out int height, out _);
-            StbiImage image = Stbi.LoadFromMemory(gltfTexture.PrimaryImage.Content.Content.Span, 4);
+            using MemoryStream stream = new(gltfTexture.PrimaryImage.Content.Content.Span.ToArray());
+
+            if (ImageInfo.FromStream(stream) is not ImageInfo imageInfo)
+            {
+                continue;
+            }
+
+            int width = imageInfo.Width;
+            int height = imageInfo.Height;
+
+            ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
 
             uint mipLevels = Math.Max(1, (uint)MathF.Log2(Math.Max(width, height))) + 1;
 
@@ -219,8 +228,6 @@ internal sealed unsafe class Program
 
             _textures.Add(texture);
             _textureViews.Add(textureView);
-
-            image.Dispose();
         }
         commandList.End();
 
@@ -313,7 +320,7 @@ internal sealed unsafe class Program
         _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
 
         _perObjectBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(PerObject) * _worldSpaceMats.Length), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-        _device.UpdateBuffer(_perObjectBuffer, 0, _worldSpaceMats.AsPointer(), _worldSpaceMats.Length);
+        _device.UpdateBuffer(_perObjectBuffer, 0, _worldSpaceMats);
 
         _frameBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(Frame), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
@@ -395,13 +402,13 @@ internal sealed unsafe class Program
             ViewPos = new Vector4(new Vector3(0.0f, 1.0f, 5.0f), 1.0f)
         };
 
-        _device.UpdateBuffer(_frameBuffer, 0, [frame]);
+        _device.UpdateBuffer(_frameBuffer, 0, ref frame);
 
         _animations[0].Update(e.TotalTime);
 
         TransformNodes(_root.Children, Matrix4x4.Identity);
 
-        _device.UpdateBuffer(_perObjectBuffer, 0, _worldSpaceMats.AsPointer(), _worldSpaceMats.Length);
+        _device.UpdateBuffer(_perObjectBuffer, 0, _worldSpaceMats);
     }
 
     private static void Window_Render(object? sender, RenderEventArgs e)

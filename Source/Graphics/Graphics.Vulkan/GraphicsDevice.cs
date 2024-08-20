@@ -151,11 +151,19 @@ public unsafe class GraphicsDevice : ContextObject
         }
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ReadOnlySpan<T> source) where T : unmanaged
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
     {
         fixed (T* sourcePointer = source)
         {
             UpdateBuffer(buffer, bufferOffsetInBytes, sourcePointer, source.Length);
+        }
+    }
+
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ref readonly T source) where T : unmanaged
+    {
+        fixed (T* sourcePointer = &source)
+        {
+            UpdateBuffer(buffer, bufferOffsetInBytes, sourcePointer, 1);
         }
     }
     #endregion
@@ -245,7 +253,7 @@ public unsafe class GraphicsDevice : ContextObject
     }
 
     public void UpdateTexture<T>(Texture texture,
-                                 ReadOnlySpan<T> source,
+                                 T[] source,
                                  uint x,
                                  uint y,
                                  uint z,
@@ -330,6 +338,11 @@ public unsafe class GraphicsDevice : ContextObject
         {
             sharedCommandPool.Dispose();
         }
+
+        _availableStagingFences.Clear();
+        _availableStagingSemaphores.Clear();
+        _availableStagingBuffers.Clear();
+        _availableStagingCommandPools.Clear();
 
         _aniso4xSampler.Dispose();
         _linearSampler.Dispose();

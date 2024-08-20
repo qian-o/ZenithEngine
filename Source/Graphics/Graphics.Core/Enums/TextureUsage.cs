@@ -29,11 +29,6 @@ public enum TextureUsage : byte
     Cubemap = 1 << 4,
 
     /// <summary>
-    /// The Texture is used as a read-write staging resource for uploading Texture data.
-    /// </summary>
-    Staging = 1 << 5,
-
-    /// <summary>
     /// The Texture supports automatic generation of mipmaps.
     /// </summary>
     GenerateMipmaps = 1 << 6
