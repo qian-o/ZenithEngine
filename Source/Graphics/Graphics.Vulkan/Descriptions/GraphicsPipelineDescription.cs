@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public readonly record struct GraphicsPipelineDescription
+public record struct GraphicsPipelineDescription
 {
     public GraphicsPipelineDescription(BlendStateDescription blendState,
                                        DepthStencilStateDescription depthStencilState,
@@ -24,35 +24,35 @@ public readonly record struct GraphicsPipelineDescription
     /// <summary>
     /// A description of the blend state, which controls how color values are blended into each color target.
     /// </summary>
-    public BlendStateDescription BlendState { get; init; }
+    public BlendStateDescription BlendState { get; set; }
 
     /// <summary>
     /// A description of the depth stencil state, which controls depth tests, writing, and comparisons.
     /// </summary>
-    public DepthStencilStateDescription DepthStencilState { get; init; }
+    public DepthStencilStateDescription DepthStencilState { get; set; }
 
     /// <summary>
     /// A description of the rasterizer state, which controls culling, clipping, scissor, and polygon-fill behavior.
     /// </summary>
-    public RasterizerStateDescription RasterizerState { get; init; }
+    public RasterizerStateDescription RasterizerState { get; set; }
 
     /// <summary>
     /// This controls the primitive topology type.
     /// </summary>
-    public PrimitiveTopology PrimitiveTopology { get; init; }
+    public PrimitiveTopology PrimitiveTopology { get; set; }
 
     /// <summary>
     /// A description of the shader set to be used.
     /// </summary>
-    public ShaderSetDescription ShaderSet { get; init; }
+    public ShaderSetDescription ShaderSet { get; set; }
 
     /// <summary>
     /// This controls the resource layout of the shaders.
     /// </summary>
-    public ResourceLayout[] ResourceLayouts { get; init; }
+    public ResourceLayout[] ResourceLayouts { get; set; }
 
     /// <summary>
     /// Describes the color and depth stencil outputs.
     /// </summary>
-    public OutputDescription Outputs { get; init; }
+    public OutputDescription Outputs { get; set; }
 }

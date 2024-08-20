@@ -2,7 +2,10 @@
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
+using Hexa.NET.ImGui;
+using StbiSharp;
 using Tests.Core;
+using Tests.SDFFontTexture.Models;
 
 namespace Tests.SDFFontTexture;
 
@@ -34,15 +37,15 @@ internal sealed unsafe class MainView : View
     private readonly GraphicsDevice _device;
     private readonly ImGuiController _imGuiController;
 
+    private readonly Layout _layout;
+    private readonly Texture _sdfTexture;
+    private readonly TextureView _sdfTextureView;
     private readonly DeviceBuffer _vertexBuffer;
     private readonly DeviceBuffer _indexBuffer;
     private readonly DeviceBuffer _uniformBuffer;
     private readonly DeviceBuffer _normalBuffer;
-    private readonly ResourceLayout _resourceLayout1;
-    private readonly ResourceSet _resourceSet1;
-    private readonly ResourceLayout _resourceLayout2;
-    private readonly Dictionary<char, ResourceSet> _charResourceSets = [];
-    private readonly Dictionary<Texture, TextureView> _charTextureViews = [];
+    private readonly ResourceLayout _resourceLayout;
+    private readonly ResourceSet _resourceSet;
     private readonly Shader[] _shaders;
     private readonly VertexLayoutDescription[] _vertexLayoutDescriptions;
     private readonly CommandList _commandList;
@@ -50,12 +53,37 @@ internal sealed unsafe class MainView : View
     private FramebufferObject? framebufferObject;
     private Pipeline? pipeline;
 
+    private string @char = "A";
+    private Vector3 position = Vector3.Zero;
+    private Properties properties = new() { PxRange = 5.0f };
+
     public MainView(GraphicsDevice device, ImGuiController imGuiController)
     {
         Title = "SDF Font Texture";
 
         _device = device;
         _imGuiController = imGuiController;
+
+        MultiAtlasGenerator multiAtlasGenerator = new("Assets/Fonts/simhei.ttf")
+        {
+            AtlasType = AtlasType.MTSDF
+        };
+
+        _layout = multiAtlasGenerator.Generate();
+
+        byte[] bytes = File.ReadAllBytes(_layout.PngPath!);
+
+        byte* pixels = Stbi.LoadFromMemory(bytes.AsPointer(), bytes.Length, out int sdfWidth, out int sdfHeight, out _, 4);
+
+        _sdfTexture = device.ResourceFactory.CreateTexture(TextureDescription.Texture2D((uint)sdfWidth,
+                                                                                        (uint)sdfHeight,
+                                                                                        1,
+                                                                                        PixelFormat.R8G8B8A8UNorm,
+                                                                                        TextureUsage.Sampled));
+
+        device.UpdateTexture(_sdfTexture, pixels, sdfWidth * sdfHeight * 4, 0, 0, 0, (uint)sdfWidth, (uint)sdfHeight, 1, 0, 0);
+
+        _sdfTextureView = device.ResourceFactory.CreateTextureView(new TextureViewDescription(_sdfTexture));
 
         Vertex[] vertices =
         [
@@ -67,7 +95,7 @@ internal sealed unsafe class MainView : View
 
         uint[] indices = [0, 1, 2, 2, 3, 0];
 
-        _vertexBuffer = device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Length), BufferUsage.VertexBuffer));
+        _vertexBuffer = device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Length), BufferUsage.VertexBuffer | BufferUsage.Dynamic));
         device.UpdateBuffer(_vertexBuffer, 0, vertices);
 
         _indexBuffer = device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Length), BufferUsage.IndexBuffer));
@@ -78,15 +106,12 @@ internal sealed unsafe class MainView : View
 
         ResourceLayoutElementDescription uboDescription = new("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex);
         ResourceLayoutElementDescription normalDescription = new("properties", ResourceKind.UniformBuffer, ShaderStages.Fragment);
-        ResourceLayoutElementDescription textureSamplerDescription = new("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment);
+        ResourceLayoutElementDescription msdfDescription = new("msdf", ResourceKind.TextureReadOnly, ShaderStages.Fragment);
+        ResourceLayoutElementDescription msdfSamplerDescription = new("msdfSampler", ResourceKind.Sampler, ShaderStages.Fragment);
 
-        _resourceLayout1 = device.ResourceFactory.CreateResourceLayout(new ResourceLayoutDescription(uboDescription, normalDescription, textureSamplerDescription));
+        _resourceLayout = device.ResourceFactory.CreateResourceLayout(new ResourceLayoutDescription(uboDescription, normalDescription, msdfDescription, msdfSamplerDescription));
 
-        _resourceSet1 = device.ResourceFactory.CreateResourceSet(new ResourceSetDescription(_resourceLayout1, _uniformBuffer, _normalBuffer, device.LinearSampler));
-
-        ResourceLayoutElementDescription sdfDescription = new("textureSDF", ResourceKind.TextureReadOnly, ShaderStages.Fragment);
-
-        _resourceLayout2 = device.ResourceFactory.CreateResourceLayout(new ResourceLayoutDescription(sdfDescription));
+        _resourceSet = device.ResourceFactory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _uniformBuffer, _normalBuffer, _sdfTextureView, _device.LinearSampler));
 
         string hlsl = File.ReadAllText("Assets/Shaders/SDF.hlsl");
         _shaders = device.ResourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
@@ -106,6 +131,72 @@ internal sealed unsafe class MainView : View
 
     protected override void OnRender(RenderEventArgs e)
     {
+        if (ImGui.Begin("Settings"))
+        {
+            ImGui.InputText("Char", ref @char, 10);
+            ImGui.DragFloat3("Position", ref position, 0.1f);
+
+            ImGui.End();
+        }
+
+        if (framebufferObject != null)
+        {
+            char c = 'A';
+            if (!string.IsNullOrEmpty(@char))
+            {
+                c = @char[0];
+            }
+
+            Glyph? glyph = _layout.Glyphs!.FirstOrDefault(x => x.UniCode == c);
+            glyph ??= _layout.Glyphs!.First(x => x.UniCode == '?');
+
+            float beginU = glyph.AtlasBounds.Left / _layout.Atlas!.Width;
+            float endU = glyph.AtlasBounds.Right / _layout.Atlas!.Width;
+            float beginV = (_layout.Atlas!.Height - glyph.AtlasBounds.Top) / _layout.Atlas!.Height;
+            float endV = (_layout.Atlas!.Height - glyph.AtlasBounds.Bottom) / _layout.Atlas!.Height;
+
+            Vertex[] vertices =
+            [
+                new() { Position = new Vector3(-0.5f, -0.5f, 0.0f), TexCoord = new Vector2(beginU, endV) },
+                new() { Position = new Vector3(0.5f, -0.5f, 0.0f), TexCoord = new Vector2(endU, endV) },
+                new() { Position = new Vector3(0.5f, 0.5f, 0.0f), TexCoord = new Vector2(endU, beginV) },
+                new() { Position = new Vector3(-0.5f, 0.5f, 0.0f), TexCoord = new Vector2(beginU, beginV) }
+            ];
+
+            UniformBufferObject ubo = new()
+            {
+                Model = Matrix4x4.CreateScale(new Vector3((float)glyph.AtlasBounds.Width / glyph.AtlasBounds.Height, 1.0f, 1.0f)) * Matrix4x4.CreateTranslation(position),
+                View = Matrix4x4.CreateLookAt(new Vector3(0.0f, 0.0f, 2.0f), Vector3.Zero, Vector3.UnitY),
+                Projection = Matrix4x4.CreatePerspectiveFieldOfView((float)Math.PI / 4, (float)framebufferObject.Width / framebufferObject.Height, 0.1f, 1000.0f)
+            };
+
+            properties.PxRange = _layout.Atlas!.DistanceRange;
+
+            _commandList.Begin();
+
+            _commandList.UpdateBuffer(_vertexBuffer, 0, vertices);
+            _commandList.UpdateBuffer(_uniformBuffer, 0, ref ubo);
+            _commandList.UpdateBuffer(_normalBuffer, 0, ref properties);
+
+            _commandList.SetFramebuffer(framebufferObject.Framebuffer);
+            _commandList.ClearColorTarget(0, RgbaFloat.Black);
+            _commandList.ClearDepthStencil(1.0f);
+
+            _commandList.SetVertexBuffer(0, _vertexBuffer);
+            _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U32);
+            _commandList.SetPipeline(pipeline!);
+            _commandList.SetGraphicsResourceSet(0, _resourceSet);
+
+            _commandList.DrawIndexed(_indexBuffer.SizeInBytes / sizeof(uint), 1, 0, 0, 0);
+
+            framebufferObject.Present(_commandList);
+
+            _commandList.End();
+
+            _device.SubmitCommands(_commandList);
+
+            ImGui.Image(_imGuiController.GetOrCreateImGuiBinding(_device.ResourceFactory, framebufferObject.PresentTexture), new Vector2(framebufferObject.Width, framebufferObject.Height));
+        }
     }
 
     protected override void OnResize(ResizeEventArgs e)
@@ -124,7 +215,7 @@ internal sealed unsafe class MainView : View
             DepthStencilState = DepthStencilStateDescription.DepthOnlyLessEqual,
             RasterizerState = RasterizerStateDescription.Default,
             PrimitiveTopology = PrimitiveTopology.TriangleList,
-            ResourceLayouts = [_resourceLayout1, _resourceLayout2],
+            ResourceLayouts = [_resourceLayout],
             ShaderSet = new ShaderSetDescription(_vertexLayoutDescriptions, _shaders),
             Outputs = framebufferObject.Framebuffer.OutputDescription
         };
@@ -135,23 +226,14 @@ internal sealed unsafe class MainView : View
 
     protected override void Destroy()
     {
+        _sdfTexture.Dispose();
+        _sdfTextureView.Dispose();
         _vertexBuffer.Dispose();
         _indexBuffer.Dispose();
         _uniformBuffer.Dispose();
         _normalBuffer.Dispose();
-        _resourceLayout1.Dispose();
-        _resourceSet1.Dispose();
-        _resourceLayout2.Dispose();
-
-        foreach (TextureView textureView in _charTextureViews.Values)
-        {
-            textureView.Dispose();
-        }
-
-        foreach (ResourceSet resourceSet in _charResourceSets.Values)
-        {
-            resourceSet.Dispose();
-        }
+        _resourceLayout.Dispose();
+        _resourceSet.Dispose();
 
         foreach (Shader shader in _shaders)
         {

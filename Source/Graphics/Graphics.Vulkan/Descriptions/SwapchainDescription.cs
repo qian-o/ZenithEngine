@@ -3,7 +3,7 @@ using Silk.NET.Core.Contexts;
 
 namespace Graphics.Vulkan;
 
-public readonly record struct SwapchainDescription
+public record struct SwapchainDescription
 {
     public SwapchainDescription(IVkSurface target,
                                 uint width,
@@ -19,21 +19,21 @@ public readonly record struct SwapchainDescription
     /// <summary>
     /// The render target.
     /// </summary>
-    public IVkSurface Target { get; init; }
+    public IVkSurface Target { get; set; }
 
     /// <summary>
     /// The width of the swapchain surface.
     /// </summary>
-    public uint Width { get; init; }
+    public uint Width { get; set; }
 
     /// <summary>
     /// The height of the swapchain surface.
     /// </summary>
-    public uint Height { get; init; }
+    public uint Height { get; set; }
 
     /// <summary>
     /// The optional format of the depth target of the Swapchain's Framebuffer.
     /// If null, the Swapchain will not have a depth target.
     /// </summary>
-    public PixelFormat? DepthFormat { get; init; }
+    public PixelFormat? DepthFormat { get; set; }
 }

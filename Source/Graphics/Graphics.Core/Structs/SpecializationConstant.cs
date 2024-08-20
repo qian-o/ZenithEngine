@@ -2,7 +2,7 @@
 
 namespace Graphics.Core;
 
-public readonly record struct SpecializationConstant
+public record struct SpecializationConstant
 {
     public SpecializationConstant(uint id, ShaderConstantType type, ulong data)
     {
@@ -50,17 +50,17 @@ public readonly record struct SpecializationConstant
     /// <summary>
     /// The constant variable ID.
     /// </summary>
-    public uint ID { get; init; }
+    public uint ID { get; set; }
 
     /// <summary>
     /// The type of data stored in this instance. Must be a scalar numeric type.
     /// </summary>
-    public ShaderConstantType Type { get; init; }
+    public ShaderConstantType Type { get; set; }
 
     /// <summary>
     /// An 8-byte block storing the contents of the specialization value.
     /// </summary>
-    public ulong Data { get; init; }
+    public ulong Data { get; set; }
 
     private static unsafe ulong Store<T>(T value)
     {

@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Vulkan;
 
-public readonly record struct FramebufferAttachmentDescription
+public record struct FramebufferAttachmentDescription
 {
     public FramebufferAttachmentDescription(Texture target, uint arrayLayer, uint mipLevel)
     {
@@ -26,15 +26,15 @@ public readonly record struct FramebufferAttachmentDescription
     /// <summary>
     /// The target texture to render into.
     /// </summary>
-    public Texture Target { get; init; }
+    public Texture Target { get; set; }
 
     /// <summary>
     /// The array layer to render to.
     /// </summary>
-    public uint ArrayLayer { get; init; }
+    public uint ArrayLayer { get; set; }
 
     /// <summary>
     /// The mip level to render to.
     /// </summary>
-    public uint MipLevel { get; init; }
+    public uint MipLevel { get; set; }
 }

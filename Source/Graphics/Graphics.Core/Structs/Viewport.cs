@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Core;
 
-public readonly record struct Viewport
+public record struct Viewport
 {
     public Viewport(float x, float y, float width, float height, float minDepth, float maxDepth)
     {
@@ -12,17 +12,17 @@ public readonly record struct Viewport
         MaxDepth = maxDepth;
     }
 
-    public float X { get; init; }
+    public float X { get; set; }
 
-    public float Y { get; init; }
+    public float Y { get; set; }
 
-    public float Width { get; init; }
+    public float Width { get; set; }
 
-    public float Height { get; init; }
+    public float Height { get; set; }
 
-    public float MinDepth { get; init; }
+    public float MinDepth { get; set; }
 
-    public float MaxDepth { get; init; }
+    public float MaxDepth { get; set; }
 
     public override string ToString()
     {
