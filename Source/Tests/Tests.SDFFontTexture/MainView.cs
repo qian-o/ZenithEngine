@@ -157,50 +157,47 @@ internal sealed unsafe class MainView : View
             float offset = 0.0f;
             foreach (char @char in str)
             {
-                if (char.IsWhiteSpace(@char))
-                {
-                    offset += 0.5f;
-                    continue;
-                }
-
                 Glyph? glyph = _layout.Glyphs!.FirstOrDefault(x => x.UniCode == @char);
                 glyph ??= _layout.Glyphs!.First(x => x.UniCode == '?');
 
-                float vertex1 = glyph.PlaneBounds.Left;
-                float vertex2 = glyph.PlaneBounds.Right;
-                float vertex3 = glyph.PlaneBounds.Top;
-                float vertex4 = glyph.PlaneBounds.Bottom;
+                if (glyph.PlaneBounds.Width > 0)
+                {
+                    float vertex1 = glyph.PlaneBounds.Left;
+                    float vertex2 = glyph.PlaneBounds.Right;
+                    float vertex3 = glyph.PlaneBounds.Top;
+                    float vertex4 = glyph.PlaneBounds.Bottom;
 
-                float beginU = (glyph.AtlasBounds.Left + _multiAtlasGenerator.Padding) / _layout.Atlas!.Width;
-                float endU = (glyph.AtlasBounds.Right - _multiAtlasGenerator.Padding) / _layout.Atlas!.Width;
-                float beginV = (_layout.Atlas!.Height - glyph.AtlasBounds.Top + _multiAtlasGenerator.Padding) / _layout.Atlas!.Height;
-                float endV = (_layout.Atlas!.Height - glyph.AtlasBounds.Bottom - _multiAtlasGenerator.Padding) / _layout.Atlas!.Height;
+                    float beginU = (glyph.AtlasBounds.Left + _multiAtlasGenerator.Padding) / _layout.Atlas!.Width;
+                    float endU = (glyph.AtlasBounds.Right - _multiAtlasGenerator.Padding) / _layout.Atlas!.Width;
+                    float beginV = (_layout.Atlas!.Height - glyph.AtlasBounds.Top + _multiAtlasGenerator.Padding) / _layout.Atlas!.Height;
+                    float endV = (_layout.Atlas!.Height - glyph.AtlasBounds.Bottom - _multiAtlasGenerator.Padding) / _layout.Atlas!.Height;
 
-                Vertex[] vertices =
-                [
-                    new() { Position = new Vector3(vertex1, vertex4, 0.0f), TexCoord = new Vector2(beginU, endV) },
+                    Vertex[] vertices =
+                    [
+                        new() { Position = new Vector3(vertex1, vertex4, 0.0f), TexCoord = new Vector2(beginU, endV) },
                     new() { Position = new Vector3(vertex2, vertex4, 0.0f), TexCoord = new Vector2(endU, endV) },
                     new() { Position = new Vector3(vertex2, vertex3, 0.0f), TexCoord = new Vector2(endU, beginV) },
                     new() { Position = new Vector3(vertex1, vertex3, 0.0f), TexCoord = new Vector2(beginU, beginV) }
-                ];
+                    ];
 
-                Matrix4x4 translation = Matrix4x4.CreateTranslation(new Vector3(offset, 0.0f, 0.0f));
-                Matrix4x4 model = translation;
+                    Matrix4x4 translation = Matrix4x4.CreateTranslation(new Vector3(offset, 0.0f, 0.0f));
+                    Matrix4x4 model = translation;
 
-                UniformBufferObject ubo = new()
-                {
-                    Model = model * Matrix4x4.CreateTranslation(position),
-                    View = Matrix4x4.CreateLookAt(new Vector3(0.0f, 0.0f, 2.0f), Vector3.Zero, Vector3.UnitY),
-                    Projection = Matrix4x4.CreatePerspectiveFieldOfView((float)Math.PI / 4, (float)framebufferObject.Width / framebufferObject.Height, 0.1f, 1000.0f)
-                };
+                    UniformBufferObject ubo = new()
+                    {
+                        Model = model * Matrix4x4.CreateTranslation(position),
+                        View = Matrix4x4.CreateLookAt(new Vector3(0.0f, 0.0f, 2.0f), Vector3.Zero, Vector3.UnitY),
+                        Projection = Matrix4x4.CreatePerspectiveFieldOfView((float)Math.PI / 4, (float)framebufferObject.Width / framebufferObject.Height, 0.1f, 1000.0f)
+                    };
 
-                properties.PxRange = _layout.Atlas!.DistanceRange;
+                    properties.PxRange = _layout.Atlas!.DistanceRange;
 
-                _commandList.UpdateBuffer(_vertexBuffer, 0, vertices);
-                _commandList.UpdateBuffer(_uniformBuffer, 0, ref ubo);
-                _commandList.UpdateBuffer(_normalBuffer, 0, ref properties);
+                    _commandList.UpdateBuffer(_vertexBuffer, 0, vertices);
+                    _commandList.UpdateBuffer(_uniformBuffer, 0, ref ubo);
+                    _commandList.UpdateBuffer(_normalBuffer, 0, ref properties);
 
-                _commandList.DrawIndexed(_indexBuffer.SizeInBytes / sizeof(uint), 1, 0, 0, 0);
+                    _commandList.DrawIndexed(_indexBuffer.SizeInBytes / sizeof(uint), 1, 0, 0, 0);
+                }
 
                 offset += glyph.Advance;
             }
