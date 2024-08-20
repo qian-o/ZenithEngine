@@ -2,7 +2,6 @@
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
-using Hexa.NET.ImGui;
 using Tests.Core;
 
 namespace Tests.SDFFontTexture;
@@ -34,7 +33,6 @@ internal sealed unsafe class MainView : View
 
     private readonly GraphicsDevice _device;
     private readonly ImGuiController _imGuiController;
-    private readonly FontController _fontController;
 
     private readonly DeviceBuffer _vertexBuffer;
     private readonly DeviceBuffer _indexBuffer;
@@ -52,17 +50,12 @@ internal sealed unsafe class MainView : View
     private FramebufferObject? framebufferObject;
     private Pipeline? pipeline;
 
-    private string chars = "A";
-    private Vector3 position = Vector3.Zero;
-    private Properties properties = new() { PxRange = 5.0f };
-
     public MainView(GraphicsDevice device, ImGuiController imGuiController)
     {
         Title = "SDF Font Texture";
 
         _device = device;
         _imGuiController = imGuiController;
-        _fontController = new FontController(device, "Assets/Fonts/simhei.ttf", 0, 128);
 
         Vertex[] vertices =
         [
@@ -113,73 +106,6 @@ internal sealed unsafe class MainView : View
 
     protected override void OnRender(RenderEventArgs e)
     {
-        if (ImGui.Begin("Font Texture"))
-        {
-            ImGui.InputText("SDF Character", ref chars, 10);
-            ImGui.DragFloat3("Position", ref position, 0.1f);
-
-            chars = chars.Trim();
-
-            ImGui.End();
-        }
-
-        if (!string.IsNullOrEmpty(chars))
-        {
-            char c = chars[0];
-
-            if (!_charResourceSets.TryGetValue(c, out ResourceSet? resourceSet2))
-            {
-                Texture texture = _fontController.GetTexture(c);
-
-                TextureView textureView = _device.ResourceFactory.CreateTextureView(texture);
-
-                ResourceSetDescription resourceSetDescription = new(_resourceLayout2, textureView);
-
-                resourceSet2 = _device.ResourceFactory.CreateResourceSet(resourceSetDescription);
-
-                _charResourceSets.Add(c, resourceSet2);
-                _charTextureViews.Add(texture, textureView);
-            }
-
-            if (framebufferObject != null && pipeline != null)
-            {
-                Character character = _fontController.GetCharacter(c);
-
-                UniformBufferObject ubo = new()
-                {
-                    Model = Matrix4x4.CreateScale(new Vector3((float)character.Width / character.Height, 1.0f, 1.0f)) * Matrix4x4.CreateTranslation(position),
-                    View = Matrix4x4.CreateLookAt(new Vector3(0.0f, 0.0f, 2.0f), Vector3.Zero, Vector3.UnitY),
-                    Projection = Matrix4x4.CreatePerspectiveFieldOfView((float)Math.PI / 4, (float)framebufferObject.Width / framebufferObject.Height, 0.1f, 1000.0f)
-                };
-
-                properties.PxRange = Math.Max(framebufferObject.Width, framebufferObject.Height);
-
-                _commandList.Begin();
-
-                _commandList.UpdateBuffer(_uniformBuffer, 0, ref ubo);
-                _commandList.UpdateBuffer(_normalBuffer, 0, ref properties);
-
-                _commandList.SetFramebuffer(framebufferObject.Framebuffer);
-                _commandList.ClearColorTarget(0, RgbaFloat.Black);
-                _commandList.ClearDepthStencil(1.0f);
-
-                _commandList.SetVertexBuffer(0, _vertexBuffer);
-                _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U32);
-                _commandList.SetPipeline(pipeline);
-                _commandList.SetGraphicsResourceSet(0, _resourceSet1);
-                _commandList.SetGraphicsResourceSet(1, resourceSet2);
-
-                _commandList.DrawIndexed(_indexBuffer.SizeInBytes / sizeof(uint), 1, 0, 0, 0);
-
-                framebufferObject.Present(_commandList);
-
-                _commandList.End();
-
-                _device.SubmitCommands(_commandList);
-
-                ImGui.Image(_imGuiController.GetOrCreateImGuiBinding(_device.ResourceFactory, framebufferObject.PresentTexture), new Vector2(framebufferObject.Width, framebufferObject.Height));
-            }
-        }
     }
 
     protected override void OnResize(ResizeEventArgs e)
@@ -236,7 +162,5 @@ internal sealed unsafe class MainView : View
 
         framebufferObject?.Dispose();
         pipeline?.Dispose();
-
-        _fontController.Dispose();
     }
 }
