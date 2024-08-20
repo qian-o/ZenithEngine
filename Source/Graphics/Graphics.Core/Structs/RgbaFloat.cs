@@ -45,9 +45,4 @@ public record struct RgbaFloat
     public float B { get; set; }
 
     public float A { get; set; }
-
-    public override string ToString()
-    {
-        return $"RgbaFloat: R: {R}, G: {G}, B: {B}, A: {A}";
-    }
 }
