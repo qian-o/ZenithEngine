@@ -36,6 +36,7 @@ internal sealed unsafe class MainView : View
 
     private readonly GraphicsDevice _device;
     private readonly ImGuiController _imGuiController;
+    private readonly MultiAtlasGenerator _multiAtlasGenerator;
 
     private readonly Layout _layout;
     private readonly Texture _sdfTexture;
@@ -63,13 +64,14 @@ internal sealed unsafe class MainView : View
 
         _device = device;
         _imGuiController = imGuiController;
-
-        MultiAtlasGenerator multiAtlasGenerator = new("Assets/Fonts/simhei.ttf")
+        _multiAtlasGenerator = new("Assets/Fonts/simhei.ttf")
         {
-            AtlasType = AtlasType.MTSDF
+            AtlasType = AtlasType.MTSDF,
+            EmSize = 64,
+            Padding = 2,
         };
 
-        _layout = multiAtlasGenerator.Generate();
+        _layout = _multiAtlasGenerator.Generate();
 
         byte[] bytes = File.ReadAllBytes(_layout.PngPath!);
 
@@ -150,10 +152,10 @@ internal sealed unsafe class MainView : View
             Glyph? glyph = _layout.Glyphs!.FirstOrDefault(x => x.UniCode == c);
             glyph ??= _layout.Glyphs!.First(x => x.UniCode == '?');
 
-            float beginU = glyph.AtlasBounds.Left / _layout.Atlas!.Width;
-            float endU = glyph.AtlasBounds.Right / _layout.Atlas!.Width;
-            float beginV = (_layout.Atlas!.Height - glyph.AtlasBounds.Top) / _layout.Atlas!.Height;
-            float endV = (_layout.Atlas!.Height - glyph.AtlasBounds.Bottom) / _layout.Atlas!.Height;
+            float beginU = (glyph.AtlasBounds.Left + _multiAtlasGenerator.Padding) / _layout.Atlas!.Width;
+            float endU = (glyph.AtlasBounds.Right - _multiAtlasGenerator.Padding) / _layout.Atlas!.Width;
+            float beginV = (_layout.Atlas!.Height - glyph.AtlasBounds.Top + _multiAtlasGenerator.Padding) / _layout.Atlas!.Height;
+            float endV = (_layout.Atlas!.Height - glyph.AtlasBounds.Bottom - _multiAtlasGenerator.Padding) / _layout.Atlas!.Height;
 
             Vertex[] vertices =
             [

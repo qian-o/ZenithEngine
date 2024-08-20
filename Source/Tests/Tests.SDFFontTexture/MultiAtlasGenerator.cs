@@ -43,6 +43,8 @@ internal sealed class MultiAtlasGenerator
 
     public int EmSize { get; set; } = 64;
 
+    public int Padding { get; set; } = 10;
+
     public Layout Generate()
     {
         string output = Path.Combine(OutputPath, Path.GetFileNameWithoutExtension(_font));
@@ -75,9 +77,8 @@ internal sealed class MultiAtlasGenerator
         }
 
         arguments.Append(cultureInfo, $" -type {AtlasType.ToString().ToLower(cultureInfo)}");
-
         arguments.Append(cultureInfo, $" -size {EmSize}");
-
+        arguments.Append(cultureInfo, $" -pxpadding {Padding}");
         arguments.Append(cultureInfo, $" -json {outputJson}");
         arguments.Append(cultureInfo, $" -imageout {outputPng}");
 
