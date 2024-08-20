@@ -102,13 +102,12 @@ public unsafe class ImGuiController : DisposableObject
     }
 
     public ImGuiController(Window window,
-                           GraphicsDevice graphicsDevice,
-                           ImGuiFontConfig imGuiFontConfig) : this(window,
-                                                                   graphicsDevice,
-                                                                   ColorSpaceHandling.Legacy,
-                                                                   imGuiFontConfig,
-                                                                   ImGuiSizeConfig.Default,
-                                                                   null)
+                           GraphicsDevice graphicsDevice) : this(window,
+                                                                 graphicsDevice,
+                                                                 ColorSpaceHandling.Legacy,
+                                                                 ImGuiFontConfig.Default,
+                                                                 ImGuiSizeConfig.Default,
+                                                                 null)
     {
     }
     #endregion
@@ -309,8 +308,17 @@ public unsafe class ImGuiController : DisposableObject
         {
             Display display = Window.GetDisplay(i);
 
-            nint glyph_ranges = _imGuiFontConfig.GetGlyphRange?.Invoke(io) ?? 0;
-            ImFontPtr fontPtr = io.Fonts.AddFontFromFileTTF(_imGuiFontConfig.FontPath, Convert.ToInt32(_imGuiFontConfig.FontSize * display.DpiScale), null, (char*)glyph_ranges);
+            ImFontPtr fontPtr;
+            if (_imGuiFontConfig.IsDefault)
+            {
+                fontPtr = io.Fonts.AddFontDefault();
+            }
+            else
+            {
+                nint glyph_ranges = _imGuiFontConfig.GetGlyphRange?.Invoke(io) ?? 0;
+
+                fontPtr = io.Fonts.AddFontFromFileTTF(_imGuiFontConfig.FontPath, Convert.ToInt32(_imGuiFontConfig.FontSize * display.DpiScale), null, (char*)glyph_ranges);
+            }
 
             _dpiScaleFonts.Add(display.DpiScale, fontPtr);
 
