@@ -175,9 +175,9 @@ internal sealed unsafe class MainView : View
                     Vertex[] vertices =
                     [
                         new() { Position = new Vector3(vertex1, vertex4, 0.0f), TexCoord = new Vector2(beginU, endV) },
-                    new() { Position = new Vector3(vertex2, vertex4, 0.0f), TexCoord = new Vector2(endU, endV) },
-                    new() { Position = new Vector3(vertex2, vertex3, 0.0f), TexCoord = new Vector2(endU, beginV) },
-                    new() { Position = new Vector3(vertex1, vertex3, 0.0f), TexCoord = new Vector2(beginU, beginV) }
+                        new() { Position = new Vector3(vertex2, vertex4, 0.0f), TexCoord = new Vector2(endU, endV) },
+                        new() { Position = new Vector3(vertex2, vertex3, 0.0f), TexCoord = new Vector2(endU, beginV) },
+                        new() { Position = new Vector3(vertex1, vertex3, 0.0f), TexCoord = new Vector2(beginU, beginV) }
                     ];
 
                     Matrix4x4 translation = Matrix4x4.CreateTranslation(new Vector3(offset, 0.0f, 0.0f));
