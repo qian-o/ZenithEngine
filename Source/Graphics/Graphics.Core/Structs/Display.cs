@@ -2,7 +2,7 @@
 
 namespace Graphics.Core;
 
-public readonly record struct Display
+public record struct Display
 {
     public Display(int index,
                    string name,
@@ -21,22 +21,17 @@ public readonly record struct Display
         DpiScale = dpiScale;
     }
 
-    public int Index { get; init; }
+    public int Index { get; set; }
 
-    public string Name { get; init; }
+    public string Name { get; set; }
 
-    public Vector2 MainPosition { get; init; }
+    public Vector2 MainPosition { get; set; }
 
-    public Vector2 MainSize { get; init; }
+    public Vector2 MainSize { get; set; }
 
-    public Vector2 WorkPosition { get; init; }
+    public Vector2 WorkPosition { get; set; }
 
-    public Vector2 WorkSize { get; init; }
+    public Vector2 WorkSize { get; set; }
 
-    public float DpiScale { get; init; }
-
-    public override string ToString()
-    {
-        return $"Display {Index}: Name: {Name}, Main: {MainPosition} - {MainSize}, Work: {WorkPosition} - {WorkSize}, DPI: {DpiScale}";
-    }
+    public float DpiScale { get; set; }
 }

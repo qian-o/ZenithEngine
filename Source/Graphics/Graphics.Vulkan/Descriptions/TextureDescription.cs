@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public readonly record struct TextureDescription
+public record struct TextureDescription
 {
     public TextureDescription(uint width,
                               uint height,
@@ -26,42 +26,42 @@ public readonly record struct TextureDescription
     /// <summary>
     /// The total width, in texels.
     /// </summary>
-    public uint Width { get; init; }
+    public uint Width { get; set; }
 
     /// <summary>
     /// The total height, in texels.
     /// </summary>
-    public uint Height { get; init; }
+    public uint Height { get; set; }
 
     /// <summary>
     /// The total depth, in texels.
     /// </summary>
-    public uint Depth { get; init; }
+    public uint Depth { get; set; }
 
     /// <summary>
     /// The number of mipmap levels.
     /// </summary>
-    public uint MipLevels { get; init; }
+    public uint MipLevels { get; set; }
 
     /// <summary>
     /// The format of individual texture elements.
     /// </summary>
-    public PixelFormat Format { get; init; }
+    public PixelFormat Format { get; set; }
 
     /// <summary>
     /// Controls how the Texture is permitted to be used. If the Texture will be sampled from a shader.
     /// </summary>
-    public TextureUsage Usage { get; init; }
+    public TextureUsage Usage { get; set; }
 
     /// <summary>
     /// The type of the texture.
     /// </summary>
-    public TextureType Type { get; init; }
+    public TextureType Type { get; set; }
 
     /// <summary>
     /// The number of samples.
     /// </summary>
-    public TextureSampleCount SampleCount { get; init; }
+    public TextureSampleCount SampleCount { get; set; }
 
     public static TextureDescription Texture1D(uint width,
                                                uint mipLevels,

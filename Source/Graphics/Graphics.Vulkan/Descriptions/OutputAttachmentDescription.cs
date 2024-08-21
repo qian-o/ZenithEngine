@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public readonly record struct OutputAttachmentDescription
+public record struct OutputAttachmentDescription
 {
     public OutputAttachmentDescription(PixelFormat format)
     {
@@ -12,5 +12,5 @@ public readonly record struct OutputAttachmentDescription
     /// <summary>
     /// The format of the attachment.
     /// </summary>
-    public PixelFormat Format { get; init; }
+    public PixelFormat Format { get; set; }
 }

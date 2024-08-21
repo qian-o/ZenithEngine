@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public readonly record struct OutputDescription
+public record struct OutputDescription
 {
     public OutputDescription(OutputAttachmentDescription? depthAttachment,
                              OutputAttachmentDescription[] colorAttachments,
@@ -24,17 +24,17 @@ public readonly record struct OutputDescription
     /// <summary>
     /// A description of the depth attachment, or null if none exists.
     /// </summary>
-    public OutputAttachmentDescription? DepthAttachment { get; init; }
+    public OutputAttachmentDescription? DepthAttachment { get; set; }
 
     /// <summary>
     /// An array of attachment descriptions, one for each color attachment. May be empty.
     /// </summary>
-    public OutputAttachmentDescription[] ColorAttachments { get; init; }
+    public OutputAttachmentDescription[] ColorAttachments { get; set; }
 
     /// <summary>
     /// The number of samples in each target attachment.
     /// </summary>
-    public TextureSampleCount SampleCount { get; init; }
+    public TextureSampleCount SampleCount { get; set; }
 
     internal static OutputDescription CreateFromFramebufferDescription(ref readonly FramebufferDescription description)
     {

@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public readonly record struct StencilBehaviorDescription
+public record struct StencilBehaviorDescription
 {
     public StencilBehaviorDescription(StencilOperation fail,
                                       StencilOperation pass,
@@ -18,20 +18,20 @@ public readonly record struct StencilBehaviorDescription
     /// <summary>
     /// The operation performed on samples that fail the stencil test.
     /// </summary>
-    public StencilOperation Fail { get; init; }
+    public StencilOperation Fail { get; set; }
 
     /// <summary>
     /// The operation performed on samples that pass the stencil test.
     /// </summary>
-    public StencilOperation Pass { get; init; }
+    public StencilOperation Pass { get; set; }
 
     /// <summary>
     /// The operation performed on samples that pass the stencil test but fail the depth test.
     /// </summary>
-    public StencilOperation DepthFail { get; init; }
+    public StencilOperation DepthFail { get; set; }
 
     /// <summary>
     /// The comparison operator used in the stencil test.
     /// </summary>
-    public ComparisonKind Comparison { get; init; }
+    public ComparisonKind Comparison { get; set; }
 }

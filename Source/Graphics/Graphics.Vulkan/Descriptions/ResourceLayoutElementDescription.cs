@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public readonly record struct ResourceLayoutElementDescription
+public record struct ResourceLayoutElementDescription
 {
     public ResourceLayoutElementDescription(string name,
                                             ResourceKind kind,
@@ -24,20 +24,20 @@ public readonly record struct ResourceLayoutElementDescription
     /// <summary>
     /// The name of the element.
     /// </summary>
-    public string Name { get; init; }
+    public string Name { get; set; }
 
     /// <summary>
     /// The kind of resource.
     /// </summary>
-    public ResourceKind Kind { get; init; }
+    public ResourceKind Kind { get; set; }
 
     /// <summary>
     /// Use the resource of the shader stage.
     /// </summary>
-    public ShaderStages Stages { get; init; }
+    public ShaderStages Stages { get; set; }
 
     /// <summary>
     /// Miscellaneous resource options for this element.
     /// </summary>
-    public ResourceLayoutElementOptions Options { get; init; }
+    public ResourceLayoutElementOptions Options { get; set; }
 }

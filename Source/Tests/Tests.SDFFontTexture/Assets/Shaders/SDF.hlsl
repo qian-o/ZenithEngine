@@ -24,8 +24,8 @@ struct VSOutput
 
 ConstantBuffer<UBO> ubo : register(b0, space0);
 ConstantBuffer<Properties> properties : register(b1, space0);
-SamplerState textureSampler : register(s2, space0);
-Texture2D textureSDF : register(t0, space1);
+Texture2D msdf : register(t2, space0);
+SamplerState msdfSampler : register(s3, space0);
 
 VSOutput mainVS(VSInput input)
 {
@@ -45,7 +45,7 @@ float median(float a, float b, float c)
 float screenPxRange(float2 texCoord)
 {
     uint width, height, numberOfLevels;
-    textureSDF.GetDimensions(0, width, height, numberOfLevels);
+    msdf.GetDimensions(0, width, height, numberOfLevels);
     
     float2 unitRange = float2(properties.PxRange) / float2(width, height);
     float2 screenTexSize = float2(1.0) / fwidth(texCoord);
@@ -55,13 +55,13 @@ float screenPxRange(float2 texCoord)
 
 float4 mainPS(VSOutput input) : SV_TARGET
 {
-    float4 sdf = textureSDF.Sample(textureSampler, input.TexCoord);
+    float4 sdf = msdf.Sample(msdfSampler, input.TexCoord);
     
     float sd = median(sdf.r, sdf.g, sdf.b);
     float screenPxDistance = screenPxRange(input.TexCoord) * (sd - 0.5);
     float opacity = saturate(screenPxDistance + 0.5);
     
-    float4 bgColor = float4(0.0, 0.0, 0.0, 1.0);
+    float4 bgColor = float4(0.0, 0.0, 0.0, 0.0);
     float4 fgColor = float4(1.0, 1.0, 1.0, 1.0);
     
     return lerp(bgColor, fgColor, opacity);

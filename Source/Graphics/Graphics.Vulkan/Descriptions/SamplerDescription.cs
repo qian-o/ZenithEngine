@@ -2,7 +2,7 @@
 
 namespace Graphics.Vulkan;
 
-public readonly record struct SamplerDescription
+public record struct SamplerDescription
 {
     public static readonly SamplerDescription Point = new(AddressMode.Wrap,
                                                           AddressMode.Wrap,
@@ -63,50 +63,50 @@ public readonly record struct SamplerDescription
     /// <summary>
     /// Mode to use for the U (or S) coordinate.
     /// </summary>
-    public AddressMode AddressModeU { get; init; }
+    public AddressMode AddressModeU { get; set; }
 
     /// <summary>
     /// Mode to use for the V (or T) coordinate.
     /// </summary>
-    public AddressMode AddressModeV { get; init; }
+    public AddressMode AddressModeV { get; set; }
 
     /// <summary>
     /// Mode to use for the W (or R) coordinate.
     /// </summary>
-    public AddressMode AddressModeW { get; init; }
+    public AddressMode AddressModeW { get; set; }
 
     /// <summary>
     /// The filter used when sampling.
     /// </summary>
-    public SamplerFilter Filter { get; init; }
+    public SamplerFilter Filter { get; set; }
 
     /// <summary>
     /// An optional value controlling the kind of comparison to use when sampling. If null, comparison sampling is not used.
     /// </summary>
-    public ComparisonKind? ComparisonKind { get; init; }
+    public ComparisonKind? ComparisonKind { get; set; }
 
     /// <summary>
     /// The maximum anisotropy of the filter.
     /// </summary>
-    public uint MaximumAnisotropy { get; init; }
+    public uint MaximumAnisotropy { get; set; }
 
     /// <summary>
     /// The minimum level of detail.
     /// </summary>
-    public uint MinimumLod { get; init; }
+    public uint MinimumLod { get; set; }
 
     /// <summary>
     /// The maximum level of detail.
     /// </summary>
-    public uint MaximumLod { get; init; }
+    public uint MaximumLod { get; set; }
 
     /// <summary>
     /// The level of detail bias.
     /// </summary>
-    public int LodBias { get; init; }
+    public int LodBias { get; set; }
 
     /// <summary>
     /// The border color to use when sampling outside the texture.
     /// </summary>
-    public SamplerBorderColor BorderColor { get; init; }
+    public SamplerBorderColor BorderColor { get; set; }
 }

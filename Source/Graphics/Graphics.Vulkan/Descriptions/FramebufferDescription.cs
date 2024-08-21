@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Vulkan;
 
-public readonly record struct FramebufferDescription
+public record struct FramebufferDescription
 {
     public FramebufferDescription(FramebufferAttachmentDescription? depthTarget,
                                   params FramebufferAttachmentDescription[] colorTargets)
@@ -18,10 +18,10 @@ public readonly record struct FramebufferDescription
     /// <summary>
     /// The depth texture attachment.
     /// </summary>
-    public FramebufferAttachmentDescription? DepthTarget { get; init; }
+    public FramebufferAttachmentDescription? DepthTarget { get; set; }
 
     /// <summary>
     /// An array of color texture attachments.
     /// </summary>
-    public FramebufferAttachmentDescription[] ColorTargets { get; init; }
+    public FramebufferAttachmentDescription[] ColorTargets { get; set; }
 }

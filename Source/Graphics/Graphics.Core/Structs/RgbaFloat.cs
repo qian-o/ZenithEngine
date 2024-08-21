@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Core;
 
-public readonly record struct RgbaFloat
+public record struct RgbaFloat
 {
     public static readonly RgbaFloat Red = new(1.0f, 0.0f, 0.0f, 1.0f);
 
@@ -38,16 +38,11 @@ public readonly record struct RgbaFloat
         A = a;
     }
 
-    public float R { get; init; }
+    public float R { get; set; }
 
-    public float G { get; init; }
+    public float G { get; set; }
 
-    public float B { get; init; }
+    public float B { get; set; }
 
-    public float A { get; init; }
-
-    public override string ToString()
-    {
-        return $"RgbaFloat: R: {R}, G: {G}, B: {B}, A: {A}";
-    }
+    public float A { get; set; }
 }

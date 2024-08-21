@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Vulkan;
 
-public readonly record struct ResourceLayoutDescription
+public record struct ResourceLayoutDescription
 {
     public ResourceLayoutDescription(params ResourceLayoutElementDescription[] elements)
     {
@@ -10,5 +10,5 @@ public readonly record struct ResourceLayoutDescription
     /// <summary>
     /// The array describes the elements in the resource layout.
     /// </summary>
-    public ResourceLayoutElementDescription[] Elements { get; init; }
+    public ResourceLayoutElementDescription[] Elements { get; set; }
 }

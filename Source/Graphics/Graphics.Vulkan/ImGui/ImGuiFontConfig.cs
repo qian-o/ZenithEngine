@@ -2,8 +2,12 @@
 
 namespace Graphics.Vulkan;
 
-public readonly record struct ImGuiFontConfig
+public record struct ImGuiFontConfig
 {
+    private const string DefaultFontPath = "ProggyClean.ttf";
+
+    public static ImGuiFontConfig Default => new(DefaultFontPath, 13);
+
     public ImGuiFontConfig(string fontPath, int fontSize, Func<ImGuiIOPtr, nint>? getGlyphRange = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(fontSize);
@@ -13,9 +17,11 @@ public readonly record struct ImGuiFontConfig
         GetGlyphRange = getGlyphRange;
     }
 
-    public string FontPath { get; init; }
+    public string FontPath { get; set; }
 
-    public int FontSize { get; init; }
+    public int FontSize { get; set; }
 
-    public Func<ImGuiIOPtr, nint>? GetGlyphRange { get; init; }
+    public Func<ImGuiIOPtr, nint>? GetGlyphRange { get; set; }
+
+    public readonly bool IsDefault => FontPath == DefaultFontPath;
 }
