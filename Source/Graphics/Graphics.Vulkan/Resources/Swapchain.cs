@@ -177,6 +177,8 @@ public unsafe class Swapchain : DeviceResource
 
             DestroySwapchain();
         }
+
+        SurfaceExt.DestroySurface(Instance, _target, null);
     }
 
     private void DestroySwapchain()
