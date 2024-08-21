@@ -3,7 +3,7 @@ using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
 using Hexa.NET.ImGui;
-using StbiSharp;
+using StbImageSharp;
 using Tests.Core;
 using Tests.SDFFontTexture.Models;
 
@@ -75,15 +75,24 @@ internal sealed unsafe class MainView : View
 
         byte[] bytes = File.ReadAllBytes(_layout.PngPath!);
 
-        byte* pixels = Stbi.LoadFromMemory(bytes.AsPointer(), bytes.Length, out int sdfWidth, out int sdfHeight, out _, 4);
+        ImageResult imageResult = ImageResult.FromMemory(bytes, ColorComponents.RedGreenBlueAlpha);
 
-        _sdfTexture = device.ResourceFactory.CreateTexture(TextureDescription.Texture2D((uint)sdfWidth,
-                                                                                        (uint)sdfHeight,
+        _sdfTexture = device.ResourceFactory.CreateTexture(TextureDescription.Texture2D((uint)imageResult.Width,
+                                                                                        (uint)imageResult.Height,
                                                                                         1,
                                                                                         PixelFormat.R8G8B8A8UNorm,
                                                                                         TextureUsage.Sampled));
 
-        device.UpdateTexture(_sdfTexture, pixels, sdfWidth * sdfHeight * 4, 0, 0, 0, (uint)sdfWidth, (uint)sdfHeight, 1, 0, 0);
+        device.UpdateTexture(_sdfTexture,
+                             imageResult.Data,
+                             0,
+                             0,
+                             0,
+                             (uint)imageResult.Width,
+                             (uint)imageResult.Height,
+                             1,
+                             0,
+                             0);
 
         _sdfTextureView = device.ResourceFactory.CreateTextureView(new TextureViewDescription(_sdfTexture));
 

@@ -18,11 +18,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="StbiSharp" Version="1.2.1" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\Tests.Core\Tests.Core.csproj" />
 	</ItemGroup>
 
