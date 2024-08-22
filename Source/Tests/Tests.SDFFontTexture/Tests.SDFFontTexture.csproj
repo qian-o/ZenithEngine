@@ -5,11 +5,11 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<AnalysisLevel>latest-Recommended</AnalysisLevel>
+		<AnalysisLevel>latest-recommended</AnalysisLevel>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 	</PropertyGroup>
 
