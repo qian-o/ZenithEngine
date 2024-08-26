@@ -64,7 +64,7 @@ internal sealed unsafe class MainView : View
 
         _device = device;
         _imGuiController = imGuiController;
-        _multiAtlasGenerator = new("Assets/Fonts/SIMYOU.TTF")
+        _multiAtlasGenerator = new("Assets/Fonts/msyh.ttf")
         {
             AtlasType = AtlasType.MTSDF,
             EmSize = 64,

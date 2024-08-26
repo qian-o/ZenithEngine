@@ -61,7 +61,7 @@ internal sealed class MultiAtlasGenerator
 
         StringBuilder arguments = new();
 
-        arguments.Append(cultureInfo, $" -font {_font}");
+        arguments.Append(cultureInfo, $" -font \"{_font}\"");
 
         if (!IsAllGlyphs)
         {
@@ -73,14 +73,14 @@ internal sealed class MultiAtlasGenerator
 
             File.WriteAllText(charsetFile, charset);
 
-            arguments.Append(cultureInfo, $" -charset {charsetFile}");
+            arguments.Append(cultureInfo, $" -charset \"{charsetFile}\"");
         }
 
         arguments.Append(cultureInfo, $" -type {AtlasType.ToString().ToLower(cultureInfo)}");
         arguments.Append(cultureInfo, $" -size {EmSize}");
         arguments.Append(cultureInfo, $" -pxpadding {Padding}");
-        arguments.Append(cultureInfo, $" -json {outputJson}");
-        arguments.Append(cultureInfo, $" -imageout {outputPng}");
+        arguments.Append(cultureInfo, $" -json \"{outputJson}\"");
+        arguments.Append(cultureInfo, $" -imageout \"{outputPng}\"");
 
         ProcessStartInfo startInfo = new(ToolPath, arguments.ToString())
         {
