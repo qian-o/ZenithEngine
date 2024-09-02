@@ -41,7 +41,7 @@ internal sealed class MultiAtlasGenerator
 
     public AtlasType AtlasType { get; set; } = AtlasType.MSDF;
 
-    public int EmSize { get; set; } = 64;
+    public double EmSize { get; set; } = 1.0;
 
     public int Padding { get; set; } = 10;
 
@@ -77,7 +77,7 @@ internal sealed class MultiAtlasGenerator
         }
 
         arguments.Append(cultureInfo, $" -type {AtlasType.ToString().ToLower(cultureInfo)}");
-        arguments.Append(cultureInfo, $" -size {EmSize}");
+        arguments.Append(cultureInfo, $" -fontscale {EmSize}");
         arguments.Append(cultureInfo, $" -pxpadding {Padding}");
         arguments.Append(cultureInfo, $" -json \"{outputJson}\"");
         arguments.Append(cultureInfo, $" -imageout \"{outputPng}\"");

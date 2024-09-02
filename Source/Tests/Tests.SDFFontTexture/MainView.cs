@@ -67,7 +67,6 @@ internal sealed unsafe class MainView : View
         _multiAtlasGenerator = new("Assets/Fonts/msyh.ttf")
         {
             AtlasType = AtlasType.MTSDF,
-            EmSize = 64,
             Padding = 2
         };
 
