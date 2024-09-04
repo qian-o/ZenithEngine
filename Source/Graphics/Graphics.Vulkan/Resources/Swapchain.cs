@@ -78,11 +78,17 @@ public unsafe class Swapchain : DeviceResource
                                                         &presentModeCount,
                                                         presentModes.AsPointer()).ThrowCode();
 
+        uint desiredNumberOfSwapchainImages = surfaceCapabilities.MinImageCount + 1;
+        if (surfaceCapabilities.MaxImageCount > 0 && desiredNumberOfSwapchainImages > surfaceCapabilities.MaxImageCount)
+        {
+            desiredNumberOfSwapchainImages = surfaceCapabilities.MaxImageCount;
+        }
+
         SwapchainCreateInfoKHR createInfo = new()
         {
             SType = StructureType.SwapchainCreateInfoKhr,
             Surface = _target,
-            MinImageCount = Math.Min(surfaceCapabilities.MinImageCount + 1, surfaceCapabilities.MaxImageCount),
+            MinImageCount = desiredNumberOfSwapchainImages,
             ImageFormat = ChooseSwapSurfaceFormat(surfaceFormats).Format,
             ImageColorSpace = ChooseSwapSurfaceFormat(surfaceFormats).ColorSpace,
             ImageExtent = ChooseSwapExtent(surfaceCapabilities, width, height),
