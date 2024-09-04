@@ -17,7 +17,7 @@ internal sealed unsafe class Program
         window.MinimumSize = new(100, 100);
 
         using Context context = new();
-        using GraphicsDevice device = context.CreateGraphicsDevice(context.EnumeratePhysicalDevices().First(), window);
+        using GraphicsDevice device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice(), window);
         using ImGuiController imGuiController = new(window, device);
 
         using CommandList commandList = device.ResourceFactory.CreateGraphicsCommandList();

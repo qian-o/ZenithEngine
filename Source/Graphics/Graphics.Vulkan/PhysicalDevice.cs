@@ -12,6 +12,7 @@ public unsafe class PhysicalDevice : ContextObject
     private readonly QueueFamilyProperties[] _queueFamilyProperties;
     private readonly ExtensionProperties[] _extensionProperties;
     private readonly string _name;
+    private readonly uint _score;
 
     internal PhysicalDevice(Context context, VkPhysicalDevice vkPhysicalDevice) : base(context)
     {
@@ -43,9 +44,12 @@ public unsafe class PhysicalDevice : ContextObject
         _queueFamilyProperties = queueFamilyProperties;
         _extensionProperties = extensionProperties;
         _name = Alloter.GetString(properties.DeviceName);
+        _score = properties.DeviceType == PhysicalDeviceType.DiscreteGpu ? 1000u : 0u;
     }
 
     public string Name => _name;
+
+    public uint Score => _score;
 
     internal VkPhysicalDevice VkPhysicalDevice => _vkPhysicalDevice;
 
@@ -116,5 +120,12 @@ public unsafe partial class Context
         _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices).ThrowCode("Failed to enumerate physical devices!");
 
         return physicalDevices.Select(item => new PhysicalDevice(this, item)).ToArray();
+    }
+
+    public PhysicalDevice GetBestPhysicalDevice()
+    {
+        PhysicalDevice[] physicalDevices = EnumeratePhysicalDevices();
+
+        return physicalDevices.OrderByDescending(item => item.Score).First();
     }
 }
