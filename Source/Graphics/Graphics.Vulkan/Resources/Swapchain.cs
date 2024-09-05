@@ -160,12 +160,17 @@ public unsafe class Swapchain : DeviceResource
         }
 
         uint currentImageIndex;
-        SwapchainExt.AcquireNextImage(Device,
-                                      _swapchain.Value,
-                                      ulong.MaxValue,
-                                      default,
-                                      _imageAvailableFence.Handle,
-                                      &currentImageIndex).ThrowCode();
+        Result result = SwapchainExt.AcquireNextImage(Device,
+                                                      _swapchain.Value,
+                                                      ulong.MaxValue,
+                                                      default,
+                                                      _imageAvailableFence.Handle,
+                                                      &currentImageIndex);
+
+        if (result is not Result.Success and not Result.SuboptimalKhr)
+        {
+            result.ThrowCode("Failed to acquire next image");
+        }
 
         if (waitFence)
         {

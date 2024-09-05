@@ -408,21 +408,19 @@ public unsafe class GraphicsDevice : ContextObject
 
         Result result = _swapchainExt.QueuePresent(_graphicsQueue.Handle, &presentInfo);
 
-        if (result == Result.Success)
+        if (result == Result.ErrorOutOfDateKhr)
         {
-            swapchain.AcquireNextImage(waitAcquireNextImage);
-
-            return true;
-        }
-        else
-        {
-            if (result != Result.ErrorOutOfDateKhr)
-            {
-                result.ThrowCode("Failed to present the swap chain image.");
-            }
-
             return false;
         }
+
+        if (result is not Result.Success and not Result.SuboptimalKhr)
+        {
+            result.ThrowCode("Failed to present the swap chain image.");
+        }
+
+        swapchain.AcquireNextImage(waitAcquireNextImage);
+
+        return true;
     }
 
     private void WaitAndResetFences(Fence[] fences)
