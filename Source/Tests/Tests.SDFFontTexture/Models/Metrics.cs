@@ -2,7 +2,7 @@
 
 internal sealed class Metrics
 {
-    public int EmSize { get; set; }
+    public float EmSize { get; set; }
 
     public float LineHeight { get; set; }
 

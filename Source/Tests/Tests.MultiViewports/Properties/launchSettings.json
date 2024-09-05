@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Tests.MultiViewports": {
+      "commandName": "Project"
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    }
+  }
+}

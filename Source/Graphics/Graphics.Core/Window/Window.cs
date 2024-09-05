@@ -145,6 +145,6 @@ public unsafe partial class Window : DisposableObject
                            new Vector2(main.Size.X, main.Size.Y),
                            new Vector2(work.Origin.X, work.Origin.Y),
                            new Vector2(work.Size.X, work.Size.Y),
-                           dpi / 96.0f);
+                           dpi == 0 ? 1.0f : dpi / 96.0f);
     }
 }
