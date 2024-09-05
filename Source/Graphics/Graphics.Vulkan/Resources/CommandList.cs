@@ -249,7 +249,7 @@ public unsafe class CommandList : DeviceResource
 
             Vk.CmdPipelineBarrier(_commandBuffer,
                                   PipelineStageFlags.TransferBit,
-                                  needToProtectUniformBuffer ? Formats.AllShaderStages() : PipelineStageFlags.VertexInputBit,
+                                  needToProtectUniformBuffer ? PipelineStageFlags.AllGraphicsBit : PipelineStageFlags.VertexInputBit,
                                   DependencyFlags.None,
                                   1,
                                   &memoryBarrier,
