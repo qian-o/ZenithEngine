@@ -48,7 +48,7 @@ public unsafe partial class Window
             float ddpi;
             _sdl.GetDisplayDPI(displayIndex, &ddpi, null, null);
 
-            return ddpi / 96.0f;
+            return ddpi == 0 ? 1.0f : ddpi / 96.0f;
         }
     }
 

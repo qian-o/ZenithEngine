@@ -136,8 +136,8 @@ public unsafe partial class Window : DisposableObject
         Rectangle<int> work;
         _sdl.GetDisplayUsableBounds(index, &work);
 
-        float dpi;
-        _sdl.GetDisplayDPI(index, &dpi, null, null);
+        float ddpi;
+        _sdl.GetDisplayDPI(index, &ddpi, null, null);
 
         return new Display(index,
                            name,
@@ -145,6 +145,6 @@ public unsafe partial class Window : DisposableObject
                            new Vector2(main.Size.X, main.Size.Y),
                            new Vector2(work.Origin.X, work.Origin.Y),
                            new Vector2(work.Size.X, work.Size.Y),
-                           dpi == 0 ? 1.0f : dpi / 96.0f);
+                           ddpi == 0 ? 1.0f : ddpi / 96.0f);
     }
 }
