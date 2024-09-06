@@ -14,8 +14,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="SharpGLTF.Core" Version="1.0.1" />
-		<PackageReference Include="SharpGLTF.Toolkit" Version="1.0.1" />
+		<PackageReference Include="SharpGLTF.Core" Version="1.0.2" />
+		<PackageReference Include="SharpGLTF.Toolkit" Version="1.0.2" />
 		<PackageReference Include="StbImageSharp" Version="2.27.14" />
 	</ItemGroup>
 
