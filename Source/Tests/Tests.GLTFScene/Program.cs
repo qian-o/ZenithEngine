@@ -5,6 +5,7 @@ using Graphics.Core;
 using Graphics.Vulkan;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
+using SharpGLTF.Validation;
 using StbImageSharp;
 using GLTFMaterial = SharpGLTF.Schema2.Material;
 using GLTFNode = SharpGLTF.Schema2.Node;
@@ -140,7 +141,7 @@ internal sealed unsafe class Program
     {
         string hlsl = File.ReadAllText("Assets/Shaders/GLTF.hlsl");
 
-        ModelRoot root = ModelRoot.Load("Assets/Models/Sponza/glTF/Sponza.gltf");
+        ModelRoot root = ModelRoot.Load("Assets/Models/Sponza/glTF/Sponza.gltf", new ReadSettings() { Validation = ValidationMode.Skip });
 
         using CommandList commandList = _device.ResourceFactory.CreateGraphicsCommandList();
 

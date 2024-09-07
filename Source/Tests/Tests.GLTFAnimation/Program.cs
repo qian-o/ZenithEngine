@@ -6,6 +6,7 @@ using Graphics.Vulkan;
 using SharpGLTF.Animations;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
+using SharpGLTF.Validation;
 using StbImageSharp;
 using GLTFAnimation = SharpGLTF.Schema2.Animation;
 using GLTFMaterial = SharpGLTF.Schema2.Material;
@@ -194,7 +195,7 @@ internal sealed unsafe class Program
     {
         string hlsl = File.ReadAllText("Assets/Shaders/GLTF.hlsl");
 
-        ModelRoot root = ModelRoot.Load("Assets/Models/buster_drone/scene.gltf");
+        ModelRoot root = ModelRoot.Load("Assets/Models/buster_drone/scene.gltf", new ReadSettings() { Validation = ValidationMode.Skip });
 
         using CommandList commandList = _device.ResourceFactory.CreateGraphicsCommandList();
 
