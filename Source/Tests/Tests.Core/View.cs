@@ -6,8 +6,6 @@ namespace Tests.Core;
 
 public abstract class View : DisposableObject
 {
-    private readonly string _id = Guid.NewGuid().ToString();
-
     public string Title { get; set; } = string.Empty;
 
     public uint Width { get; private set; } = 100;
@@ -21,7 +19,7 @@ public abstract class View : DisposableObject
 
     public void Render(RenderEventArgs e)
     {
-        ImGui.Begin($"{Title}##{_id}");
+        ImGui.Begin(Title);
         {
             Vector2 size = ImGui.GetContentRegionAvail();
 

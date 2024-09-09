@@ -54,7 +54,7 @@ internal sealed unsafe class MainView : View
     private Pipeline? pipeline;
 
     private string str = "ABC";
-    private Vector3 position = Vector3.Zero;
+    private Vector3 position = new(0.0f, 0.0f, -20.0f);
     private Properties properties = new() { PxRange = 5.0f };
 
     public MainView(GraphicsDevice device, ImGuiController imGuiController)
@@ -164,10 +164,10 @@ internal sealed unsafe class MainView : View
 
                 if (glyph.PlaneBounds.Width > 0)
                 {
-                    float vertex1 = glyph.PlaneBounds.Left;
-                    float vertex2 = glyph.PlaneBounds.Right;
-                    float vertex3 = glyph.PlaneBounds.Top;
-                    float vertex4 = glyph.PlaneBounds.Bottom;
+                    float vertex1 = glyph.PlaneBounds.Left - 0.5f;
+                    float vertex2 = glyph.PlaneBounds.Right - 0.5f;
+                    float vertex3 = glyph.PlaneBounds.Top - 0.5f;
+                    float vertex4 = glyph.PlaneBounds.Bottom - 0.5f;
 
                     float beginU = glyph.AtlasBounds.Left / _layout.Atlas!.Width;
                     float endU = glyph.AtlasBounds.Right / _layout.Atlas!.Width;
