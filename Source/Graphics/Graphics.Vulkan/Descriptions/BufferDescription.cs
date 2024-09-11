@@ -10,10 +10,9 @@ public record struct BufferDescription
         Usage = usage;
     }
 
-    internal BufferDescription(uint sizeInBytes,
-                               BufferUsage usage,
-                               bool isDescriptorBuffer) : this(sizeInBytes, usage)
+    internal BufferDescription(uint sizeInBytes, bool isDescriptorBuffer)
     {
+        SizeInBytes = sizeInBytes;
         IsDescriptorBuffer = isDescriptorBuffer;
     }
 

@@ -17,38 +17,40 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
     {
         BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferSrcBit | BufferUsageFlags.TransferDstBit;
 
-        if (description.Usage.HasFlag(BufferUsage.VertexBuffer))
-        {
-            bufferUsageFlags |= BufferUsageFlags.VertexBufferBit;
-        }
-
-        if (description.Usage.HasFlag(BufferUsage.IndexBuffer))
-        {
-            bufferUsageFlags |= BufferUsageFlags.IndexBufferBit;
-        }
-
-        if (description.Usage.HasFlag(BufferUsage.UniformBuffer))
-        {
-            bufferUsageFlags |= BufferUsageFlags.UniformBufferBit;
-            bufferUsageFlags |= BufferUsageFlags.ShaderDeviceAddressBit;
-        }
-
-        if (description.Usage.HasFlag(BufferUsage.StructuredBufferReadOnly)
-            || description.Usage.HasFlag(BufferUsage.StructuredBufferReadWrite))
-        {
-            bufferUsageFlags |= BufferUsageFlags.StorageBufferBit;
-        }
-
-        if (description.Usage.HasFlag(BufferUsage.IndirectBuffer))
-        {
-            bufferUsageFlags |= BufferUsageFlags.IndirectBufferBit;
-        }
-
         if (description.IsDescriptorBuffer)
         {
-            bufferUsageFlags = BufferUsageFlags.ResourceDescriptorBufferBitExt
-                               | BufferUsageFlags.SamplerDescriptorBufferBitExt
-                               | BufferUsageFlags.ShaderDeviceAddressBit;
+            bufferUsageFlags |= BufferUsageFlags.ResourceDescriptorBufferBitExt
+                                | BufferUsageFlags.SamplerDescriptorBufferBitExt
+                                | BufferUsageFlags.ShaderDeviceAddressBit;
+        }
+        else
+        {
+            if (description.Usage.HasFlag(BufferUsage.VertexBuffer))
+            {
+                bufferUsageFlags |= BufferUsageFlags.VertexBufferBit;
+            }
+
+            if (description.Usage.HasFlag(BufferUsage.IndexBuffer))
+            {
+                bufferUsageFlags |= BufferUsageFlags.IndexBufferBit;
+            }
+
+            if (description.Usage.HasFlag(BufferUsage.UniformBuffer))
+            {
+                bufferUsageFlags |= BufferUsageFlags.UniformBufferBit
+                                    | BufferUsageFlags.ShaderDeviceAddressBit;
+            }
+
+            if (description.Usage.HasFlag(BufferUsage.StructuredBufferReadOnly)
+                || description.Usage.HasFlag(BufferUsage.StructuredBufferReadWrite))
+            {
+                bufferUsageFlags |= BufferUsageFlags.StorageBufferBit;
+            }
+
+            if (description.Usage.HasFlag(BufferUsage.IndirectBuffer))
+            {
+                bufferUsageFlags |= BufferUsageFlags.IndirectBufferBit;
+            }
         }
 
         BufferCreateInfo createInfo = new()
@@ -65,13 +67,12 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
         MemoryRequirements memoryRequirements;
         Vk.GetBufferMemoryRequirements(Device, buffer, &memoryRequirements);
 
-        bool isStaging = description.Usage.HasFlag(BufferUsage.Staging);
-        bool hostVisible = isStaging || description.Usage.HasFlag(BufferUsage.Dynamic);
+        bool isHostVisible = description.Usage.HasFlag(BufferUsage.Staging) || description.Usage.HasFlag(BufferUsage.Dynamic);
         bool isAddress = bufferUsageFlags.HasFlag(BufferUsageFlags.ShaderDeviceAddressBit);
 
         DeviceMemory deviceMemory = new(graphicsDevice,
                                         in memoryRequirements,
-                                        hostVisible ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit,
+                                        isHostVisible ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit,
                                         isAddress);
 
         Vk.BindBufferMemory(Device, buffer, deviceMemory.Handle, 0).ThrowCode();
@@ -93,7 +94,7 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
         _address = address;
         _sizeInBytes = description.SizeInBytes;
         _usage = description.Usage;
-        _isHostVisible = hostVisible;
+        _isHostVisible = isHostVisible;
     }
 
     internal VkBuffer Handle => _buffer;

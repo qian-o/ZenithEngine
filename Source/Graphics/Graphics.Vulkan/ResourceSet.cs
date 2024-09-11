@@ -9,15 +9,13 @@ public unsafe class ResourceSet : DeviceResource
 
     internal ResourceSet(GraphicsDevice graphicsDevice, ref readonly ResourceSetDescription description) : base(graphicsDevice)
     {
-        DeviceBuffer buffer = ResourceFactory.CreateBuffer(new BufferDescription(description.Layout.SizeInBytes, BufferUsage.Dynamic, true));
-
-        byte* data = (byte*)buffer.Map(buffer.SizeInBytes);
+        byte[] descriptor = new byte[description.Layout.SizeInBytes];
 
         for (int i = 0; i < description.BoundResources.Length; i++)
         {
             DescriptorType type = description.Layout.DescriptorTypes[i];
 
-            ulong offset = DescriptorBufferExt.GetDescriptorSetLayoutBindingOffset(Device, description.Layout.Handle, (uint)i);
+            int offset = (int)DescriptorBufferExt.GetDescriptorSetLayoutBindingOffset(Device, description.Layout.Handle, (uint)i);
 
             if (type is DescriptorType.UniformBuffer or DescriptorType.UniformBufferDynamic)
             {
@@ -44,7 +42,7 @@ public unsafe class ResourceSet : DeviceResource
                 DescriptorBufferExt.GetDescriptor(Device,
                                                   &getInfo,
                                                   PhysicalDevice.DescriptorBufferProperties.UniformBufferDescriptorSize,
-                                                  data + offset);
+                                                  descriptor.AsPointer(offset));
             }
             else if (type is DescriptorType.StorageBuffer or DescriptorType.StorageBufferDynamic)
             {
@@ -71,7 +69,7 @@ public unsafe class ResourceSet : DeviceResource
                 DescriptorBufferExt.GetDescriptor(Device,
                                                   &getInfo,
                                                   PhysicalDevice.DescriptorBufferProperties.StorageBufferDescriptorSize,
-                                                  data + offset);
+                                                  descriptor.AsPointer(offset));
             }
             else if (type == DescriptorType.SampledImage)
             {
@@ -96,7 +94,7 @@ public unsafe class ResourceSet : DeviceResource
                 DescriptorBufferExt.GetDescriptor(Device,
                                                   &getInfo,
                                                   PhysicalDevice.DescriptorBufferProperties.SampledImageDescriptorSize,
-                                                  data + offset);
+                                                  descriptor.AsPointer(offset));
             }
             else if (type == DescriptorType.StorageImage)
             {
@@ -121,7 +119,7 @@ public unsafe class ResourceSet : DeviceResource
                 DescriptorBufferExt.GetDescriptor(Device,
                                                   &getInfo,
                                                   PhysicalDevice.DescriptorBufferProperties.StorageImageDescriptorSize,
-                                                  data + offset);
+                                                  descriptor.AsPointer(offset));
             }
             else if (type == DescriptorType.Sampler)
             {
@@ -142,7 +140,7 @@ public unsafe class ResourceSet : DeviceResource
                 DescriptorBufferExt.GetDescriptor(Device,
                                                   &getInfo,
                                                   PhysicalDevice.DescriptorBufferProperties.SamplerDescriptorSize,
-                                                  data + offset);
+                                                  descriptor.AsPointer(offset));
             }
             else
             {
@@ -150,7 +148,9 @@ public unsafe class ResourceSet : DeviceResource
             }
         }
 
-        buffer.Unmap();
+        DeviceBuffer buffer = ResourceFactory.CreateBuffer(new BufferDescription(description.Layout.SizeInBytes, true));
+
+        GraphicsDevice.UpdateBuffer(buffer, 0, descriptor);
 
         _buffer = buffer;
     }
