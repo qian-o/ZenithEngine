@@ -74,7 +74,7 @@ public unsafe class ResourceLayout : DeviceResource
 
         VkDescriptorSetLayout descriptorSetLayout;
         Vk.CreateDescriptorSetLayout(graphicsDevice.Device, &createInfo, null, &descriptorSetLayout).ThrowCode();
-        
+
         ulong sizeInBytes;
         DescriptorBufferExt.GetDescriptorSetLayoutSize(graphicsDevice.Device, descriptorSetLayout, &sizeInBytes);
         sizeInBytes = Util.AlignedSize(sizeInBytes, PhysicalDevice.DescriptorBufferProperties.DescriptorBufferOffsetAlignment);

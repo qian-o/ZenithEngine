@@ -1,8 +1,6 @@
 ﻿global using VkBlendFactor = Silk.NET.Vulkan.BlendFactor;
 global using VkBuffer = Silk.NET.Vulkan.Buffer;
 global using VkCommandPool = Silk.NET.Vulkan.CommandPool;
-global using VkDescriptorPool = Silk.NET.Vulkan.DescriptorPool;
-global using VkDescriptorSet = Silk.NET.Vulkan.DescriptorSet;
 global using VkDescriptorSetLayout = Silk.NET.Vulkan.DescriptorSetLayout;
 global using VkDeviceMemory = Silk.NET.Vulkan.DeviceMemory;
 global using VkFence = Silk.NET.Vulkan.Fence;
@@ -20,4 +18,3 @@ global using VkSampler = Silk.NET.Vulkan.Sampler;
 global using VkSemaphore = Silk.NET.Vulkan.Semaphore;
 global using VkShaderModule = Silk.NET.Vulkan.ShaderModule;
 global using VkViewport = Silk.NET.Vulkan.Viewport;
-global using VkWriteDescriptorSet = Silk.NET.Vulkan.WriteDescriptorSet;
