@@ -26,6 +26,42 @@ public unsafe class ResourceLayout : DeviceResource
                 StageFlags = Formats.GetShaderStageFlags(element.Stages)
             };
 
+            if (description.IsBindless)
+            {
+                if (binding.DescriptorType == DescriptorType.UniformBuffer)
+                {
+                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffers;
+                }
+                else if (binding.DescriptorType == DescriptorType.UniformBufferDynamic)
+                {
+                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffersDynamic;
+                }
+                else if (binding.DescriptorType == DescriptorType.StorageBuffer)
+                {
+                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffers;
+                }
+                else if (binding.DescriptorType == DescriptorType.StorageBufferDynamic)
+                {
+                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffersDynamic;
+                }
+                else if (binding.DescriptorType == DescriptorType.SampledImage)
+                {
+                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSampledImages;
+                }
+                else if (binding.DescriptorType == DescriptorType.StorageImage)
+                {
+                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageImages;
+                }
+                else if (binding.DescriptorType == DescriptorType.Sampler)
+                {
+                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSamplers;
+                }
+                else
+                {
+                    throw new NotSupportedException("The descriptor type is not supported for bindless resource layout.");
+                }
+            }
+
             bindings[i] = binding;
             descriptorTypes[i] = binding.DescriptorType;
         }
@@ -37,6 +73,23 @@ public unsafe class ResourceLayout : DeviceResource
             PBindings = bindings.AsPointer(),
             Flags = DescriptorSetLayoutCreateFlags.DescriptorBufferBitExt
         };
+
+        if (description.IsBindless)
+        {
+            DescriptorBindingFlags descriptorBindingFlags = DescriptorBindingFlags.VariableDescriptorCountBit
+                                                            | DescriptorBindingFlags.PartiallyBoundBit
+                                                            | DescriptorBindingFlags.UpdateAfterBindBit
+                                                            | DescriptorBindingFlags.UpdateUnusedWhilePendingBit;
+
+            DescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo = new()
+            {
+                SType = StructureType.DescriptorSetLayoutBindingFlagsCreateInfoExt,
+                BindingCount = (uint)bindings.Length,
+                PBindingFlags = &descriptorBindingFlags
+            };
+
+            createInfo.PNext = &bindingFlagsCreateInfo;
+        }
 
         VkDescriptorSetLayout descriptorSetLayout;
         Vk.CreateDescriptorSetLayout(graphicsDevice.Device, &createInfo, null, &descriptorSetLayout).ThrowCode();
