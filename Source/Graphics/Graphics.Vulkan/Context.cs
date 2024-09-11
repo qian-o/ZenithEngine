@@ -216,12 +216,12 @@ public unsafe partial class Context : DisposableObject
             DebugUtilsMessageSeverityFlagsEXT.InfoBitExt => ConsoleColor.Blue,
             DebugUtilsMessageSeverityFlagsEXT.WarningBitExt => ConsoleColor.Yellow,
             DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt => ConsoleColor.Red,
-            _ => ConsoleColor.White
+            _ => Console.ForegroundColor
         };
 
         Console.WriteLine(stringBuilder);
 
-        Console.ForegroundColor = ConsoleColor.White;
+        Console.ResetColor();
 
         return Vk.False;
     }
