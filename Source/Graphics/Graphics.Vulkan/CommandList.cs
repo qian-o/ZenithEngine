@@ -417,16 +417,25 @@ public unsafe class CommandList : DeviceResource
             throw new InvalidOperationException("No pipeline set.");
         }
 
-        VkDescriptorSet descriptorSet = resourceSet.Handle;
+        DescriptorBufferBindingInfoEXT bindingInfoEXT = new()
+        {
+            SType = StructureType.DescriptorBufferBindingInfoExt,
+            Address = resourceSet.Address,
+            Usage = BufferUsageFlags.ResourceDescriptorBufferBitExt | BufferUsageFlags.SamplerDescriptorBufferBitExt
+        };
 
-        Vk.CmdBindDescriptorSets(_commandBuffer,
-                                 PipelineBindPoint.Graphics,
-                                 _currentPipeline.Layout,
-                                 slot,
-                                 1,
-                                 &descriptorSet,
-                                 dynamicOffsetsCount,
-                                 ref dynamicOffsets);
+        DescriptorBufferExt.CmdBindDescriptorBuffers(_commandBuffer, 1, &bindingInfoEXT);
+
+        uint bufferIndices = 0;
+        ulong offsets = 0;
+
+        DescriptorBufferExt.CmdSetDescriptorBufferOffsets(_commandBuffer,
+                                                          PipelineBindPoint.Graphics,
+                                                          _currentPipeline.Layout,
+                                                          slot,
+                                                          1,
+                                                          &bufferIndices,
+                                                          &offsets);
     }
 
     public void SetGraphicsResourceSet(uint slot, ResourceSet resourceSet)

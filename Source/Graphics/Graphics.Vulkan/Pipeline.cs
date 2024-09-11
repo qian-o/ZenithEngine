@@ -15,7 +15,8 @@ public unsafe class Pipeline : DeviceResource
     {
         GraphicsPipelineCreateInfo createInfo = new()
         {
-            SType = StructureType.GraphicsPipelineCreateInfo
+            SType = StructureType.GraphicsPipelineCreateInfo,
+            Flags = PipelineCreateFlags.CreateDescriptorBufferBitExt
         };
 
         // blend state

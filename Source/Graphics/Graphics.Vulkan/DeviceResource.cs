@@ -1,4 +1,5 @@
 ﻿using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Graphics.Vulkan;
@@ -17,11 +18,11 @@ public abstract unsafe class DeviceResource(GraphicsDevice graphicsDevice) : Con
 
     internal ResourceFactory ResourceFactory => graphicsDevice.ResourceFactory;
 
-    internal DescriptorPoolManager DescriptorPoolManager => graphicsDevice.DescriptorPoolManager;
-
     internal Device Device => graphicsDevice.Device;
 
     internal KhrSwapchain SwapchainExt => graphicsDevice.SwapchainExt;
+
+    internal ExtDescriptorBuffer DescriptorBufferExt => graphicsDevice.DescriptorBufferExt;
 
     internal Queue GraphicsQueue => graphicsDevice.GraphicsQueue;
 

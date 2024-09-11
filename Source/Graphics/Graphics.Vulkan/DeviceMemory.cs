@@ -6,7 +6,7 @@ internal sealed unsafe class DeviceMemory : DeviceResource
 {
     private readonly VkDeviceMemory _deviceMemory;
 
-    internal DeviceMemory(GraphicsDevice graphicsDevice, ref readonly MemoryRequirements requirements, MemoryPropertyFlags flags) : base(graphicsDevice)
+    internal DeviceMemory(GraphicsDevice graphicsDevice, ref readonly MemoryRequirements requirements, MemoryPropertyFlags flags, bool address = false) : base(graphicsDevice)
     {
         MemoryAllocateInfo allocateInfo = new()
         {
@@ -14,6 +14,17 @@ internal sealed unsafe class DeviceMemory : DeviceResource
             AllocationSize = requirements.Size,
             MemoryTypeIndex = PhysicalDevice.FindMemoryTypeIndex(requirements.MemoryTypeBits, flags)
         };
+
+        if (address)
+        {
+            MemoryAllocateFlagsInfoKHR memoryAllocateFlagsInfoKHR = new()
+            {
+                SType = StructureType.MemoryAllocateFlagsInfo,
+                Flags = MemoryAllocateFlags.AddressBit,
+            };
+
+            allocateInfo.PNext = &memoryAllocateFlagsInfoKHR;
+        }
 
         VkDeviceMemory deviceMemory;
         Vk.AllocateMemory(Device, &allocateInfo, null, &deviceMemory).ThrowCode();

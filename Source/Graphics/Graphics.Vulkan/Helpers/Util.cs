@@ -24,6 +24,11 @@ internal static class Util
         throw new InvalidOperationException("Invalid bindable resource type");
     }
 
+    public static ulong AlignedSize(ulong size, ulong alignment)
+    {
+        return (size + alignment - 1) & ~(alignment - 1);
+    }
+
     private static uint GetDimension(uint largestLevelDimension, uint mipLevel)
     {
         uint ret = largestLevelDimension;

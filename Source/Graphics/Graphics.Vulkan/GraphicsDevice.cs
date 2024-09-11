@@ -3,6 +3,7 @@ using Graphics.Core;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Graphics.Vulkan;
@@ -16,12 +17,12 @@ public unsafe class GraphicsDevice : ContextObject
     private readonly Device _device;
     private readonly ResourceFactory _resourceFactory;
     private readonly KhrSwapchain _swapchainExt;
+    private readonly ExtDescriptorBuffer _descriptorBufferExt;
     private readonly Queue _graphicsQueue;
     private readonly Queue _computeQueue;
     private readonly Queue _transferQueue;
     private readonly CommandPool _graphicsCommandPool;
     private readonly CommandPool _computeCommandPool;
-    private readonly DescriptorPoolManager _descriptorPoolManager;
     private readonly Swapchain _mainSwapChain;
     private readonly Sampler _pointSampler;
     private readonly Sampler _linearSampler;
@@ -36,6 +37,7 @@ public unsafe class GraphicsDevice : ContextObject
                             PhysicalDevice physicalDevice,
                             Device device,
                             KhrSwapchain swapchainExt,
+                            ExtDescriptorBuffer descriptorBufferExt,
                             IVkSurface windowSurface,
                             uint graphicsQueueFamilyIndex,
                             uint computeQueueFamilyIndex,
@@ -45,12 +47,12 @@ public unsafe class GraphicsDevice : ContextObject
         _device = device;
         _resourceFactory = new ResourceFactory(context, this);
         _swapchainExt = swapchainExt;
+        _descriptorBufferExt = descriptorBufferExt;
         _graphicsQueue = new Queue(this, graphicsQueueFamilyIndex);
         _computeQueue = new Queue(this, computeQueueFamilyIndex);
         _transferQueue = new Queue(this, transferQueueFamilyIndex);
         _graphicsCommandPool = new CommandPool(this, graphicsQueueFamilyIndex);
         _computeCommandPool = new CommandPool(this, computeQueueFamilyIndex);
-        _descriptorPoolManager = new DescriptorPoolManager(this);
         _mainSwapChain = _resourceFactory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, GetBestDepthFormat()));
         _pointSampler = _resourceFactory.CreateSampler(SamplerDescription.Point);
         _linearSampler = _resourceFactory.CreateSampler(SamplerDescription.Linear);
@@ -78,6 +80,8 @@ public unsafe class GraphicsDevice : ContextObject
 
     internal KhrSwapchain SwapchainExt => _swapchainExt;
 
+    internal ExtDescriptorBuffer DescriptorBufferExt => _descriptorBufferExt;
+
     internal Queue GraphicsQueue => _graphicsQueue;
 
     internal Queue ComputeQueue => _computeQueue;
@@ -87,8 +91,6 @@ public unsafe class GraphicsDevice : ContextObject
     internal CommandPool GraphicsCommandPool => _graphicsCommandPool;
 
     internal CommandPool ComputeCommandPool => _computeCommandPool;
-
-    internal DescriptorPoolManager DescriptorPoolManager => _descriptorPoolManager;
 
     public PixelFormat GetBestDepthFormat()
     {
@@ -350,8 +352,6 @@ public unsafe class GraphicsDevice : ContextObject
 
         _mainSwapChain.Dispose();
 
-        _descriptorPoolManager.Dispose();
-
         _computeCommandPool.Dispose();
         _graphicsCommandPool.Dispose();
 
@@ -569,14 +569,25 @@ public unsafe partial class Context
             };
         }
 
-        string[] deviceExtensions = [KhrSwapchain.ExtensionName];
+        string[] deviceExtensions = [KhrSwapchain.ExtensionName, ExtDescriptorBuffer.ExtensionName];
 
         PhysicalDeviceFeatures physicalDeviceFeatures;
         _vk.GetPhysicalDeviceFeatures(physicalDevice.VkPhysicalDevice, &physicalDeviceFeatures);
 
+
+        PhysicalDeviceDescriptorBufferFeaturesEXT physicalDeviceDescriptorBufferFeatures = new()
+        {
+            SType = StructureType.PhysicalDeviceDescriptorBufferFeaturesExt
+        };
+        PhysicalDeviceBufferDeviceAddressFeatures physicalDeviceBufferDeviceAddressFeatures = new()
+        {
+            SType = StructureType.PhysicalDeviceBufferDeviceAddressFeatures,
+            PNext = &physicalDeviceDescriptorBufferFeatures
+        };
         PhysicalDeviceVulkan13Features physicalDeviceVulkan13Features = new()
         {
-            SType = StructureType.PhysicalDeviceVulkan13Features
+            SType = StructureType.PhysicalDeviceVulkan13Features,
+            PNext = &physicalDeviceBufferDeviceAddressFeatures
         };
         PhysicalDeviceFeatures2 physicalDeviceFeatures2 = new()
         {
@@ -600,6 +611,7 @@ public unsafe partial class Context
         _vk.CreateDevice(physicalDevice.VkPhysicalDevice, &createInfo, null, &device).ThrowCode("Failed to create device.");
 
         KhrSwapchain swapchainExt = CreateDeviceExtension<KhrSwapchain>(device);
+        ExtDescriptorBuffer descriptorBufferExt = CreateDeviceExtension<ExtDescriptorBuffer>(device);
 
         _alloter.Clear();
 
@@ -607,6 +619,7 @@ public unsafe partial class Context
                                             physicalDevice,
                                             device,
                                             swapchainExt,
+                                            descriptorBufferExt,
                                             window.VkSurface!,
                                             graphicsQueueFamilyIndex,
                                             computeQueueFamilyIndex,

@@ -6,8 +6,8 @@ namespace Graphics.Vulkan;
 public unsafe class ResourceLayout : DeviceResource
 {
     private readonly VkDescriptorSetLayout _descriptorSetLayout;
-    private readonly DescriptorResourceCounts _counts;
     private readonly DescriptorType[] _descriptorTypes;
+    private readonly uint _sizeInBytes;
 
     internal ResourceLayout(GraphicsDevice graphicsDevice, ref readonly ResourceLayoutDescription description) : base(graphicsDevice)
     {
@@ -68,28 +68,27 @@ public unsafe class ResourceLayout : DeviceResource
         {
             SType = StructureType.DescriptorSetLayoutCreateInfo,
             BindingCount = (uint)bindings.Length,
-            PBindings = bindings.AsPointer()
+            PBindings = bindings.AsPointer(),
+            Flags = DescriptorSetLayoutCreateFlags.DescriptorBufferBitExt
         };
 
         VkDescriptorSetLayout descriptorSetLayout;
         Vk.CreateDescriptorSetLayout(graphicsDevice.Device, &createInfo, null, &descriptorSetLayout).ThrowCode();
+        
+        ulong sizeInBytes;
+        DescriptorBufferExt.GetDescriptorSetLayoutSize(graphicsDevice.Device, descriptorSetLayout, &sizeInBytes);
+        sizeInBytes = Util.AlignedSize(sizeInBytes, PhysicalDevice.DescriptorBufferProperties.DescriptorBufferOffsetAlignment);
 
         _descriptorSetLayout = descriptorSetLayout;
-        _counts = new DescriptorResourceCounts(uniformBufferCount,
-                                               uniformBufferDynamicCount,
-                                               sampledImageCount,
-                                               samplerCount,
-                                               storageBufferCount,
-                                               storageBufferDynamicCount,
-                                               storageImageCount);
         _descriptorTypes = descriptorTypes;
+        _sizeInBytes = (uint)sizeInBytes;
     }
 
     internal VkDescriptorSetLayout Handle => _descriptorSetLayout;
 
-    internal DescriptorResourceCounts Counts => _counts;
-
     internal DescriptorType[] DescriptorTypes => _descriptorTypes;
+
+    internal uint SizeInBytes => _sizeInBytes;
 
     protected override void Destroy()
     {

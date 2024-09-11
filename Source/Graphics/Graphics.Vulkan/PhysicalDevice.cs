@@ -7,6 +7,7 @@ public unsafe class PhysicalDevice : ContextObject
 {
     private readonly VkPhysicalDevice _vkPhysicalDevice;
     private readonly PhysicalDeviceProperties _properties;
+    private readonly PhysicalDeviceDescriptorBufferPropertiesEXT _descriptorBufferProperties;
     private readonly PhysicalDeviceFeatures _features;
     private readonly PhysicalDeviceMemoryProperties _memoryProperties;
     private readonly QueueFamilyProperties[] _queueFamilyProperties;
@@ -16,8 +17,16 @@ public unsafe class PhysicalDevice : ContextObject
 
     internal PhysicalDevice(Context context, VkPhysicalDevice vkPhysicalDevice) : base(context)
     {
-        PhysicalDeviceProperties properties;
-        Vk.GetPhysicalDeviceProperties(vkPhysicalDevice, &properties);
+        PhysicalDeviceDescriptorBufferPropertiesEXT descriptorBufferProperties = new()
+        {
+            SType = StructureType.PhysicalDeviceDescriptorBufferPropertiesExt
+        };
+        PhysicalDeviceProperties2 properties2 = new()
+        {
+            SType = StructureType.PhysicalDeviceProperties2,
+            PNext = &descriptorBufferProperties
+        };
+        Vk.GetPhysicalDeviceProperties2(vkPhysicalDevice, &properties2);
 
         PhysicalDeviceFeatures features;
         Vk.GetPhysicalDeviceFeatures(vkPhysicalDevice, &features);
@@ -38,13 +47,14 @@ public unsafe class PhysicalDevice : ContextObject
         Vk.EnumerateDeviceExtensionProperties(vkPhysicalDevice, string.Empty, &extensionPropertyCount, extensionProperties);
 
         _vkPhysicalDevice = vkPhysicalDevice;
-        _properties = properties;
+        _properties = properties2.Properties;
+        _descriptorBufferProperties = descriptorBufferProperties;
         _features = features;
         _memoryProperties = memoryProperties;
         _queueFamilyProperties = queueFamilyProperties;
         _extensionProperties = extensionProperties;
-        _name = Alloter.GetString(properties.DeviceName);
-        _score = properties.DeviceType == PhysicalDeviceType.DiscreteGpu ? 1000u : 0u;
+        _name = Alloter.GetString(properties2.Properties.DeviceName);
+        _score = properties2.Properties.DeviceType == PhysicalDeviceType.DiscreteGpu ? 1000u : 0u;
     }
 
     public string Name => _name;
@@ -54,6 +64,8 @@ public unsafe class PhysicalDevice : ContextObject
     internal VkPhysicalDevice VkPhysicalDevice => _vkPhysicalDevice;
 
     internal PhysicalDeviceProperties Properties => _properties;
+
+    internal PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties => _descriptorBufferProperties;
 
     internal PhysicalDeviceFeatures Features => _features;
 
