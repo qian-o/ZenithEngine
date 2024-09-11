@@ -8,6 +8,7 @@ public unsafe class PhysicalDevice : ContextObject
     private readonly VkPhysicalDevice _vkPhysicalDevice;
     private readonly PhysicalDeviceProperties _properties;
     private readonly PhysicalDeviceDescriptorBufferPropertiesEXT _descriptorBufferProperties;
+    private readonly PhysicalDeviceDescriptorIndexingProperties _descriptorIndexingProperties;
     private readonly PhysicalDeviceFeatures _features;
     private readonly PhysicalDeviceMemoryProperties _memoryProperties;
     private readonly QueueFamilyProperties[] _queueFamilyProperties;
@@ -17,9 +18,14 @@ public unsafe class PhysicalDevice : ContextObject
 
     internal PhysicalDevice(Context context, VkPhysicalDevice vkPhysicalDevice) : base(context)
     {
+        PhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties = new()
+        {
+            SType = StructureType.PhysicalDeviceDescriptorIndexingProperties
+        };
         PhysicalDeviceDescriptorBufferPropertiesEXT descriptorBufferProperties = new()
         {
-            SType = StructureType.PhysicalDeviceDescriptorBufferPropertiesExt
+            SType = StructureType.PhysicalDeviceDescriptorBufferPropertiesExt,
+            PNext = &descriptorIndexingProperties
         };
         PhysicalDeviceProperties2 properties2 = new()
         {
@@ -49,6 +55,7 @@ public unsafe class PhysicalDevice : ContextObject
         _vkPhysicalDevice = vkPhysicalDevice;
         _properties = properties2.Properties;
         _descriptorBufferProperties = descriptorBufferProperties;
+        _descriptorIndexingProperties = descriptorIndexingProperties;
         _features = features;
         _memoryProperties = memoryProperties;
         _queueFamilyProperties = queueFamilyProperties;
@@ -66,6 +73,8 @@ public unsafe class PhysicalDevice : ContextObject
     internal PhysicalDeviceProperties Properties => _properties;
 
     internal PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties => _descriptorBufferProperties;
+
+    internal PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties => _descriptorIndexingProperties;
 
     internal PhysicalDeviceFeatures Features => _features;
 

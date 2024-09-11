@@ -12,14 +12,6 @@ public unsafe class ResourceLayout : DeviceResource
     internal ResourceLayout(GraphicsDevice graphicsDevice, ref readonly ResourceLayoutDescription description) : base(graphicsDevice)
     {
         DescriptorSetLayoutBinding[] bindings = new DescriptorSetLayoutBinding[description.Elements.Length];
-
-        uint uniformBufferCount = 0;
-        uint uniformBufferDynamicCount = 0;
-        uint sampledImageCount = 0;
-        uint samplerCount = 0;
-        uint storageBufferCount = 0;
-        uint storageBufferDynamicCount = 0;
-        uint storageImageCount = 0;
         DescriptorType[] descriptorTypes = new DescriptorType[description.Elements.Length];
 
         for (uint i = 0; i < description.Elements.Length; i++)
@@ -35,32 +27,6 @@ public unsafe class ResourceLayout : DeviceResource
             };
 
             bindings[i] = binding;
-
-            switch (binding.DescriptorType)
-            {
-                case DescriptorType.Sampler:
-                    samplerCount++;
-                    break;
-                case DescriptorType.SampledImage:
-                    sampledImageCount++;
-                    break;
-                case DescriptorType.StorageImage:
-                    storageImageCount++;
-                    break;
-                case DescriptorType.UniformBuffer:
-                    uniformBufferCount++;
-                    break;
-                case DescriptorType.UniformBufferDynamic:
-                    uniformBufferDynamicCount++;
-                    break;
-                case DescriptorType.StorageBuffer:
-                    storageBufferCount++;
-                    break;
-                case DescriptorType.StorageBufferDynamic:
-                    storageBufferDynamicCount++;
-                    break;
-            }
-
             descriptorTypes[i] = binding.DescriptorType;
         }
 

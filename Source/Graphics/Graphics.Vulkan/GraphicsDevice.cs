@@ -571,31 +571,31 @@ public unsafe partial class Context
 
         string[] deviceExtensions = [KhrSwapchain.ExtensionName, ExtDescriptorBuffer.ExtensionName];
 
-        PhysicalDeviceFeatures physicalDeviceFeatures;
-        _vk.GetPhysicalDeviceFeatures(physicalDevice.VkPhysicalDevice, &physicalDeviceFeatures);
-
-
-        PhysicalDeviceDescriptorBufferFeaturesEXT physicalDeviceDescriptorBufferFeatures = new()
+        PhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures = new()
         {
-            SType = StructureType.PhysicalDeviceDescriptorBufferFeaturesExt
+            SType = StructureType.PhysicalDeviceDescriptorIndexingFeatures
         };
-        PhysicalDeviceBufferDeviceAddressFeatures physicalDeviceBufferDeviceAddressFeatures = new()
+        PhysicalDeviceDescriptorBufferFeaturesEXT descriptorBufferFeaturesEXT = new()
+        {
+            SType = StructureType.PhysicalDeviceDescriptorBufferFeaturesExt,
+            PNext = &descriptorIndexingFeatures
+        };
+        PhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = new()
         {
             SType = StructureType.PhysicalDeviceBufferDeviceAddressFeatures,
-            PNext = &physicalDeviceDescriptorBufferFeatures
+            PNext = &descriptorBufferFeaturesEXT
         };
-        PhysicalDeviceVulkan13Features physicalDeviceVulkan13Features = new()
+        PhysicalDeviceVulkan13Features vulkan13Features = new()
         {
             SType = StructureType.PhysicalDeviceVulkan13Features,
-            PNext = &physicalDeviceBufferDeviceAddressFeatures
+            PNext = &bufferDeviceAddressFeatures
         };
-        PhysicalDeviceFeatures2 physicalDeviceFeatures2 = new()
+        PhysicalDeviceFeatures2 features2 = new()
         {
             SType = StructureType.PhysicalDeviceFeatures2,
-            Features = physicalDeviceFeatures,
-            PNext = &physicalDeviceVulkan13Features
+            PNext = &vulkan13Features
         };
-        _vk.GetPhysicalDeviceFeatures2(physicalDevice.VkPhysicalDevice, &physicalDeviceFeatures2);
+        _vk.GetPhysicalDeviceFeatures2(physicalDevice.VkPhysicalDevice, &features2);
 
         DeviceCreateInfo createInfo = new()
         {
@@ -604,7 +604,7 @@ public unsafe partial class Context
             PQueueCreateInfos = _alloter.Allocate(createInfos),
             EnabledExtensionCount = (uint)deviceExtensions.Length,
             PpEnabledExtensionNames = _alloter.Allocate(deviceExtensions),
-            PNext = &physicalDeviceFeatures2
+            PNext = &features2
         };
 
         Device device;
