@@ -9,13 +9,7 @@ public unsafe class ResourceSet : DeviceResource
 
     internal ResourceSet(GraphicsDevice graphicsDevice, ref readonly ResourceSetDescription description) : base(graphicsDevice)
     {
-        BufferDescription bufferDescription = new(description.Layout.SizeInBytes, BufferUsage.Dynamic);
-
-        DeviceBuffer buffer = new(GraphicsDevice,
-                                  in bufferDescription,
-                                  BufferUsageFlags.ResourceDescriptorBufferBitExt
-                                  | BufferUsageFlags.SamplerDescriptorBufferBitExt
-                                  | BufferUsageFlags.ShaderDeviceAddressBit);
+        DeviceBuffer buffer = ResourceFactory.CreateBuffer(new BufferDescription(description.Layout.SizeInBytes, BufferUsage.Dynamic, true));
 
         byte* data = (byte*)buffer.Map(buffer.SizeInBytes);
 

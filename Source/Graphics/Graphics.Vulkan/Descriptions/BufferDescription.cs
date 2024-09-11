@@ -10,6 +10,13 @@ public record struct BufferDescription
         Usage = usage;
     }
 
+    internal BufferDescription(uint sizeInBytes,
+                               BufferUsage usage,
+                               bool isDescriptorBuffer) : this(sizeInBytes, usage)
+    {
+        IsDescriptorBuffer = isDescriptorBuffer;
+    }
+
     /// <summary>
     /// The desired capacity, in bytes.
     /// </summary>
@@ -19,4 +26,9 @@ public record struct BufferDescription
     /// Indicates the intended use of the buffer.
     /// </summary>
     public BufferUsage Usage { get; set; }
+
+    /// <summary>
+    /// (Internal use) Indicates whether it is a descriptor buffer.
+    /// </summary>
+    internal bool IsDescriptorBuffer { get; set; }
 }

@@ -53,7 +53,7 @@ public unsafe class TextureView : DeviceResource, IBindableResource
         _imageView = imageView;
     }
 
-    public VkImageView Handle => _imageView;
+    internal VkImageView Handle => _imageView;
 
     protected override void Destroy()
     {

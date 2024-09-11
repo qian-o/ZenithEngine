@@ -60,7 +60,8 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
         DeviceMemory deviceMemory = new(graphicsDevice,
                                         in memoryRequirements,
-                                        MemoryPropertyFlags.DeviceLocalBit);
+                                        MemoryPropertyFlags.DeviceLocalBit,
+                                        false);
 
         Vk.BindImageMemory(Device, image, deviceMemory.Handle, 0).ThrowCode();
 

@@ -400,9 +400,9 @@ public unsafe class Pipeline : DeviceResource
         _isGraphics = true;
     }
 
-    public VkPipeline Handle => _pipeline;
+    internal VkPipeline Handle => _pipeline;
 
-    public VkPipelineLayout Layout => _pipelineLayout;
+    internal VkPipelineLayout Layout => _pipelineLayout;
 
     public bool IsGraphics => _isGraphics;
 

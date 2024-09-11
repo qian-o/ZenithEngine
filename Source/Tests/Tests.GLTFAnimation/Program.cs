@@ -432,8 +432,8 @@ internal sealed unsafe class Program
                 foreach (Primitive primitive in node.Mesh.Primitives)
                 {
                     _commandList.SetPipeline(_pipelines![primitive.MaterialIndex]);
-                    _commandList.SetGraphicsResourceSet(0, _uboSets[i]);
-                    _commandList.SetGraphicsResourceSet(1, _materialSets[primitive.MaterialIndex]);
+                    _commandList.SetResourceSet(0, _uboSets[i]);
+                    _commandList.SetResourceSet(1, _materialSets[primitive.MaterialIndex]);
 
                     _commandList.DrawIndexed(primitive.IndexCount, 1, primitive.FirstIndex, 0, 0);
                 }

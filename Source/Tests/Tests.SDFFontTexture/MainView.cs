@@ -154,7 +154,7 @@ internal sealed unsafe class MainView : View
             _commandList.SetVertexBuffer(0, _vertexBuffer);
             _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U32);
             _commandList.SetPipeline(pipeline!);
-            _commandList.SetGraphicsResourceSet(0, _resourceSet);
+            _commandList.SetResourceSet(0, _resourceSet);
 
             float offset = 0.0f;
             foreach (char @char in str)

@@ -214,7 +214,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         commandList.SetVertexBuffer(0, _vertexBuffer);
         commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U16);
         commandList.SetPipeline(_pipeline);
-        commandList.SetGraphicsResourceSet(0, _resourceSet);
+        commandList.SetResourceSet(0, _resourceSet);
 
         drawDataPtr.ScaleClipRects(ImGui.GetIO().DisplayFramebufferScale);
 
@@ -235,7 +235,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
                 }
                 else
                 {
-                    commandList.SetGraphicsResourceSet(1, GetResourceSet(imDrawCmd.TextureId.Handle));
+                    commandList.SetResourceSet(1, GetResourceSet(imDrawCmd.TextureId.Handle));
 
                     commandList.SetScissorRect(0,
                                                (uint)Math.Max(0, imDrawCmd.ClipRect.X - displayPos.X),

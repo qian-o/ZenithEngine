@@ -410,7 +410,7 @@ public unsafe class CommandList : DeviceResource
         _currentPipeline = pipeline;
     }
 
-    public void SetGraphicsResourceSet(uint slot, ResourceSet resourceSet, uint dynamicOffsetsCount, ref uint dynamicOffsets)
+    public void SetResourceSet(uint slot, ResourceSet resourceSet)
     {
         if (_currentPipeline == null)
         {
@@ -428,19 +428,16 @@ public unsafe class CommandList : DeviceResource
 
         uint bufferIndices = 0;
         ulong offsets = 0;
-
-        DescriptorBufferExt.CmdSetDescriptorBufferOffsets(_commandBuffer,
-                                                          PipelineBindPoint.Graphics,
-                                                          _currentPipeline.Layout,
-                                                          slot,
-                                                          1,
-                                                          &bufferIndices,
-                                                          &offsets);
-    }
-
-    public void SetGraphicsResourceSet(uint slot, ResourceSet resourceSet)
-    {
-        SetGraphicsResourceSet(slot, resourceSet, 0, ref Unsafe.AsRef<uint>(null));
+        if (_currentPipeline.IsGraphics)
+        {
+            DescriptorBufferExt.CmdSetDescriptorBufferOffsets(_commandBuffer,
+                                                              PipelineBindPoint.Graphics,
+                                                              _currentPipeline.Layout,
+                                                              slot,
+                                                              1,
+                                                              &bufferIndices,
+                                                              &offsets);
+        }
     }
 
     public void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart)
