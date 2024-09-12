@@ -8,6 +8,7 @@ public unsafe class ResourceLayout : DeviceResource
     private readonly VkDescriptorSetLayout _descriptorSetLayout;
     private readonly DescriptorType[] _descriptorTypes;
     private readonly uint _sizeInBytes;
+    private readonly bool _isLastBindless;
 
     internal ResourceLayout(GraphicsDevice graphicsDevice, ref readonly ResourceLayoutDescription description) : base(graphicsDevice)
     {
@@ -26,44 +27,50 @@ public unsafe class ResourceLayout : DeviceResource
                 StageFlags = Formats.GetShaderStageFlags(element.Stages)
             };
 
-            if (description.IsBindless)
-            {
-                if (binding.DescriptorType == DescriptorType.UniformBuffer)
-                {
-                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffers;
-                }
-                else if (binding.DescriptorType == DescriptorType.UniformBufferDynamic)
-                {
-                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffersDynamic;
-                }
-                else if (binding.DescriptorType == DescriptorType.StorageBuffer)
-                {
-                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffers;
-                }
-                else if (binding.DescriptorType == DescriptorType.StorageBufferDynamic)
-                {
-                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffersDynamic;
-                }
-                else if (binding.DescriptorType == DescriptorType.SampledImage)
-                {
-                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSampledImages;
-                }
-                else if (binding.DescriptorType == DescriptorType.StorageImage)
-                {
-                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageImages;
-                }
-                else if (binding.DescriptorType == DescriptorType.Sampler)
-                {
-                    binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSamplers;
-                }
-                else
-                {
-                    throw new NotSupportedException("The descriptor type is not supported for bindless resource layout.");
-                }
-            }
-
             bindings[i] = binding;
             descriptorTypes[i] = binding.DescriptorType;
+        }
+
+        if (description.IsLastBindless)
+        {
+            DescriptorSetLayoutBinding binding = bindings[^1];
+
+            if (binding.DescriptorType == DescriptorType.UniformBuffer)
+            {
+                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffers;
+            }
+            else if (binding.DescriptorType == DescriptorType.UniformBufferDynamic)
+            {
+                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffersDynamic;
+            }
+            else if (binding.DescriptorType == DescriptorType.StorageBuffer)
+            {
+                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffers;
+            }
+            else if (binding.DescriptorType == DescriptorType.StorageBufferDynamic)
+            {
+                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffersDynamic;
+            }
+            else if (binding.DescriptorType == DescriptorType.SampledImage)
+            {
+                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSampledImages;
+            }
+            else if (binding.DescriptorType == DescriptorType.StorageImage)
+            {
+                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageImages;
+            }
+            else if (binding.DescriptorType == DescriptorType.Sampler)
+            {
+                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSamplers;
+            }
+            else
+            {
+                throw new NotSupportedException("The descriptor type is not supported for bindless resource layout.");
+            }
+
+            binding.DescriptorCount = Math.Min(binding.DescriptorCount, description.MaxDescriptorCount);
+
+            bindings[^1] = binding;
         }
 
         DescriptorSetLayoutCreateInfo createInfo = new()
@@ -74,18 +81,18 @@ public unsafe class ResourceLayout : DeviceResource
             Flags = DescriptorSetLayoutCreateFlags.DescriptorBufferBitExt
         };
 
-        if (description.IsBindless)
+        if (description.IsLastBindless)
         {
-            DescriptorBindingFlags descriptorBindingFlags = DescriptorBindingFlags.VariableDescriptorCountBit
-                                                            | DescriptorBindingFlags.PartiallyBoundBit
-                                                            | DescriptorBindingFlags.UpdateAfterBindBit
-                                                            | DescriptorBindingFlags.UpdateUnusedWhilePendingBit;
+            DescriptorBindingFlags[] descriptorBindings = new DescriptorBindingFlags[bindings.Length];
+            Array.Fill(descriptorBindings, DescriptorBindingFlags.None);
+
+            descriptorBindings[^1] = DescriptorBindingFlags.VariableDescriptorCountBit;
 
             DescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo = new()
             {
-                SType = StructureType.DescriptorSetLayoutBindingFlagsCreateInfoExt,
+                SType = StructureType.DescriptorSetLayoutBindingFlagsCreateInfo,
                 BindingCount = (uint)bindings.Length,
-                PBindingFlags = &descriptorBindingFlags
+                PBindingFlags = descriptorBindings.AsPointer()
             };
 
             createInfo.PNext = &bindingFlagsCreateInfo;
@@ -101,6 +108,7 @@ public unsafe class ResourceLayout : DeviceResource
         _descriptorSetLayout = descriptorSetLayout;
         _descriptorTypes = descriptorTypes;
         _sizeInBytes = (uint)sizeInBytes;
+        _isLastBindless = description.IsLastBindless;
     }
 
     internal VkDescriptorSetLayout Handle => _descriptorSetLayout;
@@ -108,6 +116,8 @@ public unsafe class ResourceLayout : DeviceResource
     internal DescriptorType[] DescriptorTypes => _descriptorTypes;
 
     internal uint SizeInBytes => _sizeInBytes;
+
+    internal bool IsLastBindless => _isLastBindless;
 
     protected override void Destroy()
     {

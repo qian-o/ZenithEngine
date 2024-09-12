@@ -8,13 +8,6 @@ public record struct ResourceSetDescription
         BoundResources = boundResources;
     }
 
-    public ResourceSetDescription(ResourceLayout layout, bool isBindless, params IBindableResource[] boundResources)
-    {
-        Layout = layout;
-        IsBindless = isBindless;
-        BoundResources = boundResources;
-    }
-
     /// <summary>
     /// Describes the number of resources and the layout.
     /// </summary>
@@ -25,10 +18,4 @@ public record struct ResourceSetDescription
     /// Resource count and types must match the descriptions in Layout.
     /// </summary>
     public IBindableResource[] BoundResources { get; set; }
-
-    /// <summary>
-    /// Whether the resource set is bindless and can be updated dynamically.
-    /// When this property is true, the contents of BoundResources are ignored.
-    /// </summary>
-    public bool IsBindless { get; set; }
 }

@@ -10,9 +10,10 @@ public record struct BufferDescription
         Usage = usage;
     }
 
-    internal BufferDescription(uint sizeInBytes, bool isDescriptorBuffer)
+    internal BufferDescription(uint sizeInBytes, bool isDescriptorBuffer, bool isDynamic)
     {
         SizeInBytes = sizeInBytes;
+        Usage = isDynamic ? BufferUsage.Dynamic : default;
         IsDescriptorBuffer = isDescriptorBuffer;
     }
 
