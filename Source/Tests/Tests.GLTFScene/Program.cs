@@ -34,7 +34,7 @@ internal sealed unsafe class Program
         public Vector4 ViewPos;
     }
 
-    private struct Vertex(Vector3 position, Vector3 normal, Vector2 texCoord, Vector3 color, Vector4 tangent)
+    private struct Vertex(Vector3 position, Vector3 normal, Vector2 texCoord, Vector3 color, Vector4 tangent, int colorMapIndex, int normalMapIndex)
     {
         public Vector3 Position = position;
 
@@ -45,6 +45,10 @@ internal sealed unsafe class Program
         public Vector3 Color = color;
 
         public Vector4 Tangent = tangent;
+
+        public int ColorMapIndex = colorMapIndex;
+
+        public int NormalMapIndex = normalMapIndex;
     }
 
     private struct Primitive(uint firstIndex, uint indexCount, int materialIndex)
@@ -108,8 +112,10 @@ internal sealed unsafe class Program
     private static DeviceBuffer _uboBuffer = null!;
     private static ResourceLayout _uboLayout = null!;
     private static ResourceSet _uboSet = null!;
-    private static ResourceLayout _materialLayout = null!;
-    private static ResourceSet[] _materialSets = null!;
+    private static ResourceLayout _textureMapLayout = null!;
+    private static ResourceSet _textureMapSet = null!;
+    private static ResourceLayout _textureSamplerLayout = null!;
+    private static ResourceSet _textureSamplerSet = null!;
     private static Shader[] _shaders = null!;
     private static VertexLayoutDescription[] _vertexLayoutDescriptions = null!;
     private static Pipeline[] _pipelines = null!;
@@ -143,7 +149,7 @@ internal sealed unsafe class Program
 
         ModelRoot root = ModelRoot.Load("Assets/Models/Sponza/glTF/Sponza.gltf", new ReadSettings() { Validation = ValidationMode.Skip });
 
-        using CommandList commandList = _device.ResourceFactory.CreateGraphicsCommandList();
+        using CommandList commandList = _device.Factory.CreateGraphicsCommandList();
 
         commandList.Begin();
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
@@ -164,10 +170,10 @@ internal sealed unsafe class Program
 
             TextureDescription description = TextureDescription.Texture2D((uint)width, (uint)height, mipLevels, PixelFormat.R8G8B8A8UNorm, TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
 
-            Texture texture = _device.ResourceFactory.CreateTexture(in description);
+            Texture texture = _device.Factory.CreateTexture(in description);
             texture.Name = gltfTexture.Name;
 
-            TextureView textureView = _device.ResourceFactory.CreateTextureView(texture);
+            TextureView textureView = _device.Factory.CreateTextureView(texture);
             textureView.Name = gltfTexture.Name;
 
             commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
@@ -217,46 +223,49 @@ internal sealed unsafe class Program
             LoadNode(gltfNode, null, vertices, indices);
         }
 
-        _vertexBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Count), BufferUsage.VertexBuffer));
+        _vertexBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Count), BufferUsage.VertexBuffer));
         _device.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
 
-        _indexBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
+        _indexBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
         _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
 
-        _uboBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(UBO), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _uboBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(UBO), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
-        ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("UBO", ResourceKind.UniformBuffer, ShaderStages.Vertex));
-        ResourceLayoutDescription materialLayoutDescription = new(new ResourceLayoutElementDescription("textureColorMap", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                                                                  new ResourceLayoutElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment),
-                                                                  new ResourceLayoutElementDescription("textureNormalMap", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                                                                  new ResourceLayoutElementDescription("normalSampler", ResourceKind.Sampler, ShaderStages.Fragment));
+        ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex));
+        ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
+                                                                                             new ResourceLayoutElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
+        ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
+                                                                                                 new ResourceLayoutElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
-        _uboLayout = _device.ResourceFactory.CreateResourceLayout(in uboLayoutDescription);
-        _uboSet = _device.ResourceFactory.CreateResourceSet(new ResourceSetDescription(_uboLayout, _uboBuffer));
+        _uboLayout = _device.Factory.CreateResourceLayout(in uboLayoutDescription);
+        _uboSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_uboLayout, _uboBuffer));
 
-        _materialLayout = _device.ResourceFactory.CreateResourceLayout(in materialLayoutDescription);
-        _materialSets = new ResourceSet[_materials.Count];
-        for (int i = 0; i < _materials.Count; i++)
-        {
-            ResourceSetDescription materialSetDescription = new(_materialLayout,
-                                                                _textureViews[(int)_materials[i].BaseColorTextureIndex],
-                                                                _device.Aniso4xSampler,
-                                                                _textureViews[(int)_materials[i].NormalTextureIndex],
-                                                                _device.LinearSampler);
+        _textureMapLayout = _device.Factory.CreateResourceLayout(in textureMapDescription);
+        _textureMapSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_textureMapLayout));
+        _textureMapSet.UpdateBindless([.. _textureViews]);
 
-            _materialSets[i] = _device.ResourceFactory.CreateResourceSet(in materialSetDescription);
-        }
+        _textureSamplerLayout = _device.Factory.CreateResourceLayout(in textureSamplerDescription);
+        _textureSamplerSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_textureSamplerLayout));
+        _textureSamplerSet.UpdateBindless([_device.Aniso4xSampler, _device.LinearSampler]);
 
         VertexElementDescription positionDescription = new("Position", VertexElementFormat.Float3);
         VertexElementDescription normalDescription = new("Normal", VertexElementFormat.Float3);
         VertexElementDescription texCoordDescription = new("TexCoord", VertexElementFormat.Float2);
         VertexElementDescription colorDescription = new("Color", VertexElementFormat.Float3);
         VertexElementDescription tangentDescription = new("Tangent", VertexElementFormat.Float4);
+        VertexElementDescription colorMapIndexDescription = new("ColorMapIndex", VertexElementFormat.Int1);
+        VertexElementDescription normalMapIndexDescription = new("NormalMapIndex", VertexElementFormat.Int1);
 
-        _shaders = _device.ResourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
+        _shaders = _device.Factory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
                                                            new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
-        _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription, normalDescription, texCoordDescription, colorDescription, tangentDescription)];
+        _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription,
+                                                                 normalDescription,
+                                                                 texCoordDescription,
+                                                                 colorDescription,
+                                                                 tangentDescription,
+                                                                 colorMapIndexDescription,
+                                                                 normalMapIndexDescription)];
 
         _pipelines = new Pipeline[_materials.Count];
         for (int i = 0; i < _materials.Count; i++)
@@ -270,15 +279,15 @@ internal sealed unsafe class Program
                 DepthStencilState = DepthStencilStateDescription.DepthOnlyLessEqual,
                 RasterizerState = _materials[i].DoubleSided ? RasterizerStateDescription.CullNone : RasterizerStateDescription.Default,
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
-                ResourceLayouts = [_uboLayout, _materialLayout],
+                ResourceLayouts = [_uboLayout, _textureMapLayout, _textureSamplerLayout],
                 ShaderSet = new ShaderSetDescription(_vertexLayoutDescriptions, _shaders, [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
                 Outputs = _device.MainSwapchain.OutputDescription
             };
 
-            _pipelines[i] = _device.ResourceFactory.CreateGraphicsPipeline(ref pipelineDescription);
+            _pipelines[i] = _device.Factory.CreateGraphicsPipeline(ref pipelineDescription);
         }
 
-        _commandList = _device.ResourceFactory.CreateGraphicsCommandList();
+        _commandList = _device.Factory.CreateGraphicsCommandList();
     }
 
     private static void Window_Update(object? sender, UpdateEventArgs e)
@@ -329,11 +338,11 @@ internal sealed unsafe class Program
             shader.Dispose();
         }
 
-        foreach (ResourceSet materialSet in _materialSets)
-        {
-            materialSet.Dispose();
-        }
-        _materialLayout.Dispose();
+        _textureSamplerSet.Dispose();
+        _textureSamplerLayout.Dispose();
+
+        _textureMapSet.Dispose();
+        _textureMapLayout.Dispose();
 
         _uboSet.Dispose();
         _uboLayout.Dispose();
@@ -417,8 +426,16 @@ internal sealed unsafe class Program
                         Vector2 texCoord = texCoordBuffer != null ? texCoordBuffer[(int)i] : Vector2.Zero;
                         Vector3 color = colorBuffer != null ? colorBuffer[(int)i] : Vector3.One;
                         Vector4 tangent = tangentBuffer != null ? tangentBuffer[(int)i] : Vector4.Zero;
+                        int colorMapIndex = (int)_materials[primitive.Material.LogicalIndex].BaseColorTextureIndex;
+                        int normalMapIndex = (int)_materials[primitive.Material.LogicalIndex].NormalTextureIndex;
 
-                        vertices.Add(new Vertex(position, normal, texCoord, color, tangent));
+                        vertices.Add(new Vertex(position,
+                                                normal,
+                                                texCoord,
+                                                color,
+                                                tangent,
+                                                colorMapIndex,
+                                                normalMapIndex));
                     }
                 }
 
@@ -469,8 +486,9 @@ internal sealed unsafe class Program
             foreach (Primitive primitive in node.Mesh.Primitives)
             {
                 commandList.SetPipeline(_pipelines![primitive.MaterialIndex]);
-                commandList.SetGraphicsResourceSet(0, _uboSet);
-                commandList.SetGraphicsResourceSet(1, _materialSets[primitive.MaterialIndex]);
+                commandList.SetResourceSet(0, _uboSet);
+                commandList.SetResourceSet(1, _textureMapSet);
+                commandList.SetResourceSet(2, _textureSamplerSet);
                 commandList.DrawIndexed(primitive.IndexCount, 1, primitive.FirstIndex, 0, 0);
             }
         }

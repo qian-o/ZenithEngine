@@ -83,7 +83,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
     public ImGuiRenderer(GraphicsDevice graphicsDevice, ColorSpaceHandling colorSpaceHandling)
     {
         _graphicsDevice = graphicsDevice;
-        _factory = graphicsDevice.ResourceFactory;
+        _factory = graphicsDevice.Factory;
 
         CreateDeviceResources(colorSpaceHandling);
     }
@@ -214,7 +214,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         commandList.SetVertexBuffer(0, _vertexBuffer);
         commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U16);
         commandList.SetPipeline(_pipeline);
-        commandList.SetGraphicsResourceSet(0, _resourceSet);
+        commandList.SetResourceSet(0, _resourceSet);
 
         drawDataPtr.ScaleClipRects(ImGui.GetIO().DisplayFramebufferScale);
 
@@ -235,7 +235,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
                 }
                 else
                 {
-                    commandList.SetGraphicsResourceSet(1, GetResourceSet(imDrawCmd.TextureId.Handle));
+                    commandList.SetResourceSet(1, GetResourceSet(imDrawCmd.TextureId.Handle));
 
                     commandList.SetScissorRect(0,
                                                (uint)Math.Max(0, imDrawCmd.ClipRect.X - displayPos.X),
@@ -350,7 +350,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         ResourceLayoutDescription set0 = new(new ResourceLayoutElementDescription("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex),
                                              new ResourceLayoutElementDescription("pointSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
-        ResourceLayoutDescription set1 = new(new ResourceLayoutElementDescription("textureColor", ResourceKind.TextureReadOnly, ShaderStages.Fragment));
+        ResourceLayoutDescription set1 = new(new ResourceLayoutElementDescription("textureColor", ResourceKind.SampledImage, ShaderStages.Fragment));
 
         _layout0 = _factory.CreateResourceLayout(set0);
         _layout1 = _factory.CreateResourceLayout(set1);

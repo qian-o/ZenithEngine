@@ -70,7 +70,7 @@ internal sealed unsafe class MainView : View
 
         ImageResult imageResult = ImageResult.FromMemory(bytes, ColorComponents.RedGreenBlueAlpha);
 
-        _sdfTexture = device.ResourceFactory.CreateTexture(TextureDescription.Texture2D((uint)imageResult.Width,
+        _sdfTexture = device.Factory.CreateTexture(TextureDescription.Texture2D((uint)imageResult.Width,
                                                                                         (uint)imageResult.Height,
                                                                                         1,
                                                                                         PixelFormat.R8G8B8A8UNorm,
@@ -87,7 +87,7 @@ internal sealed unsafe class MainView : View
                              0,
                              0);
 
-        _sdfTextureView = device.ResourceFactory.CreateTextureView(new TextureViewDescription(_sdfTexture));
+        _sdfTextureView = device.Factory.CreateTextureView(new TextureViewDescription(_sdfTexture));
 
         Vertex[] vertices =
         [
@@ -99,26 +99,26 @@ internal sealed unsafe class MainView : View
 
         uint[] indices = [0, 1, 2, 2, 3, 0];
 
-        _vertexBuffer = device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Length), BufferUsage.VertexBuffer | BufferUsage.Dynamic));
+        _vertexBuffer = device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Length), BufferUsage.VertexBuffer | BufferUsage.Dynamic));
         device.UpdateBuffer(_vertexBuffer, 0, vertices);
 
-        _indexBuffer = device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Length), BufferUsage.IndexBuffer));
+        _indexBuffer = device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Length), BufferUsage.IndexBuffer));
         device.UpdateBuffer(_indexBuffer, 0, indices);
 
-        _uniformBuffer = device.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(UniformBufferObject), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-        _normalBuffer = device.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(Properties), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _uniformBuffer = device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(UniformBufferObject), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _normalBuffer = device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(Properties), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutElementDescription uboDescription = new("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex);
         ResourceLayoutElementDescription normalDescription = new("properties", ResourceKind.UniformBuffer, ShaderStages.Fragment);
-        ResourceLayoutElementDescription msdfDescription = new("msdf", ResourceKind.TextureReadOnly, ShaderStages.Fragment);
+        ResourceLayoutElementDescription msdfDescription = new("msdf", ResourceKind.SampledImage, ShaderStages.Fragment);
         ResourceLayoutElementDescription msdfSamplerDescription = new("msdfSampler", ResourceKind.Sampler, ShaderStages.Fragment);
 
-        _resourceLayout = device.ResourceFactory.CreateResourceLayout(new ResourceLayoutDescription(uboDescription, normalDescription, msdfDescription, msdfSamplerDescription));
+        _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(uboDescription, normalDescription, msdfDescription, msdfSamplerDescription));
 
-        _resourceSet = device.ResourceFactory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _uniformBuffer, _normalBuffer, _sdfTextureView, _device.LinearSampler));
+        _resourceSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _uniformBuffer, _normalBuffer, _sdfTextureView, _device.LinearSampler));
 
         string hlsl = File.ReadAllText("Assets/Shaders/SDF.hlsl");
-        _shaders = device.ResourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
+        _shaders = device.Factory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
                                                           new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
         _vertexLayoutDescriptions =
@@ -126,7 +126,7 @@ internal sealed unsafe class MainView : View
             new(new VertexElementDescription("Position", VertexElementFormat.Float3), new VertexElementDescription("TexCoord", VertexElementFormat.Float2))
         ];
 
-        _commandList = device.ResourceFactory.CreateGraphicsCommandList();
+        _commandList = device.Factory.CreateGraphicsCommandList();
     }
 
     protected override void OnUpdate(UpdateEventArgs e)
@@ -154,7 +154,7 @@ internal sealed unsafe class MainView : View
             _commandList.SetVertexBuffer(0, _vertexBuffer);
             _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U32);
             _commandList.SetPipeline(pipeline!);
-            _commandList.SetGraphicsResourceSet(0, _resourceSet);
+            _commandList.SetResourceSet(0, _resourceSet);
 
             float offset = 0.0f;
             foreach (char @char in str)
@@ -210,7 +210,7 @@ internal sealed unsafe class MainView : View
 
             _device.SubmitCommands(_commandList);
 
-            ImGui.Image(_imGuiController.GetOrCreateImGuiBinding(_device.ResourceFactory, framebufferObject.PresentTexture), new Vector2(framebufferObject.Width, framebufferObject.Height));
+            ImGui.Image(_imGuiController.GetOrCreateImGuiBinding(_device.Factory, framebufferObject.PresentTexture), new Vector2(framebufferObject.Width, framebufferObject.Height));
         }
     }
 
@@ -218,7 +218,7 @@ internal sealed unsafe class MainView : View
     {
         if (framebufferObject != null)
         {
-            _imGuiController.RemoveImGuiBinding(_imGuiController.GetOrCreateImGuiBinding(_device.ResourceFactory, framebufferObject.PresentTexture));
+            _imGuiController.RemoveImGuiBinding(_imGuiController.GetOrCreateImGuiBinding(_device.Factory, framebufferObject.PresentTexture));
 
             framebufferObject.Dispose();
         }
@@ -236,7 +236,7 @@ internal sealed unsafe class MainView : View
         };
 
         pipeline?.Dispose();
-        pipeline = _device.ResourceFactory.CreateGraphicsPipeline(pipelineDescription);
+        pipeline = _device.Factory.CreateGraphicsPipeline(pipelineDescription);
     }
 
     protected override void Destroy()

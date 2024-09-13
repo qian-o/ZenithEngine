@@ -3,24 +3,12 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class Framebuffer : DeviceResource
+public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
 {
-    private readonly VkRenderPass _renderPassClear;
-    private readonly VkRenderPass _renderPassLoad;
-    private readonly Texture[] _colors;
-    private readonly Texture? _depth;
-    private readonly TextureView[] _colorViews;
-    private readonly TextureView? _depthView;
-    private readonly VkFramebuffer _framebuffer;
-    private readonly uint _colorAttachmentCount;
-    private readonly uint _depthAttachmentCount;
-    private readonly uint _attachmentCount;
-    private readonly uint _width;
-    private readonly uint _height;
-    private readonly OutputDescription _outputDescription;
-    private readonly bool _isPresented;
 
-    internal Framebuffer(GraphicsDevice graphicsDevice, ref readonly FramebufferDescription description, bool isPresented) : base(graphicsDevice)
+    internal Framebuffer(VulkanResources vkRes,
+                         ref readonly FramebufferDescription description,
+                         bool isPresented) : base(vkRes, ObjectType.Framebuffer)
     {
         bool hasDepth = description.DepthTarget.HasValue;
 
@@ -117,7 +105,7 @@ public unsafe class Framebuffer : DeviceResource
         };
 
         VkRenderPass renderPassClear;
-        Vk.CreateRenderPass(graphicsDevice.Device, &createInfo, null, &renderPassClear).ThrowCode();
+        VkRes.Vk.CreateRenderPass(VkRes.VkDevice, &createInfo, null, &renderPassClear).ThrowCode();
 
         for (uint i = 0; i < colorAttachmentCount; i++)
         {
@@ -132,7 +120,7 @@ public unsafe class Framebuffer : DeviceResource
         }
 
         VkRenderPass renderPassLoad;
-        Vk.CreateRenderPass(graphicsDevice.Device, &createInfo, null, &renderPassLoad).ThrowCode();
+        VkRes.Vk.CreateRenderPass(VkRes.VkDevice, &createInfo, null, &renderPassLoad).ThrowCode();
 
         Texture[] colors = new Texture[colorAttachmentCount];
         TextureView[] colorViews = new TextureView[colorAttachmentCount];
@@ -145,7 +133,7 @@ public unsafe class Framebuffer : DeviceResource
                                                           attachmentDescription.ArrayLayer);
 
             colors[i] = attachmentDescription.Target;
-            colorViews[i] = new TextureView(graphicsDevice, in colorDescription);
+            colorViews[i] = new TextureView(VkRes, in colorDescription);
         }
 
         Texture? depth = null;
@@ -159,7 +147,7 @@ public unsafe class Framebuffer : DeviceResource
                                                           attachmentDescription.ArrayLayer);
 
             depth = attachmentDescription.Target;
-            depthView = new TextureView(graphicsDevice, in depthDescription);
+            depthView = new TextureView(VkRes, in depthDescription);
         }
 
         VkImageView[] imageViews = new VkImageView[attachmentCount];
@@ -201,89 +189,104 @@ public unsafe class Framebuffer : DeviceResource
         };
 
         VkFramebuffer framebuffer;
-        Vk.CreateFramebuffer(graphicsDevice.Device, &framebufferCreateInfo, null, &framebuffer).ThrowCode();
+        VkRes.Vk.CreateFramebuffer(VkRes.VkDevice, &framebufferCreateInfo, null, &framebuffer).ThrowCode();
 
-        _renderPassClear = renderPassClear;
-        _renderPassLoad = renderPassLoad;
-        _colors = colors;
-        _depth = depth;
-        _colorViews = colorViews;
-        _depthView = depthView;
-        _framebuffer = framebuffer;
-        _colorAttachmentCount = colorAttachmentCount;
-        _depthAttachmentCount = depthAttachmentCount;
-        _attachmentCount = attachmentCount;
-        _width = width;
-        _height = height;
-        _outputDescription = OutputDescription.CreateFromFramebufferDescription(in description);
-        _isPresented = isPresented;
+        Handle = framebuffer;
+        RenderPassClear = renderPassClear;
+        RenderPassLoad = renderPassLoad;
+        ColorAttachmentCount = colorAttachmentCount;
+        DepthAttachmentCount = depthAttachmentCount;
+        AttachmentCount = attachmentCount;
+        Colors = colors;
+        Depth = depth;
+        ColorViews = colorViews;
+        DepthView = depthView;
+        IsPresented = isPresented;
+        Width = width;
+        Height = height;
+        OutputDescription = OutputDescription.CreateFromFramebufferDescription(in description);
     }
 
-    internal VkFramebuffer Handle => _framebuffer;
+    internal override VkFramebuffer Handle { get; }
 
-    internal VkRenderPass RenderPassClear => _renderPassClear;
+    internal VkRenderPass RenderPassClear { get; }
 
-    internal VkRenderPass RenderPassLoad => _renderPassLoad;
+    internal VkRenderPass RenderPassLoad { get; }
 
-    internal uint ColorAttachmentCount => _colorAttachmentCount;
+    internal uint ColorAttachmentCount { get; }
 
-    internal uint DepthAttachmentCount => _depthAttachmentCount;
+    internal uint DepthAttachmentCount { get; }
 
-    internal uint AttachmentCount => _attachmentCount;
+    internal uint AttachmentCount { get; }
 
-    public uint Width => _width;
+    internal Texture[] Colors { get; }
 
-    public uint Height => _height;
+    internal Texture? Depth { get; }
 
-    public OutputDescription OutputDescription => _outputDescription;
+    internal TextureView[] ColorViews { get; }
+
+    internal TextureView? DepthView { get; }
+
+    internal bool IsPresented { get; }
+
+    public uint Width { get; }
+
+    public uint Height { get; }
+
+    public OutputDescription OutputDescription { get; }
 
     internal void TransitionToInitialLayout(CommandBuffer commandBuffer)
     {
-        for (int i = 0; i < _colorViews.Length; i++)
+        for (int i = 0; i < ColorViews.Length; i++)
         {
-            Texture color = _colors[i];
+            Texture color = Colors[i];
 
             color.TransitionLayout(commandBuffer, ImageLayout.ColorAttachmentOptimal);
         }
 
-        _depth?.TransitionLayout(commandBuffer, ImageLayout.DepthStencilAttachmentOptimal);
+        Depth?.TransitionLayout(commandBuffer, ImageLayout.DepthStencilAttachmentOptimal);
     }
 
     internal void TransitionToFinalLayout(CommandBuffer commandBuffer)
     {
-        for (int i = 0; i < _colorViews.Length; i++)
+        for (int i = 0; i < ColorViews.Length; i++)
         {
-            Texture color = _colors[i];
+            Texture color = Colors[i];
 
-            ImageLayout finalLayout = _isPresented
+            ImageLayout finalLayout = IsPresented
                 ? ImageLayout.PresentSrcKhr
                 : color.Usage.HasFlag(TextureUsage.Sampled) ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.ColorAttachmentOptimal;
 
             color.TransitionLayout(commandBuffer, finalLayout);
         }
 
-        if (_depth != null)
+        if (Depth != null)
         {
-            ImageLayout finalLayout = _depth.Usage.HasFlag(TextureUsage.Sampled)
+            ImageLayout finalLayout = Depth.Usage.HasFlag(TextureUsage.Sampled)
                 ? ImageLayout.ShaderReadOnlyOptimal
                 : ImageLayout.DepthStencilAttachmentOptimal;
 
-            _depth.TransitionLayout(commandBuffer, finalLayout);
+            Depth.TransitionLayout(commandBuffer, finalLayout);
         }
+    }
+
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
     }
 
     protected override void Destroy()
     {
-        Vk.DestroyFramebuffer(GraphicsDevice.Device, _framebuffer, null);
+        VkRes.Vk.DestroyFramebuffer(VkRes.VkDevice, Handle, null);
 
-        _depthView?.Dispose();
+        DepthView?.Dispose();
 
-        foreach (TextureView colorView in _colorViews)
+        foreach (TextureView colorView in ColorViews)
         {
             colorView.Dispose();
         }
 
-        Vk.DestroyRenderPass(GraphicsDevice.Device, _renderPassLoad, null);
-        Vk.DestroyRenderPass(GraphicsDevice.Device, _renderPassClear, null);
+        VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPassLoad, null);
+        VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPassClear, null);
     }
 }

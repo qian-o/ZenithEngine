@@ -2,11 +2,9 @@
 
 namespace Graphics.Vulkan;
 
-internal sealed unsafe class CommandPool : DeviceResource
+public unsafe class CommandPool : VulkanObject<VkCommandPool>
 {
-    private readonly VkCommandPool _commandPool;
-
-    public CommandPool(GraphicsDevice graphicsDevice, uint queueFamilyIndex) : base(graphicsDevice)
+    public CommandPool(VulkanResources vkRes, uint queueFamilyIndex) : base(vkRes, ObjectType.CommandPool)
     {
         CommandPoolCreateInfo createInfo = new()
         {
@@ -16,36 +14,41 @@ internal sealed unsafe class CommandPool : DeviceResource
         };
 
         VkCommandPool commandPool;
-        Vk.CreateCommandPool(Device, &createInfo, null, &commandPool).ThrowCode();
+        VkRes.Vk.CreateCommandPool(VkRes.VkDevice, &createInfo, null, &commandPool).ThrowCode();
 
-        _commandPool = commandPool;
+        Handle = commandPool;
     }
 
-    public VkCommandPool Handle => _commandPool;
+    internal override VkCommandPool Handle { get; }
 
     public CommandBuffer AllocateCommandBuffer()
     {
         CommandBufferAllocateInfo allocateInfo = new()
         {
             SType = StructureType.CommandBufferAllocateInfo,
-            CommandPool = _commandPool,
+            CommandPool = Handle,
             Level = CommandBufferLevel.Primary,
             CommandBufferCount = 1
         };
 
         CommandBuffer commandBuffer;
-        Vk.AllocateCommandBuffers(Device, &allocateInfo, &commandBuffer).ThrowCode();
+        VkRes.Vk.AllocateCommandBuffers(VkRes.VkDevice, &allocateInfo, &commandBuffer).ThrowCode();
 
         return commandBuffer;
     }
 
     public void FreeCommandBuffer(CommandBuffer commandBuffer)
     {
-        Vk.FreeCommandBuffers(Device, _commandPool, 1, &commandBuffer);
+        VkRes.Vk.FreeCommandBuffers(VkRes.VkDevice, Handle, 1, &commandBuffer);
+    }
+
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
     }
 
     protected override void Destroy()
     {
-        Vk.DestroyCommandPool(Device, _commandPool, null);
+        VkRes.Vk.DestroyCommandPool(VkRes.VkDevice, Handle, null);
     }
 }

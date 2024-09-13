@@ -149,9 +149,9 @@ internal static class Formats
         return kind switch
         {
             ResourceKind.UniformBuffer => dynamic ? DescriptorType.UniformBufferDynamic : DescriptorType.UniformBuffer,
-            ResourceKind.StructuredBufferReadOnly or ResourceKind.StructuredBufferReadWrite => dynamic ? DescriptorType.StorageBufferDynamic : DescriptorType.StorageBuffer,
-            ResourceKind.TextureReadOnly => DescriptorType.SampledImage,
-            ResourceKind.TextureReadWrite => DescriptorType.StorageImage,
+            ResourceKind.StorageBuffer => dynamic ? DescriptorType.StorageBufferDynamic : DescriptorType.StorageBuffer,
+            ResourceKind.SampledImage => DescriptorType.SampledImage,
+            ResourceKind.StorageImage => DescriptorType.StorageImage,
             ResourceKind.Sampler => DescriptorType.Sampler,
             _ => throw new ArgumentOutOfRangeException(nameof(kind))
         };

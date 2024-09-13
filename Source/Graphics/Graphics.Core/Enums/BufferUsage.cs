@@ -19,27 +19,27 @@ public enum BufferUsage : byte
     UniformBuffer = 1 << 2,
 
     /// <summary>
-    /// Indicates can be used as a read-only structured Buffer.
+    /// Indicates can be used as a read-write storage Buffer.
     /// </summary>
-    StructuredBufferReadOnly = 1 << 3,
-
-    /// <summary>
-    /// Indicates can be used as a read-write structured Buffer.
-    /// </summary>
-    StructuredBufferReadWrite = 1 << 4,
+    StorageBuffer = 1 << 3,
 
     /// <summary>
     /// Indicates can be used as the source of indirect drawing information.
     /// </summary>
-    IndirectBuffer = 1 << 5,
+    IndirectBuffer = 1 << 4,
 
     /// <summary>
     /// Indicates will be updated with new data very frequently.
     /// </summary>
-    Dynamic = 1 << 6,
+    Dynamic = 1 << 5,
 
     /// <summary>
     /// Indicates will be used as a staging Buffer.
     /// </summary>
-    Staging = 1 << 7
+    Staging = 1 << 6,
+
+    /// <summary>
+    /// Indicates will be used as a internal Buffer.
+    /// </summary>
+    Internal = 1 << 7
 }
