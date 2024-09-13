@@ -83,7 +83,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
     public ImGuiRenderer(GraphicsDevice graphicsDevice, ColorSpaceHandling colorSpaceHandling)
     {
         _graphicsDevice = graphicsDevice;
-        _factory = graphicsDevice.ResourceFactory;
+        _factory = graphicsDevice.Factory;
 
         CreateDeviceResources(colorSpaceHandling);
     }

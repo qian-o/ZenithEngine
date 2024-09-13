@@ -5,9 +5,8 @@ using Viewport = Graphics.Core.Viewport;
 
 namespace Graphics.Vulkan;
 
-public unsafe class CommandList : DeviceResource
+public unsafe class CommandList : VulkanObject<CommandBuffer>
 {
-    private readonly CommandPool _commandPool;
     private readonly object _disposablesLock;
     private readonly List<DisposableObject> _disposables;
     private readonly object _stagingResourcesLock;
@@ -19,11 +18,12 @@ public unsafe class CommandList : DeviceResource
     private Pipeline? _currentPipeline;
     private bool _isInRenderPass;
 
-    internal CommandList(GraphicsDevice graphicsDevice, Queue queue, CommandPool commandPool) : base(graphicsDevice)
+    internal CommandList(VulkanResources vkRes, Queue queue, CommandPool commandPool) : base(vkRes, ObjectType.CommandBuffer)
     {
-        Queue = queue;
-        _commandPool = commandPool;
         Handle = commandPool.AllocateCommandBuffer();
+        Queue = queue;
+        CommandPool = commandPool;
+
         _disposablesLock = new();
         _disposables = [];
         _stagingResourcesLock = new();
@@ -31,9 +31,11 @@ public unsafe class CommandList : DeviceResource
         _usedStagingBuffers = [];
     }
 
-    internal CommandBuffer Handle { get; }
+    internal override CommandBuffer Handle { get; }
 
     internal Queue Queue { get; }
+
+    internal CommandPool CommandPool { get; }
 
     public void Begin()
     {
@@ -42,7 +44,7 @@ public unsafe class CommandList : DeviceResource
             throw new InvalidOperationException("Command list is already recording.");
         }
 
-        Vk.ResetCommandBuffer(Handle, CommandBufferResetFlags.None).ThrowCode();
+        VkRes.Vk.ResetCommandBuffer(Handle, CommandBufferResetFlags.None).ThrowCode();
 
         CommandBufferBeginInfo beginInfo = new()
         {
@@ -50,7 +52,7 @@ public unsafe class CommandList : DeviceResource
             Flags = CommandBufferUsageFlags.OneTimeSubmitBit
         };
 
-        Vk.BeginCommandBuffer(Handle, &beginInfo).ThrowCode();
+        VkRes.Vk.BeginCommandBuffer(Handle, &beginInfo).ThrowCode();
 
         _isRecording = true;
     }
@@ -82,7 +84,7 @@ public unsafe class CommandList : DeviceResource
             MaxDepth = viewport.MaxDepth
         };
 
-        Vk.CmdSetViewport(Handle, index, 1, &vkViewport);
+        VkRes.Vk.CmdSetViewport(Handle, index, 1, &vkViewport);
     }
 
     public void SetScissorRect(uint index, uint x, uint y, uint width, uint height)
@@ -93,7 +95,7 @@ public unsafe class CommandList : DeviceResource
             Extent = new Extent2D { Width = width, Height = height }
         };
 
-        Vk.CmdSetScissor(Handle, index, 1, &scissor);
+        VkRes.Vk.CmdSetScissor(Handle, index, 1, &scissor);
     }
 
     public void SetFullViewports()
@@ -153,7 +155,7 @@ public unsafe class CommandList : DeviceResource
             }
         };
 
-        Vk.CmdClearAttachments(Handle, 1, &clearAttachment, 1, &clearRect);
+        VkRes.Vk.CmdClearAttachments(Handle, 1, &clearAttachment, 1, &clearRect);
     }
 
     public void ClearDepthStencil(float depth, byte stencil)
@@ -189,7 +191,7 @@ public unsafe class CommandList : DeviceResource
             }
         };
 
-        Vk.CmdClearAttachments(Handle, 1, &clearAttachment, 1, &clearRect);
+        VkRes.Vk.CmdClearAttachments(Handle, 1, &clearAttachment, 1, &clearRect);
     }
 
     public void ClearDepthStencil(float depth)
@@ -231,7 +233,7 @@ public unsafe class CommandList : DeviceResource
                 Size = sizeInBytes
             };
 
-            Vk.CmdCopyBuffer(Handle, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
+            VkRes.Vk.CmdCopyBuffer(Handle, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
         }
 
         // Add a memory barrier to ensure that the buffer is ready to be used
@@ -245,16 +247,16 @@ public unsafe class CommandList : DeviceResource
                 DstAccessMask = needToProtectUniformBuffer ? AccessFlags.UniformReadBit : AccessFlags.VertexAttributeReadBit
             };
 
-            Vk.CmdPipelineBarrier(Handle,
-                                  PipelineStageFlags.TransferBit,
-                                  needToProtectUniformBuffer ? PipelineStageFlags.AllGraphicsBit : PipelineStageFlags.VertexInputBit,
-                                  DependencyFlags.None,
-                                  1,
-                                  &memoryBarrier,
-                                  0,
-                                  null,
-                                  0,
-                                  null);
+            VkRes.Vk.CmdPipelineBarrier(Handle,
+                                        PipelineStageFlags.TransferBit,
+                                        needToProtectUniformBuffer ? PipelineStageFlags.AllGraphicsBit : PipelineStageFlags.VertexInputBit,
+                                        DependencyFlags.None,
+                                        1,
+                                        &memoryBarrier,
+                                        0,
+                                        null,
+                                        0,
+                                        null);
         }
 
         RecordUsedStagingBuffer(stagingBuffer);
@@ -350,7 +352,7 @@ public unsafe class CommandList : DeviceResource
                 ImageExtent = new Extent3D(width, height, depth)
             };
 
-            Vk.CmdCopyBufferToImage(Handle, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
+            VkRes.Vk.CmdCopyBufferToImage(Handle, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
         }
         texture.TransitionToBestLayout(Handle);
 
@@ -380,7 +382,7 @@ public unsafe class CommandList : DeviceResource
         VkBuffer vkBuffer = buffer.Handle;
         ulong vkOffset = offset;
 
-        Vk.CmdBindVertexBuffers(Handle, index, 1, &vkBuffer, &vkOffset);
+        VkRes.Vk.CmdBindVertexBuffers(Handle, index, 1, &vkBuffer, &vkOffset);
     }
 
     public void SetVertexBuffer(uint index, DeviceBuffer buffer)
@@ -390,7 +392,7 @@ public unsafe class CommandList : DeviceResource
 
     public void SetIndexBuffer(DeviceBuffer buffer, IndexFormat format, uint offset)
     {
-        Vk.CmdBindIndexBuffer(Handle, buffer.Handle, offset, Formats.GetIndexType(format));
+        VkRes.Vk.CmdBindIndexBuffer(Handle, buffer.Handle, offset, Formats.GetIndexType(format));
     }
 
     public void SetIndexBuffer(DeviceBuffer buffer, IndexFormat format)
@@ -402,7 +404,7 @@ public unsafe class CommandList : DeviceResource
     {
         if (pipeline.IsGraphics)
         {
-            Vk.CmdBindPipeline(Handle, PipelineBindPoint.Graphics, pipeline.Handle);
+            VkRes.Vk.CmdBindPipeline(Handle, PipelineBindPoint.Graphics, pipeline.Handle);
         }
 
         _currentPipeline = pipeline;
@@ -422,19 +424,19 @@ public unsafe class CommandList : DeviceResource
             Usage = BufferUsageFlags.ResourceDescriptorBufferBitExt | BufferUsageFlags.SamplerDescriptorBufferBitExt
         };
 
-        DescriptorBufferExt.CmdBindDescriptorBuffers(Handle, 1, &bindingInfoEXT);
+        VkRes.ExtDescriptorBuffer.CmdBindDescriptorBuffers(Handle, 1, &bindingInfoEXT);
 
         uint bufferIndices = 0;
         ulong offsets = 0;
         if (_currentPipeline.IsGraphics)
         {
-            DescriptorBufferExt.CmdSetDescriptorBufferOffsets(Handle,
-                                                              PipelineBindPoint.Graphics,
-                                                              _currentPipeline.Layout,
-                                                              slot,
-                                                              1,
-                                                              &bufferIndices,
-                                                              &offsets);
+            VkRes.ExtDescriptorBuffer.CmdSetDescriptorBufferOffsets(Handle,
+                                                                    PipelineBindPoint.Graphics,
+                                                                    _currentPipeline.Layout,
+                                                                    slot,
+                                                                    1,
+                                                                    &bufferIndices,
+                                                                    &offsets);
         }
     }
 
@@ -442,7 +444,7 @@ public unsafe class CommandList : DeviceResource
     {
         EnsureRenderPassActive();
 
-        Vk.CmdDrawIndexed(Handle, indexCount, instanceCount, indexStart, vertexOffset, instanceStart);
+        VkRes.Vk.CmdDrawIndexed(Handle, indexCount, instanceCount, indexStart, vertexOffset, instanceStart);
     }
 
     public void DrawIndexed(uint indexCount)
@@ -497,13 +499,13 @@ public unsafe class CommandList : DeviceResource
             DstOffset = new Offset3D()
         };
 
-        Vk.CmdResolveImage(Handle,
-                           source.Handle,
-                           ImageLayout.TransferSrcOptimal,
-                           destination.Handle,
-                           ImageLayout.TransferDstOptimal,
-                           1,
-                           &resolve);
+        VkRes.Vk.CmdResolveImage(Handle,
+                                 source.Handle,
+                                 ImageLayout.TransferSrcOptimal,
+                                 destination.Handle,
+                                 ImageLayout.TransferDstOptimal,
+                                 1,
+                                 &resolve);
 
         source.TransitionToBestLayout(Handle);
         destination.TransitionToBestLayout(Handle);
@@ -563,14 +565,14 @@ public unsafe class CommandList : DeviceResource
                     }
                 };
 
-                Vk.CmdBlitImage(Handle,
-                                texture.Handle,
-                                ImageLayout.TransferSrcOptimal,
-                                texture.Handle,
-                                ImageLayout.TransferDstOptimal,
-                                1,
-                                &blit,
-                                Filter.Linear);
+                VkRes.Vk.CmdBlitImage(Handle,
+                                      texture.Handle,
+                                      ImageLayout.TransferSrcOptimal,
+                                      texture.Handle,
+                                      ImageLayout.TransferDstOptimal,
+                                      1,
+                                      &blit,
+                                      Filter.Linear);
 
                 width = mipWidth;
                 height = mipHeight;
@@ -590,7 +592,7 @@ public unsafe class CommandList : DeviceResource
 
         EndRenderPass();
 
-        Vk.EndCommandBuffer(Handle).ThrowCode();
+        VkRes.Vk.EndCommandBuffer(Handle).ThrowCode();
 
         _isRecording = false;
     }
@@ -618,6 +620,11 @@ public unsafe class CommandList : DeviceResource
         ReturnUsedStagingResources();
     }
 
+    internal override ulong[] GetHandles()
+    {
+        return [(ulong)Handle.Handle];
+    }
+
     protected override void Destroy()
     {
         ReturnUsedStagingResources();
@@ -629,7 +636,7 @@ public unsafe class CommandList : DeviceResource
 
         _availableStagingBuffers.Clear();
 
-        _commandPool.FreeCommandBuffer(Handle);
+        CommandPool.FreeCommandBuffer(Handle);
     }
 
     private void BeginRenderPass()
@@ -689,7 +696,7 @@ public unsafe class CommandList : DeviceResource
                 PClearValues = (ClearValue*)clearColorValues.AsPointer()
             };
 
-            Vk.CmdBeginRenderPass(Handle, &beginInfo, SubpassContents.Inline);
+            VkRes.Vk.CmdBeginRenderPass(Handle, &beginInfo, SubpassContents.Inline);
 
             _isInRenderPass = true;
         }
@@ -699,18 +706,18 @@ public unsafe class CommandList : DeviceResource
     {
         if (_isInRenderPass)
         {
-            Vk.CmdEndRenderPass(Handle);
+            VkRes.Vk.CmdEndRenderPass(Handle);
 
-            Vk.CmdPipelineBarrier(Handle,
-                                  PipelineStageFlags.BottomOfPipeBit,
-                                  PipelineStageFlags.TopOfPipeBit,
-                                  DependencyFlags.None,
-                                  0,
-                                  null,
-                                  0,
-                                  null,
-                                  0,
-                                  null);
+            VkRes.Vk.CmdPipelineBarrier(Handle,
+                                        PipelineStageFlags.BottomOfPipeBit,
+                                        PipelineStageFlags.TopOfPipeBit,
+                                        DependencyFlags.None,
+                                        0,
+                                        null,
+                                        0,
+                                        null,
+                                        0,
+                                        null);
 
             _isInRenderPass = false;
         }
@@ -733,7 +740,7 @@ public unsafe class CommandList : DeviceResource
 
         uint bufferSize = Math.Max(GraphicsDevice.MinStagingBufferSize, sizeInBytes);
 
-        return ResourceFactory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
+        return VkRes.GraphicsDevice.Factory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
     }
 
     private void RecordUsedStagingBuffer(DeviceBuffer stagingBuffer)

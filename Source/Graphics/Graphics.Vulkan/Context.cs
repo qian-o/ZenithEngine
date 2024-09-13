@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Silk.NET.Core;
+using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
@@ -13,6 +14,15 @@ namespace Graphics.Vulkan;
 public unsafe partial class Context : DisposableObject
 {
     public const string ValidationLayerName = "VK_LAYER_KHRONOS_validation";
+
+    private readonly Alloter _alloter;
+    private readonly Vk _vk;
+    private readonly VkInstance _instance;
+    private readonly ExtDebugUtils? _debugUtilsExt;
+    private readonly KhrSurface _surfaceExt;
+    private readonly DebugUtilsMessengerEXT? _debugUtilsMessenger;
+    private readonly Dictionary<PhysicalDevice, VulkanResources> _physicalDeviceMap;
+    private readonly Dictionary<GraphicsDevice, VulkanResources> _graphicsDeviceMap;
 
     static Context()
     {
@@ -25,14 +35,15 @@ public unsafe partial class Context : DisposableObject
 
     public Context()
     {
-        Vk = Vk.GetApi();
+        _alloter = new();
+        _vk = Vk.GetApi();
 
         // Create instance
-        Instance = CreateInstance();
+        _instance = CreateInstance();
 
         // Load instance extensions
-        DebugUtilsExt = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
-        SurfaceExt = CreateInstanceExtension<KhrSurface>();
+        _debugUtilsExt = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
+        _surfaceExt = CreateInstanceExtension<KhrSurface>();
 
         // Debug message callback
         if (Debugging)
@@ -52,38 +63,149 @@ public unsafe partial class Context : DisposableObject
             };
 
             DebugUtilsMessengerEXT debugUtilsMessenger;
-            DebugUtilsExt!.CreateDebugUtilsMessenger(Instance, &createInfo, null, &debugUtilsMessenger)
+            _debugUtilsExt!.CreateDebugUtilsMessenger(_instance, &createInfo, null, &debugUtilsMessenger)
                            .ThrowCode("Failed to create debug messenger!");
 
-            DebugUtilsMessenger = debugUtilsMessenger;
+            _debugUtilsMessenger = debugUtilsMessenger;
         }
+
+        _physicalDeviceMap = [];
+        _graphicsDeviceMap = [];
     }
-
-    internal Alloter Alloter { get; } = new();
-
-    internal Vk Vk { get; }
-
-    internal Instance Instance { get; }
-
-    internal ExtDebugUtils? DebugUtilsExt { get; }
-
-    internal KhrSurface SurfaceExt { get; }
-
-    internal DebugUtilsMessengerEXT? DebugUtilsMessenger { get; }
 
     public static bool Debugging { get; }
 
+    public PhysicalDevice[] EnumeratePhysicalDevices()
+    {
+        // Physical device
+        uint physicalDeviceCount = 0;
+        _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, null).ThrowCode("Failed to enumerate physical devices!");
+
+        if (physicalDeviceCount == 0)
+        {
+            throw new InvalidOperationException("No physical devices found!");
+        }
+
+        // Enumerate physical devices
+        VkPhysicalDevice[] physicalDevices = new VkPhysicalDevice[(int)physicalDeviceCount];
+        _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices).ThrowCode("Failed to enumerate physical devices!");
+
+        return physicalDevices.Select(CreatePhysicalDevice).ToArray();
+    }
+
+    public PhysicalDevice GetBestPhysicalDevice()
+    {
+        PhysicalDevice[] physicalDevices = EnumeratePhysicalDevices();
+
+        return physicalDevices.OrderByDescending(item => item.Score).First();
+    }
+
+    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice, Window window)
+    {
+        float queuePriority = 1.0f;
+
+        uint graphicsQueueFamilyIndex = physicalDevice.GetQueueFamilyIndex(QueueFlags.GraphicsBit);
+        uint computeQueueFamilyIndex = physicalDevice.GetQueueFamilyIndex(QueueFlags.ComputeBit);
+        uint transferQueueFamilyIndex = physicalDevice.GetQueueFamilyIndex(QueueFlags.TransferBit);
+
+        HashSet<uint> uniqueQueueFamilyIndices =
+        [
+            graphicsQueueFamilyIndex,
+            computeQueueFamilyIndex,
+            transferQueueFamilyIndex
+        ];
+
+        DeviceQueueCreateInfo[] createInfos = new DeviceQueueCreateInfo[uniqueQueueFamilyIndices.Count];
+
+        for (int i = 0; i < createInfos.Length; i++)
+        {
+            createInfos[i] = new DeviceQueueCreateInfo
+            {
+                SType = StructureType.DeviceQueueCreateInfo,
+                QueueFamilyIndex = uniqueQueueFamilyIndices.ElementAt(i),
+                QueueCount = 1,
+                PQueuePriorities = &queuePriority
+            };
+        }
+
+        string[] deviceExtensions = [KhrSwapchain.ExtensionName, ExtDescriptorBuffer.ExtensionName];
+
+        PhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures = new()
+        {
+            SType = StructureType.PhysicalDeviceDescriptorIndexingFeatures
+        };
+        PhysicalDeviceDescriptorBufferFeaturesEXT descriptorBufferFeaturesEXT = new()
+        {
+            SType = StructureType.PhysicalDeviceDescriptorBufferFeaturesExt,
+            PNext = &descriptorIndexingFeatures
+        };
+        PhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = new()
+        {
+            SType = StructureType.PhysicalDeviceBufferDeviceAddressFeatures,
+            PNext = &descriptorBufferFeaturesEXT
+        };
+        PhysicalDeviceVulkan13Features vulkan13Features = new()
+        {
+            SType = StructureType.PhysicalDeviceVulkan13Features,
+            PNext = &bufferDeviceAddressFeatures
+        };
+        PhysicalDeviceFeatures2 features2 = new()
+        {
+            SType = StructureType.PhysicalDeviceFeatures2,
+            PNext = &vulkan13Features
+        };
+        _vk.GetPhysicalDeviceFeatures2(physicalDevice.Handle, &features2);
+
+        DeviceCreateInfo createInfo = new()
+        {
+            SType = StructureType.DeviceCreateInfo,
+            QueueCreateInfoCount = (uint)createInfos.Length,
+            PQueueCreateInfos = _alloter.Allocate(createInfos),
+            EnabledExtensionCount = (uint)deviceExtensions.Length,
+            PpEnabledExtensionNames = _alloter.Allocate(deviceExtensions),
+            PNext = &features2
+        };
+
+        VkDevice device;
+        _vk.CreateDevice(physicalDevice.Handle, &createInfo, null, &device).ThrowCode("Failed to create device.");
+
+        _alloter.Clear();
+
+        GraphicsDevice graphicsDevice = CreateGraphicsDevice(physicalDevice,
+                                                             device,
+                                                             window.VkSurface!,
+                                                             graphicsQueueFamilyIndex,
+                                                             computeQueueFamilyIndex,
+                                                             transferQueueFamilyIndex);
+
+        graphicsDevice.MainSwapchain.Resize((uint)window.FramebufferSize.X, (uint)window.FramebufferSize.Y);
+
+        return graphicsDevice;
+    }
+
     protected override void Destroy()
     {
-        SurfaceExt.Dispose();
+        foreach (KeyValuePair<PhysicalDevice, VulkanResources> pair in _physicalDeviceMap)
+        {
+            pair.Value.Dispose();
+        }
+        foreach (KeyValuePair<GraphicsDevice, VulkanResources> pair in _graphicsDeviceMap)
+        {
+            pair.Value.Dispose();
+        }
 
-        DebugUtilsExt?.DestroyDebugUtilsMessenger(Instance, DebugUtilsMessenger!.Value, null);
-        DebugUtilsExt?.Dispose();
+        _physicalDeviceMap.Clear();
+        _graphicsDeviceMap.Clear();
 
-        Vk.DestroyInstance(Instance, null);
-        Vk.Dispose();
+        _debugUtilsExt?.DestroyDebugUtilsMessenger(_instance, _debugUtilsMessenger!.Value, null);
+        _debugUtilsExt?.Dispose();
 
-        Alloter.Dispose();
+        _surfaceExt.Dispose();
+
+        _vk.DestroyInstance(_instance, null);
+        _vk.Dispose();
+
+        _alloter.Dispose();
     }
 
     /// <summary>
@@ -93,10 +215,10 @@ public unsafe partial class Context : DisposableObject
     private bool CheckValidationLayerSupport()
     {
         uint layerCount = 0;
-        Vk.EnumerateInstanceLayerProperties(&layerCount, null);
+        _vk.EnumerateInstanceLayerProperties(&layerCount, null);
 
         LayerProperties[] availableLayers = new LayerProperties[(int)layerCount];
-        Vk.EnumerateInstanceLayerProperties(&layerCount, availableLayers);
+        _vk.EnumerateInstanceLayerProperties(&layerCount, availableLayers);
 
         for (int i = 0; i < layerCount; i++)
         {
@@ -116,14 +238,14 @@ public unsafe partial class Context : DisposableObject
     /// </summary>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException">InvalidOperationException</exception>
-    private Instance CreateInstance()
+    private VkInstance CreateInstance()
     {
         ApplicationInfo applicationInfo = new()
         {
             SType = StructureType.ApplicationInfo,
-            PApplicationName = Alloter.Allocate("Graphics"),
+            PApplicationName = _alloter.Allocate("Graphics"),
             ApplicationVersion = new Version32(1, 0, 0),
-            PEngineName = Alloter.Allocate("Graphics"),
+            PEngineName = _alloter.Allocate("Graphics"),
             EngineVersion = new Version32(1, 0, 0),
             ApiVersion = Vk.Version13
         };
@@ -142,7 +264,7 @@ public unsafe partial class Context : DisposableObject
         if (Debugging)
         {
             createInfo.EnabledLayerCount = 1;
-            createInfo.PpEnabledLayerNames = Alloter.Allocate([ValidationLayerName]);
+            createInfo.PpEnabledLayerNames = _alloter.Allocate([ValidationLayerName]);
         }
 
         string[] extensions = [KhrSurface.ExtensionName];
@@ -162,12 +284,12 @@ public unsafe partial class Context : DisposableObject
         }
 
         createInfo.EnabledExtensionCount = (uint)extensions.Length;
-        createInfo.PpEnabledExtensionNames = Alloter.Allocate(extensions);
+        createInfo.PpEnabledExtensionNames = _alloter.Allocate(extensions);
 
-        Instance instance;
-        Vk.CreateInstance(&createInfo, null, &instance).ThrowCode("Failed to create instance!");
+        VkInstance instance;
+        _vk.CreateInstance(&createInfo, null, &instance).ThrowCode("Failed to create instance!");
 
-        Alloter.Clear();
+        _alloter.Clear();
 
         return instance;
     }
@@ -180,12 +302,54 @@ public unsafe partial class Context : DisposableObject
     /// <exception cref="InvalidOperationException">InvalidOperationException</exception>
     private T CreateInstanceExtension<T>() where T : NativeExtension<Vk>
     {
-        if (!Vk.TryGetInstanceExtension(Instance, out T ext))
+        if (!_vk.TryGetInstanceExtension(_instance, out T ext))
         {
             throw new InvalidOperationException($"Failed to load extension {typeof(T).Name}!");
         }
 
         return ext;
+    }
+
+    private PhysicalDevice CreatePhysicalDevice(VkPhysicalDevice vkPhysicalDevice)
+    {
+        lock (_physicalDeviceMap)
+        {
+            VulkanResources vulkanResources = new();
+            vulkanResources.InitializeContext(_vk, _instance, _debugUtilsExt, _surfaceExt);
+
+            PhysicalDevice physicalDevice = new(vulkanResources, vkPhysicalDevice);
+
+            _physicalDeviceMap.Add(physicalDevice, vulkanResources);
+
+            return physicalDevice;
+        }
+    }
+
+    private GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice,
+                                                VkDevice device,
+                                                IVkSurface windowSurface,
+                                                uint graphicsQueueFamilyIndex,
+                                                uint computeQueueFamilyIndex,
+                                                uint transferQueueFamilyIndex)
+    {
+        lock (_graphicsDeviceMap)
+        {
+            VulkanResources vulkanResources = new();
+            vulkanResources.InitializeContext(_vk, _instance, _debugUtilsExt, _surfaceExt);
+
+            physicalDevice.FillResources(vulkanResources);
+
+            GraphicsDevice graphicsDevice = new(vulkanResources,
+                                                device,
+                                                windowSurface,
+                                                graphicsQueueFamilyIndex,
+                                                computeQueueFamilyIndex,
+                                                transferQueueFamilyIndex);
+
+            _graphicsDeviceMap.Add(graphicsDevice, vulkanResources);
+
+            return graphicsDevice;
+        }
     }
 
     private uint DebugMessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,

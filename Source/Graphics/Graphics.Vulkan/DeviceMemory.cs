@@ -2,15 +2,18 @@
 
 namespace Graphics.Vulkan;
 
-internal sealed unsafe class DeviceMemory : DeviceResource
+public unsafe class DeviceMemory : VulkanObject<VkDeviceMemory>
 {
-    internal DeviceMemory(GraphicsDevice graphicsDevice, ref readonly MemoryRequirements requirements, MemoryPropertyFlags flags, bool isAddress) : base(graphicsDevice)
+    internal DeviceMemory(VulkanResources vkRes,
+                          ref readonly MemoryRequirements requirements,
+                          MemoryPropertyFlags flags,
+                          bool isAddress) : base(vkRes, ObjectType.DeviceMemory)
     {
         MemoryAllocateInfo allocateInfo = new()
         {
             SType = StructureType.MemoryAllocateInfo,
             AllocationSize = requirements.Size,
-            MemoryTypeIndex = PhysicalDevice.FindMemoryTypeIndex(requirements.MemoryTypeBits, flags)
+            MemoryTypeIndex = VkRes.PhysicalDevice.FindMemoryTypeIndex(requirements.MemoryTypeBits, flags)
         };
 
         if (isAddress)
@@ -25,15 +28,20 @@ internal sealed unsafe class DeviceMemory : DeviceResource
         }
 
         VkDeviceMemory deviceMemory;
-        Vk.AllocateMemory(Device, &allocateInfo, null, &deviceMemory).ThrowCode();
+        VkRes.Vk.AllocateMemory(VkRes.GraphicsDevice.Handle, &allocateInfo, null, &deviceMemory).ThrowCode();
 
         Handle = deviceMemory;
     }
 
-    internal VkDeviceMemory Handle { get; }
+    internal override VkDeviceMemory Handle { get; }
+
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
+    }
 
     protected override void Destroy()
     {
-        Vk.FreeMemory(Device, Handle, null);
+        VkRes.Vk.FreeMemory(VkRes.GraphicsDevice.Handle, Handle, null);
     }
 }

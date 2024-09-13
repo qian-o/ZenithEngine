@@ -135,7 +135,7 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
                 DepthFormat = _graphicsDevice.GetBestDepthFormat()
             };
 
-            Swapchain = _graphicsDevice.ResourceFactory.CreateSwapchain(in swapchainDescription);
+            Swapchain = _graphicsDevice.Factory.CreateSwapchain(in swapchainDescription);
         }
 
         Register();

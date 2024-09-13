@@ -3,9 +3,17 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class PhysicalDevice : ContextObject
+public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
 {
-    internal PhysicalDevice(Context context, VkPhysicalDevice vkPhysicalDevice) : base(context)
+    private PhysicalDeviceProperties _properties;
+    private PhysicalDeviceDescriptorBufferPropertiesEXT _descriptorBufferProperties;
+    private PhysicalDeviceDescriptorIndexingProperties _descriptorIndexingProperties;
+    private PhysicalDeviceFeatures _features;
+    private PhysicalDeviceMemoryProperties _memoryProperties;
+    private QueueFamilyProperties[] _queueFamilyProperties;
+    private ExtensionProperties[] _extensionProperties;
+
+    internal PhysicalDevice(VulkanResources vkRes, VkPhysicalDevice physicalDevice) : base(vkRes, ObjectType.PhysicalDevice)
     {
         PhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties = new()
         {
@@ -21,63 +29,78 @@ public unsafe class PhysicalDevice : ContextObject
             SType = StructureType.PhysicalDeviceProperties2,
             PNext = &descriptorBufferProperties
         };
-        Vk.GetPhysicalDeviceProperties2(vkPhysicalDevice, &properties2);
+        VkRes.Vk.GetPhysicalDeviceProperties2(physicalDevice, &properties2);
 
         PhysicalDeviceFeatures features;
-        Vk.GetPhysicalDeviceFeatures(vkPhysicalDevice, &features);
+        VkRes.Vk.GetPhysicalDeviceFeatures(physicalDevice, &features);
 
         PhysicalDeviceMemoryProperties memoryProperties;
-        Vk.GetPhysicalDeviceMemoryProperties(vkPhysicalDevice, &memoryProperties);
+        VkRes.Vk.GetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 
         uint queueFamilyPropertyCount = 0;
-        Vk.GetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyPropertyCount, null);
+        VkRes.Vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertyCount, null);
 
         QueueFamilyProperties[] queueFamilyProperties = new QueueFamilyProperties[(int)queueFamilyPropertyCount];
-        Vk.GetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyPropertyCount, queueFamilyProperties);
+        VkRes.Vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties);
 
         uint extensionPropertyCount = 0;
-        Vk.EnumerateDeviceExtensionProperties(vkPhysicalDevice, string.Empty, &extensionPropertyCount, null);
+        VkRes.Vk.EnumerateDeviceExtensionProperties(physicalDevice, string.Empty, &extensionPropertyCount, null);
 
         ExtensionProperties[] extensionProperties = new ExtensionProperties[(int)extensionPropertyCount];
-        Vk.EnumerateDeviceExtensionProperties(vkPhysicalDevice, string.Empty, &extensionPropertyCount, extensionProperties);
+        VkRes.Vk.EnumerateDeviceExtensionProperties(physicalDevice, string.Empty, &extensionPropertyCount, extensionProperties);
 
-        Handle = vkPhysicalDevice;
-        Properties = properties2.Properties;
-        DescriptorBufferProperties = descriptorBufferProperties;
-        DescriptorIndexingProperties = descriptorIndexingProperties;
-        Features = features;
-        MemoryProperties = memoryProperties;
-        QueueFamilyProperties = queueFamilyProperties;
-        ExtensionProperties = extensionProperties;
+        Handle = physicalDevice;
         Name = Alloter.GetString(properties2.Properties.DeviceName);
         Score = properties2.Properties.DeviceType == PhysicalDeviceType.DiscreteGpu ? 1000u : 0u;
+
+        _properties = properties2.Properties;
+        _descriptorBufferProperties = descriptorBufferProperties;
+        _descriptorIndexingProperties = descriptorIndexingProperties;
+        _features = features;
+        _memoryProperties = memoryProperties;
+        _queueFamilyProperties = queueFamilyProperties;
+        _extensionProperties = extensionProperties;
     }
 
-    public string Name { get; }
+    internal override VkPhysicalDevice Handle { get; }
 
     public uint Score { get; }
 
-    internal VkPhysicalDevice Handle { get; }
+    internal override ulong[] GetHandles()
+    {
+        return [(ulong)Handle.Handle];
+    }
 
-    internal PhysicalDeviceProperties Properties { get; }
+    internal void FillResources(VulkanResources vulkanResources)
+    {
+        vulkanResources.InitializePhysicalDevice(this,
+                                                 _properties,
+                                                 _descriptorBufferProperties,
+                                                 _descriptorIndexingProperties,
+                                                 _features,
+                                                 _memoryProperties,
+                                                 _queueFamilyProperties,
+                                                 _extensionProperties);
+    }
 
-    internal PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties { get; }
+    internal uint GetQueueFamilyIndex(QueueFlags flags)
+    {
+        for (int i = 0; i < _queueFamilyProperties.Length; i++)
+        {
+            if ((_queueFamilyProperties[i].QueueFlags & flags) == flags)
+            {
+                return (uint)i;
+            }
+        }
 
-    internal PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties { get; }
-
-    internal PhysicalDeviceFeatures Features { get; }
-
-    internal PhysicalDeviceMemoryProperties MemoryProperties { get; }
-
-    internal QueueFamilyProperties[] QueueFamilyProperties { get; }
-
-    internal ExtensionProperties[] ExtensionProperties { get; }
+        return 0;
+    }
 
     internal uint FindMemoryTypeIndex(uint memoryTypeBits, MemoryPropertyFlags memoryPropertyFlags)
     {
-        for (uint i = 0; i < MemoryProperties.MemoryTypeCount; i++)
+        for (uint i = 0; i < _memoryProperties.MemoryTypeCount; i++)
         {
-            if ((memoryTypeBits & (1 << (int)i)) != 0 && (MemoryProperties.MemoryTypes[(int)i].PropertyFlags & memoryPropertyFlags) == memoryPropertyFlags)
+            if ((memoryTypeBits & (1 << (int)i)) != 0 && (_memoryProperties.MemoryTypes[(int)i].PropertyFlags & memoryPropertyFlags) == memoryPropertyFlags)
             {
                 return i;
             }
@@ -91,7 +114,7 @@ public unsafe class PhysicalDevice : ContextObject
         foreach (Format format in candidates)
         {
             FormatProperties formatProperties;
-            Vk.GetPhysicalDeviceFormatProperties(Handle, format, &formatProperties);
+            VkRes.Vk.GetPhysicalDeviceFormatProperties(Handle, format, &formatProperties);
 
             if (tiling == ImageTiling.Linear && formatProperties.LinearTilingFeatures.HasFlag(features))
             {
@@ -109,33 +132,5 @@ public unsafe class PhysicalDevice : ContextObject
 
     protected override void Destroy()
     {
-    }
-}
-
-public unsafe partial class Context
-{
-    public PhysicalDevice[] EnumeratePhysicalDevices()
-    {
-        // Physical device
-        uint physicalDeviceCount = 0;
-        Vk.EnumeratePhysicalDevices(Instance, &physicalDeviceCount, null).ThrowCode("Failed to enumerate physical devices!");
-
-        if (physicalDeviceCount == 0)
-        {
-            throw new InvalidOperationException("No physical devices found!");
-        }
-
-        // Enumerate physical devices
-        VkPhysicalDevice[] physicalDevices = new VkPhysicalDevice[(int)physicalDeviceCount];
-        Vk.EnumeratePhysicalDevices(Instance, &physicalDeviceCount, physicalDevices).ThrowCode("Failed to enumerate physical devices!");
-
-        return physicalDevices.Select(item => new PhysicalDevice(this, item)).ToArray();
-    }
-
-    public PhysicalDevice GetBestPhysicalDevice()
-    {
-        PhysicalDevice[] physicalDevices = EnumeratePhysicalDevices();
-
-        return physicalDevices.OrderByDescending(item => item.Score).First();
     }
 }

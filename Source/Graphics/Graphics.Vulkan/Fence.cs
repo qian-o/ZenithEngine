@@ -2,11 +2,11 @@
 
 namespace Graphics.Vulkan;
 
-internal sealed unsafe class Fence : DeviceResource
+public unsafe class Fence : VulkanObject<VkFence>
 {
     private readonly VkFence _fence;
 
-    public Fence(GraphicsDevice graphicsDevice) : base(graphicsDevice)
+    internal Fence(VulkanResources vkRes) : base(vkRes, ObjectType.Fence)
     {
         FenceCreateInfo createInfo = new()
         {
@@ -15,25 +15,30 @@ internal sealed unsafe class Fence : DeviceResource
         };
 
         VkFence fence;
-        Vk.CreateFence(Device, &createInfo, null, &fence).ThrowCode();
-        Vk.ResetFences(Device, 1, &fence).ThrowCode();
+        VkRes.Vk.CreateFence(VkRes.GraphicsDevice.Handle, &createInfo, null, &fence).ThrowCode();
+        VkRes.Vk.ResetFences(VkRes.GraphicsDevice.Handle, 1, &fence).ThrowCode();
 
         _fence = fence;
     }
 
-    public VkFence Handle => _fence;
+    internal override VkFence Handle { get; }
 
     public void WaitAndReset()
     {
         fixed (VkFence* fence = &_fence)
         {
-            Vk.WaitForFences(Device, 1, fence, Vk.True, ulong.MaxValue).ThrowCode();
-            Vk.ResetFences(Device, 1, fence).ThrowCode();
+            VkRes.Vk.WaitForFences(VkRes.GraphicsDevice.Handle, 1, fence, Vk.True, ulong.MaxValue).ThrowCode();
+            VkRes.Vk.ResetFences(VkRes.GraphicsDevice.Handle, 1, fence).ThrowCode();
         }
+    }
+
+    internal override ulong[] GetHandles()
+    {
+        return [_fence.Handle];
     }
 
     protected override void Destroy()
     {
-        Vk.DestroyFence(Device, _fence, null);
+        VkRes.Vk.DestroyFence(VkRes.GraphicsDevice.Handle, _fence, null);
     }
 }

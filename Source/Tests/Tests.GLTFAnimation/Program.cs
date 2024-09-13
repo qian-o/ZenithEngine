@@ -205,7 +205,7 @@ internal sealed unsafe class Program
 
         ModelRoot root = ModelRoot.Load("Assets/Models/buster_drone/scene.gltf", new ReadSettings() { Validation = ValidationMode.Skip });
 
-        using CommandList commandList = _device.ResourceFactory.CreateGraphicsCommandList();
+        using CommandList commandList = _device.Factory.CreateGraphicsCommandList();
 
         commandList.Begin();
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
@@ -226,10 +226,10 @@ internal sealed unsafe class Program
 
             TextureDescription description = TextureDescription.Texture2D((uint)width, (uint)height, mipLevels, PixelFormat.R8G8B8A8UNorm, TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
 
-            Texture texture = _device.ResourceFactory.CreateTexture(in description);
+            Texture texture = _device.Factory.CreateTexture(in description);
             texture.Name = gltfTexture.Name;
 
-            TextureView textureView = _device.ResourceFactory.CreateTextureView(texture);
+            TextureView textureView = _device.Factory.CreateTextureView(texture);
             textureView.Name = gltfTexture.Name;
 
             commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
@@ -322,14 +322,14 @@ internal sealed unsafe class Program
 
         _worldSpaceMats = new Matrix4x4[_nodes.Count];
 
-        _vertexBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Count), BufferUsage.VertexBuffer));
+        _vertexBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Count), BufferUsage.VertexBuffer));
         _device.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
 
-        _indexBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
+        _indexBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
         _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
 
-        _frameBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(Frame), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-        _nodeTransformBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Matrix4x4) * _worldSpaceMats.Length), BufferUsage.StorageBuffer | BufferUsage.Dynamic));
+        _frameBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(Frame), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _nodeTransformBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(Matrix4x4) * _worldSpaceMats.Length), BufferUsage.StorageBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("frame", ResourceKind.UniformBuffer, ShaderStages.Vertex),
                                                              new ResourceLayoutElementDescription("nodeTransform", ResourceKind.StorageBuffer, ShaderStages.Vertex));
@@ -338,15 +338,15 @@ internal sealed unsafe class Program
         ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
                                                                                                  new ResourceLayoutElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
-        _uboLayout = _device.ResourceFactory.CreateResourceLayout(in uboLayoutDescription);
-        _uboSet = _device.ResourceFactory.CreateResourceSet(new ResourceSetDescription(_uboLayout, _frameBuffer, _nodeTransformBuffer));
+        _uboLayout = _device.Factory.CreateResourceLayout(in uboLayoutDescription);
+        _uboSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_uboLayout, _frameBuffer, _nodeTransformBuffer));
 
-        _textureMapLayout = _device.ResourceFactory.CreateResourceLayout(in textureMapDescription);
-        _textureMapSet = _device.ResourceFactory.CreateResourceSet(new ResourceSetDescription(_textureMapLayout));
+        _textureMapLayout = _device.Factory.CreateResourceLayout(in textureMapDescription);
+        _textureMapSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_textureMapLayout));
         _textureMapSet.UpdateBindless([.. _textureViews]);
 
-        _textureSamplerLayout = _device.ResourceFactory.CreateResourceLayout(in textureSamplerDescription);
-        _textureSamplerSet = _device.ResourceFactory.CreateResourceSet(new ResourceSetDescription(_textureSamplerLayout));
+        _textureSamplerLayout = _device.Factory.CreateResourceLayout(in textureSamplerDescription);
+        _textureSamplerSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_textureSamplerLayout));
         _textureSamplerSet.UpdateBindless([_device.Aniso4xSampler, _device.LinearSampler]);
 
         VertexElementDescription positionDescription = new("Position", VertexElementFormat.Float3);
@@ -358,7 +358,7 @@ internal sealed unsafe class Program
         VertexElementDescription colorMapIndexDescription = new("ColorMapIndex", VertexElementFormat.Int1);
         VertexElementDescription normalMapIndexDescription = new("NormalMapIndex", VertexElementFormat.Int1);
 
-        _shaders = _device.ResourceFactory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
+        _shaders = _device.Factory.CreateFromSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
                                                            new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
         _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription,
@@ -387,10 +387,10 @@ internal sealed unsafe class Program
                 Outputs = _device.MainSwapchain.OutputDescription
             };
 
-            _pipelines[i] = _device.ResourceFactory.CreateGraphicsPipeline(ref pipelineDescription);
+            _pipelines[i] = _device.Factory.CreateGraphicsPipeline(ref pipelineDescription);
         }
 
-        _commandList = _device.ResourceFactory.CreateGraphicsCommandList();
+        _commandList = _device.Factory.CreateGraphicsCommandList();
     }
 
     private static void Window_Update(object? sender, UpdateEventArgs e)

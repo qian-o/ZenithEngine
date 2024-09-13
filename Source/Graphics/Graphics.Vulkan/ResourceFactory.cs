@@ -89,8 +89,8 @@ public class ResourceFactory : ContextObject
     public CommandList CreateGraphicsCommandList()
     {
         return new CommandList(_graphicsDevice,
-                               _graphicsDevice.GraphicsQueue,
-                               _graphicsDevice.GraphicsCommandPool);
+                               _graphicsDevice._graphicsQueue,
+                               _graphicsDevice._graphicsCommandPool);
     }
 
     protected override void Destroy()

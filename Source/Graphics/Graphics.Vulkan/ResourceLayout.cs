@@ -32,31 +32,31 @@ public unsafe class ResourceLayout : DeviceResource
 
             if (binding.DescriptorType == DescriptorType.UniformBuffer)
             {
-                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffers;
+                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffers;
             }
             else if (binding.DescriptorType == DescriptorType.UniformBufferDynamic)
             {
-                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffersDynamic;
+                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffersDynamic;
             }
             else if (binding.DescriptorType == DescriptorType.StorageBuffer)
             {
-                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffers;
+                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffers;
             }
             else if (binding.DescriptorType == DescriptorType.StorageBufferDynamic)
             {
-                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffersDynamic;
+                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffersDynamic;
             }
             else if (binding.DescriptorType == DescriptorType.SampledImage)
             {
-                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSampledImages;
+                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSampledImages;
             }
             else if (binding.DescriptorType == DescriptorType.StorageImage)
             {
-                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageImages;
+                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageImages;
             }
             else if (binding.DescriptorType == DescriptorType.Sampler)
             {
-                binding.DescriptorCount = PhysicalDevice.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSamplers;
+                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSamplers;
             }
             else
             {
@@ -98,7 +98,7 @@ public unsafe class ResourceLayout : DeviceResource
 
         ulong sizeInBytes;
         DescriptorBufferExt.GetDescriptorSetLayoutSize(graphicsDevice.Device, descriptorSetLayout, &sizeInBytes);
-        sizeInBytes = Util.AlignedSize(sizeInBytes, PhysicalDevice.DescriptorBufferProperties.DescriptorBufferOffsetAlignment);
+        sizeInBytes = Util.AlignedSize(sizeInBytes, PhysicalDevice._descriptorBufferProperties.DescriptorBufferOffsetAlignment);
 
         Handle = descriptorSetLayout;
         DescriptorTypes = descriptorTypes;

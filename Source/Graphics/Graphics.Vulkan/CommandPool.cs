@@ -2,9 +2,9 @@
 
 namespace Graphics.Vulkan;
 
-internal sealed unsafe class CommandPool : DeviceResource
+public sealed unsafe class CommandPool : VulkanObject<VkCommandPool>
 {
-    public CommandPool(GraphicsDevice graphicsDevice, uint queueFamilyIndex) : base(graphicsDevice)
+    public CommandPool(VulkanResources vkRes, uint queueFamilyIndex) : base(vkRes, ObjectType.CommandPool)
     {
         CommandPoolCreateInfo createInfo = new()
         {
@@ -14,12 +14,12 @@ internal sealed unsafe class CommandPool : DeviceResource
         };
 
         VkCommandPool commandPool;
-        Vk.CreateCommandPool(Device, &createInfo, null, &commandPool).ThrowCode();
+        VkRes.Vk.CreateCommandPool(VkRes.GraphicsDevice.Handle, &createInfo, null, &commandPool).ThrowCode();
 
         Handle = commandPool;
     }
 
-    public VkCommandPool Handle { get; }
+    internal override VkCommandPool Handle { get; }
 
     public CommandBuffer AllocateCommandBuffer()
     {
@@ -32,18 +32,23 @@ internal sealed unsafe class CommandPool : DeviceResource
         };
 
         CommandBuffer commandBuffer;
-        Vk.AllocateCommandBuffers(Device, &allocateInfo, &commandBuffer).ThrowCode();
+        VkRes.Vk.AllocateCommandBuffers(VkRes.GraphicsDevice.Handle, &allocateInfo, &commandBuffer).ThrowCode();
 
         return commandBuffer;
     }
 
     public void FreeCommandBuffer(CommandBuffer commandBuffer)
     {
-        Vk.FreeCommandBuffers(Device, Handle, 1, &commandBuffer);
+        VkRes.Vk.FreeCommandBuffers(VkRes.GraphicsDevice.Handle, Handle, 1, &commandBuffer);
+    }
+
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
     }
 
     protected override void Destroy()
     {
-        Vk.DestroyCommandPool(Device, Handle, null);
+        VkRes.Vk.DestroyCommandPool(VkRes.GraphicsDevice.Handle, Handle, null);
     }
 }

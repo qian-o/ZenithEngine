@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Vulkan;
 
-internal sealed unsafe class Queue : DeviceResource
+public sealed unsafe class Queue : DeviceResource
 {
     public Queue(GraphicsDevice graphicsDevice, uint queueFamilyIndex) : base(graphicsDevice)
     {

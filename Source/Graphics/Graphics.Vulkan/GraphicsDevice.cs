@@ -8,48 +8,66 @@ using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Graphics.Vulkan;
 
-public unsafe class GraphicsDevice : ContextObject
+public unsafe class GraphicsDevice : VulkanObject<VkDevice>
 {
     internal const uint MinStagingBufferSize = 1024 * 4;
     internal const uint MaxStagingBufferSize = 1024 * 1024 * 4;
+
+
+    internal KhrSwapchain _khrSwapchain;
+    internal ExtDescriptorBuffer _extDescriptorBuffer;
+    internal Queue _graphicsQueue;
+    internal Queue _computeQueue;
+    internal Queue _transferQueue;
+    internal CommandPool _graphicsCommandPool;
+    internal CommandPool _computeCommandPool;
     private readonly object _stagingResourcesLock;
     private readonly List<StagingCommandPool> _availableStagingCommandPools;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
     private readonly List<Semaphore> _availableStagingSemaphores;
     private readonly List<Fence> _availableStagingFences;
 
-    internal GraphicsDevice(Context context,
-                            PhysicalDevice physicalDevice,
-                            Device device,
-                            KhrSwapchain swapchainExt,
-                            ExtDescriptorBuffer descriptorBufferExt,
+    internal GraphicsDevice(VulkanResources vkRes,
+                            VkDevice device,
                             IVkSurface windowSurface,
                             uint graphicsQueueFamilyIndex,
                             uint computeQueueFamilyIndex,
-                            uint transferQueueFamilyIndex) : base(context)
+                            uint transferQueueFamilyIndex) : base(vkRes, ObjectType.Device)
     {
-        PhysicalDevice = physicalDevice;
-        Device = device;
-        ResourceFactory = new ResourceFactory(context, this);
-        SwapchainExt = swapchainExt;
-        DescriptorBufferExt = descriptorBufferExt;
-        GraphicsQueue = new Queue(this, graphicsQueueFamilyIndex);
-        ComputeQueue = new Queue(this, computeQueueFamilyIndex);
-        TransferQueue = new Queue(this, transferQueueFamilyIndex);
-        GraphicsCommandPool = new CommandPool(this, graphicsQueueFamilyIndex);
-        ComputeCommandPool = new CommandPool(this, computeQueueFamilyIndex);
-        MainSwapchain = ResourceFactory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, GetBestDepthFormat()));
-        PointSampler = ResourceFactory.CreateSampler(SamplerDescription.Point);
-        LinearSampler = ResourceFactory.CreateSampler(SamplerDescription.Linear);
-        Aniso4xSampler = ResourceFactory.CreateSampler(SamplerDescription.Aniso4x);
+        Handle = device;
+
+        _khrSwapchain = CreateDeviceExtension<KhrSwapchain>(device);
+        _extDescriptorBuffer = CreateDeviceExtension<ExtDescriptorBuffer>(device);
+        _graphicsQueue = new Queue(this, graphicsQueueFamilyIndex);
+        _computeQueue = new Queue(this, computeQueueFamilyIndex);
+        _transferQueue = new Queue(this, transferQueueFamilyIndex);
+        _graphicsCommandPool = new CommandPool(this, graphicsQueueFamilyIndex);
+        _computeCommandPool = new CommandPool(this, computeQueueFamilyIndex);
         _stagingResourcesLock = new object();
         _availableStagingCommandPools = [];
         _availableStagingBuffers = [];
         _availableStagingSemaphores = [];
         _availableStagingFences = [];
+
+        VkRes.InitializeGraphicsDevice(this,
+                                       _khrSwapchain,
+                                       _extDescriptorBuffer,
+                                       _graphicsQueue,
+                                       _computeQueue,
+                                       _transferQueue,
+                                       _graphicsCommandPool,
+                                       _computeCommandPool);
+
+        Factory = new ResourceFactory(context, this);
+        MainSwapchain = Factory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, GetBestDepthFormat()));
+        PointSampler = Factory.CreateSampler(SamplerDescription.Point);
+        LinearSampler = Factory.CreateSampler(SamplerDescription.Linear);
+        Aniso4xSampler = Factory.CreateSampler(SamplerDescription.Aniso4x);
     }
 
-    public ResourceFactory ResourceFactory { get; }
+    internal override VkDevice Handle { get; } 
+
+    public ResourceFactory Factory { get; }
 
     public Swapchain MainSwapchain { get; }
 
@@ -59,29 +77,11 @@ public unsafe class GraphicsDevice : ContextObject
 
     public Sampler Aniso4xSampler { get; }
 
-    internal PhysicalDevice PhysicalDevice { get; }
-
-    internal VkDevice Device { get; }
-
-    internal KhrSwapchain SwapchainExt { get; }
-
-    internal ExtDescriptorBuffer DescriptorBufferExt { get; }
-
-    internal Queue GraphicsQueue { get; }
-
-    internal Queue ComputeQueue { get; }
-
-    internal Queue TransferQueue { get; }
-
-    internal CommandPool GraphicsCommandPool { get; }
-
-    internal CommandPool ComputeCommandPool { get; }
-
     public PixelFormat GetBestDepthFormat()
     {
-        Format format = PhysicalDevice.FindSupportedFormat([Format.D32SfloatS8Uint, Format.D24UnormS8Uint, Format.D32Sfloat],
-                                                            ImageTiling.Optimal,
-                                                            FormatFeatureFlags.DepthStencilAttachmentBit);
+        Format format = VkRes.PhysicalDevice.FindSupportedFormat([Format.D32SfloatS8Uint, Format.D24UnormS8Uint, Format.D32Sfloat],
+                                                                 ImageTiling.Optimal,
+                                                                 FormatFeatureFlags.DepthStencilAttachmentBit);
 
         return Formats.GetPixelFormat(format);
     }
@@ -129,7 +129,7 @@ public unsafe class GraphicsDevice : ContextObject
                 Size = sizeInBytes
             };
 
-            Vk.CmdCopyBuffer(commandBuffer, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
+            VkRes.Vk.CmdCopyBuffer(commandBuffer, stagingBuffer.Handle, buffer.Handle, 1, &bufferCopy);
 
             sharedCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
 
@@ -229,7 +229,7 @@ public unsafe class GraphicsDevice : ContextObject
                 ImageExtent = new Extent3D(width, height, depth)
             };
 
-            Vk.CmdCopyBufferToImage(commandBuffer, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
+            VkRes.Vk.CmdCopyBufferToImage(commandBuffer, stagingBuffer.Handle, texture.Handle, ImageLayout.TransferDstOptimal, 1, &bufferImageCopy);
         }
         texture.TransitionToBestLayout(commandBuffer);
 
@@ -304,6 +304,11 @@ public unsafe class GraphicsDevice : ContextObject
         CacheStagingSemaphore(stagingSemaphore);
     }
 
+    internal override ulong[] GetHandles()
+    {
+        return [(ulong)Handle.Handle];
+    }
+
     protected override void Destroy()
     {
         foreach (Fence fence in _availableStagingFences)
@@ -337,14 +342,24 @@ public unsafe class GraphicsDevice : ContextObject
 
         MainSwapchain.Dispose();
 
-        ComputeCommandPool.Dispose();
-        GraphicsCommandPool.Dispose();
+        Factory.Dispose();
 
-        SwapchainExt.Dispose();
+        _computeCommandPool.Dispose();
+        _graphicsCommandPool.Dispose();
 
-        ResourceFactory.Dispose();
+        _khrSwapchain.Dispose();
 
-        Vk.DestroyDevice(Device, null);
+        VkRes.Vk.DestroyDevice(Handle, null);
+    }
+
+    private T CreateDeviceExtension<T>(VkDevice device) where T : NativeExtension<Vk>
+    {
+        if (!VkRes.Vk.TryGetDeviceExtension(VkRes.Instance, device, out T ext))
+        {
+            throw new InvalidOperationException($"Failed to load extension {typeof(T).Name}!");
+        }
+
+        return ext;
     }
 
     private void SubmitCommandsCore(CommandList commandList, Semaphore? signalSemaphore, Fence fence)
@@ -367,7 +382,7 @@ public unsafe class GraphicsDevice : ContextObject
             submitInfo.PSignalSemaphores = &signalSemaphoreHandle;
         }
 
-        Vk.QueueSubmit(queue.Handle, 1, &submitInfo, fence.Handle);
+        VkRes.Vk.QueueSubmit(queue.Handle, 1, &submitInfo, fence.Handle);
     }
 
     private bool SwapBuffersCore(Swapchain swapchain, Semaphore? waitSemaphore, bool waitAcquireNextImage)
@@ -391,7 +406,7 @@ public unsafe class GraphicsDevice : ContextObject
             presentInfo.PWaitSemaphores = &waitSemaphoreHandle;
         }
 
-        Result result = SwapchainExt.QueuePresent(GraphicsQueue.Handle, &presentInfo);
+        Result result = _khrSwapchain.QueuePresent(_graphicsQueue.Handle, &presentInfo);
 
         if (result == Result.ErrorOutOfDateKhr)
         {
@@ -414,8 +429,8 @@ public unsafe class GraphicsDevice : ContextObject
 
         fixed (VkFence* vkFencesPointer = vkFences)
         {
-            Vk.WaitForFences(Device, (uint)vkFences.Length, vkFencesPointer, Vk.True, ulong.MaxValue);
-            Vk.ResetFences(Device, (uint)vkFences.Length, vkFencesPointer);
+            VkRes.Vk.WaitForFences(Handle, (uint)vkFences.Length, vkFencesPointer, Vk.True, ulong.MaxValue);
+            VkRes.Vk.ResetFences(Handle, (uint)vkFences.Length, vkFencesPointer);
         }
     }
 
@@ -431,7 +446,7 @@ public unsafe class GraphicsDevice : ContextObject
             }
         }
 
-        return new StagingCommandPool(this, TransferQueue);
+        return new StagingCommandPool(this, _transferQueue);
     }
 
     private void CacheStagingCommandPool(StagingCommandPool stagingCommandPool)
@@ -459,7 +474,7 @@ public unsafe class GraphicsDevice : ContextObject
 
         uint bufferSize = Math.Max(MinStagingBufferSize, sizeInBytes);
 
-        return ResourceFactory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
+        return Factory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
     }
 
     private void CacheStagingBuffer(DeviceBuffer stagingBuffer)
@@ -521,120 +536,5 @@ public unsafe class GraphicsDevice : ContextObject
         {
             _availableStagingFences.Add(stagingFence);
         }
-    }
-}
-
-public unsafe partial class Context
-{
-    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice, Window window)
-    {
-        float queuePriority = 1.0f;
-
-        uint graphicsQueueFamilyIndex = GetQueueFamilyIndex(physicalDevice, QueueFlags.GraphicsBit);
-        uint computeQueueFamilyIndex = GetQueueFamilyIndex(physicalDevice, QueueFlags.ComputeBit);
-        uint transferQueueFamilyIndex = GetQueueFamilyIndex(physicalDevice, QueueFlags.TransferBit);
-
-        HashSet<uint> uniqueQueueFamilyIndices =
-        [
-            graphicsQueueFamilyIndex,
-            computeQueueFamilyIndex,
-            transferQueueFamilyIndex
-        ];
-
-        DeviceQueueCreateInfo[] createInfos = new DeviceQueueCreateInfo[uniqueQueueFamilyIndices.Count];
-
-        for (int i = 0; i < createInfos.Length; i++)
-        {
-            createInfos[i] = new DeviceQueueCreateInfo
-            {
-                SType = StructureType.DeviceQueueCreateInfo,
-                QueueFamilyIndex = uniqueQueueFamilyIndices.ElementAt(i),
-                QueueCount = 1,
-                PQueuePriorities = &queuePriority
-            };
-        }
-
-        string[] deviceExtensions = [KhrSwapchain.ExtensionName, ExtDescriptorBuffer.ExtensionName];
-
-        PhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures = new()
-        {
-            SType = StructureType.PhysicalDeviceDescriptorIndexingFeatures
-        };
-        PhysicalDeviceDescriptorBufferFeaturesEXT descriptorBufferFeaturesEXT = new()
-        {
-            SType = StructureType.PhysicalDeviceDescriptorBufferFeaturesExt,
-            PNext = &descriptorIndexingFeatures
-        };
-        PhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = new()
-        {
-            SType = StructureType.PhysicalDeviceBufferDeviceAddressFeatures,
-            PNext = &descriptorBufferFeaturesEXT
-        };
-        PhysicalDeviceVulkan13Features vulkan13Features = new()
-        {
-            SType = StructureType.PhysicalDeviceVulkan13Features,
-            PNext = &bufferDeviceAddressFeatures
-        };
-        PhysicalDeviceFeatures2 features2 = new()
-        {
-            SType = StructureType.PhysicalDeviceFeatures2,
-            PNext = &vulkan13Features
-        };
-        Vk.GetPhysicalDeviceFeatures2(physicalDevice.Handle, &features2);
-
-        DeviceCreateInfo createInfo = new()
-        {
-            SType = StructureType.DeviceCreateInfo,
-            QueueCreateInfoCount = (uint)createInfos.Length,
-            PQueueCreateInfos = Alloter.Allocate(createInfos),
-            EnabledExtensionCount = (uint)deviceExtensions.Length,
-            PpEnabledExtensionNames = Alloter.Allocate(deviceExtensions),
-            PNext = &features2
-        };
-
-        Device device;
-        Vk.CreateDevice(physicalDevice.Handle, &createInfo, null, &device).ThrowCode("Failed to create device.");
-
-        KhrSwapchain swapchainExt = CreateDeviceExtension<KhrSwapchain>(device);
-        ExtDescriptorBuffer descriptorBufferExt = CreateDeviceExtension<ExtDescriptorBuffer>(device);
-
-        Alloter.Clear();
-
-        GraphicsDevice graphicsDevice = new(this,
-                                            physicalDevice,
-                                            device,
-                                            swapchainExt,
-                                            descriptorBufferExt,
-                                            window.VkSurface!,
-                                            graphicsQueueFamilyIndex,
-                                            computeQueueFamilyIndex,
-                                            transferQueueFamilyIndex);
-
-        graphicsDevice.MainSwapchain.Resize((uint)window.FramebufferSize.X, (uint)window.FramebufferSize.Y);
-
-        return graphicsDevice;
-    }
-
-    private T CreateDeviceExtension<T>(Device device) where T : NativeExtension<Vk>
-    {
-        if (!Vk.TryGetDeviceExtension(Instance, device, out T ext))
-        {
-            throw new InvalidOperationException($"Failed to load extension {typeof(T).Name}!");
-        }
-
-        return ext;
-    }
-
-    private static uint GetQueueFamilyIndex(PhysicalDevice physicalDevice, QueueFlags flags)
-    {
-        for (int i = 0; i < physicalDevice.QueueFamilyProperties.Length; i++)
-        {
-            if ((physicalDevice.QueueFamilyProperties[i].QueueFlags & flags) == flags)
-            {
-                return (uint)i;
-            }
-        }
-
-        return 0;
     }
 }

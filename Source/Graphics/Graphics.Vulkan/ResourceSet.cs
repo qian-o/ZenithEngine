@@ -78,12 +78,12 @@ public unsafe class ResourceSet : DeviceResource
 
             if (isUniform)
             {
-                descriptorSize = PhysicalDevice.DescriptorBufferProperties.UniformBufferDescriptorSize;
+                descriptorSize = PhysicalDevice._descriptorBufferProperties.UniformBufferDescriptorSize;
                 GetDescriptor(new DescriptorDataEXT() { PUniformBuffer = &addressInfo });
             }
             else
             {
-                descriptorSize = PhysicalDevice.DescriptorBufferProperties.StorageBufferDescriptorSize;
+                descriptorSize = PhysicalDevice._descriptorBufferProperties.StorageBufferDescriptorSize;
                 GetDescriptor(new DescriptorDataEXT() { PStorageBuffer = &addressInfo });
             }
         }
@@ -97,7 +97,7 @@ public unsafe class ResourceSet : DeviceResource
                 ImageLayout = ImageLayout.ShaderReadOnlyOptimal
             };
 
-            descriptorSize = PhysicalDevice.DescriptorBufferProperties.SampledImageDescriptorSize;
+            descriptorSize = PhysicalDevice._descriptorBufferProperties.SampledImageDescriptorSize;
             GetDescriptor(new DescriptorDataEXT() { PSampledImage = &imageInfo });
         }
         else if (type == DescriptorType.StorageImage)
@@ -110,7 +110,7 @@ public unsafe class ResourceSet : DeviceResource
                 ImageLayout = ImageLayout.General
             };
 
-            descriptorSize = PhysicalDevice.DescriptorBufferProperties.StorageImageDescriptorSize;
+            descriptorSize = PhysicalDevice._descriptorBufferProperties.StorageImageDescriptorSize;
             GetDescriptor(new DescriptorDataEXT() { PStorageImage = &imageInfo });
         }
         else if (type == DescriptorType.Sampler)
@@ -119,7 +119,7 @@ public unsafe class ResourceSet : DeviceResource
 
             VkSampler vkSampler = sampler.Handle;
 
-            descriptorSize = PhysicalDevice.DescriptorBufferProperties.SamplerDescriptorSize;
+            descriptorSize = PhysicalDevice._descriptorBufferProperties.SamplerDescriptorSize;
             GetDescriptor(new DescriptorDataEXT() { PSampler = &vkSampler });
         }
         else

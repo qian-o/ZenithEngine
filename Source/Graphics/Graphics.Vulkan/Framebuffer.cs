@@ -3,7 +3,7 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class Framebuffer : DeviceResource
+public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
 {
     private readonly Texture[] _colors;
     private readonly Texture? _depth;
@@ -11,7 +11,9 @@ public unsafe class Framebuffer : DeviceResource
     private readonly TextureView? _depthView;
     private readonly bool _isPresented;
 
-    internal Framebuffer(GraphicsDevice graphicsDevice, ref readonly FramebufferDescription description, bool isPresented) : base(graphicsDevice)
+    internal Framebuffer(VulkanResources vkRes,
+                         ref readonly FramebufferDescription description,
+                         bool isPresented) : base(vkRes, ObjectType.Framebuffer)
     {
         bool hasDepth = description.DepthTarget.HasValue;
 
@@ -108,7 +110,7 @@ public unsafe class Framebuffer : DeviceResource
         };
 
         VkRenderPass renderPassClear;
-        Vk.CreateRenderPass(graphicsDevice.Device, &createInfo, null, &renderPassClear).ThrowCode();
+        VkRes.Vk.CreateRenderPass(VkRes.GraphicsDevice.Handle, &createInfo, null, &renderPassClear).ThrowCode();
 
         for (uint i = 0; i < colorAttachmentCount; i++)
         {
@@ -123,7 +125,7 @@ public unsafe class Framebuffer : DeviceResource
         }
 
         VkRenderPass renderPassLoad;
-        Vk.CreateRenderPass(graphicsDevice.Device, &createInfo, null, &renderPassLoad).ThrowCode();
+        VkRes.Vk.CreateRenderPass(VkRes.GraphicsDevice.Handle, &createInfo, null, &renderPassLoad).ThrowCode();
 
         Texture[] colors = new Texture[colorAttachmentCount];
         TextureView[] colorViews = new TextureView[colorAttachmentCount];
@@ -192,7 +194,7 @@ public unsafe class Framebuffer : DeviceResource
         };
 
         VkFramebuffer framebuffer;
-        Vk.CreateFramebuffer(graphicsDevice.Device, &framebufferCreateInfo, null, &framebuffer).ThrowCode();
+        VkRes.Vk.CreateFramebuffer(VkRes.GraphicsDevice.Handle, &framebufferCreateInfo, null, &framebuffer).ThrowCode();
 
         RenderPassClear = renderPassClear;
         RenderPassLoad = renderPassLoad;
@@ -210,7 +212,7 @@ public unsafe class Framebuffer : DeviceResource
         _isPresented = isPresented;
     }
 
-    internal VkFramebuffer Handle { get; }
+    internal override VkFramebuffer Handle { get; }
 
     internal VkRenderPass RenderPassClear { get; }
 
@@ -263,9 +265,14 @@ public unsafe class Framebuffer : DeviceResource
         }
     }
 
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
+    }
+
     protected override void Destroy()
     {
-        Vk.DestroyFramebuffer(GraphicsDevice.Device, Handle, null);
+        VkRes.Vk.DestroyFramebuffer(VkRes.GraphicsDevice.Handle, Handle, null);
 
         _depthView?.Dispose();
 
@@ -274,7 +281,7 @@ public unsafe class Framebuffer : DeviceResource
             colorView.Dispose();
         }
 
-        Vk.DestroyRenderPass(GraphicsDevice.Device, RenderPassLoad, null);
-        Vk.DestroyRenderPass(GraphicsDevice.Device, RenderPassClear, null);
+        VkRes.Vk.DestroyRenderPass(VkRes.GraphicsDevice.Handle, RenderPassLoad, null);
+        VkRes.Vk.DestroyRenderPass(VkRes.GraphicsDevice.Handle, RenderPassClear, null);
     }
 }

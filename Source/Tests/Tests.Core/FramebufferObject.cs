@@ -11,7 +11,7 @@ public class FramebufferObject : DisposableObject
 
     public FramebufferObject(GraphicsDevice device, int width, int height)
     {
-        ResourceFactory factory = device.ResourceFactory;
+        ResourceFactory factory = device.Factory;
 
         Width = width;
         Height = height;
