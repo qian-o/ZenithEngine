@@ -7,13 +7,13 @@ using Window = Graphics.Core.Window;
 
 namespace Graphics.Vulkan;
 
-internal sealed unsafe class ImGuiPlatform : DisposableObject
+public unsafe class ImGuiPlatform : DisposableObject
 {
     private readonly Window _window;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly bool _isExternalPlatform;
 
-    public ImGuiPlatform(ImGuiViewport* viewport, Window window, GraphicsDevice graphicsDevice)
+    internal ImGuiPlatform(ImGuiViewport* viewport, Window window, GraphicsDevice graphicsDevice)
     {
         Viewport = viewport;
 
@@ -24,7 +24,7 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         Initialize();
     }
 
-    public ImGuiPlatform(ImGuiViewport* viewport, GraphicsDevice graphicsDevice)
+    internal ImGuiPlatform(ImGuiViewport* viewport, GraphicsDevice graphicsDevice)
     {
         Viewport = viewport;
 

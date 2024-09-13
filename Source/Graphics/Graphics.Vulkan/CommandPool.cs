@@ -4,7 +4,7 @@ namespace Graphics.Vulkan;
 
 public unsafe class CommandPool : VulkanObject<VkCommandPool>
 {
-    public CommandPool(VulkanResources vkRes, uint queueFamilyIndex) : base(vkRes, ObjectType.CommandPool)
+    internal CommandPool(VulkanResources vkRes, uint queueFamilyIndex) : base(vkRes, ObjectType.CommandPool)
     {
         CommandPoolCreateInfo createInfo = new()
         {

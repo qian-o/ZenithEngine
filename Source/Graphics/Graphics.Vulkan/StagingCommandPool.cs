@@ -4,7 +4,7 @@ namespace Graphics.Vulkan;
 
 public unsafe class StagingCommandPool : VulkanObject<VkCommandPool>
 {
-    public StagingCommandPool(VulkanResources vkRes, Executor executor) : base(vkRes, ObjectType.CommandPool)
+    internal StagingCommandPool(VulkanResources vkRes, Executor executor) : base(vkRes, ObjectType.CommandPool)
     {
         CommandPoolCreateInfo createInfo = new()
         {

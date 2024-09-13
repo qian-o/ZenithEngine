@@ -2,9 +2,9 @@
 
 namespace Graphics.Vulkan;
 
-internal sealed unsafe class Semaphore : VulkanObject<VkSemaphore>
+public unsafe class Semaphore : VulkanObject<VkSemaphore>
 {
-    public Semaphore(VulkanResources vkRes) : base(vkRes, ObjectType.Semaphore)
+    internal Semaphore(VulkanResources vkRes) : base(vkRes, ObjectType.Semaphore)
     {
         SemaphoreCreateInfo createInfo = new()
         {

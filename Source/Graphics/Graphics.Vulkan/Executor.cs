@@ -4,7 +4,7 @@ namespace Graphics.Vulkan;
 
 public unsafe class Executor : VulkanObject<VkQueue>
 {
-    public Executor(VulkanResources vkRes, uint queueFamilyIndex) : base(vkRes, ObjectType.Queue)
+    internal Executor(VulkanResources vkRes, uint queueFamilyIndex) : base(vkRes, ObjectType.Queue)
     {
         VkQueue queue;
         VkRes.Vk.GetDeviceQueue(VkRes.VkDevice, queueFamilyIndex, 0, &queue);
@@ -12,6 +12,7 @@ public unsafe class Executor : VulkanObject<VkQueue>
         Handle = queue;
         FamilyIndex = queueFamilyIndex;
     }
+
     internal override VkQueue Handle { get; }
 
     internal uint FamilyIndex { get; }

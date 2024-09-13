@@ -6,7 +6,7 @@ using Hexa.NET.ImGui;
 
 namespace Graphics.Vulkan;
 
-internal sealed unsafe class ImGuiRenderer : DisposableObject
+public unsafe class ImGuiRenderer : DisposableObject
 {
     private const string HLSL = @"
 [[vk::constant_id(0)]] const bool UseLegacyColorSpaceHandling = false;
@@ -80,7 +80,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
     private Pipeline _pipeline = null!;
     private Texture _fontTexture = null!;
 
-    public ImGuiRenderer(GraphicsDevice graphicsDevice, ColorSpaceHandling colorSpaceHandling)
+    internal ImGuiRenderer(GraphicsDevice graphicsDevice, ColorSpaceHandling colorSpaceHandling)
     {
         _graphicsDevice = graphicsDevice;
         _factory = graphicsDevice.Factory;
