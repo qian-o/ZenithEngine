@@ -14,139 +14,11 @@ public unsafe class ResourceSet : DeviceResource
 
         for (uint i = 0; i < description.BoundResources.Length; i++)
         {
-            DescriptorType type = description.Layout.DescriptorTypes[i];
+            ulong offset = DescriptorBufferExt.GetDescriptorSetLayoutBindingOffset(Device, description.Layout.Handle, i);
 
-            int offset = (int)DescriptorBufferExt.GetDescriptorSetLayoutBindingOffset(Device, description.Layout.Handle, i);
-
-            if (type is DescriptorType.UniformBuffer or DescriptorType.UniformBufferDynamic)
-            {
-                DeviceBufferRange range = Util.GetBufferRange(description.BoundResources[i], 0);
-
-                DescriptorAddressInfoEXT addressInfo = new()
-                {
-                    SType = StructureType.DescriptorAddressInfoExt,
-                    Address = range.Buffer.Address + range.Offset,
-                    Range = range.SizeInBytes,
-                    Format = Format.Undefined
-                };
-
-                DescriptorGetInfoEXT getInfo = new()
-                {
-                    SType = StructureType.DescriptorGetInfoExt,
-                    Type = type,
-                    Data = new DescriptorDataEXT
-                    {
-                        PUniformBuffer = &addressInfo
-                    }
-                };
-
-                DescriptorBufferExt.GetDescriptor(Device,
-                                                  &getInfo,
-                                                  PhysicalDevice.DescriptorBufferProperties.UniformBufferDescriptorSize,
-                                                  descriptor.AsPointer(offset));
-            }
-            else if (type is DescriptorType.StorageBuffer or DescriptorType.StorageBufferDynamic)
-            {
-                DeviceBufferRange range = Util.GetBufferRange(description.BoundResources[i], 0);
-
-                DescriptorAddressInfoEXT addressInfo = new()
-                {
-                    SType = StructureType.DescriptorAddressInfoExt,
-                    Address = range.Buffer.Address + range.Offset,
-                    Range = range.SizeInBytes,
-                    Format = Format.Undefined
-                };
-
-                DescriptorGetInfoEXT getInfo = new()
-                {
-                    SType = StructureType.DescriptorGetInfoExt,
-                    Type = type,
-                    Data = new DescriptorDataEXT
-                    {
-                        PStorageBuffer = &addressInfo
-                    }
-                };
-
-                DescriptorBufferExt.GetDescriptor(Device,
-                                                  &getInfo,
-                                                  PhysicalDevice.DescriptorBufferProperties.StorageBufferDescriptorSize,
-                                                  descriptor.AsPointer(offset));
-            }
-            else if (type == DescriptorType.SampledImage)
-            {
-                TextureView textureView = (TextureView)description.BoundResources[i];
-
-                DescriptorImageInfo imageInfo = new()
-                {
-                    ImageView = textureView.Handle,
-                    ImageLayout = ImageLayout.ShaderReadOnlyOptimal
-                };
-
-                DescriptorGetInfoEXT getInfo = new()
-                {
-                    SType = StructureType.DescriptorGetInfoExt,
-                    Type = type,
-                    Data = new DescriptorDataEXT
-                    {
-                        PSampledImage = &imageInfo
-                    }
-                };
-
-                DescriptorBufferExt.GetDescriptor(Device,
-                                                  &getInfo,
-                                                  PhysicalDevice.DescriptorBufferProperties.SampledImageDescriptorSize,
-                                                  descriptor.AsPointer(offset));
-            }
-            else if (type == DescriptorType.StorageImage)
-            {
-                TextureView textureView = (TextureView)description.BoundResources[i];
-
-                DescriptorImageInfo imageInfo = new()
-                {
-                    ImageView = textureView.Handle,
-                    ImageLayout = ImageLayout.General
-                };
-
-                DescriptorGetInfoEXT getInfo = new()
-                {
-                    SType = StructureType.DescriptorGetInfoExt,
-                    Type = type,
-                    Data = new DescriptorDataEXT
-                    {
-                        PStorageImage = &imageInfo
-                    }
-                };
-
-                DescriptorBufferExt.GetDescriptor(Device,
-                                                  &getInfo,
-                                                  PhysicalDevice.DescriptorBufferProperties.StorageImageDescriptorSize,
-                                                  descriptor.AsPointer(offset));
-            }
-            else if (type == DescriptorType.Sampler)
-            {
-                Sampler sampler = (Sampler)description.BoundResources[i];
-
-                VkSampler vkSampler = sampler.Handle;
-
-                DescriptorGetInfoEXT getInfo = new()
-                {
-                    SType = StructureType.DescriptorGetInfoExt,
-                    Type = type,
-                    Data = new DescriptorDataEXT
-                    {
-                        PSampler = &vkSampler
-                    }
-                };
-
-                DescriptorBufferExt.GetDescriptor(Device,
-                                                  &getInfo,
-                                                  PhysicalDevice.DescriptorBufferProperties.SamplerDescriptorSize,
-                                                  descriptor.AsPointer(offset));
-            }
-            else
-            {
-                throw new NotSupportedException();
-            }
+            WriteDescriptorBuffer(description.Layout.DescriptorTypes[i],
+                                  description.BoundResources[i],
+                                  descriptor.AsPointer(offset));
         }
 
         DeviceBuffer buffer = ResourceFactory.CreateBuffer(new BufferDescription(description.Layout.SizeInBytes,
@@ -176,145 +48,9 @@ public unsafe class ResourceSet : DeviceResource
 
         for (uint i = 0; i < boundResources.Length; i++)
         {
-            if (type is DescriptorType.UniformBuffer or DescriptorType.UniformBufferDynamic)
-            {
-                DeviceBufferRange range = Util.GetBufferRange(boundResources[i], 0);
+            nuint descriptorSize = WriteDescriptorBuffer(type, boundResources[i], descriptor);
 
-                DescriptorAddressInfoEXT addressInfo = new()
-                {
-                    SType = StructureType.DescriptorAddressInfoExt,
-                    Address = range.Buffer.Address + range.Offset,
-                    Range = range.SizeInBytes,
-                    Format = Format.Undefined
-                };
-
-                DescriptorGetInfoEXT getInfo = new()
-                {
-                    SType = StructureType.DescriptorGetInfoExt,
-                    Type = type,
-                    Data = new DescriptorDataEXT
-                    {
-                        PUniformBuffer = &addressInfo
-                    }
-                };
-
-                DescriptorBufferExt.GetDescriptor(Device,
-                                                  &getInfo,
-                                                  PhysicalDevice.DescriptorBufferProperties.UniformBufferDescriptorSize,
-                                                  descriptor);
-
-                descriptor += PhysicalDevice.DescriptorBufferProperties.UniformBufferDescriptorSize;
-            }
-            else if (type is DescriptorType.StorageBuffer or DescriptorType.StorageBufferDynamic)
-            {
-                DeviceBufferRange range = Util.GetBufferRange(boundResources[i], 0);
-
-                DescriptorAddressInfoEXT addressInfo = new()
-                {
-                    SType = StructureType.DescriptorAddressInfoExt,
-                    Address = range.Buffer.Address + range.Offset,
-                    Range = range.SizeInBytes,
-                    Format = Format.Undefined
-                };
-
-                DescriptorGetInfoEXT getInfo = new()
-                {
-                    SType = StructureType.DescriptorGetInfoExt,
-                    Type = type,
-                    Data = new DescriptorDataEXT
-                    {
-                        PStorageBuffer = &addressInfo
-                    }
-                };
-
-                DescriptorBufferExt.GetDescriptor(Device,
-                                                  &getInfo,
-                                                  PhysicalDevice.DescriptorBufferProperties.StorageBufferDescriptorSize,
-                                                  descriptor);
-
-                descriptor += PhysicalDevice.DescriptorBufferProperties.StorageBufferDescriptorSize;
-            }
-            else if (type == DescriptorType.SampledImage)
-            {
-                TextureView textureView = (TextureView)boundResources[i];
-
-                DescriptorImageInfo imageInfo = new()
-                {
-                    ImageView = textureView.Handle,
-                    ImageLayout = ImageLayout.ShaderReadOnlyOptimal
-                };
-
-                DescriptorGetInfoEXT getInfo = new()
-                {
-                    SType = StructureType.DescriptorGetInfoExt,
-                    Type = type,
-                    Data = new DescriptorDataEXT
-                    {
-                        PSampledImage = &imageInfo
-                    }
-                };
-
-                DescriptorBufferExt.GetDescriptor(Device,
-                                                  &getInfo,
-                                                  PhysicalDevice.DescriptorBufferProperties.SampledImageDescriptorSize,
-                                                  descriptor);
-
-                descriptor += PhysicalDevice.DescriptorBufferProperties.SampledImageDescriptorSize;
-            }
-            else if (type == DescriptorType.StorageImage)
-            {
-                TextureView textureView = (TextureView)boundResources[i];
-
-                DescriptorImageInfo imageInfo = new()
-                {
-                    ImageView = textureView.Handle,
-                    ImageLayout = ImageLayout.General
-                };
-
-                DescriptorGetInfoEXT getInfo = new()
-                {
-                    SType = StructureType.DescriptorGetInfoExt,
-                    Type = type,
-                    Data = new DescriptorDataEXT
-                    {
-                        PStorageImage = &imageInfo
-                    }
-                };
-
-                DescriptorBufferExt.GetDescriptor(Device,
-                                                  &getInfo,
-                                                  PhysicalDevice.DescriptorBufferProperties.StorageImageDescriptorSize,
-                                                  descriptor);
-
-                descriptor += PhysicalDevice.DescriptorBufferProperties.StorageImageDescriptorSize;
-            }
-            else if (type == DescriptorType.Sampler)
-            {
-                Sampler sampler = (Sampler)boundResources[i];
-
-                VkSampler vkSampler = sampler.Handle;
-
-                DescriptorGetInfoEXT getInfo = new()
-                {
-                    SType = StructureType.DescriptorGetInfoExt,
-                    Type = type,
-                    Data = new DescriptorDataEXT
-                    {
-                        PSampler = &vkSampler
-                    }
-                };
-
-                DescriptorBufferExt.GetDescriptor(Device,
-                                                  &getInfo,
-                                                  PhysicalDevice.DescriptorBufferProperties.SamplerDescriptorSize,
-                                                  descriptor);
-
-                descriptor += PhysicalDevice.DescriptorBufferProperties.SamplerDescriptorSize;
-            }
-            else
-            {
-                throw new NotSupportedException();
-            }
+            descriptor += descriptorSize;
         }
 
         _buffer.Unmap();
@@ -323,5 +59,93 @@ public unsafe class ResourceSet : DeviceResource
     protected override void Destroy()
     {
         _buffer.Dispose();
+    }
+
+    private nuint WriteDescriptorBuffer(DescriptorType type, IBindableResource bindableResource, byte* buffer)
+    {
+        nuint descriptorSize;
+        if (type is DescriptorType.UniformBuffer or DescriptorType.UniformBufferDynamic or DescriptorType.StorageBuffer or DescriptorType.StorageBufferDynamic)
+        {
+            bool isUniform = type is DescriptorType.UniformBuffer or DescriptorType.UniformBufferDynamic;
+
+            DeviceBufferRange range = Util.GetBufferRange(bindableResource, 0);
+
+            DescriptorAddressInfoEXT addressInfo = new()
+            {
+                SType = StructureType.DescriptorAddressInfoExt,
+                Address = range.Buffer.Address + range.Offset,
+                Range = range.SizeInBytes,
+                Format = Format.Undefined
+            };
+
+            if (isUniform)
+            {
+                descriptorSize = PhysicalDevice.DescriptorBufferProperties.UniformBufferDescriptorSize;
+
+                GetDescriptor(new DescriptorDataEXT() { PUniformBuffer = &addressInfo });
+            }
+            else
+            {
+                descriptorSize = PhysicalDevice.DescriptorBufferProperties.StorageBufferDescriptorSize;
+
+                GetDescriptor(new DescriptorDataEXT() { PStorageBuffer = &addressInfo });
+            }
+        }
+        else if (type == DescriptorType.SampledImage)
+        {
+            TextureView textureView = (TextureView)bindableResource;
+
+            DescriptorImageInfo imageInfo = new()
+            {
+                ImageView = textureView.Handle,
+                ImageLayout = ImageLayout.ShaderReadOnlyOptimal
+            };
+
+            descriptorSize = PhysicalDevice.DescriptorBufferProperties.SampledImageDescriptorSize;
+            GetDescriptor(new DescriptorDataEXT() { PSampledImage = &imageInfo });
+        }
+        else if (type == DescriptorType.StorageImage)
+        {
+            TextureView textureView = (TextureView)bindableResource;
+
+            DescriptorImageInfo imageInfo = new()
+            {
+                ImageView = textureView.Handle,
+                ImageLayout = ImageLayout.General
+            };
+
+            descriptorSize = PhysicalDevice.DescriptorBufferProperties.StorageImageDescriptorSize;
+            GetDescriptor(new DescriptorDataEXT() { PStorageImage = &imageInfo });
+        }
+        else if (type == DescriptorType.Sampler)
+        {
+            Sampler sampler = (Sampler)bindableResource;
+
+            VkSampler vkSampler = sampler.Handle;
+
+            descriptorSize = PhysicalDevice.DescriptorBufferProperties.SamplerDescriptorSize;
+            GetDescriptor(new DescriptorDataEXT() { PSampler = &vkSampler });
+        }
+        else
+        {
+            throw new NotSupportedException();
+        }
+
+        return descriptorSize;
+
+        void GetDescriptor(DescriptorDataEXT descriptorData)
+        {
+            DescriptorGetInfoEXT getInfo = new()
+            {
+                SType = StructureType.DescriptorGetInfoExt,
+                Type = type,
+                Data = descriptorData
+            };
+
+            DescriptorBufferExt.GetDescriptor(Device,
+                                              &getInfo,
+                                              descriptorSize,
+                                              buffer);
+        }
     }
 }

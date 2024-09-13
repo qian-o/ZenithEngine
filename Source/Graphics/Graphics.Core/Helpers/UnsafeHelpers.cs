@@ -9,8 +9,8 @@ public static unsafe class UnsafeHelpers
         return (T*)Unsafe.AsPointer(ref value);
     }
 
-    public static T* AsPointer<T>(this T[] array, int index = 0) where T : unmanaged
+    public static T* AsPointer<T>(this T[] array, ulong offset = 0) where T : unmanaged
     {
-        return (T*)Unsafe.AsPointer(ref array[index]);
+        return (T*)Unsafe.AsPointer(ref array[offset]);
     }
 }
