@@ -18,10 +18,10 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
     private Pipeline? _currentPipeline;
     private bool _isInRenderPass;
 
-    internal CommandList(VulkanResources vkRes, Executor taskExecutor, CommandPool commandPool) : base(vkRes, ObjectType.CommandBuffer)
+    internal CommandList(VulkanResources vkRes, Executor executor, CommandPool commandPool) : base(vkRes, ObjectType.CommandBuffer)
     {
         Handle = commandPool.AllocateCommandBuffer();
-        TaskExecutor = taskExecutor;
+        Executor = executor;
         CommandPool = commandPool;
 
         _disposablesLock = new();
@@ -33,7 +33,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
     internal override CommandBuffer Handle { get; }
 
-    internal Executor TaskExecutor { get; }
+    internal Executor Executor { get; }
 
     internal CommandPool CommandPool { get; }
 

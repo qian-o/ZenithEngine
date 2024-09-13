@@ -4,8 +4,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class Fence : VulkanObject<VkFence>
 {
-    private readonly VkFence _fence;
-
     internal Fence(VulkanResources vkRes) : base(vkRes, ObjectType.Fence)
     {
         FenceCreateInfo createInfo = new()
@@ -18,27 +16,26 @@ public unsafe class Fence : VulkanObject<VkFence>
         VkRes.Vk.CreateFence(VkRes.VkDevice, &createInfo, null, &fence).ThrowCode();
         VkRes.Vk.ResetFences(VkRes.VkDevice, 1, &fence).ThrowCode();
 
-        _fence = fence;
+        Handle = fence;
     }
 
     internal override VkFence Handle { get; }
 
     public void WaitAndReset()
     {
-        fixed (VkFence* fence = &_fence)
-        {
-            VkRes.Vk.WaitForFences(VkRes.VkDevice, 1, fence, Vk.True, ulong.MaxValue).ThrowCode();
-            VkRes.Vk.ResetFences(VkRes.VkDevice, 1, fence).ThrowCode();
-        }
+        VkFence fence = Handle;
+
+        VkRes.Vk.WaitForFences(VkRes.VkDevice, 1, &fence, Vk.True, ulong.MaxValue).ThrowCode();
+        VkRes.Vk.ResetFences(VkRes.VkDevice, 1, &fence).ThrowCode();
     }
 
     internal override ulong[] GetHandles()
     {
-        return [_fence.Handle];
+        return [Handle.Handle];
     }
 
     protected override void Destroy()
     {
-        VkRes.Vk.DestroyFence(VkRes.VkDevice, _fence, null);
+        VkRes.Vk.DestroyFence(VkRes.VkDevice, Handle, null);
     }
 }

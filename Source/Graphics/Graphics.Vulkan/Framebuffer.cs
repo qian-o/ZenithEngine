@@ -5,11 +5,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
 {
-    private readonly Texture[] _colors;
-    private readonly Texture? _depth;
-    private readonly TextureView[] _colorViews;
-    private readonly TextureView? _depthView;
-    private readonly bool _isPresented;
 
     internal Framebuffer(VulkanResources vkRes,
                          ref readonly FramebufferDescription description,
@@ -196,20 +191,20 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
         VkFramebuffer framebuffer;
         VkRes.Vk.CreateFramebuffer(VkRes.VkDevice, &framebufferCreateInfo, null, &framebuffer).ThrowCode();
 
+        Handle = framebuffer;
         RenderPassClear = renderPassClear;
         RenderPassLoad = renderPassLoad;
-        _colors = colors;
-        _depth = depth;
-        _colorViews = colorViews;
-        _depthView = depthView;
-        Handle = framebuffer;
         ColorAttachmentCount = colorAttachmentCount;
         DepthAttachmentCount = depthAttachmentCount;
         AttachmentCount = attachmentCount;
+        Colors = colors;
+        Depth = depth;
+        ColorViews = colorViews;
+        DepthView = depthView;
+        IsPresented = isPresented;
         Width = width;
         Height = height;
         OutputDescription = OutputDescription.CreateFromFramebufferDescription(in description);
-        _isPresented = isPresented;
     }
 
     internal override VkFramebuffer Handle { get; }
@@ -224,6 +219,16 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
 
     internal uint AttachmentCount { get; }
 
+    internal Texture[] Colors { get; }
+
+    internal Texture? Depth { get; }
+
+    internal TextureView[] ColorViews { get; }
+
+    internal TextureView? DepthView { get; }
+
+    internal bool IsPresented { get; }
+
     public uint Width { get; }
 
     public uint Height { get; }
@@ -232,36 +237,36 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
 
     internal void TransitionToInitialLayout(CommandBuffer commandBuffer)
     {
-        for (int i = 0; i < _colorViews.Length; i++)
+        for (int i = 0; i < ColorViews.Length; i++)
         {
-            Texture color = _colors[i];
+            Texture color = Colors[i];
 
             color.TransitionLayout(commandBuffer, ImageLayout.ColorAttachmentOptimal);
         }
 
-        _depth?.TransitionLayout(commandBuffer, ImageLayout.DepthStencilAttachmentOptimal);
+        Depth?.TransitionLayout(commandBuffer, ImageLayout.DepthStencilAttachmentOptimal);
     }
 
     internal void TransitionToFinalLayout(CommandBuffer commandBuffer)
     {
-        for (int i = 0; i < _colorViews.Length; i++)
+        for (int i = 0; i < ColorViews.Length; i++)
         {
-            Texture color = _colors[i];
+            Texture color = Colors[i];
 
-            ImageLayout finalLayout = _isPresented
+            ImageLayout finalLayout = IsPresented
                 ? ImageLayout.PresentSrcKhr
                 : color.Usage.HasFlag(TextureUsage.Sampled) ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.ColorAttachmentOptimal;
 
             color.TransitionLayout(commandBuffer, finalLayout);
         }
 
-        if (_depth != null)
+        if (Depth != null)
         {
-            ImageLayout finalLayout = _depth.Usage.HasFlag(TextureUsage.Sampled)
+            ImageLayout finalLayout = Depth.Usage.HasFlag(TextureUsage.Sampled)
                 ? ImageLayout.ShaderReadOnlyOptimal
                 : ImageLayout.DepthStencilAttachmentOptimal;
 
-            _depth.TransitionLayout(commandBuffer, finalLayout);
+            Depth.TransitionLayout(commandBuffer, finalLayout);
         }
     }
 
@@ -274,9 +279,9 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
     {
         VkRes.Vk.DestroyFramebuffer(VkRes.VkDevice, Handle, null);
 
-        _depthView?.Dispose();
+        DepthView?.Dispose();
 
-        foreach (TextureView colorView in _colorViews)
+        foreach (TextureView colorView in ColorViews)
         {
             colorView.Dispose();
         }

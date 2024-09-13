@@ -77,7 +77,6 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
         _window.PollEvents();
 
-        // sdl not trigger Resize event when size is changed actively.
         if (Swapchain!.Width != _window.FramebufferSize.X || Swapchain!.Height != _window.FramebufferSize.Y)
         {
             Swapchain.Resize((uint)_window.FramebufferSize.X, (uint)_window.FramebufferSize.Y);

@@ -364,7 +364,7 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
     private void SubmitCommandsCore(CommandList commandList, Semaphore? signalSemaphore, Fence fence)
     {
         CommandBuffer commandBuffer = commandList.Handle;
-        Executor queue = commandList.TaskExecutor;
+        Executor executor = commandList.Executor;
 
         SubmitInfo submitInfo = new()
         {
@@ -381,7 +381,7 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
             submitInfo.PSignalSemaphores = &signalSemaphoreHandle;
         }
 
-        VkRes.Vk.QueueSubmit(queue.Handle, 1, &submitInfo, fence.Handle);
+        VkRes.Vk.QueueSubmit(executor.Handle, 1, &submitInfo, fence.Handle);
     }
 
     private bool SwapBuffersCore(Swapchain swapchain, Semaphore? waitSemaphore, bool waitAcquireNextImage)
