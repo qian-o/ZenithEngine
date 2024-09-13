@@ -17,8 +17,8 @@ struct VSInput
     [[vk::location(2)]] float2 TexCoord : TEXCOORD0;
     [[vk::location(3)]] float3 Color : COLOR0;
     [[vk::location(4)]] float4 Tangent : TEXCOORD1;
-    [[vk::location(5)]] int ColorMapIndex : TEXTUREINDEX0;
-    [[vk::location(6)]] int NormalMapIndex : TEXTUREINDEX1;
+    [[vk::location(5)]] int ColorMapIndex : TEXCOORD2;
+    [[vk::location(6)]] int NormalMapIndex : TEXCOORD3;
 };
 
 struct VSOutput
@@ -30,8 +30,8 @@ struct VSOutput
     [[vk::location(3)]] float3 ViewVec : TEXCOORD1;
     [[vk::location(4)]] float3 LightVec : TEXCOORD2;
     [[vk::location(5)]] float4 Tangent : TEXCOORD3;
-    [[vk::location(6)]] int ColorMapIndex : TEXTUREINDEX0;
-    [[vk::location(7)]] int NormalMapIndex : TEXTUREINDEX1;
+    [[vk::location(6)]] nointerpolation int ColorMapIndex : TEXCOORD4;
+    [[vk::location(7)]] nointerpolation int NormalMapIndex : TEXCOORD5;
 };
 
 ConstantBuffer<UBO> ubo : register(b0, space0);

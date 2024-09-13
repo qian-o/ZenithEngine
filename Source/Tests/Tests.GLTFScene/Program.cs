@@ -426,14 +426,16 @@ internal sealed unsafe class Program
                         Vector2 texCoord = texCoordBuffer != null ? texCoordBuffer[(int)i] : Vector2.Zero;
                         Vector3 color = colorBuffer != null ? colorBuffer[(int)i] : Vector3.One;
                         Vector4 tangent = tangentBuffer != null ? tangentBuffer[(int)i] : Vector4.Zero;
+                        int colorMapIndex = (int)_materials[primitive.Material.LogicalIndex].BaseColorTextureIndex;
+                        int normalMapIndex = (int)_materials[primitive.Material.LogicalIndex].NormalTextureIndex;
 
                         vertices.Add(new Vertex(position,
                                                 normal,
                                                 texCoord,
                                                 color,
                                                 tangent,
-                                                (int)_materials[primitive.Material.LogicalIndex].BaseColorTextureIndex,
-                                                (int)_materials[primitive.Material.LogicalIndex].NormalTextureIndex));
+                                                colorMapIndex,
+                                                normalMapIndex));
                     }
                 }
 
