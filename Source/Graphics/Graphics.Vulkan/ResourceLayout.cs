@@ -3,9 +3,9 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class ResourceLayout : DeviceResource
+public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
 {
-    internal ResourceLayout(GraphicsDevice graphicsDevice, ref readonly ResourceLayoutDescription description) : base(graphicsDevice)
+    internal ResourceLayout(VulkanResources vkRes, ref readonly ResourceLayoutDescription description) : base(vkRes, ObjectType.DescriptorSetLayout)
     {
         DescriptorSetLayoutBinding[] bindings = new DescriptorSetLayoutBinding[description.Elements.Length];
         DescriptorType[] descriptorTypes = new DescriptorType[description.Elements.Length];
@@ -32,31 +32,31 @@ public unsafe class ResourceLayout : DeviceResource
 
             if (binding.DescriptorType == DescriptorType.UniformBuffer)
             {
-                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffers;
+                binding.DescriptorCount = VkRes.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffers;
             }
             else if (binding.DescriptorType == DescriptorType.UniformBufferDynamic)
             {
-                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffersDynamic;
+                binding.DescriptorCount = VkRes.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindUniformBuffersDynamic;
             }
             else if (binding.DescriptorType == DescriptorType.StorageBuffer)
             {
-                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffers;
+                binding.DescriptorCount = VkRes.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffers;
             }
             else if (binding.DescriptorType == DescriptorType.StorageBufferDynamic)
             {
-                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffersDynamic;
+                binding.DescriptorCount = VkRes.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageBuffersDynamic;
             }
             else if (binding.DescriptorType == DescriptorType.SampledImage)
             {
-                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSampledImages;
+                binding.DescriptorCount = VkRes.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSampledImages;
             }
             else if (binding.DescriptorType == DescriptorType.StorageImage)
             {
-                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageImages;
+                binding.DescriptorCount = VkRes.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindStorageImages;
             }
             else if (binding.DescriptorType == DescriptorType.Sampler)
             {
-                binding.DescriptorCount = PhysicalDevice._descriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSamplers;
+                binding.DescriptorCount = VkRes.DescriptorIndexingProperties.MaxDescriptorSetUpdateAfterBindSamplers;
             }
             else
             {
@@ -94,11 +94,12 @@ public unsafe class ResourceLayout : DeviceResource
         }
 
         VkDescriptorSetLayout descriptorSetLayout;
-        Vk.CreateDescriptorSetLayout(graphicsDevice.Device, &createInfo, null, &descriptorSetLayout).ThrowCode();
+        VkRes.Vk.CreateDescriptorSetLayout(VkRes.GetDevice(), &createInfo, null, &descriptorSetLayout).ThrowCode();
 
         ulong sizeInBytes;
-        DescriptorBufferExt.GetDescriptorSetLayoutSize(graphicsDevice.Device, descriptorSetLayout, &sizeInBytes);
-        sizeInBytes = Util.AlignedSize(sizeInBytes, PhysicalDevice._descriptorBufferProperties.DescriptorBufferOffsetAlignment);
+        VkRes.GetExtDescriptorBuffer().GetDescriptorSetLayoutSize(VkRes.GetDevice(), descriptorSetLayout, &sizeInBytes);
+
+        sizeInBytes = Util.AlignedSize(sizeInBytes, VkRes.DescriptorBufferProperties.DescriptorBufferOffsetAlignment);
 
         Handle = descriptorSetLayout;
         DescriptorTypes = descriptorTypes;
@@ -106,7 +107,7 @@ public unsafe class ResourceLayout : DeviceResource
         IsLastBindless = description.IsLastBindless;
     }
 
-    internal VkDescriptorSetLayout Handle { get; }
+    internal override VkDescriptorSetLayout Handle { get; }
 
     internal DescriptorType[] DescriptorTypes { get; }
 
@@ -114,8 +115,13 @@ public unsafe class ResourceLayout : DeviceResource
 
     internal bool IsLastBindless { get; }
 
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
+    }
+
     protected override void Destroy()
     {
-        Vk.DestroyDescriptorSetLayout(GraphicsDevice.Device, Handle, null);
+        VkRes.Vk.DestroyDescriptorSetLayout(VkRes.GetDevice(), Handle, null);
     }
 }

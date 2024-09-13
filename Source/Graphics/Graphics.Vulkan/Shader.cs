@@ -3,9 +3,9 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class Shader : DeviceResource
+public unsafe class Shader : VulkanObject<VkShaderModule>
 {
-    internal Shader(GraphicsDevice graphicsDevice, ref readonly ShaderDescription description) : base(graphicsDevice)
+    internal Shader(VulkanResources vkRes, ref readonly ShaderDescription description) : base(vkRes, ObjectType.ShaderModule)
     {
         ShaderModuleCreateInfo createInfo = new()
         {
@@ -15,21 +15,26 @@ public unsafe class Shader : DeviceResource
         };
 
         VkShaderModule shaderModule;
-        Vk.CreateShaderModule(Device, &createInfo, null, &shaderModule).ThrowCode();
+        VkRes.Vk.CreateShaderModule(VkRes.GetDevice(), &createInfo, null, &shaderModule).ThrowCode();
 
         Handle = shaderModule;
         Stage = description.Stage;
         EntryPoint = description.EntryPoint;
     }
 
-    internal VkShaderModule Handle { get; }
+    internal override VkShaderModule Handle { get; }
 
-    public ShaderStages Stage { get; }
+    internal ShaderStages Stage { get; }
 
-    public string EntryPoint { get; }
+    internal string EntryPoint { get; }
 
     protected override void Destroy()
     {
-        Vk.DestroyShaderModule(Device, Handle, null);
+        VkRes.Vk.DestroyShaderModule(VkRes.GetDevice(), Handle, null);
+    }
+
+    internal override ulong[] GetHandles()
+    {
+        throw new NotImplementedException();
     }
 }

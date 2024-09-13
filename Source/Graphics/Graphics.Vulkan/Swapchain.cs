@@ -3,28 +3,30 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class Swapchain : DeviceResource
+public unsafe class Swapchain : VulkanObject<SwapchainKHR>
 {
-    private readonly SurfaceKHR _target;
-    private readonly PixelFormat? _depthFormat;
     private SwapchainKHR? _swapchain;
     private Texture? _depthBuffer;
     private Framebuffer[]? _framebuffers;
 
-    internal Swapchain(GraphicsDevice graphicsDevice, ref readonly SwapchainDescription description) : base(graphicsDevice)
+    internal Swapchain(VulkanResources vkRes, ref readonly SwapchainDescription description) : base(vkRes, ObjectType.SwapchainKhr)
     {
-        _target = description.Target.Create<AllocationCallbacks>(Instance.ToHandle(), null).ToSurface();
-        _depthFormat = description.DepthFormat;
-        ImageAvailableFence = new Fence(graphicsDevice);
+        Target = description.Target.Create<AllocationCallbacks>(VkRes.Instance.ToHandle(), null).ToSurface();
+        DepthFormat = description.DepthFormat;
+        ImageAvailableFence = new Fence(vkRes);
 
         Resize(description.Width, description.Height);
     }
 
-    internal SwapchainKHR Handle => _swapchain ?? throw new InvalidOperationException("Swapchain is not initialized");
+    internal override SwapchainKHR Handle => _swapchain ?? throw new InvalidOperationException("Swapchain is not initialized");
 
-    internal uint CurrentImageIndex { get; private set; }
+    internal SurfaceKHR Target { get; }
+
+    internal PixelFormat? DepthFormat { get; }
 
     internal Fence ImageAvailableFence { get; }
+
+    internal uint CurrentImageIndex { get; private set; }
 
     public uint Width { get; private set; }
 
@@ -44,33 +46,33 @@ public unsafe class Swapchain : DeviceResource
         DestroySwapchain();
 
         SurfaceCapabilitiesKHR surfaceCapabilities;
-        SurfaceExt.GetPhysicalDeviceSurfaceCapabilities(VkPhysicalDevice,
-                                                        _target,
-                                                        &surfaceCapabilities).ThrowCode();
+        VkRes.KhrSurface.GetPhysicalDeviceSurfaceCapabilities(VkRes.GetPhysicalDevice(),
+                                                              Target,
+                                                              &surfaceCapabilities).ThrowCode();
 
         uint surfaceFormatCount;
-        SurfaceExt.GetPhysicalDeviceSurfaceFormats(VkPhysicalDevice,
-                                                   _target,
-                                                   &surfaceFormatCount,
-                                                   null).ThrowCode();
+        VkRes.KhrSurface.GetPhysicalDeviceSurfaceFormats(VkRes.GetPhysicalDevice(),
+                                                         Target,
+                                                         &surfaceFormatCount,
+                                                         null).ThrowCode();
 
         SurfaceFormatKHR[] surfaceFormats = new SurfaceFormatKHR[surfaceFormatCount];
-        SurfaceExt.GetPhysicalDeviceSurfaceFormats(VkPhysicalDevice,
-                                                   _target,
-                                                   &surfaceFormatCount,
-                                                   surfaceFormats.AsPointer()).ThrowCode();
+        VkRes.KhrSurface.GetPhysicalDeviceSurfaceFormats(VkRes.GetPhysicalDevice(),
+                                                         Target,
+                                                         &surfaceFormatCount,
+                                                         surfaceFormats.AsPointer()).ThrowCode();
 
         uint presentModeCount;
-        SurfaceExt.GetPhysicalDeviceSurfacePresentModes(VkPhysicalDevice,
-                                                        _target,
-                                                        &presentModeCount,
-                                                        null).ThrowCode();
+        VkRes.KhrSurface.GetPhysicalDeviceSurfacePresentModes(VkRes.GetPhysicalDevice(),
+                                                              Target,
+                                                              &presentModeCount,
+                                                              null).ThrowCode();
 
         PresentModeKHR[] presentModes = new PresentModeKHR[presentModeCount];
-        SurfaceExt.GetPhysicalDeviceSurfacePresentModes(VkPhysicalDevice,
-                                                        _target,
-                                                        &presentModeCount,
-                                                        presentModes.AsPointer()).ThrowCode();
+        VkRes.KhrSurface.GetPhysicalDeviceSurfacePresentModes(VkRes.GetPhysicalDevice(),
+                                                              Target,
+                                                              &presentModeCount,
+                                                              presentModes.AsPointer()).ThrowCode();
 
         uint desiredNumberOfSwapchainImages = surfaceCapabilities.MinImageCount + 1;
         if (surfaceCapabilities.MaxImageCount > 0 && desiredNumberOfSwapchainImages > surfaceCapabilities.MaxImageCount)
@@ -81,7 +83,7 @@ public unsafe class Swapchain : DeviceResource
         SwapchainCreateInfoKHR createInfo = new()
         {
             SType = StructureType.SwapchainCreateInfoKhr,
-            Surface = _target,
+            Surface = Target,
             MinImageCount = desiredNumberOfSwapchainImages,
             ImageFormat = ChooseSwapSurfaceFormat(surfaceFormats).Format,
             ImageColorSpace = ChooseSwapSurfaceFormat(surfaceFormats).ColorSpace,
@@ -97,36 +99,36 @@ public unsafe class Swapchain : DeviceResource
         };
 
         SwapchainKHR swapchain;
-        SwapchainExt.CreateSwapchain(Device, &createInfo, null, &swapchain).ThrowCode();
+        VkRes.GetKhrSwapchain().CreateSwapchain(VkRes.GetDevice(), &createInfo, null, &swapchain).ThrowCode();
 
         uint imageCount;
-        SwapchainExt.GetSwapchainImages(Device, swapchain, &imageCount, null).ThrowCode();
+        VkRes.GetKhrSwapchain().GetSwapchainImages(VkRes.GetDevice(), swapchain, &imageCount, null).ThrowCode();
 
         VkImage[] images = new VkImage[imageCount];
-        SwapchainExt.GetSwapchainImages(Device,
-                                        swapchain,
-                                        &imageCount,
-                                        images.AsPointer()).ThrowCode();
+        VkRes.GetKhrSwapchain().GetSwapchainImages(VkRes.GetDevice(),
+                                                   swapchain,
+                                                   &imageCount,
+                                                   images.AsPointer()).ThrowCode();
 
         Texture? depthBuffer = null;
-        if (_depthFormat != null)
+        if (DepthFormat != null)
         {
             TextureDescription depthBufferDescription = new(width,
                                                             height,
                                                             1,
                                                             1,
-                                                            _depthFormat.Value,
+                                                            DepthFormat.Value,
                                                             TextureUsage.DepthStencil,
                                                             TextureType.Texture2D,
                                                             TextureSampleCount.Count1);
 
-            depthBuffer = new Texture(GraphicsDevice, in depthBufferDescription);
+            depthBuffer = new Texture(VkRes, in depthBufferDescription);
         }
 
         Framebuffer[] framebuffers = new Framebuffer[imageCount];
         for (int i = 0; i < imageCount; i++)
         {
-            Texture colorBuffer = new(GraphicsDevice,
+            Texture colorBuffer = new(VkRes,
                                       images[i],
                                       createInfo.ImageFormat,
                                       width,
@@ -134,7 +136,7 @@ public unsafe class Swapchain : DeviceResource
 
             FramebufferDescription framebufferDescription = new(depthBuffer, colorBuffer);
 
-            framebuffers[i] = new Framebuffer(GraphicsDevice, in framebufferDescription, true);
+            framebuffers[i] = new Framebuffer(VkRes, in framebufferDescription, true);
         }
 
         _swapchain = swapchain;
@@ -154,12 +156,12 @@ public unsafe class Swapchain : DeviceResource
         }
 
         uint currentImageIndex;
-        Result result = SwapchainExt.AcquireNextImage(Device,
-                                                      _swapchain.Value,
-                                                      ulong.MaxValue,
-                                                      default,
-                                                      ImageAvailableFence.Handle,
-                                                      &currentImageIndex);
+        Result result = VkRes.GetKhrSwapchain().AcquireNextImage(VkRes.GetDevice(),
+                                                                 _swapchain.Value,
+                                                                 ulong.MaxValue,
+                                                                 default,
+                                                                 ImageAvailableFence.Handle,
+                                                                 &currentImageIndex);
 
         if (result is not Result.Success and not Result.SuboptimalKhr)
         {
@@ -174,6 +176,11 @@ public unsafe class Swapchain : DeviceResource
         CurrentImageIndex = currentImageIndex;
     }
 
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
+    }
+
     protected override void Destroy()
     {
         if (_swapchain != null)
@@ -183,7 +190,7 @@ public unsafe class Swapchain : DeviceResource
             DestroySwapchain();
         }
 
-        SurfaceExt.DestroySurface(Instance, _target, null);
+        VkRes.KhrSurface.DestroySurface(VkRes.Instance, Target, null);
     }
 
     private void DestroySwapchain()
@@ -197,7 +204,7 @@ public unsafe class Swapchain : DeviceResource
 
             _depthBuffer?.Dispose();
 
-            SwapchainExt.DestroySwapchain(Device, _swapchain.Value, null);
+            VkRes.GetKhrSwapchain().DestroySwapchain(VkRes.GetDevice(), _swapchain.Value, null);
         }
     }
 

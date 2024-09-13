@@ -1,24 +1,24 @@
 ﻿namespace Graphics.Vulkan;
 
-public class ResourceFactory : ContextObject
+public class ResourceFactory
 {
-    private readonly GraphicsDevice _graphicsDevice;
+    private readonly VulkanResources _vkRes;
 
-    internal ResourceFactory(Context context, GraphicsDevice graphicsDevice) : base(context)
+    internal ResourceFactory(VulkanResources vkRes)
     {
-        _graphicsDevice = graphicsDevice;
+        _vkRes = vkRes;
     }
 
     public DeviceBuffer CreateBuffer(ref readonly BufferDescription description)
     {
-        return new DeviceBuffer(_graphicsDevice, in description);
+        return new DeviceBuffer(_vkRes, in description);
     }
 
     public DeviceBuffer CreateBuffer(BufferDescription description) => CreateBuffer(in description);
 
     public Texture CreateTexture(ref readonly TextureDescription description)
     {
-        return new Texture(_graphicsDevice, in description);
+        return new Texture(_vkRes, in description);
     }
 
     public Texture CreateTexture(TextureDescription description) => CreateTexture(in description);
@@ -32,68 +32,62 @@ public class ResourceFactory : ContextObject
 
     public TextureView CreateTextureView(ref readonly TextureViewDescription description)
     {
-        return new TextureView(_graphicsDevice, in description);
+        return new TextureView(_vkRes, in description);
     }
 
     public TextureView CreateTextureView(TextureViewDescription description) => CreateTextureView(in description);
 
     public Framebuffer CreateFramebuffer(ref readonly FramebufferDescription description)
     {
-        return new Framebuffer(_graphicsDevice, in description, false);
+        return new Framebuffer(_vkRes, in description, false);
     }
 
     public Framebuffer CreateFramebuffer(FramebufferDescription description) => CreateFramebuffer(in description);
 
     public Swapchain CreateSwapchain(ref readonly SwapchainDescription description)
     {
-        return new Swapchain(_graphicsDevice, in description);
+        return new Swapchain(_vkRes, in description);
     }
 
     public Swapchain CreateSwapchain(SwapchainDescription description) => CreateSwapchain(in description);
 
     public ResourceLayout CreateResourceLayout(ref readonly ResourceLayoutDescription description)
     {
-        return new ResourceLayout(_graphicsDevice, in description);
+        return new ResourceLayout(_vkRes, in description);
     }
 
     public ResourceLayout CreateResourceLayout(ResourceLayoutDescription description) => CreateResourceLayout(in description);
 
     public ResourceSet CreateResourceSet(ref readonly ResourceSetDescription description)
     {
-        return new ResourceSet(_graphicsDevice, in description);
+        return new ResourceSet(_vkRes, in description);
     }
 
     public ResourceSet CreateResourceSet(ResourceSetDescription description) => CreateResourceSet(in description);
 
     public Sampler CreateSampler(ref readonly SamplerDescription description)
     {
-        return new Sampler(_graphicsDevice, in description);
+        return new Sampler(_vkRes, in description);
     }
 
     public Sampler CreateSampler(SamplerDescription description) => CreateSampler(in description);
 
     public Shader CreateShader(ref readonly ShaderDescription description)
     {
-        return new Shader(_graphicsDevice, in description);
+        return new Shader(_vkRes, in description);
     }
 
     public Shader CreateShader(ShaderDescription description) => CreateShader(in description);
 
     public Pipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDescription description)
     {
-        return new Pipeline(_graphicsDevice, in description);
+        return new Pipeline(_vkRes, in description);
     }
 
     public Pipeline CreateGraphicsPipeline(GraphicsPipelineDescription description) => CreateGraphicsPipeline(in description);
 
     public CommandList CreateGraphicsCommandList()
     {
-        return new CommandList(_graphicsDevice,
-                               _graphicsDevice._graphicsQueue,
-                               _graphicsDevice._graphicsCommandPool);
-    }
-
-    protected override void Destroy()
-    {
+        return new CommandList(_vkRes, _vkRes.GraphicsDevice.GraphicsExecutor, _vkRes.GraphicsDevice.GraphicsCommandPool);
     }
 }

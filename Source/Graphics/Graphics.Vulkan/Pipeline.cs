@@ -4,11 +4,9 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class Pipeline : DeviceResource
+public unsafe class Pipeline : VulkanObject<VkPipeline>
 {
-    private readonly VkRenderPass _renderPass;
-
-    internal Pipeline(GraphicsDevice graphicsDevice, ref readonly GraphicsPipelineDescription description) : base(graphicsDevice)
+    internal Pipeline(VulkanResources vkRes, ref readonly GraphicsPipelineDescription description) : base(vkRes, ObjectType.Pipeline)
     {
         GraphicsPipelineCreateInfo createInfo = new()
         {
@@ -245,7 +243,7 @@ public unsafe class Pipeline : DeviceResource
                     SType = StructureType.PipelineShaderStageCreateInfo,
                     Stage = Formats.GetShaderStage(shader.Stage),
                     Module = shader.Handle,
-                    PName = Alloter.Allocate(shader.EntryPoint),
+                    PName = VkRes.Alloter.Allocate(shader.EntryPoint),
                     PSpecializationInfo = &specializationInfo
                 };
             }
@@ -286,7 +284,7 @@ public unsafe class Pipeline : DeviceResource
             layoutCreateInfo.PSetLayouts = descriptorSetLayouts.AsPointer();
 
             PipelineLayout pipelineLayout;
-            Vk.CreatePipelineLayout(Device, &layoutCreateInfo, null, &pipelineLayout).ThrowCode();
+            VkRes.Vk.CreatePipelineLayout(VkRes.GetDevice(), &layoutCreateInfo, null, &pipelineLayout).ThrowCode();
             createInfo.Layout = pipelineLayout;
         }
 
@@ -384,29 +382,36 @@ public unsafe class Pipeline : DeviceResource
             renderPassCreateInfo.PDependencies = &subpassDependency;
 
             VkRenderPass renderPass;
-            Vk.CreateRenderPass(Device, &renderPassCreateInfo, null, &renderPass).ThrowCode();
+            VkRes.Vk.CreateRenderPass(VkRes.GetDevice(), &renderPassCreateInfo, null, &renderPass).ThrowCode();
             createInfo.RenderPass = renderPass;
         }
 
         VkPipeline pipeline;
-        Vk.CreateGraphicsPipelines(Device, default, 1, &createInfo, null, &pipeline).ThrowCode();
+        VkRes.Vk.CreateGraphicsPipelines(VkRes.GetDevice(), default, 1, &createInfo, null, &pipeline).ThrowCode();
 
-        Layout = createInfo.Layout;
-        _renderPass = createInfo.RenderPass;
         Handle = pipeline;
+        Layout = createInfo.Layout;
+        RenderPass = createInfo.RenderPass;
         IsGraphics = true;
     }
 
-    internal VkPipeline Handle { get; }
+    internal override VkPipeline Handle { get; }
 
     internal VkPipelineLayout Layout { get; }
 
+    internal VkRenderPass RenderPass { get; }
+
     public bool IsGraphics { get; }
+
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
+    }
 
     protected override void Destroy()
     {
-        Vk.DestroyPipeline(Device, Handle, null);
-        Vk.DestroyPipelineLayout(Device, Layout, null);
-        Vk.DestroyRenderPass(Device, _renderPass, null);
+        VkRes.Vk.DestroyPipeline(VkRes.GetDevice(), Handle, null);
+        VkRes.Vk.DestroyPipelineLayout(VkRes.GetDevice(), Layout, null);
+        VkRes.Vk.DestroyRenderPass(VkRes.GetDevice(), RenderPass, null);
     }
 }

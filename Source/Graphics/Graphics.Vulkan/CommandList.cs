@@ -18,10 +18,10 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
     private Pipeline? _currentPipeline;
     private bool _isInRenderPass;
 
-    internal CommandList(VulkanResources vkRes, Queue queue, CommandPool commandPool) : base(vkRes, ObjectType.CommandBuffer)
+    internal CommandList(VulkanResources vkRes, Executor taskExecutor, CommandPool commandPool) : base(vkRes, ObjectType.CommandBuffer)
     {
         Handle = commandPool.AllocateCommandBuffer();
-        Queue = queue;
+        TaskExecutor = taskExecutor;
         CommandPool = commandPool;
 
         _disposablesLock = new();
@@ -33,7 +33,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
     internal override CommandBuffer Handle { get; }
 
-    internal Queue Queue { get; }
+    internal Executor TaskExecutor { get; }
 
     internal CommandPool CommandPool { get; }
 
@@ -420,23 +420,23 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         DescriptorBufferBindingInfoEXT bindingInfoEXT = new()
         {
             SType = StructureType.DescriptorBufferBindingInfoExt,
-            Address = resourceSet.Address,
+            Address = resourceSet.Handle.Address,
             Usage = BufferUsageFlags.ResourceDescriptorBufferBitExt | BufferUsageFlags.SamplerDescriptorBufferBitExt
         };
 
-        VkRes.ExtDescriptorBuffer.CmdBindDescriptorBuffers(Handle, 1, &bindingInfoEXT);
+        VkRes.GetExtDescriptorBuffer().CmdBindDescriptorBuffers(Handle, 1, &bindingInfoEXT);
 
         uint bufferIndices = 0;
         ulong offsets = 0;
         if (_currentPipeline.IsGraphics)
         {
-            VkRes.ExtDescriptorBuffer.CmdSetDescriptorBufferOffsets(Handle,
-                                                                    PipelineBindPoint.Graphics,
-                                                                    _currentPipeline.Layout,
-                                                                    slot,
-                                                                    1,
-                                                                    &bufferIndices,
-                                                                    &offsets);
+            VkRes.GetExtDescriptorBuffer().CmdSetDescriptorBufferOffsets(Handle,
+                                                                         PipelineBindPoint.Graphics,
+                                                                         _currentPipeline.Layout,
+                                                                         slot,
+                                                                         1,
+                                                                         &bufferIndices,
+                                                                         &offsets);
         }
     }
 

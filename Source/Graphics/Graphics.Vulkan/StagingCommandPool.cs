@@ -2,41 +2,43 @@
 
 namespace Graphics.Vulkan;
 
-internal sealed unsafe class StagingCommandPool : DeviceResource
+public unsafe class StagingCommandPool : VulkanObject<VkCommandPool>
 {
-    private readonly Queue _transferQueue;
-    private readonly VkCommandPool _commandPool;
-    private readonly Fence _fence;
-
-    public StagingCommandPool(GraphicsDevice graphicsDevice, Queue transferQueue) : base(graphicsDevice)
+    public StagingCommandPool(VulkanResources vkRes, Executor taskExecutor) : base(vkRes, ObjectType.CommandPool)
     {
         CommandPoolCreateInfo createInfo = new()
         {
             SType = StructureType.CommandPoolCreateInfo,
-            QueueFamilyIndex = transferQueue.FamilyIndex,
+            QueueFamilyIndex = taskExecutor.FamilyIndex,
             Flags = CommandPoolCreateFlags.TransientBit
         };
 
         VkCommandPool commandPool;
-        Vk.CreateCommandPool(Device, &createInfo, null, &commandPool).ThrowCode();
+        VkRes.Vk.CreateCommandPool(VkRes.GetDevice(), &createInfo, null, &commandPool).ThrowCode();
 
-        _transferQueue = transferQueue;
-        _commandPool = commandPool;
-        _fence = new Fence(graphicsDevice);
+        Handle = commandPool;
+        TaskExecutor = taskExecutor;
+        Fence = new Fence(VkRes);
     }
+
+    internal override VkCommandPool Handle { get; }
+
+    internal Executor TaskExecutor { get; }
+
+    internal Fence Fence { get; }
 
     public CommandBuffer BeginNewCommandBuffer()
     {
         CommandBufferAllocateInfo allocateInfo = new()
         {
             SType = StructureType.CommandBufferAllocateInfo,
-            CommandPool = _commandPool,
+            CommandPool = Handle,
             Level = CommandBufferLevel.Primary,
             CommandBufferCount = 1
         };
 
         CommandBuffer commandBuffer;
-        Vk.AllocateCommandBuffers(Device, &allocateInfo, &commandBuffer).ThrowCode();
+        VkRes.Vk.AllocateCommandBuffers(VkRes.GetDevice(), &allocateInfo, &commandBuffer).ThrowCode();
 
         CommandBufferBeginInfo beginInfo = new()
         {
@@ -44,14 +46,14 @@ internal sealed unsafe class StagingCommandPool : DeviceResource
             Flags = CommandBufferUsageFlags.OneTimeSubmitBit
         };
 
-        Vk.BeginCommandBuffer(commandBuffer, &beginInfo).ThrowCode();
+        VkRes.Vk.BeginCommandBuffer(commandBuffer, &beginInfo).ThrowCode();
 
         return commandBuffer;
     }
 
     public void EndAndSubmitCommandBuffer(CommandBuffer commandBuffer)
     {
-        Vk.EndCommandBuffer(commandBuffer).ThrowCode();
+        VkRes.Vk.EndCommandBuffer(commandBuffer).ThrowCode();
 
         SubmitInfo submitInfo = new()
         {
@@ -60,17 +62,22 @@ internal sealed unsafe class StagingCommandPool : DeviceResource
             PCommandBuffers = &commandBuffer
         };
 
-        Vk.QueueSubmit(_transferQueue.Handle, 1, &submitInfo, _fence.Handle).ThrowCode();
+        VkRes.Vk.QueueSubmit(TaskExecutor.Handle, 1, &submitInfo, Fence.Handle).ThrowCode();
 
-        _fence.WaitAndReset();
+        Fence.WaitAndReset();
 
-        Vk.FreeCommandBuffers(Device, _commandPool, 1, &commandBuffer);
+        VkRes.Vk.FreeCommandBuffers(VkRes.GetDevice(), Handle, 1, &commandBuffer);
+    }
+
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
     }
 
     protected override void Destroy()
     {
-        _fence.Dispose();
+        Fence.Dispose();
 
-        Vk.DestroyCommandPool(Device, _commandPool, null);
+        VkRes.Vk.DestroyCommandPool(VkRes.GetDevice(), Handle, null);
     }
 }

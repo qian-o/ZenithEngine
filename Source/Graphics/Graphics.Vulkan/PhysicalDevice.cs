@@ -5,13 +5,13 @@ namespace Graphics.Vulkan;
 
 public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
 {
-    private PhysicalDeviceProperties _properties;
-    private PhysicalDeviceDescriptorBufferPropertiesEXT _descriptorBufferProperties;
-    private PhysicalDeviceDescriptorIndexingProperties _descriptorIndexingProperties;
-    private PhysicalDeviceFeatures _features;
-    private PhysicalDeviceMemoryProperties _memoryProperties;
-    private QueueFamilyProperties[] _queueFamilyProperties;
-    private ExtensionProperties[] _extensionProperties;
+    private readonly PhysicalDeviceProperties _properties;
+    private readonly PhysicalDeviceDescriptorBufferPropertiesEXT _descriptorBufferProperties;
+    private readonly PhysicalDeviceDescriptorIndexingProperties _descriptorIndexingProperties;
+    private readonly PhysicalDeviceFeatures _features;
+    private readonly PhysicalDeviceMemoryProperties _memoryProperties;
+    private readonly QueueFamilyProperties[] _queueFamilyProperties;
+    private readonly ExtensionProperties[] _extensionProperties;
 
     internal PhysicalDevice(VulkanResources vkRes, VkPhysicalDevice physicalDevice) : base(vkRes, ObjectType.PhysicalDevice)
     {

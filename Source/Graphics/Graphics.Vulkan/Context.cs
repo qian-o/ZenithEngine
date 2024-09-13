@@ -11,7 +11,7 @@ using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Graphics.Vulkan;
 
-public unsafe partial class Context : DisposableObject
+public unsafe class Context : DisposableObject
 {
     public const string ValidationLayerName = "VK_LAYER_KHRONOS_validation";
 

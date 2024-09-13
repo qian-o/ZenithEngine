@@ -3,9 +3,9 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class TextureView : DeviceResource, IBindableResource
+public unsafe class TextureView : VulkanObject<ImageView>, IBindableResource
 {
-    internal TextureView(GraphicsDevice graphicsDevice, ref readonly TextureViewDescription description) : base(graphicsDevice)
+    internal TextureView(VulkanResources vkRes, ref readonly TextureViewDescription description) : base(vkRes, ObjectType.ImageView)
     {
         ImageViewCreateInfo createInfo = new()
         {
@@ -46,15 +46,20 @@ public unsafe class TextureView : DeviceResource, IBindableResource
         }
 
         VkImageView imageView;
-        Vk.CreateImageView(Device, &createInfo, null, &imageView).ThrowCode();
+        VkRes.Vk.CreateImageView(VkRes.GetDevice(), &createInfo, null, &imageView).ThrowCode();
 
         Handle = imageView;
     }
 
-    internal VkImageView Handle { get; }
+    internal override VkImageView Handle { get; }
+
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
+    }
 
     protected override void Destroy()
     {
-        Vk.DestroyImageView(Device, Handle, null);
+        VkRes.Vk.DestroyImageView(VkRes.GetDevice(), Handle, null);
     }
 }

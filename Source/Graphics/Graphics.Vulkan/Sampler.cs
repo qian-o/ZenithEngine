@@ -3,9 +3,9 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class Sampler : DeviceResource, IBindableResource
+public unsafe class Sampler : VulkanObject<VkSampler>, IBindableResource
 {
-    internal Sampler(GraphicsDevice graphicsDevice, ref readonly SamplerDescription description) : base(graphicsDevice)
+    internal Sampler(VulkanResources vkRes, ref readonly SamplerDescription description) : base(vkRes, ObjectType.Sampler)
     {
         Formats.GetFilter(description.Filter, out Filter minFilter, out Filter magFilter, out SamplerMipmapMode mipFilter);
 
@@ -29,15 +29,20 @@ public unsafe class Sampler : DeviceResource, IBindableResource
         };
 
         VkSampler sampler;
-        Vk.CreateSampler(Device, &samplerCreateInfo, null, &sampler).ThrowCode();
+        VkRes.Vk.CreateSampler(VkRes.GetDevice(), &samplerCreateInfo, null, &sampler).ThrowCode();
 
         Handle = sampler;
     }
 
-    internal VkSampler Handle { get; }
+    internal override VkSampler Handle { get; }
+
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
+    }
 
     protected override void Destroy()
     {
-        Vk.DestroySampler(Device, Handle, null);
+        VkRes.Vk.DestroySampler(VkRes.GetDevice(), Handle, null);
     }
 }

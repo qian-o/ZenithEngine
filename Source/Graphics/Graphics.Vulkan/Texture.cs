@@ -3,13 +3,9 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class Texture : DeviceResource, IBindableResource
+public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
 {
-    private readonly ImageLayout[] _imageLayouts;
-    private readonly DeviceMemory? _deviceMemory;
-    private readonly bool _isSwapchainImage;
-
-    internal Texture(GraphicsDevice graphicsDevice, ref readonly TextureDescription description) : base(graphicsDevice)
+    internal Texture(VulkanResources vkRes, ref readonly TextureDescription description) : base(vkRes, ObjectType.Image)
     {
         bool isCube = description.Usage.HasFlag(TextureUsage.Cubemap);
         uint arrayLayers = (isCube ? 6u : 1u) * description.Depth;
@@ -41,17 +37,17 @@ public unsafe class Texture : DeviceResource, IBindableResource
         }
 
         VkImage image;
-        Vk.CreateImage(Device, &createInfo, null, &image).ThrowCode();
+        VkRes.Vk.CreateImage(VkRes.GetDevice(), &createInfo, null, &image).ThrowCode();
 
         MemoryRequirements memoryRequirements;
-        Vk.GetImageMemoryRequirements(Device, image, &memoryRequirements);
+        VkRes.Vk.GetImageMemoryRequirements(VkRes.GetDevice(), image, &memoryRequirements);
 
-        DeviceMemory deviceMemory = new(graphicsDevice,
+        DeviceMemory deviceMemory = new(VkRes,
                                         in memoryRequirements,
                                         MemoryPropertyFlags.DeviceLocalBit,
                                         false);
 
-        Vk.BindImageMemory(Device, image, deviceMemory.Handle, 0).ThrowCode();
+        VkRes.Vk.BindImageMemory(VkRes.GetDevice(), image, deviceMemory.Handle, 0).ThrowCode();
 
         ImageLayout[] imageLayouts = new ImageLayout[subresourceCount];
         Array.Fill(imageLayouts, ImageLayout.Preinitialized);
@@ -63,19 +59,19 @@ public unsafe class Texture : DeviceResource, IBindableResource
         SampleCount = description.SampleCount;
         VkSampleCount = createInfo.Samples;
         Usage = description.Usage;
+        ImageLayouts = imageLayouts;
+        DeviceMemory = deviceMemory;
+        IsSwapchainImage = false;
         Width = description.Width;
         Height = description.Height;
         Depth = description.Depth;
         MipLevels = description.MipLevels;
         ArrayLayers = createInfo.ArrayLayers;
-        _imageLayouts = imageLayouts;
-        _deviceMemory = deviceMemory;
-        _isSwapchainImage = false;
 
         TransitionToBestLayout();
     }
 
-    internal Texture(GraphicsDevice graphicsDevice, VkImage image, Format format, uint width, uint height) : base(graphicsDevice)
+    internal Texture(VulkanResources vkRes, VkImage image, Format format, uint width, uint height) : base(vkRes, ObjectType.Image)
     {
         Handle = image;
         Type = TextureType.Texture2D;
@@ -84,17 +80,17 @@ public unsafe class Texture : DeviceResource, IBindableResource
         SampleCount = TextureSampleCount.Count1;
         VkSampleCount = SampleCountFlags.Count1Bit;
         Usage = TextureUsage.RenderTarget;
+        ImageLayouts = [ImageLayout.Undefined];
+        DeviceMemory = null;
+        IsSwapchainImage = true;
         Width = width;
         Height = height;
         Depth = 1;
         MipLevels = 1;
         ArrayLayers = 1;
-        _imageLayouts = [ImageLayout.Undefined];
-        _deviceMemory = null;
-        _isSwapchainImage = true;
     }
 
-    internal VkImage Handle { get; }
+    internal override VkImage Handle { get; }
 
     internal TextureType Type { get; }
 
@@ -107,6 +103,12 @@ public unsafe class Texture : DeviceResource, IBindableResource
     internal SampleCountFlags VkSampleCount { get; }
 
     internal TextureUsage Usage { get; }
+
+    internal ImageLayout[] ImageLayouts { get; }
+
+    internal DeviceMemory? DeviceMemory { get; }
+
+    internal bool IsSwapchainImage { get; }
 
     public uint Width { get; }
 
@@ -126,7 +128,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
             {
                 uint index = (layer * MipLevels) + level;
 
-                ImageLayout oldLayout = _imageLayouts[index];
+                ImageLayout oldLayout = ImageLayouts[index];
 
                 if (oldLayout != newLayout)
                 {
@@ -255,18 +257,18 @@ public unsafe class Texture : DeviceResource, IBindableResource
                         }
                     }
 
-                    Vk.CmdPipelineBarrier(commandBuffer,
-                                          srcStageFlags,
-                                          dstStageFlags,
-                                          DependencyFlags.None,
-                                          0,
-                                          null,
-                                          0,
-                                          null,
-                                          1,
-                                          &barrier);
+                    VkRes.Vk.CmdPipelineBarrier(commandBuffer,
+                                                srcStageFlags,
+                                                dstStageFlags,
+                                                DependencyFlags.None,
+                                                0,
+                                                null,
+                                                0,
+                                                null,
+                                                1,
+                                                &barrier);
 
-                    _imageLayouts[index] = newLayout;
+                    ImageLayouts[index] = newLayout;
                 }
             }
         }
@@ -299,7 +301,7 @@ public unsafe class Texture : DeviceResource, IBindableResource
 
     internal void TransitionToBestLayout()
     {
-        using StagingCommandPool stagingCommandPool = new(GraphicsDevice, TransferQueue);
+        using StagingCommandPool stagingCommandPool = new(VkRes, VkRes.GraphicsDevice.TransferExecutor);
 
         CommandBuffer commandBuffer = stagingCommandPool.BeginNewCommandBuffer();
 
@@ -308,13 +310,18 @@ public unsafe class Texture : DeviceResource, IBindableResource
         stagingCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
     }
 
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
+    }
+
     protected override void Destroy()
     {
-        if (!_isSwapchainImage)
+        if (!IsSwapchainImage)
         {
-            Vk.DestroyImage(Device, Handle, null);
+            VkRes.Vk.DestroyImage(VkRes.GetDevice(), Handle, null);
 
-            _deviceMemory!.Dispose();
+            DeviceMemory!.Dispose();
         }
     }
 

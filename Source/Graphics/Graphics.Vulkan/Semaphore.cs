@@ -2,9 +2,9 @@
 
 namespace Graphics.Vulkan;
 
-internal sealed unsafe class Semaphore : DeviceResource
+internal sealed unsafe class Semaphore : VulkanObject<VkSemaphore>
 {
-    public Semaphore(GraphicsDevice graphicsDevice) : base(graphicsDevice)
+    public Semaphore(VulkanResources vkRes) : base(vkRes, ObjectType.Semaphore)
     {
         SemaphoreCreateInfo createInfo = new()
         {
@@ -12,15 +12,20 @@ internal sealed unsafe class Semaphore : DeviceResource
         };
 
         VkSemaphore semaphore;
-        Vk.CreateSemaphore(Device, &createInfo, null, &semaphore).ThrowCode();
+        VkRes.Vk.CreateSemaphore(VkRes.GetDevice(), &createInfo, null, &semaphore).ThrowCode();
 
         Handle = semaphore;
     }
 
-    public VkSemaphore Handle { get; }
+    internal override VkSemaphore Handle { get; }
+
+    internal override ulong[] GetHandles()
+    {
+        return [Handle.Handle];
+    }
 
     protected override void Destroy()
     {
-        Vk.DestroySemaphore(Device, Handle, null);
+        VkRes.Vk.DestroySemaphore(VkRes.GetDevice(), Handle, null);
     }
 }

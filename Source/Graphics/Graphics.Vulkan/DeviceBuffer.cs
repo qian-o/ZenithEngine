@@ -45,10 +45,10 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
         };
 
         VkBuffer buffer;
-        VkRes.Vk.CreateBuffer(VkRes.GraphicsDevice.Handle, &createInfo, null, &buffer).ThrowCode();
+        VkRes.Vk.CreateBuffer(VkRes.GetDevice(), &createInfo, null, &buffer).ThrowCode();
 
         MemoryRequirements memoryRequirements;
-        VkRes.Vk.GetBufferMemoryRequirements(VkRes.GraphicsDevice.Handle, buffer, &memoryRequirements);
+        VkRes.Vk.GetBufferMemoryRequirements(VkRes.GetDevice(), buffer, &memoryRequirements);
 
         bool isHostVisible = description.Usage.HasFlag(BufferUsage.Dynamic) || description.Usage.HasFlag(BufferUsage.Staging);
         bool isAddress = bufferUsageFlags.HasFlag(BufferUsageFlags.ShaderDeviceAddressBit);
@@ -58,7 +58,7 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
                                         isHostVisible ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit,
                                         isAddress);
 
-        VkRes.Vk.BindBufferMemory(VkRes.GraphicsDevice.Handle, buffer, deviceMemory.Handle, 0).ThrowCode();
+        VkRes.Vk.BindBufferMemory(VkRes.GetDevice(), buffer, deviceMemory.Handle, 0).ThrowCode();
 
         ulong address = 0;
         if (isAddress)
@@ -69,14 +69,14 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
                 Buffer = buffer
             };
 
-            address = VkRes.Vk.GetBufferDeviceAddress(VkRes.GraphicsDevice.Handle, &bufferDeviceAddressInfo);
+            address = VkRes.Vk.GetBufferDeviceAddress(VkRes.GetDevice(), &bufferDeviceAddressInfo);
         }
 
         Handle = buffer;
         DeviceMemory = deviceMemory;
         Address = address;
-        SizeInBytes = description.SizeInBytes;
         Usage = description.Usage;
+        SizeInBytes = description.SizeInBytes;
         IsHostVisible = isHostVisible;
     }
 
@@ -104,17 +104,17 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
         };
 
         VkBuffer buffer;
-        VkRes.Vk.CreateBuffer(VkRes.GraphicsDevice.Handle, &createInfo, null, &buffer).ThrowCode();
+        VkRes.Vk.CreateBuffer(VkRes.GetDevice(), &createInfo, null, &buffer).ThrowCode();
 
         MemoryRequirements memoryRequirements;
-        VkRes.Vk.GetBufferMemoryRequirements(VkRes.GraphicsDevice.Handle, buffer, &memoryRequirements);
+        VkRes.Vk.GetBufferMemoryRequirements(VkRes.GetDevice(), buffer, &memoryRequirements);
 
         DeviceMemory deviceMemory = new(VkRes,
                                         in memoryRequirements,
                                         isDynamicBuffer ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit,
                                         true);
 
-        VkRes.Vk.BindBufferMemory(VkRes.GraphicsDevice.Handle, buffer, deviceMemory.Handle, 0).ThrowCode();
+        VkRes.Vk.BindBufferMemory(VkRes.GetDevice(), buffer, deviceMemory.Handle, 0).ThrowCode();
 
         BufferDeviceAddressInfo bufferDeviceAddressInfo = new()
         {
@@ -122,13 +122,13 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
             Buffer = buffer
         };
 
-        ulong address = VkRes.Vk.GetBufferDeviceAddress(VkRes.GraphicsDevice.Handle, &bufferDeviceAddressInfo);
+        ulong address = VkRes.Vk.GetBufferDeviceAddress(VkRes.GetDevice(), &bufferDeviceAddressInfo);
 
         Handle = buffer;
         DeviceMemory = deviceMemory;
         Address = address;
-        SizeInBytes = sizeInBytes;
         Usage = BufferUsage.Internal;
+        SizeInBytes = sizeInBytes;
         IsHostVisible = isDynamicBuffer;
     }
 
@@ -138,9 +138,9 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
 
     internal ulong Address { get; }
 
-    public uint SizeInBytes { get; }
+    internal BufferUsage Usage { get; }
 
-    public BufferUsage Usage { get; }
+    public uint SizeInBytes { get; }
 
     public bool IsHostVisible { get; }
 
@@ -152,7 +152,7 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
         }
 
         void* data;
-        VkRes.Vk.MapMemory(VkRes.GraphicsDevice.Handle, DeviceMemory.Handle, offsetInBytes, sizeInBytes, 0, &data).ThrowCode();
+        VkRes.Vk.MapMemory(VkRes.GetDevice(), DeviceMemory.Handle, offsetInBytes, sizeInBytes, 0, &data).ThrowCode();
 
         return data;
     }
@@ -161,7 +161,7 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
     {
         if (IsHostVisible)
         {
-            VkRes.Vk.UnmapMemory(VkRes.GraphicsDevice.Handle, DeviceMemory.Handle);
+            VkRes.Vk.UnmapMemory(VkRes.GetDevice(), DeviceMemory.Handle);
         }
     }
 
@@ -172,7 +172,7 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
 
     protected override void Destroy()
     {
-        VkRes.Vk.DestroyBuffer(VkRes.GraphicsDevice.Handle, Handle, null);
+        VkRes.Vk.DestroyBuffer(VkRes.GetDevice(), Handle, null);
 
         DeviceMemory.Dispose();
     }

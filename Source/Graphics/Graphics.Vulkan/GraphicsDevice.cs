@@ -13,14 +13,6 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
     internal const uint MinStagingBufferSize = 1024 * 4;
     internal const uint MaxStagingBufferSize = 1024 * 1024 * 4;
 
-
-    internal KhrSwapchain _khrSwapchain;
-    internal ExtDescriptorBuffer _extDescriptorBuffer;
-    internal Queue _graphicsQueue;
-    internal Queue _computeQueue;
-    internal Queue _transferQueue;
-    internal CommandPool _graphicsCommandPool;
-    internal CommandPool _computeCommandPool;
     private readonly object _stagingResourcesLock;
     private readonly List<StagingCommandPool> _availableStagingCommandPools;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
@@ -34,38 +26,45 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
                             uint computeQueueFamilyIndex,
                             uint transferQueueFamilyIndex) : base(vkRes, ObjectType.Device)
     {
-        Handle = device;
-
-        _khrSwapchain = CreateDeviceExtension<KhrSwapchain>(device);
-        _extDescriptorBuffer = CreateDeviceExtension<ExtDescriptorBuffer>(device);
-        _graphicsQueue = new Queue(this, graphicsQueueFamilyIndex);
-        _computeQueue = new Queue(this, computeQueueFamilyIndex);
-        _transferQueue = new Queue(this, transferQueueFamilyIndex);
-        _graphicsCommandPool = new CommandPool(this, graphicsQueueFamilyIndex);
-        _computeCommandPool = new CommandPool(this, computeQueueFamilyIndex);
         _stagingResourcesLock = new object();
         _availableStagingCommandPools = [];
         _availableStagingBuffers = [];
         _availableStagingSemaphores = [];
         _availableStagingFences = [];
 
-        VkRes.InitializeGraphicsDevice(this,
-                                       _khrSwapchain,
-                                       _extDescriptorBuffer,
-                                       _graphicsQueue,
-                                       _computeQueue,
-                                       _transferQueue,
-                                       _graphicsCommandPool,
-                                       _computeCommandPool);
+        Handle = device;
 
-        Factory = new ResourceFactory(context, this);
+        VkRes.InitializeGraphicsDevice(this);
+
+        KhrSwapchain = CreateDeviceExtension<KhrSwapchain>(device);
+        ExtDescriptorBuffer = CreateDeviceExtension<ExtDescriptorBuffer>(device);
+        GraphicsExecutor = new Executor(VkRes, graphicsQueueFamilyIndex);
+        ComputeExecutor = new Executor(VkRes, computeQueueFamilyIndex);
+        TransferExecutor = new Executor(VkRes, transferQueueFamilyIndex);
+        GraphicsCommandPool = new CommandPool(VkRes, graphicsQueueFamilyIndex);
+        ComputeCommandPool = new CommandPool(VkRes, computeQueueFamilyIndex);
+        Factory = new ResourceFactory(VkRes);
         MainSwapchain = Factory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, GetBestDepthFormat()));
         PointSampler = Factory.CreateSampler(SamplerDescription.Point);
         LinearSampler = Factory.CreateSampler(SamplerDescription.Linear);
         Aniso4xSampler = Factory.CreateSampler(SamplerDescription.Aniso4x);
     }
 
-    internal override VkDevice Handle { get; } 
+    internal override VkDevice Handle { get; }
+
+    internal KhrSwapchain KhrSwapchain { get; }
+
+    internal ExtDescriptorBuffer ExtDescriptorBuffer { get; }
+
+    internal Executor GraphicsExecutor { get; }
+
+    internal Executor ComputeExecutor { get; }
+
+    internal Executor TransferExecutor { get; }
+
+    internal CommandPool GraphicsCommandPool { get; }
+
+    internal CommandPool ComputeCommandPool { get; }
 
     public ResourceFactory Factory { get; }
 
@@ -342,12 +341,12 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
 
         MainSwapchain.Dispose();
 
-        Factory.Dispose();
+        ComputeCommandPool.Dispose();
+        GraphicsCommandPool.Dispose();
 
-        _computeCommandPool.Dispose();
-        _graphicsCommandPool.Dispose();
+        ExtDescriptorBuffer.Dispose();
 
-        _khrSwapchain.Dispose();
+        KhrSwapchain.Dispose();
 
         VkRes.Vk.DestroyDevice(Handle, null);
     }
@@ -365,7 +364,7 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
     private void SubmitCommandsCore(CommandList commandList, Semaphore? signalSemaphore, Fence fence)
     {
         CommandBuffer commandBuffer = commandList.Handle;
-        Queue queue = commandList.Queue;
+        Executor queue = commandList.TaskExecutor;
 
         SubmitInfo submitInfo = new()
         {
@@ -406,7 +405,7 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
             presentInfo.PWaitSemaphores = &waitSemaphoreHandle;
         }
 
-        Result result = _khrSwapchain.QueuePresent(_graphicsQueue.Handle, &presentInfo);
+        Result result = KhrSwapchain.QueuePresent(GraphicsExecutor.Handle, &presentInfo);
 
         if (result == Result.ErrorOutOfDateKhr)
         {
@@ -446,7 +445,7 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
             }
         }
 
-        return new StagingCommandPool(this, _transferQueue);
+        return new StagingCommandPool(VkRes, TransferExecutor);
     }
 
     private void CacheStagingCommandPool(StagingCommandPool stagingCommandPool)
@@ -504,7 +503,7 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
             }
         }
 
-        return new Semaphore(this);
+        return new Semaphore(VkRes);
     }
 
     private void CacheStagingSemaphore(Semaphore stagingSemaphore)
@@ -527,7 +526,7 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
             }
         }
 
-        return new Fence(this);
+        return new Fence(VkRes);
     }
 
     private void CacheStagingFence(Fence stagingFence)

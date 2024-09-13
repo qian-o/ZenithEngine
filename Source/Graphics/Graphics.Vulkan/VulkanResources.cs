@@ -59,31 +59,10 @@ public class VulkanResources : DisposableObject
 
     #region Graphics Device Properties
     private GraphicsDevice? _graphicsDevice;
-    private KhrSwapchain? _khrSwapchain;
-    private ExtDescriptorBuffer? _extDescriptorBuffer;
-    private Queue? _graphicsQueue;
-    private Queue? _computeQueue;
-    private Queue? _transferQueue;
-    private CommandPool? _graphicsCommandPool;
-    private CommandPool? _computeCommandPool;
 
     public bool IsInitializedGraphicsDevice { get; private set; }
 
     public GraphicsDevice GraphicsDevice => TryGetGraphicsDeviceProperty(ref _graphicsDevice)!;
-
-    public KhrSwapchain KhrSwapchain => TryGetGraphicsDeviceProperty(ref _khrSwapchain)!;
-
-    public ExtDescriptorBuffer ExtDescriptorBuffer => TryGetGraphicsDeviceProperty(ref _extDescriptorBuffer)!;
-
-    public Queue GraphicsQueue => TryGetGraphicsDeviceProperty(ref _graphicsQueue)!;
-
-    public Queue ComputeQueue => TryGetGraphicsDeviceProperty(ref _computeQueue)!;
-
-    public Queue TransferQueue => TryGetGraphicsDeviceProperty(ref _transferQueue)!;
-
-    public CommandPool GraphicsCommandPool => TryGetGraphicsDeviceProperty(ref _graphicsCommandPool)!;
-
-    public CommandPool ComputeCommandPool => TryGetGraphicsDeviceProperty(ref _computeCommandPool)!;
     #endregion
 
     public void InitializeContext(Vk vk, VkInstance instance, ExtDebugUtils? extDebugUtils, KhrSurface khrSurface)
@@ -117,25 +96,31 @@ public class VulkanResources : DisposableObject
         IsInitializedPhysicalDevice = true;
     }
 
-    public void InitializeGraphicsDevice(GraphicsDevice graphicsDevice,
-                                         KhrSwapchain khrSwapchain,
-                                         ExtDescriptorBuffer extDescriptorBuffer,
-                                         Queue graphicsQueue,
-                                         Queue computeQueue,
-                                         Queue transferQueue,
-                                         CommandPool graphicsCommandPool,
-                                         CommandPool computeCommandPool)
+    public void InitializeGraphicsDevice(GraphicsDevice graphicsDevice)
     {
         _graphicsDevice = graphicsDevice;
-        _khrSwapchain = khrSwapchain;
-        _extDescriptorBuffer = extDescriptorBuffer;
-        _graphicsQueue = graphicsQueue;
-        _computeQueue = computeQueue;
-        _transferQueue = transferQueue;
-        _graphicsCommandPool = graphicsCommandPool;
-        _computeCommandPool = computeCommandPool;
 
         IsInitializedGraphicsDevice = true;
+    }
+
+    public VkPhysicalDevice GetPhysicalDevice()
+    {
+        return PhysicalDevice.Handle;
+    }
+
+    public VkDevice GetDevice()
+    {
+        return GraphicsDevice.Handle;
+    }
+
+    public KhrSwapchain GetKhrSwapchain()
+    {
+        return GraphicsDevice.KhrSwapchain;
+    }
+
+    public ExtDescriptorBuffer GetExtDescriptorBuffer()
+    {
+        return GraphicsDevice.ExtDescriptorBuffer;
     }
 
     protected override void Destroy()
