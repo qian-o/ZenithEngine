@@ -14,14 +14,6 @@ public unsafe partial class Context : DisposableObject
 {
     public const string ValidationLayerName = "VK_LAYER_KHRONOS_validation";
 
-    private readonly Alloter _alloter = new();
-
-    private readonly Vk _vk;
-    private readonly Instance _instance;
-    private readonly ExtDebugUtils? _debugUtilsExt;
-    private readonly DebugUtilsMessengerEXT? _debugUtilsMessenger;
-    private readonly KhrSurface _surfaceExt;
-
     static Context()
     {
 #if DEBUG
@@ -33,14 +25,14 @@ public unsafe partial class Context : DisposableObject
 
     public Context()
     {
-        _vk = Vk.GetApi();
+        Vk = Vk.GetApi();
 
         // Create instance
-        _instance = CreateInstance();
+        Instance = CreateInstance();
 
         // Load instance extensions
-        _debugUtilsExt = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
-        _surfaceExt = CreateInstanceExtension<KhrSurface>();
+        DebugUtilsExt = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
+        SurfaceExt = CreateInstanceExtension<KhrSurface>();
 
         // Debug message callback
         if (Debugging)
@@ -60,36 +52,38 @@ public unsafe partial class Context : DisposableObject
             };
 
             DebugUtilsMessengerEXT debugUtilsMessenger;
-            _debugUtilsExt!.CreateDebugUtilsMessenger(_instance, &createInfo, null, &debugUtilsMessenger)
+            DebugUtilsExt!.CreateDebugUtilsMessenger(Instance, &createInfo, null, &debugUtilsMessenger)
                            .ThrowCode("Failed to create debug messenger!");
 
-            _debugUtilsMessenger = debugUtilsMessenger;
+            DebugUtilsMessenger = debugUtilsMessenger;
         }
     }
 
-    internal Alloter Alloter => _alloter;
+    internal Alloter Alloter { get; } = new();
 
-    internal Vk Vk => _vk;
+    internal Vk Vk { get; }
 
-    internal Instance Instance => _instance;
+    internal Instance Instance { get; }
 
-    internal ExtDebugUtils? DebugUtilsExt => _debugUtilsExt;
+    internal ExtDebugUtils? DebugUtilsExt { get; }
 
-    internal KhrSurface SurfaceExt => _surfaceExt;
+    internal KhrSurface SurfaceExt { get; }
+
+    internal DebugUtilsMessengerEXT? DebugUtilsMessenger { get; }
 
     public static bool Debugging { get; }
 
     protected override void Destroy()
     {
-        _surfaceExt.Dispose();
+        SurfaceExt.Dispose();
 
-        _debugUtilsExt?.DestroyDebugUtilsMessenger(_instance, _debugUtilsMessenger!.Value, null);
-        _debugUtilsExt?.Dispose();
+        DebugUtilsExt?.DestroyDebugUtilsMessenger(Instance, DebugUtilsMessenger!.Value, null);
+        DebugUtilsExt?.Dispose();
 
-        _vk.DestroyInstance(_instance, null);
-        _vk.Dispose();
+        Vk.DestroyInstance(Instance, null);
+        Vk.Dispose();
 
-        _alloter.Dispose();
+        Alloter.Dispose();
     }
 
     /// <summary>
@@ -99,10 +93,10 @@ public unsafe partial class Context : DisposableObject
     private bool CheckValidationLayerSupport()
     {
         uint layerCount = 0;
-        _vk.EnumerateInstanceLayerProperties(&layerCount, null);
+        Vk.EnumerateInstanceLayerProperties(&layerCount, null);
 
         LayerProperties[] availableLayers = new LayerProperties[(int)layerCount];
-        _vk.EnumerateInstanceLayerProperties(&layerCount, availableLayers);
+        Vk.EnumerateInstanceLayerProperties(&layerCount, availableLayers);
 
         for (int i = 0; i < layerCount; i++)
         {
@@ -127,9 +121,9 @@ public unsafe partial class Context : DisposableObject
         ApplicationInfo applicationInfo = new()
         {
             SType = StructureType.ApplicationInfo,
-            PApplicationName = _alloter.Allocate("Graphics"),
+            PApplicationName = Alloter.Allocate("Graphics"),
             ApplicationVersion = new Version32(1, 0, 0),
-            PEngineName = _alloter.Allocate("Graphics"),
+            PEngineName = Alloter.Allocate("Graphics"),
             EngineVersion = new Version32(1, 0, 0),
             ApiVersion = Vk.Version13
         };
@@ -148,7 +142,7 @@ public unsafe partial class Context : DisposableObject
         if (Debugging)
         {
             createInfo.EnabledLayerCount = 1;
-            createInfo.PpEnabledLayerNames = _alloter.Allocate([ValidationLayerName]);
+            createInfo.PpEnabledLayerNames = Alloter.Allocate([ValidationLayerName]);
         }
 
         string[] extensions = [KhrSurface.ExtensionName];
@@ -168,12 +162,12 @@ public unsafe partial class Context : DisposableObject
         }
 
         createInfo.EnabledExtensionCount = (uint)extensions.Length;
-        createInfo.PpEnabledExtensionNames = _alloter.Allocate(extensions);
+        createInfo.PpEnabledExtensionNames = Alloter.Allocate(extensions);
 
         Instance instance;
-        _vk.CreateInstance(&createInfo, null, &instance).ThrowCode("Failed to create instance!");
+        Vk.CreateInstance(&createInfo, null, &instance).ThrowCode("Failed to create instance!");
 
-        _alloter.Clear();
+        Alloter.Clear();
 
         return instance;
     }
@@ -186,7 +180,7 @@ public unsafe partial class Context : DisposableObject
     /// <exception cref="InvalidOperationException">InvalidOperationException</exception>
     private T CreateInstanceExtension<T>() where T : NativeExtension<Vk>
     {
-        if (!_vk.TryGetInstanceExtension(_instance, out T ext))
+        if (!Vk.TryGetInstanceExtension(Instance, out T ext))
         {
             throw new InvalidOperationException($"Failed to load extension {typeof(T).Name}!");
         }

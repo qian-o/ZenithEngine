@@ -8,24 +8,19 @@ public enum ResourceKind : byte
     UniformBuffer,
 
     /// <summary>
-    /// Bind as read-only storage buffer.
-    /// </summary>
-    StructuredBufferReadOnly,
-
-    /// <summary>
     /// Bind as read-write storage buffer.
     /// </summary>
-    StructuredBufferReadWrite,
+    StorageBuffer,
 
     /// <summary>
-    /// Bind as read-only texture.
+    /// Bind as sampled texture.
     /// </summary>
-    TextureReadOnly,
+    SampledImage,
 
     /// <summary>
     /// Bind as read-write texture.
     /// </summary>
-    TextureReadWrite,
+    StorageImage,
 
     /// <summary>
     /// Bind as sampler.

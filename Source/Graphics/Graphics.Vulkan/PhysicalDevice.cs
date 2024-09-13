@@ -5,17 +5,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class PhysicalDevice : ContextObject
 {
-    private readonly VkPhysicalDevice _vkPhysicalDevice;
-    private readonly PhysicalDeviceProperties _properties;
-    private readonly PhysicalDeviceDescriptorBufferPropertiesEXT _descriptorBufferProperties;
-    private readonly PhysicalDeviceDescriptorIndexingProperties _descriptorIndexingProperties;
-    private readonly PhysicalDeviceFeatures _features;
-    private readonly PhysicalDeviceMemoryProperties _memoryProperties;
-    private readonly QueueFamilyProperties[] _queueFamilyProperties;
-    private readonly ExtensionProperties[] _extensionProperties;
-    private readonly string _name;
-    private readonly uint _score;
-
     internal PhysicalDevice(Context context, VkPhysicalDevice vkPhysicalDevice) : base(context)
     {
         PhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties = new()
@@ -52,43 +41,43 @@ public unsafe class PhysicalDevice : ContextObject
         ExtensionProperties[] extensionProperties = new ExtensionProperties[(int)extensionPropertyCount];
         Vk.EnumerateDeviceExtensionProperties(vkPhysicalDevice, string.Empty, &extensionPropertyCount, extensionProperties);
 
-        _vkPhysicalDevice = vkPhysicalDevice;
-        _properties = properties2.Properties;
-        _descriptorBufferProperties = descriptorBufferProperties;
-        _descriptorIndexingProperties = descriptorIndexingProperties;
-        _features = features;
-        _memoryProperties = memoryProperties;
-        _queueFamilyProperties = queueFamilyProperties;
-        _extensionProperties = extensionProperties;
-        _name = Alloter.GetString(properties2.Properties.DeviceName);
-        _score = properties2.Properties.DeviceType == PhysicalDeviceType.DiscreteGpu ? 1000u : 0u;
+        Handle = vkPhysicalDevice;
+        Properties = properties2.Properties;
+        DescriptorBufferProperties = descriptorBufferProperties;
+        DescriptorIndexingProperties = descriptorIndexingProperties;
+        Features = features;
+        MemoryProperties = memoryProperties;
+        QueueFamilyProperties = queueFamilyProperties;
+        ExtensionProperties = extensionProperties;
+        Name = Alloter.GetString(properties2.Properties.DeviceName);
+        Score = properties2.Properties.DeviceType == PhysicalDeviceType.DiscreteGpu ? 1000u : 0u;
     }
 
-    public string Name => _name;
+    public string Name { get; }
 
-    public uint Score => _score;
+    public uint Score { get; }
 
-    internal VkPhysicalDevice VkPhysicalDevice => _vkPhysicalDevice;
+    internal VkPhysicalDevice Handle { get; }
 
-    internal PhysicalDeviceProperties Properties => _properties;
+    internal PhysicalDeviceProperties Properties { get; }
 
-    internal PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties => _descriptorBufferProperties;
+    internal PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties { get; }
 
-    internal PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties => _descriptorIndexingProperties;
+    internal PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties { get; }
 
-    internal PhysicalDeviceFeatures Features => _features;
+    internal PhysicalDeviceFeatures Features { get; }
 
-    internal PhysicalDeviceMemoryProperties MemoryProperties => _memoryProperties;
+    internal PhysicalDeviceMemoryProperties MemoryProperties { get; }
 
-    internal QueueFamilyProperties[] QueueFamilyProperties => _queueFamilyProperties;
+    internal QueueFamilyProperties[] QueueFamilyProperties { get; }
 
-    internal ExtensionProperties[] ExtensionProperties => _extensionProperties;
+    internal ExtensionProperties[] ExtensionProperties { get; }
 
     internal uint FindMemoryTypeIndex(uint memoryTypeBits, MemoryPropertyFlags memoryPropertyFlags)
     {
-        for (uint i = 0; i < _memoryProperties.MemoryTypeCount; i++)
+        for (uint i = 0; i < MemoryProperties.MemoryTypeCount; i++)
         {
-            if ((memoryTypeBits & (1 << (int)i)) != 0 && (_memoryProperties.MemoryTypes[(int)i].PropertyFlags & memoryPropertyFlags) == memoryPropertyFlags)
+            if ((memoryTypeBits & (1 << (int)i)) != 0 && (MemoryProperties.MemoryTypes[(int)i].PropertyFlags & memoryPropertyFlags) == memoryPropertyFlags)
             {
                 return i;
             }
@@ -102,7 +91,7 @@ public unsafe class PhysicalDevice : ContextObject
         foreach (Format format in candidates)
         {
             FormatProperties formatProperties;
-            Vk.GetPhysicalDeviceFormatProperties(_vkPhysicalDevice, format, &formatProperties);
+            Vk.GetPhysicalDeviceFormatProperties(Handle, format, &formatProperties);
 
             if (tiling == ImageTiling.Linear && formatProperties.LinearTilingFeatures.HasFlag(features))
             {
@@ -129,7 +118,7 @@ public unsafe partial class Context
     {
         // Physical device
         uint physicalDeviceCount = 0;
-        _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, null).ThrowCode("Failed to enumerate physical devices!");
+        Vk.EnumeratePhysicalDevices(Instance, &physicalDeviceCount, null).ThrowCode("Failed to enumerate physical devices!");
 
         if (physicalDeviceCount == 0)
         {
@@ -138,7 +127,7 @@ public unsafe partial class Context
 
         // Enumerate physical devices
         VkPhysicalDevice[] physicalDevices = new VkPhysicalDevice[(int)physicalDeviceCount];
-        _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices).ThrowCode("Failed to enumerate physical devices!");
+        Vk.EnumeratePhysicalDevices(Instance, &physicalDeviceCount, physicalDevices).ThrowCode("Failed to enumerate physical devices!");
 
         return physicalDevices.Select(item => new PhysicalDevice(this, item)).ToArray();
     }

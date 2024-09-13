@@ -12,13 +12,13 @@ public abstract unsafe class DeviceResource(GraphicsDevice graphicsDevice) : Con
 
     internal PhysicalDevice PhysicalDevice => graphicsDevice.PhysicalDevice;
 
-    internal VkPhysicalDevice VkPhysicalDevice => graphicsDevice.PhysicalDevice.VkPhysicalDevice;
+    internal VkPhysicalDevice VkPhysicalDevice => graphicsDevice.PhysicalDevice.Handle;
 
     internal GraphicsDevice GraphicsDevice => graphicsDevice;
 
     internal ResourceFactory ResourceFactory => graphicsDevice.ResourceFactory;
 
-    internal Device Device => graphicsDevice.Device;
+    internal VkDevice Device => graphicsDevice.Device;
 
     internal KhrSwapchain SwapchainExt => graphicsDevice.SwapchainExt;
 
@@ -33,6 +33,16 @@ public abstract unsafe class DeviceResource(GraphicsDevice graphicsDevice) : Con
     internal CommandPool GraphicsCommandPool => graphicsDevice.GraphicsCommandPool;
 
     internal CommandPool ComputeCommandPool => graphicsDevice.ComputeCommandPool;
+
+    public PhysicalDevice GetPhysicalDevice()
+    {
+        return graphicsDevice.PhysicalDevice;
+    }
+
+    public VkPhysicalDevice GetVkPhysicalDeviceHandle()
+    {
+        return graphicsDevice.PhysicalDevice.Handle;
+    }
 
     private void UpdateResourceName()
     {

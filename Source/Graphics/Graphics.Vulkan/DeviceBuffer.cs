@@ -5,52 +5,36 @@ namespace Graphics.Vulkan;
 
 public unsafe class DeviceBuffer : DeviceResource, IBindableResource
 {
-    private readonly VkBuffer _buffer;
-    private readonly DeviceMemory _deviceMemory;
-    private readonly ulong _address;
-    private readonly uint _sizeInBytes;
-    private readonly BufferUsage _usage;
-    private readonly bool _isHostVisible;
-
     internal DeviceBuffer(GraphicsDevice graphicsDevice,
                           ref readonly BufferDescription description) : base(graphicsDevice)
     {
         BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferSrcBit | BufferUsageFlags.TransferDstBit;
 
-        if (description.IsDescriptorBuffer)
+        if (description.Usage.HasFlag(BufferUsage.VertexBuffer))
         {
-            bufferUsageFlags |= BufferUsageFlags.ResourceDescriptorBufferBitExt
-                                | BufferUsageFlags.SamplerDescriptorBufferBitExt
+            bufferUsageFlags |= BufferUsageFlags.VertexBufferBit;
+        }
+
+        if (description.Usage.HasFlag(BufferUsage.IndexBuffer))
+        {
+            bufferUsageFlags |= BufferUsageFlags.IndexBufferBit;
+        }
+
+        if (description.Usage.HasFlag(BufferUsage.UniformBuffer))
+        {
+            bufferUsageFlags |= BufferUsageFlags.UniformBufferBit
                                 | BufferUsageFlags.ShaderDeviceAddressBit;
         }
-        else
+
+        if (description.Usage.HasFlag(BufferUsage.StorageBuffer))
         {
-            if (description.Usage.HasFlag(BufferUsage.VertexBuffer))
-            {
-                bufferUsageFlags |= BufferUsageFlags.VertexBufferBit;
-            }
+            bufferUsageFlags |= BufferUsageFlags.StorageBufferBit
+                                | BufferUsageFlags.ShaderDeviceAddressBit;
+        }
 
-            if (description.Usage.HasFlag(BufferUsage.IndexBuffer))
-            {
-                bufferUsageFlags |= BufferUsageFlags.IndexBufferBit;
-            }
-
-            if (description.Usage.HasFlag(BufferUsage.UniformBuffer))
-            {
-                bufferUsageFlags |= BufferUsageFlags.UniformBufferBit
-                                    | BufferUsageFlags.ShaderDeviceAddressBit;
-            }
-
-            if (description.Usage.HasFlag(BufferUsage.StructuredBufferReadOnly)
-                || description.Usage.HasFlag(BufferUsage.StructuredBufferReadWrite))
-            {
-                bufferUsageFlags |= BufferUsageFlags.StorageBufferBit;
-            }
-
-            if (description.Usage.HasFlag(BufferUsage.IndirectBuffer))
-            {
-                bufferUsageFlags |= BufferUsageFlags.IndirectBufferBit;
-            }
+        if (description.Usage.HasFlag(BufferUsage.IndirectBuffer))
+        {
+            bufferUsageFlags |= BufferUsageFlags.IndirectBufferBit;
         }
 
         BufferCreateInfo createInfo = new()
@@ -67,7 +51,7 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
         MemoryRequirements memoryRequirements;
         Vk.GetBufferMemoryRequirements(Device, buffer, &memoryRequirements);
 
-        bool isHostVisible = description.Usage.HasFlag(BufferUsage.Staging) || description.Usage.HasFlag(BufferUsage.Dynamic);
+        bool isHostVisible = description.Usage.HasFlag(BufferUsage.Dynamic) || description.Usage.HasFlag(BufferUsage.Staging);
         bool isAddress = bufferUsageFlags.HasFlag(BufferUsageFlags.ShaderDeviceAddressBit);
 
         DeviceMemory deviceMemory = new(graphicsDevice,
@@ -89,25 +73,74 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
             address = Vk.GetBufferDeviceAddress(Device, &bufferDeviceAddressInfo);
         }
 
-        _buffer = buffer;
-        _deviceMemory = deviceMemory;
-        _address = address;
-        _sizeInBytes = description.SizeInBytes;
-        _usage = description.Usage;
-        _isHostVisible = isHostVisible;
+        Handle = buffer;
+        DeviceMemory = deviceMemory;
+        Address = address;
+        SizeInBytes = description.SizeInBytes;
+        Usage = description.Usage;
+        IsHostVisible = isHostVisible;
     }
 
-    internal VkBuffer Handle => _buffer;
+    internal DeviceBuffer(GraphicsDevice graphicsDevice, uint sizeInBytes, bool isDescriptorBuffer, bool isDynamicBuffer) : base(graphicsDevice)
+    {
+        BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferSrcBit | BufferUsageFlags.TransferDstBit;
 
-    internal DeviceMemory DeviceMemory => _deviceMemory;
+        if (isDescriptorBuffer)
+        {
+            bufferUsageFlags |= BufferUsageFlags.ResourceDescriptorBufferBitExt
+                                | BufferUsageFlags.SamplerDescriptorBufferBitExt
+                                | BufferUsageFlags.ShaderDeviceAddressBit;
+        }
 
-    internal ulong Address => _address;
 
-    public uint SizeInBytes => _sizeInBytes;
+        BufferCreateInfo createInfo = new()
+        {
+            SType = StructureType.BufferCreateInfo,
+            Size = sizeInBytes,
+            Usage = bufferUsageFlags,
+            SharingMode = SharingMode.Exclusive
+        };
 
-    public BufferUsage Usage => _usage;
+        VkBuffer buffer;
+        Vk.CreateBuffer(Device, &createInfo, null, &buffer).ThrowCode();
 
-    public bool IsHostVisible => _isHostVisible;
+        MemoryRequirements memoryRequirements;
+        Vk.GetBufferMemoryRequirements(Device, buffer, &memoryRequirements);
+
+        DeviceMemory deviceMemory = new(graphicsDevice,
+                                        in memoryRequirements,
+                                        isDynamicBuffer ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit,
+                                        true);
+
+        Vk.BindBufferMemory(Device, buffer, deviceMemory.Handle, 0).ThrowCode();
+
+        BufferDeviceAddressInfo bufferDeviceAddressInfo = new()
+        {
+            SType = StructureType.BufferDeviceAddressInfo,
+            Buffer = buffer
+        };
+
+        ulong address = Vk.GetBufferDeviceAddress(Device, &bufferDeviceAddressInfo);
+
+        Handle = buffer;
+        DeviceMemory = deviceMemory;
+        Address = address;
+        SizeInBytes = sizeInBytes;
+        Usage = BufferUsage.Internal;
+        IsHostVisible = isDynamicBuffer;
+    }
+
+    internal VkBuffer Handle { get; }
+
+    internal DeviceMemory DeviceMemory { get; }
+
+    internal ulong Address { get; }
+
+    public uint SizeInBytes { get; }
+
+    public BufferUsage Usage { get; }
+
+    public bool IsHostVisible { get; }
 
     public void* Map(ulong sizeInBytes, ulong offsetInBytes = 0)
     {
@@ -117,7 +150,7 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
         }
 
         void* data;
-        Vk.MapMemory(Device, _deviceMemory.Handle, offsetInBytes, sizeInBytes, 0, &data).ThrowCode();
+        Vk.MapMemory(Device, DeviceMemory.Handle, offsetInBytes, sizeInBytes, 0, &data).ThrowCode();
 
         return data;
     }
@@ -126,14 +159,14 @@ public unsafe class DeviceBuffer : DeviceResource, IBindableResource
     {
         if (IsHostVisible)
         {
-            Vk.UnmapMemory(Device, _deviceMemory.Handle);
+            Vk.UnmapMemory(Device, DeviceMemory.Handle);
         }
     }
 
     protected override void Destroy()
     {
-        Vk.DestroyBuffer(Device, _buffer, null);
+        Vk.DestroyBuffer(Device, Handle, null);
 
-        _deviceMemory.Dispose();
+        DeviceMemory.Dispose();
     }
 }

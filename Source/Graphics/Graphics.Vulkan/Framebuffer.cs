@@ -5,19 +5,10 @@ namespace Graphics.Vulkan;
 
 public unsafe class Framebuffer : DeviceResource
 {
-    private readonly VkRenderPass _renderPassClear;
-    private readonly VkRenderPass _renderPassLoad;
     private readonly Texture[] _colors;
     private readonly Texture? _depth;
     private readonly TextureView[] _colorViews;
     private readonly TextureView? _depthView;
-    private readonly VkFramebuffer _framebuffer;
-    private readonly uint _colorAttachmentCount;
-    private readonly uint _depthAttachmentCount;
-    private readonly uint _attachmentCount;
-    private readonly uint _width;
-    private readonly uint _height;
-    private readonly OutputDescription _outputDescription;
     private readonly bool _isPresented;
 
     internal Framebuffer(GraphicsDevice graphicsDevice, ref readonly FramebufferDescription description, bool isPresented) : base(graphicsDevice)
@@ -203,39 +194,39 @@ public unsafe class Framebuffer : DeviceResource
         VkFramebuffer framebuffer;
         Vk.CreateFramebuffer(graphicsDevice.Device, &framebufferCreateInfo, null, &framebuffer).ThrowCode();
 
-        _renderPassClear = renderPassClear;
-        _renderPassLoad = renderPassLoad;
+        RenderPassClear = renderPassClear;
+        RenderPassLoad = renderPassLoad;
         _colors = colors;
         _depth = depth;
         _colorViews = colorViews;
         _depthView = depthView;
-        _framebuffer = framebuffer;
-        _colorAttachmentCount = colorAttachmentCount;
-        _depthAttachmentCount = depthAttachmentCount;
-        _attachmentCount = attachmentCount;
-        _width = width;
-        _height = height;
-        _outputDescription = OutputDescription.CreateFromFramebufferDescription(in description);
+        Handle = framebuffer;
+        ColorAttachmentCount = colorAttachmentCount;
+        DepthAttachmentCount = depthAttachmentCount;
+        AttachmentCount = attachmentCount;
+        Width = width;
+        Height = height;
+        OutputDescription = OutputDescription.CreateFromFramebufferDescription(in description);
         _isPresented = isPresented;
     }
 
-    internal VkFramebuffer Handle => _framebuffer;
+    internal VkFramebuffer Handle { get; }
 
-    internal VkRenderPass RenderPassClear => _renderPassClear;
+    internal VkRenderPass RenderPassClear { get; }
 
-    internal VkRenderPass RenderPassLoad => _renderPassLoad;
+    internal VkRenderPass RenderPassLoad { get; }
 
-    internal uint ColorAttachmentCount => _colorAttachmentCount;
+    internal uint ColorAttachmentCount { get; }
 
-    internal uint DepthAttachmentCount => _depthAttachmentCount;
+    internal uint DepthAttachmentCount { get; }
 
-    internal uint AttachmentCount => _attachmentCount;
+    internal uint AttachmentCount { get; }
 
-    public uint Width => _width;
+    public uint Width { get; }
 
-    public uint Height => _height;
+    public uint Height { get; }
 
-    public OutputDescription OutputDescription => _outputDescription;
+    public OutputDescription OutputDescription { get; }
 
     internal void TransitionToInitialLayout(CommandBuffer commandBuffer)
     {
@@ -274,7 +265,7 @@ public unsafe class Framebuffer : DeviceResource
 
     protected override void Destroy()
     {
-        Vk.DestroyFramebuffer(GraphicsDevice.Device, _framebuffer, null);
+        Vk.DestroyFramebuffer(GraphicsDevice.Device, Handle, null);
 
         _depthView?.Dispose();
 
@@ -283,7 +274,7 @@ public unsafe class Framebuffer : DeviceResource
             colorView.Dispose();
         }
 
-        Vk.DestroyRenderPass(GraphicsDevice.Device, _renderPassLoad, null);
-        Vk.DestroyRenderPass(GraphicsDevice.Device, _renderPassClear, null);
+        Vk.DestroyRenderPass(GraphicsDevice.Device, RenderPassLoad, null);
+        Vk.DestroyRenderPass(GraphicsDevice.Device, RenderPassClear, null);
     }
 }

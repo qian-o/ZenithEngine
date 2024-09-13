@@ -2,6 +2,7 @@
 global using VkBuffer = Silk.NET.Vulkan.Buffer;
 global using VkCommandPool = Silk.NET.Vulkan.CommandPool;
 global using VkDescriptorSetLayout = Silk.NET.Vulkan.DescriptorSetLayout;
+global using VkDevice = Silk.NET.Vulkan.Device;
 global using VkDeviceMemory = Silk.NET.Vulkan.DeviceMemory;
 global using VkFence = Silk.NET.Vulkan.Fence;
 global using VkFramebuffer = Silk.NET.Vulkan.Framebuffer;

@@ -5,8 +5,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class Sampler : DeviceResource, IBindableResource
 {
-    private readonly VkSampler _sampler;
-
     internal Sampler(GraphicsDevice graphicsDevice, ref readonly SamplerDescription description) : base(graphicsDevice)
     {
         Formats.GetFilter(description.Filter, out Filter minFilter, out Filter magFilter, out SamplerMipmapMode mipFilter);
@@ -33,13 +31,13 @@ public unsafe class Sampler : DeviceResource, IBindableResource
         VkSampler sampler;
         Vk.CreateSampler(Device, &samplerCreateInfo, null, &sampler).ThrowCode();
 
-        _sampler = sampler;
+        Handle = sampler;
     }
 
-    internal VkSampler Handle => _sampler;
+    internal VkSampler Handle { get; }
 
     protected override void Destroy()
     {
-        Vk.DestroySampler(Device, _sampler, null);
+        Vk.DestroySampler(Device, Handle, null);
     }
 }

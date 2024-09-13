@@ -329,12 +329,12 @@ internal sealed unsafe class Program
         _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
 
         _frameBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)sizeof(Frame), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-        _nodeTransformBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Matrix4x4) * _worldSpaceMats.Length), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _nodeTransformBuffer = _device.ResourceFactory.CreateBuffer(new BufferDescription((uint)(sizeof(Matrix4x4) * _worldSpaceMats.Length), BufferUsage.StorageBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("frame", ResourceKind.UniformBuffer, ShaderStages.Vertex),
-                                                             new ResourceLayoutElementDescription("nodeTransform", ResourceKind.StructuredBufferReadOnly, ShaderStages.Vertex));
+                                                             new ResourceLayoutElementDescription("nodeTransform", ResourceKind.StorageBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
-                                                                                             new ResourceLayoutElementDescription("textureMap", ResourceKind.TextureReadOnly, ShaderStages.Fragment));
+                                                                                             new ResourceLayoutElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
         ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
                                                                                                  new ResourceLayoutElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 

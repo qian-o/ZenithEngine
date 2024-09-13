@@ -9,16 +9,14 @@ namespace Graphics.Vulkan;
 
 internal sealed unsafe class ImGuiPlatform : DisposableObject
 {
-    private readonly ImGuiViewport* _viewport;
     private readonly Window _window;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly bool _isExternalPlatform;
 
-    private Swapchain? _swapchain;
-
     public ImGuiPlatform(ImGuiViewport* viewport, Window window, GraphicsDevice graphicsDevice)
     {
-        _viewport = viewport;
+        Viewport = viewport;
+
         _window = window;
         _graphicsDevice = graphicsDevice;
         _isExternalPlatform = true;
@@ -28,7 +26,8 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     public ImGuiPlatform(ImGuiViewport* viewport, GraphicsDevice graphicsDevice)
     {
-        _viewport = viewport;
+        Viewport = viewport;
+
         _window = Window.CreateWindowByVulkan();
         _graphicsDevice = graphicsDevice;
         _isExternalPlatform = false;
@@ -36,9 +35,9 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         Initialize();
     }
 
-    public ImGuiViewport* Viewport => _viewport;
+    public ImGuiViewport* Viewport { get; }
 
-    public Swapchain? Swapchain => _swapchain;
+    public Swapchain? Swapchain { get; private set; }
 
     public string Title { get => _window.Title; set => _window.Title = value; }
 
@@ -79,9 +78,9 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
         _window.PollEvents();
 
         // sdl not trigger Resize event when size is changed actively.
-        if (_swapchain!.Width != _window.FramebufferSize.X || _swapchain!.Height != _window.FramebufferSize.Y)
+        if (Swapchain!.Width != _window.FramebufferSize.X || Swapchain!.Height != _window.FramebufferSize.Y)
         {
-            _swapchain.Resize((uint)_window.FramebufferSize.X, (uint)_window.FramebufferSize.Y);
+            Swapchain.Resize((uint)_window.FramebufferSize.X, (uint)_window.FramebufferSize.Y);
         }
     }
 
@@ -92,12 +91,12 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
             return;
         }
 
-        _graphicsDevice.SwapBuffers(_swapchain!);
+        _graphicsDevice.SwapBuffers(Swapchain!);
     }
 
     protected override void Destroy()
     {
-        _swapchain?.Dispose();
+        Swapchain?.Dispose();
 
         Unregister();
 
@@ -109,21 +108,21 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     private void Initialize()
     {
-        _viewport->PlatformHandle = (void*)_window.Handle;
+        Viewport->PlatformHandle = (void*)_window.Handle;
 
         if (!_isExternalPlatform)
         {
-            if (_viewport->Flags.HasFlag(ImGuiViewportFlags.NoTaskBarIcon))
+            if (Viewport->Flags.HasFlag(ImGuiViewportFlags.NoTaskBarIcon))
             {
                 _window.ShowInTaskbar = false;
             }
 
-            if (_viewport->Flags.HasFlag(ImGuiViewportFlags.NoDecoration))
+            if (Viewport->Flags.HasFlag(ImGuiViewportFlags.NoDecoration))
             {
                 _window.WindowBorder = WindowBorder.Hidden;
             }
 
-            if (_viewport->Flags.HasFlag(ImGuiViewportFlags.TopMost))
+            if (Viewport->Flags.HasFlag(ImGuiViewportFlags.TopMost))
             {
                 _window.TopMost = true;
             }
@@ -136,7 +135,7 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
                 DepthFormat = _graphicsDevice.GetBestDepthFormat()
             };
 
-            _swapchain = _graphicsDevice.ResourceFactory.CreateSwapchain(in swapchainDescription);
+            Swapchain = _graphicsDevice.ResourceFactory.CreateSwapchain(in swapchainDescription);
         }
 
         Register();
@@ -192,19 +191,19 @@ internal sealed unsafe class ImGuiPlatform : DisposableObject
 
     private void Move(object? sender, MoveEventArgs e)
     {
-        _viewport->PlatformRequestMove = 1;
+        Viewport->PlatformRequestMove = 1;
     }
 
     private void Resize(object? sender, ResizeEventArgs e)
     {
-        _viewport->PlatformRequestResize = 1;
+        Viewport->PlatformRequestResize = 1;
 
-        _swapchain?.Resize(e.Width, e.Height);
+        Swapchain?.Resize(e.Width, e.Height);
     }
 
     private void Closing(object? sender, ClosingEventArgs e)
     {
-        _viewport->PlatformRequestClose = 1;
+        Viewport->PlatformRequestClose = 1;
     }
 
     private static bool TryMapKey(Key key, out ImGuiKey result)

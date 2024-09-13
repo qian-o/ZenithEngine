@@ -5,11 +5,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class ResourceLayout : DeviceResource
 {
-    private readonly VkDescriptorSetLayout _descriptorSetLayout;
-    private readonly DescriptorType[] _descriptorTypes;
-    private readonly uint _sizeInBytes;
-    private readonly bool _isLastBindless;
-
     internal ResourceLayout(GraphicsDevice graphicsDevice, ref readonly ResourceLayoutDescription description) : base(graphicsDevice)
     {
         DescriptorSetLayoutBinding[] bindings = new DescriptorSetLayoutBinding[description.Elements.Length];
@@ -105,22 +100,22 @@ public unsafe class ResourceLayout : DeviceResource
         DescriptorBufferExt.GetDescriptorSetLayoutSize(graphicsDevice.Device, descriptorSetLayout, &sizeInBytes);
         sizeInBytes = Util.AlignedSize(sizeInBytes, PhysicalDevice.DescriptorBufferProperties.DescriptorBufferOffsetAlignment);
 
-        _descriptorSetLayout = descriptorSetLayout;
-        _descriptorTypes = descriptorTypes;
-        _sizeInBytes = (uint)sizeInBytes;
-        _isLastBindless = description.IsLastBindless;
+        Handle = descriptorSetLayout;
+        DescriptorTypes = descriptorTypes;
+        SizeInBytes = (uint)sizeInBytes;
+        IsLastBindless = description.IsLastBindless;
     }
 
-    internal VkDescriptorSetLayout Handle => _descriptorSetLayout;
+    internal VkDescriptorSetLayout Handle { get; }
 
-    internal DescriptorType[] DescriptorTypes => _descriptorTypes;
+    internal DescriptorType[] DescriptorTypes { get; }
 
-    internal uint SizeInBytes => _sizeInBytes;
+    internal uint SizeInBytes { get; }
 
-    internal bool IsLastBindless => _isLastBindless;
+    internal bool IsLastBindless { get; }
 
     protected override void Destroy()
     {
-        Vk.DestroyDescriptorSetLayout(GraphicsDevice.Device, _descriptorSetLayout, null);
+        Vk.DestroyDescriptorSetLayout(GraphicsDevice.Device, Handle, null);
     }
 }

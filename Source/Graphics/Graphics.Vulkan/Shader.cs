@@ -5,10 +5,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class Shader : DeviceResource
 {
-    private readonly VkShaderModule _shaderModule;
-    private readonly ShaderStages _stage;
-    private readonly string _entryPoint;
-
     internal Shader(GraphicsDevice graphicsDevice, ref readonly ShaderDescription description) : base(graphicsDevice)
     {
         ShaderModuleCreateInfo createInfo = new()
@@ -21,19 +17,19 @@ public unsafe class Shader : DeviceResource
         VkShaderModule shaderModule;
         Vk.CreateShaderModule(Device, &createInfo, null, &shaderModule).ThrowCode();
 
-        _shaderModule = shaderModule;
-        _stage = description.Stage;
-        _entryPoint = description.EntryPoint;
+        Handle = shaderModule;
+        Stage = description.Stage;
+        EntryPoint = description.EntryPoint;
     }
 
-    internal VkShaderModule Handle => _shaderModule;
+    internal VkShaderModule Handle { get; }
 
-    public ShaderStages Stage => _stage;
+    public ShaderStages Stage { get; }
 
-    public string EntryPoint => _entryPoint;
+    public string EntryPoint { get; }
 
     protected override void Destroy()
     {
-        Vk.DestroyShaderModule(Device, _shaderModule, null);
+        Vk.DestroyShaderModule(Device, Handle, null);
     }
 }

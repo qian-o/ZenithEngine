@@ -5,8 +5,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class TextureView : DeviceResource, IBindableResource
 {
-    private readonly VkImageView _imageView;
-
     internal TextureView(GraphicsDevice graphicsDevice, ref readonly TextureViewDescription description) : base(graphicsDevice)
     {
         ImageViewCreateInfo createInfo = new()
@@ -50,13 +48,13 @@ public unsafe class TextureView : DeviceResource, IBindableResource
         VkImageView imageView;
         Vk.CreateImageView(Device, &createInfo, null, &imageView).ThrowCode();
 
-        _imageView = imageView;
+        Handle = imageView;
     }
 
-    internal VkImageView Handle => _imageView;
+    internal VkImageView Handle { get; }
 
     protected override void Destroy()
     {
-        Vk.DestroyImageView(Device, _imageView, null);
+        Vk.DestroyImageView(Device, Handle, null);
     }
 }

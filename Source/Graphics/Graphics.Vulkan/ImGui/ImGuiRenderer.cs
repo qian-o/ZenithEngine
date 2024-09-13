@@ -350,7 +350,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         ResourceLayoutDescription set0 = new(new ResourceLayoutElementDescription("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex),
                                              new ResourceLayoutElementDescription("pointSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
-        ResourceLayoutDescription set1 = new(new ResourceLayoutElementDescription("textureColor", ResourceKind.TextureReadOnly, ShaderStages.Fragment));
+        ResourceLayoutDescription set1 = new(new ResourceLayoutElementDescription("textureColor", ResourceKind.SampledImage, ShaderStages.Fragment));
 
         _layout0 = _factory.CreateResourceLayout(set0);
         _layout1 = _factory.CreateResourceLayout(set1);

@@ -21,9 +21,7 @@ public unsafe class ResourceSet : DeviceResource
                                   descriptor.AsPointer(offset));
         }
 
-        DeviceBuffer buffer = ResourceFactory.CreateBuffer(new BufferDescription(description.Layout.SizeInBytes,
-                                                                                 true,
-                                                                                 description.Layout.IsLastBindless));
+        DeviceBuffer buffer = new(graphicsDevice, description.Layout.SizeInBytes, true, description.Layout.IsLastBindless);
 
         GraphicsDevice.UpdateBuffer(buffer, 0, descriptor);
 

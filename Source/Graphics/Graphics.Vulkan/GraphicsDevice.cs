@@ -12,21 +12,6 @@ public unsafe class GraphicsDevice : ContextObject
 {
     internal const uint MinStagingBufferSize = 1024 * 4;
     internal const uint MaxStagingBufferSize = 1024 * 1024 * 4;
-
-    private readonly PhysicalDevice _physicalDevice;
-    private readonly Device _device;
-    private readonly ResourceFactory _resourceFactory;
-    private readonly KhrSwapchain _swapchainExt;
-    private readonly ExtDescriptorBuffer _descriptorBufferExt;
-    private readonly Queue _graphicsQueue;
-    private readonly Queue _computeQueue;
-    private readonly Queue _transferQueue;
-    private readonly CommandPool _graphicsCommandPool;
-    private readonly CommandPool _computeCommandPool;
-    private readonly Swapchain _mainSwapChain;
-    private readonly Sampler _pointSampler;
-    private readonly Sampler _linearSampler;
-    private readonly Sampler _aniso4xSampler;
     private readonly object _stagingResourcesLock;
     private readonly List<StagingCommandPool> _availableStagingCommandPools;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
@@ -43,20 +28,20 @@ public unsafe class GraphicsDevice : ContextObject
                             uint computeQueueFamilyIndex,
                             uint transferQueueFamilyIndex) : base(context)
     {
-        _physicalDevice = physicalDevice;
-        _device = device;
-        _resourceFactory = new ResourceFactory(context, this);
-        _swapchainExt = swapchainExt;
-        _descriptorBufferExt = descriptorBufferExt;
-        _graphicsQueue = new Queue(this, graphicsQueueFamilyIndex);
-        _computeQueue = new Queue(this, computeQueueFamilyIndex);
-        _transferQueue = new Queue(this, transferQueueFamilyIndex);
-        _graphicsCommandPool = new CommandPool(this, graphicsQueueFamilyIndex);
-        _computeCommandPool = new CommandPool(this, computeQueueFamilyIndex);
-        _mainSwapChain = _resourceFactory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, GetBestDepthFormat()));
-        _pointSampler = _resourceFactory.CreateSampler(SamplerDescription.Point);
-        _linearSampler = _resourceFactory.CreateSampler(SamplerDescription.Linear);
-        _aniso4xSampler = _resourceFactory.CreateSampler(SamplerDescription.Aniso4x);
+        PhysicalDevice = physicalDevice;
+        Device = device;
+        ResourceFactory = new ResourceFactory(context, this);
+        SwapchainExt = swapchainExt;
+        DescriptorBufferExt = descriptorBufferExt;
+        GraphicsQueue = new Queue(this, graphicsQueueFamilyIndex);
+        ComputeQueue = new Queue(this, computeQueueFamilyIndex);
+        TransferQueue = new Queue(this, transferQueueFamilyIndex);
+        GraphicsCommandPool = new CommandPool(this, graphicsQueueFamilyIndex);
+        ComputeCommandPool = new CommandPool(this, computeQueueFamilyIndex);
+        MainSwapchain = ResourceFactory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, GetBestDepthFormat()));
+        PointSampler = ResourceFactory.CreateSampler(SamplerDescription.Point);
+        LinearSampler = ResourceFactory.CreateSampler(SamplerDescription.Linear);
+        Aniso4xSampler = ResourceFactory.CreateSampler(SamplerDescription.Aniso4x);
         _stagingResourcesLock = new object();
         _availableStagingCommandPools = [];
         _availableStagingBuffers = [];
@@ -64,37 +49,37 @@ public unsafe class GraphicsDevice : ContextObject
         _availableStagingFences = [];
     }
 
-    public ResourceFactory ResourceFactory => _resourceFactory;
+    public ResourceFactory ResourceFactory { get; }
 
-    public Swapchain MainSwapchain => _mainSwapChain;
+    public Swapchain MainSwapchain { get; }
 
-    public Sampler PointSampler => _pointSampler;
+    public Sampler PointSampler { get; }
 
-    public Sampler LinearSampler => _linearSampler;
+    public Sampler LinearSampler { get; }
 
-    public Sampler Aniso4xSampler => _aniso4xSampler;
+    public Sampler Aniso4xSampler { get; }
 
-    internal PhysicalDevice PhysicalDevice => _physicalDevice;
+    internal PhysicalDevice PhysicalDevice { get; }
 
-    internal Device Device => _device;
+    internal VkDevice Device { get; }
 
-    internal KhrSwapchain SwapchainExt => _swapchainExt;
+    internal KhrSwapchain SwapchainExt { get; }
 
-    internal ExtDescriptorBuffer DescriptorBufferExt => _descriptorBufferExt;
+    internal ExtDescriptorBuffer DescriptorBufferExt { get; }
 
-    internal Queue GraphicsQueue => _graphicsQueue;
+    internal Queue GraphicsQueue { get; }
 
-    internal Queue ComputeQueue => _computeQueue;
+    internal Queue ComputeQueue { get; }
 
-    internal Queue TransferQueue => _transferQueue;
+    internal Queue TransferQueue { get; }
 
-    internal CommandPool GraphicsCommandPool => _graphicsCommandPool;
+    internal CommandPool GraphicsCommandPool { get; }
 
-    internal CommandPool ComputeCommandPool => _computeCommandPool;
+    internal CommandPool ComputeCommandPool { get; }
 
     public PixelFormat GetBestDepthFormat()
     {
-        Format format = _physicalDevice.FindSupportedFormat([Format.D32SfloatS8Uint, Format.D24UnormS8Uint, Format.D32Sfloat],
+        Format format = PhysicalDevice.FindSupportedFormat([Format.D32SfloatS8Uint, Format.D24UnormS8Uint, Format.D32Sfloat],
                                                             ImageTiling.Optimal,
                                                             FormatFeatureFlags.DepthStencilAttachmentBit);
 
@@ -292,12 +277,12 @@ public unsafe class GraphicsDevice : ContextObject
 
     public void SwapBuffers()
     {
-        if (_mainSwapChain == null)
+        if (MainSwapchain == null)
         {
             throw new InvalidOperationException("The swap chain is not initialized.");
         }
 
-        SwapBuffers(_mainSwapChain);
+        SwapBuffers(MainSwapchain);
     }
 
     public void SubmitCommandsAndSwapBuffers(CommandList commandList, Swapchain swapchain)
@@ -346,20 +331,20 @@ public unsafe class GraphicsDevice : ContextObject
         _availableStagingBuffers.Clear();
         _availableStagingCommandPools.Clear();
 
-        _aniso4xSampler.Dispose();
-        _linearSampler.Dispose();
-        _pointSampler.Dispose();
+        Aniso4xSampler.Dispose();
+        LinearSampler.Dispose();
+        PointSampler.Dispose();
 
-        _mainSwapChain.Dispose();
+        MainSwapchain.Dispose();
 
-        _computeCommandPool.Dispose();
-        _graphicsCommandPool.Dispose();
+        ComputeCommandPool.Dispose();
+        GraphicsCommandPool.Dispose();
 
-        _swapchainExt.Dispose();
+        SwapchainExt.Dispose();
 
-        _resourceFactory.Dispose();
+        ResourceFactory.Dispose();
 
-        Vk.DestroyDevice(_device, null);
+        Vk.DestroyDevice(Device, null);
     }
 
     private void SubmitCommandsCore(CommandList commandList, Semaphore? signalSemaphore, Fence fence)
@@ -406,7 +391,7 @@ public unsafe class GraphicsDevice : ContextObject
             presentInfo.PWaitSemaphores = &waitSemaphoreHandle;
         }
 
-        Result result = _swapchainExt.QueuePresent(_graphicsQueue.Handle, &presentInfo);
+        Result result = SwapchainExt.QueuePresent(GraphicsQueue.Handle, &presentInfo);
 
         if (result == Result.ErrorOutOfDateKhr)
         {
@@ -429,8 +414,8 @@ public unsafe class GraphicsDevice : ContextObject
 
         fixed (VkFence* vkFencesPointer = vkFences)
         {
-            Vk.WaitForFences(_device, (uint)vkFences.Length, vkFencesPointer, Vk.True, ulong.MaxValue);
-            Vk.ResetFences(_device, (uint)vkFences.Length, vkFencesPointer);
+            Vk.WaitForFences(Device, (uint)vkFences.Length, vkFencesPointer, Vk.True, ulong.MaxValue);
+            Vk.ResetFences(Device, (uint)vkFences.Length, vkFencesPointer);
         }
     }
 
@@ -446,7 +431,7 @@ public unsafe class GraphicsDevice : ContextObject
             }
         }
 
-        return new StagingCommandPool(this, _transferQueue);
+        return new StagingCommandPool(this, TransferQueue);
     }
 
     private void CacheStagingCommandPool(StagingCommandPool stagingCommandPool)
@@ -474,7 +459,7 @@ public unsafe class GraphicsDevice : ContextObject
 
         uint bufferSize = Math.Max(MinStagingBufferSize, sizeInBytes);
 
-        return _resourceFactory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
+        return ResourceFactory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.Staging));
     }
 
     private void CacheStagingBuffer(DeviceBuffer stagingBuffer)
@@ -595,25 +580,25 @@ public unsafe partial class Context
             SType = StructureType.PhysicalDeviceFeatures2,
             PNext = &vulkan13Features
         };
-        _vk.GetPhysicalDeviceFeatures2(physicalDevice.VkPhysicalDevice, &features2);
+        Vk.GetPhysicalDeviceFeatures2(physicalDevice.Handle, &features2);
 
         DeviceCreateInfo createInfo = new()
         {
             SType = StructureType.DeviceCreateInfo,
             QueueCreateInfoCount = (uint)createInfos.Length,
-            PQueueCreateInfos = _alloter.Allocate(createInfos),
+            PQueueCreateInfos = Alloter.Allocate(createInfos),
             EnabledExtensionCount = (uint)deviceExtensions.Length,
-            PpEnabledExtensionNames = _alloter.Allocate(deviceExtensions),
+            PpEnabledExtensionNames = Alloter.Allocate(deviceExtensions),
             PNext = &features2
         };
 
         Device device;
-        _vk.CreateDevice(physicalDevice.VkPhysicalDevice, &createInfo, null, &device).ThrowCode("Failed to create device.");
+        Vk.CreateDevice(physicalDevice.Handle, &createInfo, null, &device).ThrowCode("Failed to create device.");
 
         KhrSwapchain swapchainExt = CreateDeviceExtension<KhrSwapchain>(device);
         ExtDescriptorBuffer descriptorBufferExt = CreateDeviceExtension<ExtDescriptorBuffer>(device);
 
-        _alloter.Clear();
+        Alloter.Clear();
 
         GraphicsDevice graphicsDevice = new(this,
                                             physicalDevice,
@@ -632,7 +617,7 @@ public unsafe partial class Context
 
     private T CreateDeviceExtension<T>(Device device) where T : NativeExtension<Vk>
     {
-        if (!_vk.TryGetDeviceExtension(_instance, device, out T ext))
+        if (!Vk.TryGetDeviceExtension(Instance, device, out T ext))
         {
             throw new InvalidOperationException($"Failed to load extension {typeof(T).Name}!");
         }

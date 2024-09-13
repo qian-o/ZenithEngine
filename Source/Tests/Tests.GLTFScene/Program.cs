@@ -233,7 +233,7 @@ internal sealed unsafe class Program
 
         ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
-                                                                                             new ResourceLayoutElementDescription("textureMap", ResourceKind.TextureReadOnly, ShaderStages.Fragment));
+                                                                                             new ResourceLayoutElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
         ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
                                                                                                  new ResourceLayoutElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 

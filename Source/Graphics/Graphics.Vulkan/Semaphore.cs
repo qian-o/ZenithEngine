@@ -4,8 +4,6 @@ namespace Graphics.Vulkan;
 
 internal sealed unsafe class Semaphore : DeviceResource
 {
-    private readonly VkSemaphore _semaphore;
-
     public Semaphore(GraphicsDevice graphicsDevice) : base(graphicsDevice)
     {
         SemaphoreCreateInfo createInfo = new()
@@ -16,13 +14,13 @@ internal sealed unsafe class Semaphore : DeviceResource
         VkSemaphore semaphore;
         Vk.CreateSemaphore(Device, &createInfo, null, &semaphore).ThrowCode();
 
-        _semaphore = semaphore;
+        Handle = semaphore;
     }
 
-    public VkSemaphore Handle => _semaphore;
+    public VkSemaphore Handle { get; }
 
     protected override void Destroy()
     {
-        Vk.DestroySemaphore(Device, _semaphore, null);
+        Vk.DestroySemaphore(Device, Handle, null);
     }
 }

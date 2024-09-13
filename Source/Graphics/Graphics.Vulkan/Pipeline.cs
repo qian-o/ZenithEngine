@@ -6,10 +6,7 @@ namespace Graphics.Vulkan;
 
 public unsafe class Pipeline : DeviceResource
 {
-    private readonly VkPipelineLayout _pipelineLayout;
     private readonly VkRenderPass _renderPass;
-    private readonly VkPipeline _pipeline;
-    private readonly bool _isGraphics;
 
     internal Pipeline(GraphicsDevice graphicsDevice, ref readonly GraphicsPipelineDescription description) : base(graphicsDevice)
     {
@@ -394,22 +391,22 @@ public unsafe class Pipeline : DeviceResource
         VkPipeline pipeline;
         Vk.CreateGraphicsPipelines(Device, default, 1, &createInfo, null, &pipeline).ThrowCode();
 
-        _pipelineLayout = createInfo.Layout;
+        Layout = createInfo.Layout;
         _renderPass = createInfo.RenderPass;
-        _pipeline = pipeline;
-        _isGraphics = true;
+        Handle = pipeline;
+        IsGraphics = true;
     }
 
-    internal VkPipeline Handle => _pipeline;
+    internal VkPipeline Handle { get; }
 
-    internal VkPipelineLayout Layout => _pipelineLayout;
+    internal VkPipelineLayout Layout { get; }
 
-    public bool IsGraphics => _isGraphics;
+    public bool IsGraphics { get; }
 
     protected override void Destroy()
     {
-        Vk.DestroyPipeline(Device, _pipeline, null);
-        Vk.DestroyPipelineLayout(Device, _pipelineLayout, null);
+        Vk.DestroyPipeline(Device, Handle, null);
+        Vk.DestroyPipelineLayout(Device, Layout, null);
         Vk.DestroyRenderPass(Device, _renderPass, null);
     }
 }

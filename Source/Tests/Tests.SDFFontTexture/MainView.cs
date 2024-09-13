@@ -110,7 +110,7 @@ internal sealed unsafe class MainView : View
 
         ResourceLayoutElementDescription uboDescription = new("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex);
         ResourceLayoutElementDescription normalDescription = new("properties", ResourceKind.UniformBuffer, ShaderStages.Fragment);
-        ResourceLayoutElementDescription msdfDescription = new("msdf", ResourceKind.TextureReadOnly, ShaderStages.Fragment);
+        ResourceLayoutElementDescription msdfDescription = new("msdf", ResourceKind.SampledImage, ShaderStages.Fragment);
         ResourceLayoutElementDescription msdfSamplerDescription = new("msdfSampler", ResourceKind.Sampler, ShaderStages.Fragment);
 
         _resourceLayout = device.ResourceFactory.CreateResourceLayout(new ResourceLayoutDescription(uboDescription, normalDescription, msdfDescription, msdfSamplerDescription));
