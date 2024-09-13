@@ -424,19 +424,19 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
             Usage = BufferUsageFlags.ResourceDescriptorBufferBitExt | BufferUsageFlags.SamplerDescriptorBufferBitExt
         };
 
-        VkRes.GetExtDescriptorBuffer().CmdBindDescriptorBuffers(Handle, 1, &bindingInfoEXT);
+        VkRes.ExtDescriptorBuffer.CmdBindDescriptorBuffers(Handle, 1, &bindingInfoEXT);
 
         uint bufferIndices = 0;
         ulong offsets = 0;
         if (_currentPipeline.IsGraphics)
         {
-            VkRes.GetExtDescriptorBuffer().CmdSetDescriptorBufferOffsets(Handle,
-                                                                         PipelineBindPoint.Graphics,
-                                                                         _currentPipeline.Layout,
-                                                                         slot,
-                                                                         1,
-                                                                         &bufferIndices,
-                                                                         &offsets);
+            VkRes.ExtDescriptorBuffer.CmdSetDescriptorBufferOffsets(Handle,
+                                                                    PipelineBindPoint.Graphics,
+                                                                    _currentPipeline.Layout,
+                                                                    slot,
+                                                                    1,
+                                                                    &bufferIndices,
+                                                                    &offsets);
         }
     }
 

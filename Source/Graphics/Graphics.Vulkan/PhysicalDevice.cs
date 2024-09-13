@@ -5,14 +5,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
 {
-    private readonly PhysicalDeviceProperties _properties;
-    private readonly PhysicalDeviceDescriptorBufferPropertiesEXT _descriptorBufferProperties;
-    private readonly PhysicalDeviceDescriptorIndexingProperties _descriptorIndexingProperties;
-    private readonly PhysicalDeviceFeatures _features;
-    private readonly PhysicalDeviceMemoryProperties _memoryProperties;
-    private readonly QueueFamilyProperties[] _queueFamilyProperties;
-    private readonly ExtensionProperties[] _extensionProperties;
-
     internal PhysicalDevice(VulkanResources vkRes, VkPhysicalDevice physicalDevice) : base(vkRes, ObjectType.PhysicalDevice)
     {
         PhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties = new()
@@ -51,43 +43,39 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
 
         Handle = physicalDevice;
         Name = Alloter.GetString(properties2.Properties.DeviceName);
+        Properties = properties2.Properties;
+        DescriptorBufferProperties = descriptorBufferProperties;
+        DescriptorIndexingProperties = descriptorIndexingProperties;
+        Features = features;
+        MemoryProperties = memoryProperties;
+        QueueFamilyProperties = queueFamilyProperties;
+        ExtensionProperties = extensionProperties;
         Score = properties2.Properties.DeviceType == PhysicalDeviceType.DiscreteGpu ? 1000u : 0u;
-
-        _properties = properties2.Properties;
-        _descriptorBufferProperties = descriptorBufferProperties;
-        _descriptorIndexingProperties = descriptorIndexingProperties;
-        _features = features;
-        _memoryProperties = memoryProperties;
-        _queueFamilyProperties = queueFamilyProperties;
-        _extensionProperties = extensionProperties;
     }
 
     internal override VkPhysicalDevice Handle { get; }
 
+    internal PhysicalDeviceProperties Properties { get; }
+
+    internal PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties { get; }
+
+    internal PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties { get; }
+
+    internal PhysicalDeviceFeatures Features { get; }
+
+    internal PhysicalDeviceMemoryProperties MemoryProperties { get; }
+
+    internal QueueFamilyProperties[] QueueFamilyProperties { get; }
+
+    internal ExtensionProperties[] ExtensionProperties { get; }
+
     public uint Score { get; }
-
-    internal override ulong[] GetHandles()
-    {
-        return [(ulong)Handle.Handle];
-    }
-
-    internal void FillResources(VulkanResources vulkanResources)
-    {
-        vulkanResources.InitializePhysicalDevice(this,
-                                                 _properties,
-                                                 _descriptorBufferProperties,
-                                                 _descriptorIndexingProperties,
-                                                 _features,
-                                                 _memoryProperties,
-                                                 _queueFamilyProperties,
-                                                 _extensionProperties);
-    }
 
     internal uint GetQueueFamilyIndex(QueueFlags flags)
     {
-        for (int i = 0; i < _queueFamilyProperties.Length; i++)
+        for (int i = 0; i < QueueFamilyProperties.Length; i++)
         {
-            if ((_queueFamilyProperties[i].QueueFlags & flags) == flags)
+            if ((QueueFamilyProperties[i].QueueFlags & flags) == flags)
             {
                 return (uint)i;
             }
@@ -98,9 +86,9 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
 
     internal uint FindMemoryTypeIndex(uint memoryTypeBits, MemoryPropertyFlags memoryPropertyFlags)
     {
-        for (uint i = 0; i < _memoryProperties.MemoryTypeCount; i++)
+        for (uint i = 0; i < MemoryProperties.MemoryTypeCount; i++)
         {
-            if ((memoryTypeBits & (1 << (int)i)) != 0 && (_memoryProperties.MemoryTypes[(int)i].PropertyFlags & memoryPropertyFlags) == memoryPropertyFlags)
+            if ((memoryTypeBits & (1 << (int)i)) != 0 && (MemoryProperties.MemoryTypes[(int)i].PropertyFlags & memoryPropertyFlags) == memoryPropertyFlags)
             {
                 return i;
             }
@@ -128,6 +116,11 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
         }
 
         throw new InvalidOperationException("Failed to find supported format!");
+    }
+
+    internal override ulong[] GetHandles()
+    {
+        return [(ulong)Handle.Handle];
     }
 
     protected override void Destroy()

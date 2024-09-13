@@ -37,17 +37,17 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
         }
 
         VkImage image;
-        VkRes.Vk.CreateImage(VkRes.GetDevice(), &createInfo, null, &image).ThrowCode();
+        VkRes.Vk.CreateImage(VkRes.VkDevice, &createInfo, null, &image).ThrowCode();
 
         MemoryRequirements memoryRequirements;
-        VkRes.Vk.GetImageMemoryRequirements(VkRes.GetDevice(), image, &memoryRequirements);
+        VkRes.Vk.GetImageMemoryRequirements(VkRes.VkDevice, image, &memoryRequirements);
 
         DeviceMemory deviceMemory = new(VkRes,
                                         in memoryRequirements,
                                         MemoryPropertyFlags.DeviceLocalBit,
                                         false);
 
-        VkRes.Vk.BindImageMemory(VkRes.GetDevice(), image, deviceMemory.Handle, 0).ThrowCode();
+        VkRes.Vk.BindImageMemory(VkRes.VkDevice, image, deviceMemory.Handle, 0).ThrowCode();
 
         ImageLayout[] imageLayouts = new ImageLayout[subresourceCount];
         Array.Fill(imageLayouts, ImageLayout.Preinitialized);
@@ -319,7 +319,7 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
     {
         if (!IsSwapchainImage)
         {
-            VkRes.Vk.DestroyImage(VkRes.GetDevice(), Handle, null);
+            VkRes.Vk.DestroyImage(VkRes.VkDevice, Handle, null);
 
             DeviceMemory!.Dispose();
         }

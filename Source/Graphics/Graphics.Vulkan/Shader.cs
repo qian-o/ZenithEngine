@@ -15,7 +15,7 @@ public unsafe class Shader : VulkanObject<VkShaderModule>
         };
 
         VkShaderModule shaderModule;
-        VkRes.Vk.CreateShaderModule(VkRes.GetDevice(), &createInfo, null, &shaderModule).ThrowCode();
+        VkRes.Vk.CreateShaderModule(VkRes.VkDevice, &createInfo, null, &shaderModule).ThrowCode();
 
         Handle = shaderModule;
         Stage = description.Stage;
@@ -30,7 +30,7 @@ public unsafe class Shader : VulkanObject<VkShaderModule>
 
     protected override void Destroy()
     {
-        VkRes.Vk.DestroyShaderModule(VkRes.GetDevice(), Handle, null);
+        VkRes.Vk.DestroyShaderModule(VkRes.VkDevice, Handle, null);
     }
 
     internal override ulong[] GetHandles()

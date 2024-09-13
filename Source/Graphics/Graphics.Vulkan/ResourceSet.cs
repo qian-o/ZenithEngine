@@ -11,7 +11,7 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
 
         for (uint i = 0; i < description.BoundResources.Length; i++)
         {
-            ulong offset = VkRes.GetExtDescriptorBuffer().GetDescriptorSetLayoutBindingOffset(VkRes.GetDevice(), description.Layout.Handle, i);
+            ulong offset = VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice, description.Layout.Handle, i);
 
             WriteDescriptorBuffer(description.Layout.DescriptorTypes[i],
                                   description.BoundResources[i],
@@ -41,7 +41,7 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
         uint lastIdx = (uint)Layout.DescriptorTypes.Length - 1;
 
         byte* descriptor = (byte*)Handle.Map(Layout.SizeInBytes);
-        descriptor += VkRes.GetExtDescriptorBuffer().GetDescriptorSetLayoutBindingOffset(VkRes.GetDevice(), Layout.Handle, lastIdx);
+        descriptor += VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice, Layout.Handle, lastIdx);
 
         for (uint i = 0; i < boundResources.Length; i++)
         {
@@ -142,10 +142,10 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
                 Data = descriptorData
             };
 
-            VkRes.GetExtDescriptorBuffer().GetDescriptor(VkRes.GetDevice(),
-                                                         &getInfo,
-                                                         descriptorSize,
-                                                         buffer);
+            VkRes.ExtDescriptorBuffer.GetDescriptor(VkRes.VkDevice,
+                                                    &getInfo,
+                                                    descriptorSize,
+                                                    buffer);
         }
     }
 }

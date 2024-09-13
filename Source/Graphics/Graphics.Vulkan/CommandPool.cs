@@ -14,7 +14,7 @@ public unsafe class CommandPool : VulkanObject<VkCommandPool>
         };
 
         VkCommandPool commandPool;
-        VkRes.Vk.CreateCommandPool(VkRes.GetDevice(), &createInfo, null, &commandPool).ThrowCode();
+        VkRes.Vk.CreateCommandPool(VkRes.VkDevice, &createInfo, null, &commandPool).ThrowCode();
 
         Handle = commandPool;
     }
@@ -32,14 +32,14 @@ public unsafe class CommandPool : VulkanObject<VkCommandPool>
         };
 
         CommandBuffer commandBuffer;
-        VkRes.Vk.AllocateCommandBuffers(VkRes.GetDevice(), &allocateInfo, &commandBuffer).ThrowCode();
+        VkRes.Vk.AllocateCommandBuffers(VkRes.VkDevice, &allocateInfo, &commandBuffer).ThrowCode();
 
         return commandBuffer;
     }
 
     public void FreeCommandBuffer(CommandBuffer commandBuffer)
     {
-        VkRes.Vk.FreeCommandBuffers(VkRes.GetDevice(), Handle, 1, &commandBuffer);
+        VkRes.Vk.FreeCommandBuffers(VkRes.VkDevice, Handle, 1, &commandBuffer);
     }
 
     internal override ulong[] GetHandles()
@@ -49,6 +49,6 @@ public unsafe class CommandPool : VulkanObject<VkCommandPool>
 
     protected override void Destroy()
     {
-        VkRes.Vk.DestroyCommandPool(VkRes.GetDevice(), Handle, null);
+        VkRes.Vk.DestroyCommandPool(VkRes.VkDevice, Handle, null);
     }
 }

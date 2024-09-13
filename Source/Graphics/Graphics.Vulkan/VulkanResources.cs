@@ -30,31 +30,26 @@ public class VulkanResources : DisposableObject
 
     #region Physical Device Properties
     private PhysicalDevice? _physicalDevice;
-    private PhysicalDeviceProperties? _properties;
-    private PhysicalDeviceDescriptorBufferPropertiesEXT? _descriptorBufferProperties;
-    private PhysicalDeviceDescriptorIndexingProperties? _descriptorIndexingProperties;
-    private PhysicalDeviceFeatures? _features;
-    private PhysicalDeviceMemoryProperties? _memoryProperties;
-    private QueueFamilyProperties[]? _queueFamilyProperties;
-    private ExtensionProperties[]? _extensionProperties;
 
     public bool IsInitializedPhysicalDevice { get; private set; }
 
     public PhysicalDevice PhysicalDevice => TryGetPhysicalDeviceProperty(ref _physicalDevice)!;
 
-    public PhysicalDeviceProperties Properties => TryGetPhysicalDeviceProperty(ref _properties)!.Value;
+    public VkPhysicalDevice VkPhysicalDevice => PhysicalDevice.Handle;
 
-    public PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties => TryGetPhysicalDeviceProperty(ref _descriptorBufferProperties)!.Value;
+    public PhysicalDeviceProperties Properties => PhysicalDevice.Properties;
 
-    public PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties => TryGetPhysicalDeviceProperty(ref _descriptorIndexingProperties)!.Value;
+    public PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties => PhysicalDevice.DescriptorBufferProperties;
 
-    public PhysicalDeviceFeatures Features => TryGetPhysicalDeviceProperty(ref _features)!.Value;
+    public PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties => PhysicalDevice.DescriptorIndexingProperties;
 
-    public PhysicalDeviceMemoryProperties MemoryProperties => TryGetPhysicalDeviceProperty(ref _memoryProperties)!.Value;
+    public PhysicalDeviceFeatures Features => PhysicalDevice.Features;
 
-    public QueueFamilyProperties[] QueueFamilyProperties => TryGetPhysicalDeviceProperty(ref _queueFamilyProperties)!;
+    public PhysicalDeviceMemoryProperties MemoryProperties => PhysicalDevice.MemoryProperties;
 
-    public ExtensionProperties[] ExtensionProperties => TryGetPhysicalDeviceProperty(ref _extensionProperties)!;
+    public QueueFamilyProperties[] QueueFamilyProperties => PhysicalDevice.QueueFamilyProperties;
+
+    public ExtensionProperties[] ExtensionProperties => PhysicalDevice.ExtensionProperties;
     #endregion
 
     #region Graphics Device Properties
@@ -63,6 +58,12 @@ public class VulkanResources : DisposableObject
     public bool IsInitializedGraphicsDevice { get; private set; }
 
     public GraphicsDevice GraphicsDevice => TryGetGraphicsDeviceProperty(ref _graphicsDevice)!;
+
+    public VkDevice VkDevice => GraphicsDevice.Handle;
+
+    public KhrSwapchain KhrSwapchain => GraphicsDevice.KhrSwapchain;
+
+    public ExtDescriptorBuffer ExtDescriptorBuffer => GraphicsDevice.ExtDescriptorBuffer;
     #endregion
 
     public void InitializeContext(Vk vk, VkInstance instance, ExtDebugUtils? extDebugUtils, KhrSurface khrSurface)
@@ -75,23 +76,9 @@ public class VulkanResources : DisposableObject
         IsInitializedContext = true;
     }
 
-    public void InitializePhysicalDevice(PhysicalDevice physicalDevice,
-                                         PhysicalDeviceProperties properties,
-                                         PhysicalDeviceDescriptorBufferPropertiesEXT descriptorBufferProperties,
-                                         PhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties,
-                                         PhysicalDeviceFeatures features,
-                                         PhysicalDeviceMemoryProperties memoryProperties,
-                                         QueueFamilyProperties[] queueFamilyProperties,
-                                         ExtensionProperties[] extensionProperties)
+    public void InitializePhysicalDevice(PhysicalDevice physicalDevice)
     {
         _physicalDevice = physicalDevice;
-        _properties = properties;
-        _descriptorBufferProperties = descriptorBufferProperties;
-        _descriptorIndexingProperties = descriptorIndexingProperties;
-        _features = features;
-        _memoryProperties = memoryProperties;
-        _queueFamilyProperties = queueFamilyProperties;
-        _extensionProperties = extensionProperties;
 
         IsInitializedPhysicalDevice = true;
     }
@@ -101,26 +88,6 @@ public class VulkanResources : DisposableObject
         _graphicsDevice = graphicsDevice;
 
         IsInitializedGraphicsDevice = true;
-    }
-
-    public VkPhysicalDevice GetPhysicalDevice()
-    {
-        return PhysicalDevice.Handle;
-    }
-
-    public VkDevice GetDevice()
-    {
-        return GraphicsDevice.Handle;
-    }
-
-    public KhrSwapchain GetKhrSwapchain()
-    {
-        return GraphicsDevice.KhrSwapchain;
-    }
-
-    public ExtDescriptorBuffer GetExtDescriptorBuffer()
-    {
-        return GraphicsDevice.ExtDescriptorBuffer;
     }
 
     protected override void Destroy()

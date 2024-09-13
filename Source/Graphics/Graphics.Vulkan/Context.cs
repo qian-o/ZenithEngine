@@ -336,8 +336,7 @@ public unsafe class Context : DisposableObject
         {
             VulkanResources vulkanResources = new();
             vulkanResources.InitializeContext(_vk, _instance, _debugUtilsExt, _surfaceExt);
-
-            physicalDevice.FillResources(vulkanResources);
+            vulkanResources.InitializePhysicalDevice(physicalDevice);
 
             GraphicsDevice graphicsDevice = new(vulkanResources,
                                                 device,

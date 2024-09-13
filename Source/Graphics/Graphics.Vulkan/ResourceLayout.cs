@@ -94,10 +94,10 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
         }
 
         VkDescriptorSetLayout descriptorSetLayout;
-        VkRes.Vk.CreateDescriptorSetLayout(VkRes.GetDevice(), &createInfo, null, &descriptorSetLayout).ThrowCode();
+        VkRes.Vk.CreateDescriptorSetLayout(VkRes.VkDevice, &createInfo, null, &descriptorSetLayout).ThrowCode();
 
         ulong sizeInBytes;
-        VkRes.GetExtDescriptorBuffer().GetDescriptorSetLayoutSize(VkRes.GetDevice(), descriptorSetLayout, &sizeInBytes);
+        VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutSize(VkRes.VkDevice, descriptorSetLayout, &sizeInBytes);
 
         sizeInBytes = Util.AlignedSize(sizeInBytes, VkRes.DescriptorBufferProperties.DescriptorBufferOffsetAlignment);
 
@@ -122,6 +122,6 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
 
     protected override void Destroy()
     {
-        VkRes.Vk.DestroyDescriptorSetLayout(VkRes.GetDevice(), Handle, null);
+        VkRes.Vk.DestroyDescriptorSetLayout(VkRes.VkDevice, Handle, null);
     }
 }

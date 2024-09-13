@@ -4,20 +4,20 @@ namespace Graphics.Vulkan;
 
 public unsafe class StagingCommandPool : VulkanObject<VkCommandPool>
 {
-    public StagingCommandPool(VulkanResources vkRes, Executor taskExecutor) : base(vkRes, ObjectType.CommandPool)
+    public StagingCommandPool(VulkanResources vkRes, Executor executor) : base(vkRes, ObjectType.CommandPool)
     {
         CommandPoolCreateInfo createInfo = new()
         {
             SType = StructureType.CommandPoolCreateInfo,
-            QueueFamilyIndex = taskExecutor.FamilyIndex,
+            QueueFamilyIndex = executor.FamilyIndex,
             Flags = CommandPoolCreateFlags.TransientBit
         };
 
         VkCommandPool commandPool;
-        VkRes.Vk.CreateCommandPool(VkRes.GetDevice(), &createInfo, null, &commandPool).ThrowCode();
+        VkRes.Vk.CreateCommandPool(VkRes.VkDevice, &createInfo, null, &commandPool).ThrowCode();
 
         Handle = commandPool;
-        TaskExecutor = taskExecutor;
+        TaskExecutor = executor;
         Fence = new Fence(VkRes);
     }
 
@@ -38,7 +38,7 @@ public unsafe class StagingCommandPool : VulkanObject<VkCommandPool>
         };
 
         CommandBuffer commandBuffer;
-        VkRes.Vk.AllocateCommandBuffers(VkRes.GetDevice(), &allocateInfo, &commandBuffer).ThrowCode();
+        VkRes.Vk.AllocateCommandBuffers(VkRes.VkDevice, &allocateInfo, &commandBuffer).ThrowCode();
 
         CommandBufferBeginInfo beginInfo = new()
         {
@@ -66,7 +66,7 @@ public unsafe class StagingCommandPool : VulkanObject<VkCommandPool>
 
         Fence.WaitAndReset();
 
-        VkRes.Vk.FreeCommandBuffers(VkRes.GetDevice(), Handle, 1, &commandBuffer);
+        VkRes.Vk.FreeCommandBuffers(VkRes.VkDevice, Handle, 1, &commandBuffer);
     }
 
     internal override ulong[] GetHandles()
@@ -78,6 +78,6 @@ public unsafe class StagingCommandPool : VulkanObject<VkCommandPool>
     {
         Fence.Dispose();
 
-        VkRes.Vk.DestroyCommandPool(VkRes.GetDevice(), Handle, null);
+        VkRes.Vk.DestroyCommandPool(VkRes.VkDevice, Handle, null);
     }
 }

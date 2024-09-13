@@ -284,7 +284,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
             layoutCreateInfo.PSetLayouts = descriptorSetLayouts.AsPointer();
 
             PipelineLayout pipelineLayout;
-            VkRes.Vk.CreatePipelineLayout(VkRes.GetDevice(), &layoutCreateInfo, null, &pipelineLayout).ThrowCode();
+            VkRes.Vk.CreatePipelineLayout(VkRes.VkDevice, &layoutCreateInfo, null, &pipelineLayout).ThrowCode();
             createInfo.Layout = pipelineLayout;
         }
 
@@ -382,12 +382,12 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
             renderPassCreateInfo.PDependencies = &subpassDependency;
 
             VkRenderPass renderPass;
-            VkRes.Vk.CreateRenderPass(VkRes.GetDevice(), &renderPassCreateInfo, null, &renderPass).ThrowCode();
+            VkRes.Vk.CreateRenderPass(VkRes.VkDevice, &renderPassCreateInfo, null, &renderPass).ThrowCode();
             createInfo.RenderPass = renderPass;
         }
 
         VkPipeline pipeline;
-        VkRes.Vk.CreateGraphicsPipelines(VkRes.GetDevice(), default, 1, &createInfo, null, &pipeline).ThrowCode();
+        VkRes.Vk.CreateGraphicsPipelines(VkRes.VkDevice, default, 1, &createInfo, null, &pipeline).ThrowCode();
 
         Handle = pipeline;
         Layout = createInfo.Layout;
@@ -410,8 +410,8 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
 
     protected override void Destroy()
     {
-        VkRes.Vk.DestroyPipeline(VkRes.GetDevice(), Handle, null);
-        VkRes.Vk.DestroyPipelineLayout(VkRes.GetDevice(), Layout, null);
-        VkRes.Vk.DestroyRenderPass(VkRes.GetDevice(), RenderPass, null);
+        VkRes.Vk.DestroyPipeline(VkRes.VkDevice, Handle, null);
+        VkRes.Vk.DestroyPipelineLayout(VkRes.VkDevice, Layout, null);
+        VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPass, null);
     }
 }

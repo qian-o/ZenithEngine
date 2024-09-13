@@ -3,7 +3,7 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe abstract class VulkanObject<THandle>(VulkanResources vkRes, params ObjectType[] objectTypes) : DisposableObject
+public abstract unsafe class VulkanObject<THandle>(VulkanResources vkRes, params ObjectType[] objectTypes) : DisposableObject
 {
     private string name = string.Empty;
 
@@ -36,7 +36,7 @@ public unsafe abstract class VulkanObject<THandle>(VulkanResources vkRes, params
                 PObjectName = VkRes.Alloter.Allocate($"{Name} ({objectTypes[i]})")
             };
 
-            VkRes.ExtDebugUtils?.SetDebugUtilsObjectName(VkRes.GetDevice(), &nameInfo).ThrowCode();
+            VkRes.ExtDebugUtils?.SetDebugUtilsObjectName(VkRes.VkDevice, &nameInfo).ThrowCode();
         }
 
         VkRes.Alloter.Clear();

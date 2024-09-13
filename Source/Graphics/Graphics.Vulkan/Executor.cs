@@ -7,7 +7,7 @@ public unsafe class Executor : VulkanObject<VkQueue>
     public Executor(VulkanResources vkRes, uint queueFamilyIndex) : base(vkRes, ObjectType.Queue)
     {
         VkQueue queue;
-        VkRes.Vk.GetDeviceQueue(VkRes.GetDevice(), queueFamilyIndex, 0, &queue);
+        VkRes.Vk.GetDeviceQueue(VkRes.VkDevice, queueFamilyIndex, 0, &queue);
 
         Handle = queue;
         FamilyIndex = queueFamilyIndex;

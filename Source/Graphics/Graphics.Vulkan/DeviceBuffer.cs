@@ -45,10 +45,10 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
         };
 
         VkBuffer buffer;
-        VkRes.Vk.CreateBuffer(VkRes.GetDevice(), &createInfo, null, &buffer).ThrowCode();
+        VkRes.Vk.CreateBuffer(VkRes.VkDevice, &createInfo, null, &buffer).ThrowCode();
 
         MemoryRequirements memoryRequirements;
-        VkRes.Vk.GetBufferMemoryRequirements(VkRes.GetDevice(), buffer, &memoryRequirements);
+        VkRes.Vk.GetBufferMemoryRequirements(VkRes.VkDevice, buffer, &memoryRequirements);
 
         bool isHostVisible = description.Usage.HasFlag(BufferUsage.Dynamic) || description.Usage.HasFlag(BufferUsage.Staging);
         bool isAddress = bufferUsageFlags.HasFlag(BufferUsageFlags.ShaderDeviceAddressBit);
@@ -58,7 +58,7 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
                                         isHostVisible ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit,
                                         isAddress);
 
-        VkRes.Vk.BindBufferMemory(VkRes.GetDevice(), buffer, deviceMemory.Handle, 0).ThrowCode();
+        VkRes.Vk.BindBufferMemory(VkRes.VkDevice, buffer, deviceMemory.Handle, 0).ThrowCode();
 
         ulong address = 0;
         if (isAddress)
@@ -69,7 +69,7 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
                 Buffer = buffer
             };
 
-            address = VkRes.Vk.GetBufferDeviceAddress(VkRes.GetDevice(), &bufferDeviceAddressInfo);
+            address = VkRes.Vk.GetBufferDeviceAddress(VkRes.VkDevice, &bufferDeviceAddressInfo);
         }
 
         Handle = buffer;
@@ -104,17 +104,17 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
         };
 
         VkBuffer buffer;
-        VkRes.Vk.CreateBuffer(VkRes.GetDevice(), &createInfo, null, &buffer).ThrowCode();
+        VkRes.Vk.CreateBuffer(VkRes.VkDevice, &createInfo, null, &buffer).ThrowCode();
 
         MemoryRequirements memoryRequirements;
-        VkRes.Vk.GetBufferMemoryRequirements(VkRes.GetDevice(), buffer, &memoryRequirements);
+        VkRes.Vk.GetBufferMemoryRequirements(VkRes.VkDevice, buffer, &memoryRequirements);
 
         DeviceMemory deviceMemory = new(VkRes,
                                         in memoryRequirements,
                                         isDynamicBuffer ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit,
                                         true);
 
-        VkRes.Vk.BindBufferMemory(VkRes.GetDevice(), buffer, deviceMemory.Handle, 0).ThrowCode();
+        VkRes.Vk.BindBufferMemory(VkRes.VkDevice, buffer, deviceMemory.Handle, 0).ThrowCode();
 
         BufferDeviceAddressInfo bufferDeviceAddressInfo = new()
         {
@@ -122,7 +122,7 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
             Buffer = buffer
         };
 
-        ulong address = VkRes.Vk.GetBufferDeviceAddress(VkRes.GetDevice(), &bufferDeviceAddressInfo);
+        ulong address = VkRes.Vk.GetBufferDeviceAddress(VkRes.VkDevice, &bufferDeviceAddressInfo);
 
         Handle = buffer;
         DeviceMemory = deviceMemory;
@@ -152,7 +152,7 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
         }
 
         void* data;
-        VkRes.Vk.MapMemory(VkRes.GetDevice(), DeviceMemory.Handle, offsetInBytes, sizeInBytes, 0, &data).ThrowCode();
+        VkRes.Vk.MapMemory(VkRes.VkDevice, DeviceMemory.Handle, offsetInBytes, sizeInBytes, 0, &data).ThrowCode();
 
         return data;
     }
@@ -161,7 +161,7 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
     {
         if (IsHostVisible)
         {
-            VkRes.Vk.UnmapMemory(VkRes.GetDevice(), DeviceMemory.Handle);
+            VkRes.Vk.UnmapMemory(VkRes.VkDevice, DeviceMemory.Handle);
         }
     }
 
@@ -172,7 +172,7 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
 
     protected override void Destroy()
     {
-        VkRes.Vk.DestroyBuffer(VkRes.GetDevice(), Handle, null);
+        VkRes.Vk.DestroyBuffer(VkRes.VkDevice, Handle, null);
 
         DeviceMemory.Dispose();
     }

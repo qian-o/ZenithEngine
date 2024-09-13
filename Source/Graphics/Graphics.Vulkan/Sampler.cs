@@ -29,7 +29,7 @@ public unsafe class Sampler : VulkanObject<VkSampler>, IBindableResource
         };
 
         VkSampler sampler;
-        VkRes.Vk.CreateSampler(VkRes.GetDevice(), &samplerCreateInfo, null, &sampler).ThrowCode();
+        VkRes.Vk.CreateSampler(VkRes.VkDevice, &samplerCreateInfo, null, &sampler).ThrowCode();
 
         Handle = sampler;
     }
@@ -43,6 +43,6 @@ public unsafe class Sampler : VulkanObject<VkSampler>, IBindableResource
 
     protected override void Destroy()
     {
-        VkRes.Vk.DestroySampler(VkRes.GetDevice(), Handle, null);
+        VkRes.Vk.DestroySampler(VkRes.VkDevice, Handle, null);
     }
 }

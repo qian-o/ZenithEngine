@@ -12,7 +12,7 @@ internal sealed unsafe class Semaphore : VulkanObject<VkSemaphore>
         };
 
         VkSemaphore semaphore;
-        VkRes.Vk.CreateSemaphore(VkRes.GetDevice(), &createInfo, null, &semaphore).ThrowCode();
+        VkRes.Vk.CreateSemaphore(VkRes.VkDevice, &createInfo, null, &semaphore).ThrowCode();
 
         Handle = semaphore;
     }
@@ -26,6 +26,6 @@ internal sealed unsafe class Semaphore : VulkanObject<VkSemaphore>
 
     protected override void Destroy()
     {
-        VkRes.Vk.DestroySemaphore(VkRes.GetDevice(), Handle, null);
+        VkRes.Vk.DestroySemaphore(VkRes.VkDevice, Handle, null);
     }
 }

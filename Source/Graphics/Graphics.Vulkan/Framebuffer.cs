@@ -110,7 +110,7 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
         };
 
         VkRenderPass renderPassClear;
-        VkRes.Vk.CreateRenderPass(VkRes.GetDevice(), &createInfo, null, &renderPassClear).ThrowCode();
+        VkRes.Vk.CreateRenderPass(VkRes.VkDevice, &createInfo, null, &renderPassClear).ThrowCode();
 
         for (uint i = 0; i < colorAttachmentCount; i++)
         {
@@ -125,7 +125,7 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
         }
 
         VkRenderPass renderPassLoad;
-        VkRes.Vk.CreateRenderPass(VkRes.GetDevice(), &createInfo, null, &renderPassLoad).ThrowCode();
+        VkRes.Vk.CreateRenderPass(VkRes.VkDevice, &createInfo, null, &renderPassLoad).ThrowCode();
 
         Texture[] colors = new Texture[colorAttachmentCount];
         TextureView[] colorViews = new TextureView[colorAttachmentCount];
@@ -194,7 +194,7 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
         };
 
         VkFramebuffer framebuffer;
-        VkRes.Vk.CreateFramebuffer(VkRes.GetDevice(), &framebufferCreateInfo, null, &framebuffer).ThrowCode();
+        VkRes.Vk.CreateFramebuffer(VkRes.VkDevice, &framebufferCreateInfo, null, &framebuffer).ThrowCode();
 
         RenderPassClear = renderPassClear;
         RenderPassLoad = renderPassLoad;
@@ -272,7 +272,7 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
 
     protected override void Destroy()
     {
-        VkRes.Vk.DestroyFramebuffer(VkRes.GetDevice(), Handle, null);
+        VkRes.Vk.DestroyFramebuffer(VkRes.VkDevice, Handle, null);
 
         _depthView?.Dispose();
 
@@ -281,7 +281,7 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
             colorView.Dispose();
         }
 
-        VkRes.Vk.DestroyRenderPass(VkRes.GetDevice(), RenderPassLoad, null);
-        VkRes.Vk.DestroyRenderPass(VkRes.GetDevice(), RenderPassClear, null);
+        VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPassLoad, null);
+        VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPassClear, null);
     }
 }

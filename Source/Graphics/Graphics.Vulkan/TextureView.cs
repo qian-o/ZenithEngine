@@ -46,7 +46,7 @@ public unsafe class TextureView : VulkanObject<ImageView>, IBindableResource
         }
 
         VkImageView imageView;
-        VkRes.Vk.CreateImageView(VkRes.GetDevice(), &createInfo, null, &imageView).ThrowCode();
+        VkRes.Vk.CreateImageView(VkRes.VkDevice, &createInfo, null, &imageView).ThrowCode();
 
         Handle = imageView;
     }
@@ -60,6 +60,6 @@ public unsafe class TextureView : VulkanObject<ImageView>, IBindableResource
 
     protected override void Destroy()
     {
-        VkRes.Vk.DestroyImageView(VkRes.GetDevice(), Handle, null);
+        VkRes.Vk.DestroyImageView(VkRes.VkDevice, Handle, null);
     }
 }

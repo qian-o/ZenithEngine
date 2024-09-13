@@ -15,8 +15,8 @@ public unsafe class Fence : VulkanObject<VkFence>
         };
 
         VkFence fence;
-        VkRes.Vk.CreateFence(VkRes.GetDevice(), &createInfo, null, &fence).ThrowCode();
-        VkRes.Vk.ResetFences(VkRes.GetDevice(), 1, &fence).ThrowCode();
+        VkRes.Vk.CreateFence(VkRes.VkDevice, &createInfo, null, &fence).ThrowCode();
+        VkRes.Vk.ResetFences(VkRes.VkDevice, 1, &fence).ThrowCode();
 
         _fence = fence;
     }
@@ -27,8 +27,8 @@ public unsafe class Fence : VulkanObject<VkFence>
     {
         fixed (VkFence* fence = &_fence)
         {
-            VkRes.Vk.WaitForFences(VkRes.GetDevice(), 1, fence, Vk.True, ulong.MaxValue).ThrowCode();
-            VkRes.Vk.ResetFences(VkRes.GetDevice(), 1, fence).ThrowCode();
+            VkRes.Vk.WaitForFences(VkRes.VkDevice, 1, fence, Vk.True, ulong.MaxValue).ThrowCode();
+            VkRes.Vk.ResetFences(VkRes.VkDevice, 1, fence).ThrowCode();
         }
     }
 
@@ -39,6 +39,6 @@ public unsafe class Fence : VulkanObject<VkFence>
 
     protected override void Destroy()
     {
-        VkRes.Vk.DestroyFence(VkRes.GetDevice(), _fence, null);
+        VkRes.Vk.DestroyFence(VkRes.VkDevice, _fence, null);
     }
 }

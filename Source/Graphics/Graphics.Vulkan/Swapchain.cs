@@ -46,30 +46,30 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
         DestroySwapchain();
 
         SurfaceCapabilitiesKHR surfaceCapabilities;
-        VkRes.KhrSurface.GetPhysicalDeviceSurfaceCapabilities(VkRes.GetPhysicalDevice(),
+        VkRes.KhrSurface.GetPhysicalDeviceSurfaceCapabilities(VkRes.VkPhysicalDevice,
                                                               Target,
                                                               &surfaceCapabilities).ThrowCode();
 
         uint surfaceFormatCount;
-        VkRes.KhrSurface.GetPhysicalDeviceSurfaceFormats(VkRes.GetPhysicalDevice(),
+        VkRes.KhrSurface.GetPhysicalDeviceSurfaceFormats(VkRes.VkPhysicalDevice,
                                                          Target,
                                                          &surfaceFormatCount,
                                                          null).ThrowCode();
 
         SurfaceFormatKHR[] surfaceFormats = new SurfaceFormatKHR[surfaceFormatCount];
-        VkRes.KhrSurface.GetPhysicalDeviceSurfaceFormats(VkRes.GetPhysicalDevice(),
+        VkRes.KhrSurface.GetPhysicalDeviceSurfaceFormats(VkRes.VkPhysicalDevice,
                                                          Target,
                                                          &surfaceFormatCount,
                                                          surfaceFormats.AsPointer()).ThrowCode();
 
         uint presentModeCount;
-        VkRes.KhrSurface.GetPhysicalDeviceSurfacePresentModes(VkRes.GetPhysicalDevice(),
+        VkRes.KhrSurface.GetPhysicalDeviceSurfacePresentModes(VkRes.VkPhysicalDevice,
                                                               Target,
                                                               &presentModeCount,
                                                               null).ThrowCode();
 
         PresentModeKHR[] presentModes = new PresentModeKHR[presentModeCount];
-        VkRes.KhrSurface.GetPhysicalDeviceSurfacePresentModes(VkRes.GetPhysicalDevice(),
+        VkRes.KhrSurface.GetPhysicalDeviceSurfacePresentModes(VkRes.VkPhysicalDevice,
                                                               Target,
                                                               &presentModeCount,
                                                               presentModes.AsPointer()).ThrowCode();
@@ -99,16 +99,16 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
         };
 
         SwapchainKHR swapchain;
-        VkRes.GetKhrSwapchain().CreateSwapchain(VkRes.GetDevice(), &createInfo, null, &swapchain).ThrowCode();
+        VkRes.KhrSwapchain.CreateSwapchain(VkRes.VkDevice, &createInfo, null, &swapchain).ThrowCode();
 
         uint imageCount;
-        VkRes.GetKhrSwapchain().GetSwapchainImages(VkRes.GetDevice(), swapchain, &imageCount, null).ThrowCode();
+        VkRes.KhrSwapchain.GetSwapchainImages(VkRes.VkDevice, swapchain, &imageCount, null).ThrowCode();
 
         VkImage[] images = new VkImage[imageCount];
-        VkRes.GetKhrSwapchain().GetSwapchainImages(VkRes.GetDevice(),
-                                                   swapchain,
-                                                   &imageCount,
-                                                   images.AsPointer()).ThrowCode();
+        VkRes.KhrSwapchain.GetSwapchainImages(VkRes.VkDevice,
+                                              swapchain,
+                                              &imageCount,
+                                              images.AsPointer()).ThrowCode();
 
         Texture? depthBuffer = null;
         if (DepthFormat != null)
@@ -156,12 +156,12 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
         }
 
         uint currentImageIndex;
-        Result result = VkRes.GetKhrSwapchain().AcquireNextImage(VkRes.GetDevice(),
-                                                                 _swapchain.Value,
-                                                                 ulong.MaxValue,
-                                                                 default,
-                                                                 ImageAvailableFence.Handle,
-                                                                 &currentImageIndex);
+        Result result = VkRes.KhrSwapchain.AcquireNextImage(VkRes.VkDevice,
+                                                            _swapchain.Value,
+                                                            ulong.MaxValue,
+                                                            default,
+                                                            ImageAvailableFence.Handle,
+                                                            &currentImageIndex);
 
         if (result is not Result.Success and not Result.SuboptimalKhr)
         {
@@ -204,7 +204,7 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
 
             _depthBuffer?.Dispose();
 
-            VkRes.GetKhrSwapchain().DestroySwapchain(VkRes.GetDevice(), _swapchain.Value, null);
+            VkRes.KhrSwapchain.DestroySwapchain(VkRes.VkDevice, _swapchain.Value, null);
         }
     }
 

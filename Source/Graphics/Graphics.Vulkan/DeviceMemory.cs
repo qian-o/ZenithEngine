@@ -28,7 +28,7 @@ public unsafe class DeviceMemory : VulkanObject<VkDeviceMemory>
         }
 
         VkDeviceMemory deviceMemory;
-        VkRes.Vk.AllocateMemory(VkRes.GetDevice(), &allocateInfo, null, &deviceMemory).ThrowCode();
+        VkRes.Vk.AllocateMemory(VkRes.VkDevice, &allocateInfo, null, &deviceMemory).ThrowCode();
 
         Handle = deviceMemory;
     }
@@ -42,6 +42,6 @@ public unsafe class DeviceMemory : VulkanObject<VkDeviceMemory>
 
     protected override void Destroy()
     {
-        VkRes.Vk.FreeMemory(VkRes.GetDevice(), Handle, null);
+        VkRes.Vk.FreeMemory(VkRes.VkDevice, Handle, null);
     }
 }
