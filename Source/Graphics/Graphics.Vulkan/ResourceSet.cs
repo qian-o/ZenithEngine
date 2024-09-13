@@ -81,13 +81,11 @@ public unsafe class ResourceSet : DeviceResource
             if (isUniform)
             {
                 descriptorSize = PhysicalDevice.DescriptorBufferProperties.UniformBufferDescriptorSize;
-
                 GetDescriptor(new DescriptorDataEXT() { PUniformBuffer = &addressInfo });
             }
             else
             {
                 descriptorSize = PhysicalDevice.DescriptorBufferProperties.StorageBufferDescriptorSize;
-
                 GetDescriptor(new DescriptorDataEXT() { PStorageBuffer = &addressInfo });
             }
         }
