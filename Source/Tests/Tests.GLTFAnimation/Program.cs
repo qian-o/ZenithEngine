@@ -18,13 +18,6 @@ internal sealed unsafe class Program
 {
     #region Structs
     [StructLayout(LayoutKind.Explicit)]
-    private struct PerObject
-    {
-        [FieldOffset(0)]
-        public Matrix4x4 Model;
-    }
-
-    [StructLayout(LayoutKind.Explicit)]
     private struct Frame
     {
         [FieldOffset(0)]

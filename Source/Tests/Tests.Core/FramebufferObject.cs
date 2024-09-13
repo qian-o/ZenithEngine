@@ -6,8 +6,6 @@ namespace Tests.Core;
 public class FramebufferObject : DisposableObject
 {
     private const TextureSampleCount MaxSampleCount = TextureSampleCount.Count8;
-    private readonly Texture _colorTexture;
-    private readonly Texture _depthTexture;
 
     public FramebufferObject(GraphicsDevice device, int width, int height)
     {
@@ -15,33 +13,37 @@ public class FramebufferObject : DisposableObject
 
         Width = width;
         Height = height;
-        _colorTexture = factory.CreateTexture(TextureDescription.Texture2D((uint)width,
-                                                                           (uint)height,
-                                                                           1,
-                                                                           PixelFormat.R8G8B8A8UNorm,
-                                                                           TextureUsage.RenderTarget,
-                                                                           MaxSampleCount));
+        ColorTexture = factory.CreateTexture(TextureDescription.Texture2D((uint)width,
+                                                                          (uint)height,
+                                                                          1,
+                                                                          PixelFormat.R8G8B8A8UNorm,
+                                                                          TextureUsage.RenderTarget,
+                                                                          MaxSampleCount));
 
-        _depthTexture = factory.CreateTexture(TextureDescription.Texture2D((uint)width,
-                                                                           (uint)height,
-                                                                           1,
-                                                                           PixelFormat.D32FloatS8UInt,
-                                                                           TextureUsage.DepthStencil,
-                                                                           MaxSampleCount));
+        DepthTexture = factory.CreateTexture(TextureDescription.Texture2D((uint)width,
+                                                                          (uint)height,
+                                                                          1,
+                                                                          PixelFormat.D32FloatS8UInt,
+                                                                          TextureUsage.DepthStencil,
+                                                                          MaxSampleCount));
+
+        Framebuffer = factory.CreateFramebuffer(new FramebufferDescription(DepthTexture, ColorTexture));
 
         PresentTexture = factory.CreateTexture(TextureDescription.Texture2D((uint)width,
-                                                                             (uint)height,
-                                                                             1,
-                                                                             PixelFormat.R8G8B8A8UNorm,
-                                                                             TextureUsage.Sampled,
-                                                                             TextureSampleCount.Count1));
-
-        Framebuffer = factory.CreateFramebuffer(new FramebufferDescription(_depthTexture, _colorTexture));
+                                                                            (uint)height,
+                                                                            1,
+                                                                            PixelFormat.R8G8B8A8UNorm,
+                                                                            TextureUsage.Sampled,
+                                                                            TextureSampleCount.Count1));
     }
 
     public int Width { get; }
 
     public int Height { get; }
+
+    public Texture ColorTexture { get; }
+
+    public Texture DepthTexture { get; }
 
     public Framebuffer Framebuffer { get; }
 
@@ -49,14 +51,14 @@ public class FramebufferObject : DisposableObject
 
     public void Present(CommandList commandList)
     {
-        commandList.ResolveTexture(_colorTexture, PresentTexture);
+        commandList.ResolveTexture(ColorTexture, PresentTexture);
     }
 
     protected override void Destroy()
     {
-        Framebuffer.Dispose();
         PresentTexture.Dispose();
-        _depthTexture.Dispose();
-        _colorTexture.Dispose();
+        Framebuffer.Dispose();
+        DepthTexture.Dispose();
+        ColorTexture.Dispose();
     }
 }
