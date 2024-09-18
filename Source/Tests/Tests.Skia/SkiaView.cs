@@ -22,14 +22,17 @@ internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiContr
     {
         if (_surface != null)
         {
-            using SKCanvas canvas = _surface.Canvas;
+            _context.PurgeUnusedResources(1000);
+
+            SKCanvas canvas = _surface.Canvas;
 
             canvas.Clear(SKColors.White);
 
             OnRenderSurface(canvas, e);
 
-            canvas.Flush();
+            _context.Flush(true, true);
         }
+
         if (_texture != null)
         {
             ImGui.Image(imGuiController.GetBinding(device.Factory, _texture),
