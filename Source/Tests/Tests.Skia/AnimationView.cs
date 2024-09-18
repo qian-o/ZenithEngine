@@ -5,7 +5,10 @@ using SkiaSharp.Skottie;
 
 namespace Tests.Skia;
 
-internal sealed class AnimationView(string filePath, GraphicsDevice device, ImGuiController imGuiController) : SkiaView("Skia View", device, imGuiController)
+internal sealed class AnimationView(string filePath,
+                                    GraphicsDevice device,
+                                    ImGuiController imGuiController,
+                                    GRContext grContext) : SkiaView("Skia View", device, imGuiController, grContext)
 {
     private readonly Animation _animation = Animation.Parse(File.ReadAllText(filePath))!;
 

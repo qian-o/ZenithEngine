@@ -7,10 +7,11 @@ using Tests.Core;
 
 namespace Tests.Skia;
 
-internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiController imGuiController) : View(title)
+internal abstract class SkiaView(string title,
+                                 GraphicsDevice device,
+                                 ImGuiController imGuiController,
+                                 GRContext grContext) : View(title)
 {
-    private readonly GRContext _context = SkiaVk.CreateContext(device);
-
     private Texture? _texture;
     private SKSurface? _surface;
 
@@ -22,15 +23,11 @@ internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiContr
     {
         if (_surface != null)
         {
-            _context.PurgeUnusedResources(1000);
-
             SKCanvas canvas = _surface.Canvas;
 
             canvas.Clear(SKColors.White);
 
             OnRenderSurface(canvas, e);
-
-            _context.Flush(true, true);
         }
 
         if (_texture != null)
@@ -57,7 +54,7 @@ internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiContr
                                                                              PixelFormat.R8G8B8A8UNorm,
                                                                              TextureUsage.Sampled | TextureUsage.RenderTarget));
 
-        _surface = SkiaVk.CreateSurface(_context, _texture);
+        _surface = SkiaVk.CreateSurface(grContext, _texture);
     }
 
     protected abstract void OnRenderSurface(SKCanvas canvas, RenderEventArgs e);
@@ -66,7 +63,5 @@ internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiContr
     {
         _surface?.Dispose();
         _texture?.Dispose();
-
-        _context.Dispose();
     }
 }

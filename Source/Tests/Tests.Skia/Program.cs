@@ -1,6 +1,7 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
 using Hexa.NET.ImGui;
+using SkiaSharp;
 using Tests.Core;
 
 namespace Tests.Skia;
@@ -9,6 +10,7 @@ internal sealed unsafe class Program
 {
     private static GraphicsDevice _device = null!;
     private static ImGuiController _imGuiController = null!;
+    private static GRContext _grContext = null!;
     private static View[] _views = null!;
 
     private static void Main(string[] _)
@@ -23,6 +25,7 @@ internal sealed unsafe class Program
                                                     device,
                                                     new ImGuiFontConfig("Assets/Fonts/msyh.ttf", 16, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()),
                                                     ImGuiSizeConfig.Default);
+        using GRContext grContext = SkiaVk.CreateContext(device);
 
         using CommandList commandList = device.Factory.CreateGraphicsCommandList();
 
@@ -38,6 +41,9 @@ internal sealed unsafe class Program
         window.Render += (a, b) =>
         {
             Render(a, b);
+
+            _grContext.Flush(true);
+            _grContext.PurgeUnusedResources(1000);
 
             commandList.Begin();
             {
@@ -65,13 +71,14 @@ internal sealed unsafe class Program
 
         _device = device;
         _imGuiController = imGuiController;
+        _grContext = grContext;
 
         window.Run();
     }
 
     private static void Load(object? sender, LoadEventArgs e)
     {
-        _views = [new AnimationView(Path.Combine("Assets", "LottieFiles", "demo1.json"), _device, _imGuiController)];
+        _views = [new AnimationView(Path.Combine("Assets", "LottieFiles", "demo1.json"), _device, _imGuiController, _grContext)];
     }
 
     private static void Update(object? sender, UpdateEventArgs e)
