@@ -21,7 +21,7 @@ public static class SkiaVk
 
         GRContext context = GRContext.CreateVulkan(backendContext) ?? throw new InvalidOperationException("Failed to create Vulkan context.");
 
-        context.SetResourceCacheLimit(1024 * 1024 * 4);
+        context.SetResourceCacheLimit(1024 * 1024 * 6);
 
         return context;
 
