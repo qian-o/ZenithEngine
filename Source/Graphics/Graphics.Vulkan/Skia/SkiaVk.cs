@@ -22,6 +22,8 @@ public static class SkiaVk
         GRContext context = GRContext.CreateVulkan(backendContext, new GRContextOptions() { AvoidStencilBuffers = true })
                             ?? throw new InvalidOperationException("Failed to create Vulkan context.");
 
+        context.SetResourceCacheLimit(1024 * 1024 * 80);
+
         return context;
 
         nint GetProcedureAddress(string name, nint instance, nint device)
