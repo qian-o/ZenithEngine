@@ -31,9 +31,12 @@ public unsafe class DeviceMemory : VulkanObject<VkDeviceMemory>
         VkRes.Vk.AllocateMemory(VkRes.VkDevice, &allocateInfo, null, &deviceMemory).ThrowCode();
 
         Handle = deviceMemory;
+        SizeInBytes = requirements.Size;
     }
 
     internal override VkDeviceMemory Handle { get; }
+
+    internal ulong SizeInBytes { get; }
 
     internal override ulong[] GetHandles()
     {

@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using Silk.NET.Vulkan;
+using SkiaSharp;
 
 namespace Graphics.Vulkan;
 
@@ -19,8 +20,22 @@ public static class SkiaVk
 
         GRContext context = GRContext.CreateVulkan(backendContext);
 
-        GRVkImageInfo imageInfo = new();
-        imageInfo.Image = texture.Handle.Handle;
+        GRVkImageInfo imageInfo = new()
+        {
+            Image = texture.Handle.Handle,
+            Alloc = new GRVkAlloc() { Memory = texture.DeviceMemory!.Handle.Handle, Size = texture.DeviceMemory.SizeInBytes },
+            ImageTiling = (uint)ImageTiling.Optimal,
+            ImageLayout = (uint)texture.ImageLayouts[0],
+            Format = (uint)Formats.GetPixelFormat(texture.Format, false),
+            ImageUsageFlags = (uint)Formats.GetImageUsageFlags(texture.Usage),
+            SampleCount = (uint)Formats.GetSampleCount(texture.SampleCount),
+            LevelCount = texture.MipLevels,
+            CurrentQueueFamily = texture.VkRes.GraphicsDevice.GraphicsExecutor.FamilyIndex
+        };
+
+        GRBackendRenderTarget backendRenderTarget = new((int)texture.Width, (int)texture.Height, (int)imageInfo.SampleCount, imageInfo);
+
+        return SKSurface.Create(context, backendRenderTarget, GRSurfaceOrigin.TopLeft, SKColorType.Rgba8888);
 
         nint GetProcedureAddress(string name, nint instance, nint device)
         {
