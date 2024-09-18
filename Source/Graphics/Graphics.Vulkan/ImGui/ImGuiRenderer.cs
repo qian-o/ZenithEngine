@@ -125,7 +125,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         }
     }
 
-    public void RemoveImGuiBinding(nint binding)
+    public void RemoveBinding(nint binding)
     {
         lock (_lock)
         {
@@ -140,10 +140,15 @@ float4 mainPS(VSOutput input) : SV_TARGET
                 textureView.Dispose();
                 _selfViews.Remove(binding);
             }
+            else
+            {
+                textureView = _mapped.Keys.Where(k => _mapped[k] == binding).FirstOrDefault();
+            }
 
-            _mappedTextures.Keys.Where(k => _mappedTextures[k] == binding)
-                                .ToList()
-                                .ForEach(k => _mappedTextures.Remove(k));
+            if (_mappedTextures.Keys.Where(k => _mappedTextures[k] == binding).FirstOrDefault() is Texture texture)
+            {
+                _mappedTextures.Remove(texture);
+            }
 
             if (textureView != null)
             {
@@ -258,7 +263,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     public void RecreateFontDeviceTexture()
     {
-        RemoveImGuiBinding(GetBinding(_factory, _fontTexture));
+        RemoveBinding(GetBinding(_factory, _fontTexture));
 
         _fontTexture.Dispose();
 

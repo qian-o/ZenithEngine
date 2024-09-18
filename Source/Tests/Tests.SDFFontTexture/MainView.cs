@@ -216,7 +216,7 @@ internal sealed unsafe class MainView : View
     {
         if (framebufferObject != null)
         {
-            _imGuiController.RemoveImGuiBinding(_imGuiController.GetBinding(_device.Factory, framebufferObject.PresentTexture));
+            _imGuiController.RemoveBinding(_imGuiController.GetBinding(_device.Factory, framebufferObject.PresentTexture));
 
             framebufferObject.Dispose();
         }

@@ -179,9 +179,9 @@ public unsafe class ImGuiController : DisposableObject
         return _imGuiRenderer.GetBinding(factory, texture);
     }
 
-    public void RemoveImGuiBinding(nint binding)
+    public void RemoveBinding(nint binding)
     {
-        _imGuiRenderer.RemoveImGuiBinding(binding);
+        _imGuiRenderer.RemoveBinding(binding);
     }
 
     protected override void Destroy()

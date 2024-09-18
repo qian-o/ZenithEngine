@@ -43,7 +43,7 @@ internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiContr
 
         if (_texture != null)
         {
-            imGuiController.RemoveImGuiBinding(imGuiController.GetBinding(device.Factory, _texture));
+            imGuiController.RemoveBinding(imGuiController.GetBinding(device.Factory, _texture));
 
             _texture.Dispose();
         }
