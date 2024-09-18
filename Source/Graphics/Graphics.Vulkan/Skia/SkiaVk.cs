@@ -5,21 +5,10 @@ namespace Graphics.Vulkan;
 
 public static class SkiaVk
 {
+    private static readonly Dictionary<VkDevice, GRContext> _cache = [];
+
     public static SKSurface CreateSurface(Texture texture)
     {
-        GRVkBackendContext backendContext = new()
-        {
-            VkInstance = texture.VkRes.Instance.Handle,
-            VkPhysicalDevice = texture.VkRes.VkPhysicalDevice.Handle,
-            VkDevice = texture.VkRes.VkDevice.Handle,
-            VkQueue = texture.VkRes.GraphicsDevice.GraphicsExecutor.Handle.Handle,
-            GraphicsQueueIndex = texture.VkRes.GraphicsDevice.GraphicsExecutor.FamilyIndex,
-            MaxAPIVersion = Context.ApiVersion,
-            GetProcedureAddress = GetProcedureAddress,
-        };
-
-        GRContext context = GRContext.CreateVulkan(backendContext);
-
         GRVkImageInfo imageInfo = new()
         {
             Image = texture.Handle.Handle,
@@ -35,7 +24,36 @@ public static class SkiaVk
 
         GRBackendRenderTarget backendRenderTarget = new((int)texture.Width, (int)texture.Height, (int)imageInfo.SampleCount, imageInfo);
 
-        return SKSurface.Create(context, backendRenderTarget, GRSurfaceOrigin.TopLeft, SKColorType.Rgba8888);
+        return SKSurface.Create(GetOrCreateContext(texture),
+                                backendRenderTarget,
+                                GRSurfaceOrigin.TopLeft,
+                                SKColorType.Rgba8888,
+                                SKColorSpace.CreateSrgb());
+    }
+
+    private static GRContext GetOrCreateContext(Texture texture)
+    {
+        if (_cache.TryGetValue(texture.VkRes.VkDevice, out GRContext? context))
+        {
+            return context;
+        }
+
+        GRVkBackendContext backendContext = new()
+        {
+            VkInstance = texture.VkRes.Instance.Handle,
+            VkPhysicalDevice = texture.VkRes.VkPhysicalDevice.Handle,
+            VkDevice = texture.VkRes.VkDevice.Handle,
+            VkQueue = texture.VkRes.GraphicsDevice.GraphicsExecutor.Handle.Handle,
+            GraphicsQueueIndex = texture.VkRes.GraphicsDevice.GraphicsExecutor.FamilyIndex,
+            MaxAPIVersion = Context.ApiVersion,
+            GetProcedureAddress = GetProcedureAddress
+        };
+
+        context = GRContext.CreateVulkan(backendContext);
+
+        _cache[texture.VkRes.VkDevice] = context;
+
+        return context;
 
         nint GetProcedureAddress(string name, nint instance, nint device)
         {
@@ -49,7 +67,7 @@ public static class SkiaVk
                 return texture.VkRes.Vk.GetDeviceProcAddr(texture.VkRes.VkDevice, name);
             }
 
-            return 0;
+            return texture.VkRes.Vk.Context.GetProcAddress(name);
         }
     }
 }

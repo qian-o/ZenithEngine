@@ -57,10 +57,8 @@ internal sealed unsafe class MainView : View
     private Vector3 position = new(0.0f, 0.0f, -20.0f);
     private Properties properties = new() { PxRange = 5.0f };
 
-    public MainView(GraphicsDevice device, ImGuiController imGuiController)
+    public MainView(GraphicsDevice device, ImGuiController imGuiController) : base("SDF Font Texture")
     {
-        Title = "SDF Font Texture";
-
         _device = device;
         _imGuiController = imGuiController;
 

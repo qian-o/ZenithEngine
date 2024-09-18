@@ -1,27 +1,63 @@
-﻿using Graphics.Core;
+﻿using System.Numerics;
+using Graphics.Core;
+using Graphics.Vulkan;
+using Hexa.NET.ImGui;
+using SkiaSharp;
 using Tests.Core;
 
 namespace Tests.Skia;
 
-internal sealed class SkiaView : View
+internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiController imGuiController) : View(title)
 {
-    protected override void Destroy()
+    private Texture? _texture;
+    private SKSurface? _surface;
+
+    protected override void OnUpdate(UpdateEventArgs e)
     {
-        throw new NotImplementedException();
     }
 
     protected override void OnRender(RenderEventArgs e)
     {
-        throw new NotImplementedException();
+        if (_surface != null)
+        {
+            using SKCanvas canvas = _surface.Canvas;
+
+            OnRenderSurface(canvas);
+
+            canvas.Flush();
+        }
+        if (_texture != null)
+        {
+            ImGui.Image(imGuiController.GetOrCreateImGuiBinding(device.Factory, _texture),
+                        new Vector2(_texture.Width, _texture.Height));
+        }
     }
 
     protected override void OnResize(ResizeEventArgs e)
     {
-        throw new NotImplementedException();
+        _surface?.Dispose();
+
+        if (_texture != null)
+        {
+            imGuiController.RemoveImGuiBinding(imGuiController.GetOrCreateImGuiBinding(device.Factory, _texture));
+
+            _texture.Dispose();
+        }
+
+        _texture = device.Factory.CreateTexture(TextureDescription.Texture2D(Width,
+                                                                             Height,
+                                                                             1,
+                                                                             PixelFormat.R8G8B8A8UNorm,
+                                                                             TextureUsage.Sampled | TextureUsage.RenderTarget));
+
+        _surface = SkiaVk.CreateSurface(_texture);
     }
 
-    protected override void OnUpdate(UpdateEventArgs e)
+    protected abstract void OnRenderSurface(SKCanvas canvas);
+
+    protected override void Destroy()
     {
-        throw new NotImplementedException();
+        _surface?.Dispose();
+        _texture?.Dispose();
     }
 }
