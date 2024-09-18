@@ -88,7 +88,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         CreateDeviceResources(colorSpaceHandling);
     }
 
-    public nint GetOrCreateImGuiBinding(ResourceFactory factory, TextureView textureView)
+    public nint GetBinding(ResourceFactory factory, TextureView textureView)
     {
         lock (_lock)
         {
@@ -107,7 +107,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         }
     }
 
-    public nint GetOrCreateImGuiBinding(ResourceFactory factory, Texture texture)
+    public nint GetBinding(ResourceFactory factory, Texture texture)
     {
         lock (_lock)
         {
@@ -115,7 +115,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
             {
                 TextureView textureView = factory.CreateTextureView(texture);
 
-                binding = GetOrCreateImGuiBinding(factory, textureView);
+                binding = GetBinding(factory, textureView);
 
                 _mappedTextures[texture] = binding;
                 _selfViews[binding] = textureView;
@@ -258,7 +258,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     public void RecreateFontDeviceTexture()
     {
-        RemoveImGuiBinding(GetOrCreateImGuiBinding(_factory, _fontTexture));
+        RemoveImGuiBinding(GetBinding(_factory, _fontTexture));
 
         _fontTexture.Dispose();
 
@@ -331,7 +331,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
                                       0,
                                       0);
 
-        io.Fonts.SetTexID(GetOrCreateImGuiBinding(_factory, _fontTexture));
+        io.Fonts.SetTexID(GetBinding(_factory, _fontTexture));
     }
 
     private void CreateDeviceResources(ColorSpaceHandling colorSpaceHandling)

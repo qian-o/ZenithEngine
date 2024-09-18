@@ -208,7 +208,7 @@ internal sealed unsafe class MainView : View
 
             _device.SubmitCommands(_commandList);
 
-            ImGui.Image(_imGuiController.GetOrCreateImGuiBinding(_device.Factory, framebufferObject.PresentTexture), new Vector2(framebufferObject.Width, framebufferObject.Height));
+            ImGui.Image(_imGuiController.GetBinding(_device.Factory, framebufferObject.PresentTexture), new Vector2(framebufferObject.Width, framebufferObject.Height));
         }
     }
 
@@ -216,7 +216,7 @@ internal sealed unsafe class MainView : View
     {
         if (framebufferObject != null)
         {
-            _imGuiController.RemoveImGuiBinding(_imGuiController.GetOrCreateImGuiBinding(_device.Factory, framebufferObject.PresentTexture));
+            _imGuiController.RemoveImGuiBinding(_imGuiController.GetBinding(_device.Factory, framebufferObject.PresentTexture));
 
             framebufferObject.Dispose();
         }

@@ -9,6 +9,8 @@ namespace Tests.Skia;
 
 internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiController imGuiController) : View(title)
 {
+    private readonly GRContext _context = SkiaVk.CreateContext(device);
+
     private Texture? _texture;
     private SKSurface? _surface;
 
@@ -22,7 +24,7 @@ internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiContr
         {
             using SKCanvas canvas = _surface.Canvas;
 
-            canvas.Clear();
+            canvas.Clear(SKColors.White);
 
             OnRenderSurface(canvas, e);
 
@@ -30,7 +32,7 @@ internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiContr
         }
         if (_texture != null)
         {
-            ImGui.Image(imGuiController.GetOrCreateImGuiBinding(device.Factory, _texture),
+            ImGui.Image(imGuiController.GetBinding(device.Factory, _texture),
                         new Vector2(_texture.Width, _texture.Height));
         }
     }
@@ -41,7 +43,7 @@ internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiContr
 
         if (_texture != null)
         {
-            imGuiController.RemoveImGuiBinding(imGuiController.GetOrCreateImGuiBinding(device.Factory, _texture));
+            imGuiController.RemoveImGuiBinding(imGuiController.GetBinding(device.Factory, _texture));
 
             _texture.Dispose();
         }
@@ -52,7 +54,7 @@ internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiContr
                                                                              PixelFormat.R8G8B8A8UNorm,
                                                                              TextureUsage.Sampled | TextureUsage.RenderTarget));
 
-        _surface = SkiaVk.CreateSurface(_texture);
+        _surface = SkiaVk.CreateSurface(_context, _texture);
     }
 
     protected abstract void OnRenderSurface(SKCanvas canvas, RenderEventArgs e);
@@ -61,5 +63,7 @@ internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiContr
     {
         _surface?.Dispose();
         _texture?.Dispose();
+
+        _context.Dispose();
     }
 }

@@ -1,14 +1,58 @@
-﻿using Silk.NET.Vulkan;
+﻿using Graphics.Core;
+using Silk.NET.Vulkan;
 using SkiaSharp;
 
 namespace Graphics.Vulkan;
 
 public static class SkiaVk
 {
-    private static readonly Dictionary<VkDevice, GRContext> _cache = [];
-
-    public static SKSurface CreateSurface(Texture texture)
+    public static GRContext CreateContext(GraphicsDevice graphicsDevice)
     {
+        GRVkBackendContext backendContext = new()
+        {
+            VkInstance = graphicsDevice.VkRes.Instance.Handle,
+            VkPhysicalDevice = graphicsDevice.VkRes.VkPhysicalDevice.Handle,
+            VkDevice = graphicsDevice.VkRes.VkDevice.Handle,
+            VkQueue = graphicsDevice.VkRes.GraphicsDevice.GraphicsExecutor.Handle.Handle,
+            GraphicsQueueIndex = graphicsDevice.VkRes.GraphicsDevice.GraphicsExecutor.FamilyIndex,
+            MaxAPIVersion = Context.ApiVersion,
+            GetProcedureAddress = GetProcedureAddress
+        };
+
+        GRContext context = GRContext.CreateVulkan(backendContext) ?? throw new InvalidOperationException("Failed to create Vulkan context.");
+        
+        context.SetResourceCacheLimit(1024 * 1024 * 4);
+
+        return context;
+
+        nint GetProcedureAddress(string name, nint instance, nint device)
+        {
+            if (instance != 0)
+            {
+                return graphicsDevice.VkRes.Vk.GetInstanceProcAddr(graphicsDevice.VkRes.Instance, name);
+            }
+
+            if (device != 0)
+            {
+                return graphicsDevice.VkRes.Vk.GetDeviceProcAddr(graphicsDevice.VkRes.VkDevice, name);
+            }
+
+            return graphicsDevice.VkRes.Vk.Context.GetProcAddress(name);
+        }
+    }
+
+    public static SKSurface CreateSurface(GRContext context, Texture texture)
+    {
+        if (texture.Format != PixelFormat.R8G8B8A8UNorm)
+        {
+            throw new NotSupportedException("Only R8G8B8A8_UNorm format is supported.");
+        }
+
+        if (!texture.Usage.HasFlag(TextureUsage.RenderTarget))
+        {
+            throw new NotSupportedException("Only RenderTarget usage is supported.");
+        }
+
         GRVkImageInfo imageInfo = new()
         {
             Image = texture.Handle.Handle,
@@ -24,50 +68,10 @@ public static class SkiaVk
 
         GRBackendRenderTarget backendRenderTarget = new((int)texture.Width, (int)texture.Height, (int)imageInfo.SampleCount, imageInfo);
 
-        return SKSurface.Create(GetOrCreateContext(texture),
+        return SKSurface.Create(context,
                                 backendRenderTarget,
                                 GRSurfaceOrigin.TopLeft,
                                 SKColorType.Rgba8888,
                                 SKColorSpace.CreateSrgb());
-    }
-
-    private static GRContext GetOrCreateContext(Texture texture)
-    {
-        if (_cache.TryGetValue(texture.VkRes.VkDevice, out GRContext? context))
-        {
-            return context;
-        }
-
-        GRVkBackendContext backendContext = new()
-        {
-            VkInstance = texture.VkRes.Instance.Handle,
-            VkPhysicalDevice = texture.VkRes.VkPhysicalDevice.Handle,
-            VkDevice = texture.VkRes.VkDevice.Handle,
-            VkQueue = texture.VkRes.GraphicsDevice.GraphicsExecutor.Handle.Handle,
-            GraphicsQueueIndex = texture.VkRes.GraphicsDevice.GraphicsExecutor.FamilyIndex,
-            MaxAPIVersion = Context.ApiVersion,
-            GetProcedureAddress = GetProcedureAddress
-        };
-
-        context = GRContext.CreateVulkan(backendContext);
-
-        _cache[texture.VkRes.VkDevice] = context;
-
-        return context;
-
-        nint GetProcedureAddress(string name, nint instance, nint device)
-        {
-            if (instance != 0)
-            {
-                return texture.VkRes.Vk.GetInstanceProcAddr(texture.VkRes.Instance, name);
-            }
-
-            if (device != 0)
-            {
-                return texture.VkRes.Vk.GetDeviceProcAddr(texture.VkRes.VkDevice, name);
-            }
-
-            return texture.VkRes.Vk.Context.GetProcAddress(name);
-        }
     }
 }
