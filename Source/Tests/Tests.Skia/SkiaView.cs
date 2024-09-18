@@ -22,7 +22,9 @@ internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiContr
         {
             using SKCanvas canvas = _surface.Canvas;
 
-            OnRenderSurface(canvas);
+            canvas.Clear();
+
+            OnRenderSurface(canvas, e);
 
             canvas.Flush();
         }
@@ -53,7 +55,7 @@ internal abstract class SkiaView(string title, GraphicsDevice device, ImGuiContr
         _surface = SkiaVk.CreateSurface(_texture);
     }
 
-    protected abstract void OnRenderSurface(SKCanvas canvas);
+    protected abstract void OnRenderSurface(SKCanvas canvas, RenderEventArgs e);
 
     protected override void Destroy()
     {
