@@ -54,7 +54,7 @@ internal abstract class SkiaView(string title,
                                                                              PixelFormat.R8G8B8A8UNorm,
                                                                              TextureUsage.Sampled | TextureUsage.RenderTarget));
 
-        _surface = SkiaVk.CreateSurface(grContext, _texture);
+        _surface = SkiaGraphics.CreateSurface(grContext, _texture);
     }
 
     protected abstract void OnRenderSurface(SKCanvas canvas, RenderEventArgs e);

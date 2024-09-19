@@ -4,7 +4,7 @@ using SkiaSharp;
 
 namespace Graphics.Vulkan;
 
-public static class SkiaVk
+public static class SkiaGraphics
 {
     public static GRContext CreateContext(GraphicsDevice graphicsDevice)
     {
