@@ -100,7 +100,20 @@ internal sealed unsafe class Program
             view.Render(e);
         }
 
-        ImGui.ShowDemoWindow();
+        ImGui.Begin("Tests.Skia");
+        {
+            ImGui.Text($"FPS: {1.0f / e.DeltaTime}");
+
+            ImGui.Separator();
+
+            ImGui.Text($"Total Time: {e.TotalTime}");
+
+            ImGui.Separator();
+
+            ImGui.Text($"Delta Time: {e.DeltaTime}");
+
+            ImGui.End();
+        }
     }
 
     private static void Resize(object? sender, ResizeEventArgs e)
