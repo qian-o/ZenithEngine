@@ -3,14 +3,13 @@ using Graphics.Core;
 using Graphics.Vulkan;
 using Hexa.NET.ImGui;
 using SkiaSharp;
-using Tests.Core;
 
-namespace Tests.Skia;
+namespace Tests.Core;
 
-internal abstract class SkiaView(string title,
-                                 GraphicsDevice device,
-                                 ImGuiController imGuiController,
-                                 GRContext grContext) : View(title)
+public abstract class SkiaView(string title,
+                               GraphicsDevice device,
+                               ImGuiController imGuiController,
+                               GRContext grContext) : View(title)
 {
     private Texture? _texture;
     private SKSurface? _surface;

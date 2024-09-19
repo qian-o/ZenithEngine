@@ -2,6 +2,7 @@
 using Graphics.Vulkan;
 using SkiaSharp;
 using SkiaSharp.Skottie;
+using Tests.Core;
 
 namespace Tests.Skia;
 
