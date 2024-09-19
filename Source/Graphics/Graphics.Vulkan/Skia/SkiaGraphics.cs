@@ -12,9 +12,9 @@ public static class SkiaGraphics
         {
             VkInstance = graphicsDevice.VkRes.Instance.Handle,
             VkPhysicalDevice = graphicsDevice.VkRes.VkPhysicalDevice.Handle,
-            VkDevice = graphicsDevice.VkRes.VkDevice.Handle,
-            VkQueue = graphicsDevice.VkRes.GraphicsDevice.GraphicsExecutor.Handle.Handle,
-            GraphicsQueueIndex = graphicsDevice.VkRes.GraphicsDevice.GraphicsExecutor.FamilyIndex,
+            VkDevice = graphicsDevice.Handle.Handle,
+            VkQueue = graphicsDevice.GraphicsExecutor.Handle.Handle,
+            GraphicsQueueIndex = graphicsDevice.GraphicsExecutor.FamilyIndex,
             MaxAPIVersion = Context.ApiVersion,
             GetProcedureAddress = GetProcedureAddress
         };
@@ -35,7 +35,7 @@ public static class SkiaGraphics
 
             if (device != 0)
             {
-                return graphicsDevice.VkRes.Vk.GetDeviceProcAddr(graphicsDevice.VkRes.VkDevice, name);
+                return graphicsDevice.VkRes.Vk.GetDeviceProcAddr(graphicsDevice.Handle, name);
             }
 
             return graphicsDevice.VkRes.Vk.Context.GetProcAddress(name);
