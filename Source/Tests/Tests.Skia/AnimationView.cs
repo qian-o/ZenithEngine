@@ -8,7 +8,7 @@ namespace Tests.Skia;
 internal sealed class AnimationView(string filePath,
                                     GraphicsDevice device,
                                     ImGuiController imGuiController,
-                                    GRContext grContext) : SkiaView("Skia View", device, imGuiController, grContext)
+                                    GRContext grContext) : SkiaView(Path.GetFileName(filePath), device, imGuiController, grContext)
 {
     private readonly Animation _animation = Animation.Parse(File.ReadAllText(filePath))!;
 

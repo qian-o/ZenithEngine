@@ -78,7 +78,11 @@ internal sealed unsafe class Program
 
     private static void Load(object? sender, LoadEventArgs e)
     {
-        _views = [new AnimationView(Path.Combine("Assets", "LottieFiles", "demo1.json"), _device, _imGuiController, _grContext)];
+        _views =
+        [
+            new AnimationView(Path.Combine("Assets", "LottieFiles", "demo1.json"), _device, _imGuiController, _grContext),
+            new AnimationView(Path.Combine("Assets", "LottieFiles", "demo2.json"), _device, _imGuiController, _grContext)
+        ];
     }
 
     private static void Update(object? sender, UpdateEventArgs e)
