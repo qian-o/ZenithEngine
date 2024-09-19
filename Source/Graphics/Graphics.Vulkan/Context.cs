@@ -134,19 +134,19 @@ public unsafe class Context : DisposableObject
 
         string[] deviceExtensions = [KhrSwapchain.ExtensionName, ExtDescriptorBuffer.ExtensionName];
 
-        PhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures = new()
-        {
-            SType = StructureType.PhysicalDeviceDescriptorIndexingFeatures
-        };
         PhysicalDeviceDescriptorBufferFeaturesEXT descriptorBufferFeaturesEXT = new()
         {
-            SType = StructureType.PhysicalDeviceDescriptorBufferFeaturesExt,
-            PNext = &descriptorIndexingFeatures
+            SType = StructureType.PhysicalDeviceDescriptorBufferFeaturesExt
+        };
+        PhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures = new()
+        {
+            SType = StructureType.PhysicalDeviceDescriptorIndexingFeatures,
+            PNext = &descriptorBufferFeaturesEXT
         };
         PhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = new()
         {
             SType = StructureType.PhysicalDeviceBufferDeviceAddressFeatures,
-            PNext = &descriptorBufferFeaturesEXT
+            PNext = &descriptorIndexingFeatures
         };
         PhysicalDeviceVulkan13Features vulkan13Features = new()
         {
