@@ -83,14 +83,10 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
 
             descriptorBindings[^1] = DescriptorBindingFlags.VariableDescriptorCountBit;
 
-            DescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo = new()
-            {
-                SType = StructureType.DescriptorSetLayoutBindingFlagsCreateInfo,
-                BindingCount = (uint)bindings.Length,
-                PBindingFlags = descriptorBindings.AsPointer()
-            };
+            createInfo.AddNext(out DescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo);
 
-            createInfo.PNext = &bindingFlagsCreateInfo;
+            bindingFlagsCreateInfo.BindingCount = (uint)bindings.Length;
+            bindingFlagsCreateInfo.PBindingFlags = descriptorBindings.AsPointer();
         }
 
         VkDescriptorSetLayout descriptorSetLayout;

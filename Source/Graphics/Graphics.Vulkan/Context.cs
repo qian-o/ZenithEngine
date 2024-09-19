@@ -13,7 +13,7 @@ namespace Graphics.Vulkan;
 
 public unsafe class Context : DisposableObject
 {
-    public const string ValidationLayerName = "VK_LAYER_KHRONOS_validation";
+    private const string ValidationLayerName = "VK_LAYER_KHRONOS_validation";
 
     private readonly Alloter _alloter;
     private readonly Vk _vk;
@@ -81,7 +81,6 @@ public unsafe class Context : DisposableObject
 
     public PhysicalDevice[] EnumeratePhysicalDevices()
     {
-        // Physical device
         uint physicalDeviceCount = 0;
         _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, null).ThrowCode("Failed to enumerate physical devices!");
 
@@ -90,7 +89,6 @@ public unsafe class Context : DisposableObject
             throw new InvalidOperationException("No physical devices found!");
         }
 
-        // Enumerate physical devices
         VkPhysicalDevice[] physicalDevices = new VkPhysicalDevice[(int)physicalDeviceCount];
         _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices).ThrowCode("Failed to enumerate physical devices!");
 
@@ -132,43 +130,25 @@ public unsafe class Context : DisposableObject
             };
         }
 
-        string[] deviceExtensions = [KhrSwapchain.ExtensionName, ExtDescriptorBuffer.ExtensionName];
-
-        PhysicalDeviceDescriptorBufferFeaturesEXT descriptorBufferFeaturesEXT = new()
-        {
-            SType = StructureType.PhysicalDeviceDescriptorBufferFeaturesExt
-        };
-        PhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures = new()
-        {
-            SType = StructureType.PhysicalDeviceDescriptorIndexingFeatures,
-            PNext = &descriptorBufferFeaturesEXT
-        };
-        PhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = new()
-        {
-            SType = StructureType.PhysicalDeviceBufferDeviceAddressFeatures,
-            PNext = &descriptorIndexingFeatures
-        };
-        PhysicalDeviceVulkan13Features vulkan13Features = new()
-        {
-            SType = StructureType.PhysicalDeviceVulkan13Features,
-            PNext = &bufferDeviceAddressFeatures
-        };
-        PhysicalDeviceFeatures2 features2 = new()
-        {
-            SType = StructureType.PhysicalDeviceFeatures2,
-            PNext = &vulkan13Features
-        };
-        _vk.GetPhysicalDeviceFeatures2(physicalDevice.Handle, &features2);
+        string[] extensions = GetDeviceExtensions();
 
         DeviceCreateInfo createInfo = new()
         {
             SType = StructureType.DeviceCreateInfo,
             QueueCreateInfoCount = (uint)createInfos.Length,
             PQueueCreateInfos = _alloter.Allocate(createInfos),
-            EnabledExtensionCount = (uint)deviceExtensions.Length,
-            PpEnabledExtensionNames = _alloter.Allocate(deviceExtensions),
-            PNext = &features2
+            EnabledExtensionCount = (uint)extensions.Length,
+            PpEnabledExtensionNames = _alloter.Allocate(extensions)
         };
+
+        createInfo.AddNext(out PhysicalDeviceFeatures2 features2);
+
+        features2.AddNext(out PhysicalDeviceVulkan13Features _)
+                 .AddNext(out PhysicalDeviceDescriptorIndexingFeatures _)
+                 .AddNext(out PhysicalDeviceBufferDeviceAddressFeatures _)
+                 .AddNext(out PhysicalDeviceDescriptorBufferFeaturesEXT _);
+
+        _vk.GetPhysicalDeviceFeatures2(physicalDevice.Handle, &features2);
 
         VkDevice device;
         _vk.CreateDevice(physicalDevice.Handle, &createInfo, null, &device).ThrowCode("Failed to create device.");
@@ -271,21 +251,7 @@ public unsafe class Context : DisposableObject
             createInfo.PpEnabledLayerNames = _alloter.Allocate([ValidationLayerName]);
         }
 
-        string[] extensions = [KhrSurface.ExtensionName];
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            extensions = [.. extensions, KhrWin32Surface.ExtensionName];
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            extensions = [.. extensions, KhrXlibSurface.ExtensionName];
-        }
-
-        if (Debugging)
-        {
-            extensions = [.. extensions, ExtDebugUtils.ExtensionName];
-        }
+        string[] extensions = GetInstanceExtensions();
 
         createInfo.EnabledExtensionCount = (uint)extensions.Length;
         createInfo.PpEnabledExtensionNames = _alloter.Allocate(extensions);
@@ -385,5 +351,31 @@ public unsafe class Context : DisposableObject
         Console.ResetColor();
 
         return Vk.False;
+    }
+
+    private static string[] GetInstanceExtensions()
+    {
+        string[] extensions = [KhrSurface.ExtensionName];
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            extensions = [.. extensions, KhrWin32Surface.ExtensionName];
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            extensions = [.. extensions, KhrXlibSurface.ExtensionName];
+        }
+
+        if (Debugging)
+        {
+            extensions = [.. extensions, ExtDebugUtils.ExtensionName];
+        }
+
+        return extensions;
+    }
+
+    private static string[] GetDeviceExtensions()
+    {
+        return [KhrSwapchain.ExtensionName, ExtDescriptorBuffer.ExtensionName];
     }
 }

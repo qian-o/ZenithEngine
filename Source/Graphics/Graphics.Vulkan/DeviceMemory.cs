@@ -18,13 +18,9 @@ public unsafe class DeviceMemory : VulkanObject<VkDeviceMemory>
 
         if (isAddress)
         {
-            MemoryAllocateFlagsInfoKHR memoryAllocateFlagsInfoKHR = new()
-            {
-                SType = StructureType.MemoryAllocateFlagsInfo,
-                Flags = MemoryAllocateFlags.AddressBit,
-            };
+            allocateInfo.AddNext(out MemoryAllocateFlagsInfoKHR memoryAllocateFlagsInfo);
 
-            allocateInfo.PNext = &memoryAllocateFlagsInfoKHR;
+            memoryAllocateFlagsInfo.Flags = MemoryAllocateFlags.AddressBit;
         }
 
         VkDeviceMemory deviceMemory;

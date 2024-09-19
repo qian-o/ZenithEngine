@@ -7,20 +7,14 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
 {
     internal PhysicalDevice(VulkanResources vkRes, VkPhysicalDevice physicalDevice) : base(vkRes, ObjectType.PhysicalDevice)
     {
-        PhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties = new()
-        {
-            SType = StructureType.PhysicalDeviceDescriptorIndexingProperties
-        };
-        PhysicalDeviceDescriptorBufferPropertiesEXT descriptorBufferProperties = new()
-        {
-            SType = StructureType.PhysicalDeviceDescriptorBufferPropertiesExt,
-            PNext = &descriptorIndexingProperties
-        };
         PhysicalDeviceProperties2 properties2 = new()
         {
-            SType = StructureType.PhysicalDeviceProperties2,
-            PNext = &descriptorBufferProperties
+            SType = StructureType.PhysicalDeviceProperties2
         };
+
+        properties2.AddNext(out PhysicalDeviceDescriptorBufferPropertiesEXT descriptorBufferProperties)
+                   .AddNext(out PhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties);
+
         VkRes.Vk.GetPhysicalDeviceProperties2(physicalDevice, &properties2);
 
         PhysicalDeviceFeatures features;
