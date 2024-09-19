@@ -57,10 +57,8 @@ internal sealed unsafe class MainView : View
     private Vector3 position = new(0.0f, 0.0f, -20.0f);
     private Properties properties = new() { PxRange = 5.0f };
 
-    public MainView(GraphicsDevice device, ImGuiController imGuiController)
+    public MainView(GraphicsDevice device, ImGuiController imGuiController) : base("SDF Font Texture")
     {
-        Title = "SDF Font Texture";
-
         _device = device;
         _imGuiController = imGuiController;
 
@@ -210,7 +208,7 @@ internal sealed unsafe class MainView : View
 
             _device.SubmitCommands(_commandList);
 
-            ImGui.Image(_imGuiController.GetOrCreateImGuiBinding(_device.Factory, framebufferObject.PresentTexture), new Vector2(framebufferObject.Width, framebufferObject.Height));
+            ImGui.Image(_imGuiController.GetBinding(_device.Factory, framebufferObject.PresentTexture), new Vector2(framebufferObject.Width, framebufferObject.Height));
         }
     }
 
@@ -218,7 +216,7 @@ internal sealed unsafe class MainView : View
     {
         if (framebufferObject != null)
         {
-            _imGuiController.RemoveImGuiBinding(_imGuiController.GetOrCreateImGuiBinding(_device.Factory, framebufferObject.PresentTexture));
+            _imGuiController.RemoveBinding(_imGuiController.GetBinding(_device.Factory, framebufferObject.PresentTexture));
 
             framebufferObject.Dispose();
         }

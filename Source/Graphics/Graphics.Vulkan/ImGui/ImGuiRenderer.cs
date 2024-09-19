@@ -88,7 +88,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         CreateDeviceResources(colorSpaceHandling);
     }
 
-    public nint GetOrCreateImGuiBinding(ResourceFactory factory, TextureView textureView)
+    public nint GetBinding(ResourceFactory factory, TextureView textureView)
     {
         lock (_lock)
         {
@@ -107,7 +107,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         }
     }
 
-    public nint GetOrCreateImGuiBinding(ResourceFactory factory, Texture texture)
+    public nint GetBinding(ResourceFactory factory, Texture texture)
     {
         lock (_lock)
         {
@@ -115,7 +115,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
             {
                 TextureView textureView = factory.CreateTextureView(texture);
 
-                binding = GetOrCreateImGuiBinding(factory, textureView);
+                binding = GetBinding(factory, textureView);
 
                 _mappedTextures[texture] = binding;
                 _selfViews[binding] = textureView;
@@ -125,7 +125,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         }
     }
 
-    public void RemoveImGuiBinding(nint binding)
+    public void RemoveBinding(nint binding)
     {
         lock (_lock)
         {
@@ -140,10 +140,15 @@ float4 mainPS(VSOutput input) : SV_TARGET
                 textureView.Dispose();
                 _selfViews.Remove(binding);
             }
+            else
+            {
+                textureView = _mapped.Keys.Where(k => _mapped[k] == binding).FirstOrDefault();
+            }
 
-            _mappedTextures.Keys.Where(k => _mappedTextures[k] == binding)
-                                .ToList()
-                                .ForEach(k => _mappedTextures.Remove(k));
+            if (_mappedTextures.Keys.Where(k => _mappedTextures[k] == binding).FirstOrDefault() is Texture texture)
+            {
+                _mappedTextures.Remove(texture);
+            }
 
             if (textureView != null)
             {
@@ -258,7 +263,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     public void RecreateFontDeviceTexture()
     {
-        RemoveImGuiBinding(GetOrCreateImGuiBinding(_factory, _fontTexture));
+        RemoveBinding(GetBinding(_factory, _fontTexture));
 
         _fontTexture.Dispose();
 
@@ -331,7 +336,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
                                       0,
                                       0);
 
-        io.Fonts.SetTexID(GetOrCreateImGuiBinding(_factory, _fontTexture));
+        io.Fonts.SetTexID(GetBinding(_factory, _fontTexture));
     }
 
     private void CreateDeviceResources(ColorSpaceHandling colorSpaceHandling)

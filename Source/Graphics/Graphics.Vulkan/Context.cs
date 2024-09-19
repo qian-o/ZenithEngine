@@ -26,6 +26,8 @@ public unsafe class Context : DisposableObject
 
     static Context()
     {
+        ApiVersion = Vk.Version13;
+
 #if DEBUG
         Debugging = true;
 #else
@@ -72,6 +74,8 @@ public unsafe class Context : DisposableObject
         _physicalDeviceMap = [];
         _graphicsDeviceMap = [];
     }
+
+    public static uint ApiVersion { get; }
 
     public static bool Debugging { get; }
 
@@ -247,7 +251,7 @@ public unsafe class Context : DisposableObject
             ApplicationVersion = new Version32(1, 0, 0),
             PEngineName = _alloter.Allocate("Graphics"),
             EngineVersion = new Version32(1, 0, 0),
-            ApiVersion = Vk.Version13
+            ApiVersion = ApiVersion
         };
 
         InstanceCreateInfo createInfo = new()

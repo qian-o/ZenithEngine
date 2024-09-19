@@ -33,8 +33,7 @@ public class FramebufferObject : DisposableObject
                                                                             (uint)height,
                                                                             1,
                                                                             PixelFormat.R8G8B8A8UNorm,
-                                                                            TextureUsage.Sampled,
-                                                                            TextureSampleCount.Count1));
+                                                                            TextureUsage.Sampled));
     }
 
     public int Width { get; }

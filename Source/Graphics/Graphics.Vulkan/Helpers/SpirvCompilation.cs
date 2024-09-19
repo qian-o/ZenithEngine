@@ -1,6 +1,5 @@
 ﻿using Graphics.Core;
 using Silk.NET.Shaderc;
-using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
@@ -20,7 +19,7 @@ internal static unsafe class SpirvCompilation
         CompilationResult* result;
 
         _shaderc.CompileOptionsSetSourceLanguage(options, SourceLanguage.Hlsl);
-        _shaderc.CompileOptionsSetTargetEnv(options, TargetEnv.Vulkan, Vk.Version13);
+        _shaderc.CompileOptionsSetTargetEnv(options, TargetEnv.Vulkan, Context.ApiVersion);
 
         result = _shaderc.CompileIntoSpv(compiler,
                                          description.ShaderBytes,

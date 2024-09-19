@@ -169,19 +169,19 @@ public unsafe class ImGuiController : DisposableObject
         }
     }
 
-    public nint GetOrCreateImGuiBinding(ResourceFactory factory, TextureView textureView)
+    public nint GetBinding(ResourceFactory factory, TextureView textureView)
     {
-        return _imGuiRenderer.GetOrCreateImGuiBinding(factory, textureView);
+        return _imGuiRenderer.GetBinding(factory, textureView);
     }
 
-    public nint GetOrCreateImGuiBinding(ResourceFactory factory, Texture texture)
+    public nint GetBinding(ResourceFactory factory, Texture texture)
     {
-        return _imGuiRenderer.GetOrCreateImGuiBinding(factory, texture);
+        return _imGuiRenderer.GetBinding(factory, texture);
     }
 
-    public void RemoveImGuiBinding(nint binding)
+    public void RemoveBinding(nint binding)
     {
-        _imGuiRenderer.RemoveImGuiBinding(binding);
+        _imGuiRenderer.RemoveBinding(binding);
     }
 
     protected override void Destroy()
