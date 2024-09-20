@@ -22,6 +22,12 @@ internal sealed class PlotView : SkiaView, IPlotView
         public CursorType? CursorType { get; set; }
     }
 
+    private const int TrackerTextPadding = 5;
+
+    private const string TrackerLineStroke = "#80000000";
+    private const string TrackerBackground = "#E0FFFFA0";
+    private const string ZoomRectangleFill = "#40FFFF00";
+
     private readonly ViewController _viewController = new();
     private readonly SkiaRenderContext _renderContext = new();
     private readonly PlotData _plotData = new();
@@ -147,23 +153,44 @@ internal sealed class PlotView : SkiaView, IPlotView
 
         if (_plotData.TrackerHitResult != null)
         {
-            SKPoint beginH = new((float)model.PlotArea.Left, (float)_plotData.TrackerHitResult.Position.Y);
-            SKPoint endH = new((float)model.PlotArea.Right, (float)_plotData.TrackerHitResult.Position.Y);
+            ScreenPoint beginH = new((float)model.PlotArea.Left, (float)_plotData.TrackerHitResult.Position.Y);
+            ScreenPoint endH = new((float)model.PlotArea.Right, (float)_plotData.TrackerHitResult.Position.Y);
 
-            canvas.DrawLine(beginH, endH, new SKPaint()
-            {
-                Color = model.PlotAreaBorderColor.ToSKColor(),
-                StrokeWidth = 1
-            });
+            _renderContext.DrawLine([beginH, endH], OxyColor.Parse(TrackerLineStroke), 1, EdgeRenderingMode.Automatic);
 
-            SKPoint beginV = new((float)_plotData.TrackerHitResult.Position.X, (float)model.PlotArea.Top);
-            SKPoint endV = new((float)_plotData.TrackerHitResult.Position.X, (float)model.PlotArea.Bottom);
+            ScreenPoint beginV = new((float)_plotData.TrackerHitResult.Position.X, (float)model.PlotArea.Top);
+            ScreenPoint endV = new((float)_plotData.TrackerHitResult.Position.X, (float)model.PlotArea.Bottom);
 
-            canvas.DrawLine(beginV, endV, new SKPaint()
-            {
-                Color = model.PlotAreaBorderColor.ToSKColor(),
-                StrokeWidth = 1
-            });
+            _renderContext.DrawLine([beginV, endV], OxyColor.Parse(TrackerLineStroke), 1, EdgeRenderingMode.Automatic);
+
+            OxySize textSize = _renderContext.MeasureText(_plotData.TrackerHitResult.Text, model.DefaultFont, model.DefaultFontSize);
+            textSize = new OxySize(textSize.Width + (TrackerTextPadding * 2), textSize.Height + (TrackerTextPadding * 2));
+
+            double x = Math.Min(Math.Max(0, _plotData.TrackerHitResult.Position.X - (textSize.Width / 2)), Width - textSize.Width);
+            double y = Math.Min(Math.Max(0, _plotData.TrackerHitResult.Position.Y - textSize.Height - 7), Height - textSize.Height);
+
+            _renderContext.DrawRectangle(new OxyRect(x, y, textSize.Width, textSize.Height),
+                                         OxyColor.Parse(TrackerBackground),
+                                         OxyColors.Black,
+                                         1,
+                                         EdgeRenderingMode.Automatic);
+
+            _renderContext.DrawText(new ScreenPoint((float)x + TrackerTextPadding, (float)y + TrackerTextPadding),
+                                    _plotData.TrackerHitResult.Text,
+                                    OxyColors.Black,
+                                    model.DefaultFont,
+                                    model.DefaultFontSize);
+        }
+
+        if (_plotData.ZoomRectangle != null)
+        {
+            ScreenPoint leftTop = new((float)_plotData.ZoomRectangle.Value.Left, (float)_plotData.ZoomRectangle.Value.Top);
+            ScreenPoint rightTop = new((float)_plotData.ZoomRectangle.Value.Right, (float)_plotData.ZoomRectangle.Value.Top);
+            ScreenPoint rightBottom = new((float)_plotData.ZoomRectangle.Value.Right, (float)_plotData.ZoomRectangle.Value.Bottom);
+            ScreenPoint leftBottom = new((float)_plotData.ZoomRectangle.Value.Left, (float)_plotData.ZoomRectangle.Value.Bottom);
+
+            _renderContext.DrawLine([leftTop, rightTop, rightBottom, leftBottom, leftTop], OxyColors.Black, 1, EdgeRenderingMode.Automatic, [3, 1]);
+            _renderContext.FillRectangle(_plotData.ZoomRectangle.Value, OxyColor.Parse(ZoomRectangleFill), EdgeRenderingMode.Automatic);
         }
     }
 

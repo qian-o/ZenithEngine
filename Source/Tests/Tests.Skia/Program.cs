@@ -157,8 +157,11 @@ internal sealed unsafe class Program
             Title = "X Axis",
             Minimum = 0,
             Maximum = 100,
+            AxislineStyle = LineStyle.Solid,
             MajorGridlineStyle = LineStyle.Solid,
-            MinorGridlineStyle = LineStyle.Dot
+            MinorGridlineStyle = LineStyle.Dot,
+            PositionAtZeroCrossing = true,
+            TickStyle = TickStyle.Crossing
         };
 
         model.Axes.Add(x);
@@ -170,8 +173,11 @@ internal sealed unsafe class Program
             Title = "Y Axis",
             Minimum = 0,
             Maximum = 100,
+            AxislineStyle = LineStyle.Solid,
             MajorGridlineStyle = LineStyle.Solid,
-            MinorGridlineStyle = LineStyle.Dot
+            MinorGridlineStyle = LineStyle.Dot,
+            PositionAtZeroCrossing = true,
+            TickStyle = TickStyle.Crossing
         };
 
         model.Axes.Add(y);
@@ -214,9 +220,9 @@ internal sealed unsafe class Program
 
         for (int i = 0; i < 2500; i++)
         {
-            ScatterPoint point = new(((random.NextDouble() * 2.2) - 1) * 200, random.NextDouble() * 200)
+            ScatterPoint point = new(((random.NextDouble() * 2.2) - 1) * 200, (random.NextDouble() * 400) - 200)
             {
-                Value = random.NextDouble() * 100
+                Value = (random.NextDouble() * 200) - 100
             };
 
             scatterSeries.Points.Add(point);
