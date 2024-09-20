@@ -88,7 +88,7 @@ internal sealed unsafe class Program
             Subtitle = "This is a simple plot"
         };
 
-        FillPlotModel(model);
+        Demo(model);
 
         _views =
         [
@@ -141,7 +141,7 @@ internal sealed unsafe class Program
         }
     }
 
-    private static void FillPlotModel(PlotModel model)
+    private static void Demo(PlotModel model)
     {
         const string xKey = "X";
         const string yKey = "Y";

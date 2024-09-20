@@ -144,6 +144,27 @@ internal sealed class PlotView : SkiaView, IPlotView
         _renderContext.SkCanvas = canvas;
 
         ((IPlotModel)model).Render(_renderContext, ClientArea = new OxyRect(0, 0, Width, Height));
+
+        if (_plotData.TrackerHitResult != null)
+        {
+            SKPoint beginH = new((float)model.PlotArea.Left, (float)_plotData.TrackerHitResult.Position.Y);
+            SKPoint endH = new((float)model.PlotArea.Right, (float)_plotData.TrackerHitResult.Position.Y);
+
+            canvas.DrawLine(beginH, endH, new SKPaint()
+            {
+                Color = model.PlotAreaBorderColor.ToSKColor(),
+                StrokeWidth = 1
+            });
+
+            SKPoint beginV = new((float)_plotData.TrackerHitResult.Position.X, (float)model.PlotArea.Top);
+            SKPoint endV = new((float)_plotData.TrackerHitResult.Position.X, (float)model.PlotArea.Bottom);
+
+            canvas.DrawLine(beginV, endV, new SKPaint()
+            {
+                Color = model.PlotAreaBorderColor.ToSKColor(),
+                StrokeWidth = 1
+            });
+        }
     }
 
     protected override void Destroy()
