@@ -50,7 +50,7 @@ public class ViewController
         if (ImGui.IsMouseDown(ImGuiMouseButton.Left) && !isLeftMouseDown)
         {
             isLeftMouseDown = true;
-            foreach (var action in _mouseDownActions)
+            foreach (Action<ImGuiMouseButton, Vector2> action in _mouseDownActions)
             {
                 action(ImGuiMouseButton.Left, mousePosition);
             }
@@ -58,7 +58,7 @@ public class ViewController
         else if (!ImGui.IsMouseDown(ImGuiMouseButton.Left) && isLeftMouseDown)
         {
             isLeftMouseDown = false;
-            foreach (var action in _mouseUpActions)
+            foreach (Action<ImGuiMouseButton, Vector2> action in _mouseUpActions)
             {
                 action(ImGuiMouseButton.Left, mousePosition);
             }
@@ -67,7 +67,7 @@ public class ViewController
         if (ImGui.IsMouseDown(ImGuiMouseButton.Right) && !isRightMouseDown)
         {
             isRightMouseDown = true;
-            foreach (var action in _mouseDownActions)
+            foreach (Action<ImGuiMouseButton, Vector2> action in _mouseDownActions)
             {
                 action(ImGuiMouseButton.Right, mousePosition);
             }
@@ -75,7 +75,7 @@ public class ViewController
         else if (!ImGui.IsMouseDown(ImGuiMouseButton.Right) && isRightMouseDown)
         {
             isRightMouseDown = false;
-            foreach (var action in _mouseUpActions)
+            foreach (Action<ImGuiMouseButton, Vector2> action in _mouseUpActions)
             {
                 action(ImGuiMouseButton.Right, mousePosition);
             }
@@ -84,7 +84,7 @@ public class ViewController
         if (ImGui.IsMouseDown(ImGuiMouseButton.Middle) && !isMiddleMouseDown)
         {
             isMiddleMouseDown = true;
-            foreach (var action in _mouseDownActions)
+            foreach (Action<ImGuiMouseButton, Vector2> action in _mouseDownActions)
             {
                 action(ImGuiMouseButton.Middle, mousePosition);
             }
@@ -92,7 +92,7 @@ public class ViewController
         else if (!ImGui.IsMouseDown(ImGuiMouseButton.Middle) && isMiddleMouseDown)
         {
             isMiddleMouseDown = false;
-            foreach (var action in _mouseUpActions)
+            foreach (Action<ImGuiMouseButton, Vector2> action in _mouseUpActions)
             {
                 action(ImGuiMouseButton.Middle, mousePosition);
             }
@@ -100,7 +100,7 @@ public class ViewController
 
         if (_lastMousePosition != mousePosition)
         {
-            foreach (var action in _mouseMoveActions)
+            foreach (Action<Vector2> action in _mouseMoveActions)
             {
                 action(mousePosition);
             }
@@ -111,7 +111,7 @@ public class ViewController
         float wheel = ImGui.GetIO().MouseWheel;
         if (wheel != 0)
         {
-            foreach (var action in _mouseWheelActions)
+            foreach (Action<Vector2, float> action in _mouseWheelActions)
             {
                 action(mousePosition, wheel);
             }

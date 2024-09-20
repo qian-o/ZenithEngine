@@ -214,7 +214,7 @@ internal sealed unsafe class Program
 
         for (int i = 0; i < 2500; i++)
         {
-            ScatterPoint point = new((random.NextDouble() * 2.2 - 1) * 200, random.NextDouble() * 200)
+            ScatterPoint point = new(((random.NextDouble() * 2.2) - 1) * 200, random.NextDouble() * 200)
             {
                 Value = random.NextDouble() * 100
             };
