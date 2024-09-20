@@ -47,7 +47,7 @@ internal sealed unsafe class Program
             Render(a, b);
 
             _grContext.Flush(true);
-            _grContext.PurgeUnusedResources(1000);
+            _grContext.PurgeUnusedResources(2000);
 
             commandList.Begin();
             {
