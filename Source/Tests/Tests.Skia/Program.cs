@@ -148,6 +148,8 @@ internal sealed unsafe class Program
         const string cKey = "Color";
         const string legendKey = "Legend";
 
+        Random random = new(10);
+
         Axis x = new LinearAxis()
         {
             Key = xKey,
@@ -202,15 +204,13 @@ internal sealed unsafe class Program
         ScatterSeries scatterSeries = new()
         {
             Title = "ScatterSeries",
-            MarkerType = MarkerType.Circle,
-            MarkerSize = 4,
             XAxisKey = xKey,
             YAxisKey = yKey,
             ColorAxisKey = cKey,
-            LegendKey = legendKey
+            LegendKey = legendKey,
+            MarkerType = MarkerType.Circle,
+            MarkerSize = 4
         };
-
-        Random random = new();
 
         for (int i = 0; i < 2500; i++)
         {
@@ -227,15 +227,26 @@ internal sealed unsafe class Program
         LineSeries lineSeries = new()
         {
             Title = "LineSeries",
-            Color = OxyColors.Blue,
             XAxisKey = xKey,
             YAxisKey = yKey,
-            LegendKey = legendKey
+            LegendKey = legendKey,
+            Color = OxyColors.SkyBlue,
+            StrokeThickness = 3,
+            LineStyle = LineStyle.Dash,
+            MarkerType = MarkerType.Circle,
+            MarkerSize = 5,
+            MarkerStroke = OxyColors.White,
+            MarkerFill = OxyColors.SkyBlue,
+            MarkerStrokeThickness = 1.5
         };
 
-        for (int i = 0; i < 100; i++)
+        int pointY = random.Next(10, 90);
+
+        for (int pointX = 0; pointX < 100; pointX += 10)
         {
-            lineSeries.Points.Add(new DataPoint(i, i));
+            lineSeries.Points.Add(new DataPoint(pointX, pointY));
+
+            pointY += random.Next(-20, 20);
         }
 
         model.Series.Add(lineSeries);
