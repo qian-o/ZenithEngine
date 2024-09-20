@@ -43,9 +43,10 @@ public class ViewController
         return this;
     }
 
-    public void Update(Vector2 viewPosition)
+    public void Update(Vector2 viewPosition, float dpiScale)
     {
         Vector2 mousePosition = ImGui.GetMousePos() - viewPosition;
+        mousePosition /= dpiScale;
 
         if (ImGui.IsMouseDown(ImGuiMouseButton.Left) && !isLeftMouseDown)
         {

@@ -27,7 +27,7 @@ internal sealed class AnimationView(string filePath,
 
     protected override void OnRenderSurface(SKCanvas canvas, RenderEventArgs e)
     {
-        _animation.Render(canvas, new SKRect(0, 0, Width, Height));
+        _animation.Render(canvas, new SKRect(0, 0, ActualWidth, ActualHeight));
     }
 
     protected override void Destroy()

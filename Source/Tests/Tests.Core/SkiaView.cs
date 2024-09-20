@@ -22,7 +22,14 @@ public abstract class SkiaView(string title,
 
             canvas.Clear(SKColors.White);
 
+            if (UseDpiScale)
+            {
+                canvas.SetMatrix(SKMatrix.CreateScale(DpiScale, DpiScale));
+            }
+
             OnRenderSurface(canvas, e);
+
+            canvas.ResetMatrix();
         }
 
         if (_texture != null)

@@ -118,7 +118,7 @@ internal sealed class PlotView : SkiaView, IPlotView
 
     protected override void OnUpdate(UpdateEventArgs e)
     {
-        _viewController.Update(Position);
+        _viewController.Update(Position, DpiScale);
 
         if (_plotData.ClipboardText != null)
         {
@@ -149,7 +149,7 @@ internal sealed class PlotView : SkiaView, IPlotView
 
         _renderContext.SkCanvas = canvas;
 
-        ((IPlotModel)model).Render(_renderContext, ClientArea = new OxyRect(0, 0, Width, Height));
+        ((IPlotModel)model).Render(_renderContext, ClientArea = new OxyRect(0, 0, ActualWidth, ActualHeight));
 
         if (_plotData.TrackerHitResult != null)
         {

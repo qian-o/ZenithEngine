@@ -8,9 +8,17 @@ public abstract class View(string title) : DisposableObject
 {
     public Vector2 Position { get; private set; }
 
+    public float DpiScale { get; private set; } = 1.0f;
+
+    public bool UseDpiScale { get; set; } = true;
+
     public uint Width { get; private set; }
 
     public uint Height { get; private set; }
+
+    public float ActualWidth => UseDpiScale ? Width * (1 / DpiScale) : Width;
+
+    public float ActualHeight => UseDpiScale ? Height * (1 / DpiScale) : Height;
 
     public void Update(UpdateEventArgs e)
     {
@@ -22,6 +30,7 @@ public abstract class View(string title) : DisposableObject
         ImGui.Begin(title);
         {
             Position = ImGui.GetCursorScreenPos();
+            DpiScale = ImGui.GetWindowDpiScale();
 
             Vector2 size = ImGui.GetContentRegionAvail();
 
