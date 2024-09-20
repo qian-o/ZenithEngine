@@ -3,6 +3,7 @@ using Graphics.Vulkan;
 using Hexa.NET.ImGui;
 using OxyPlot;
 using OxyPlot.Axes;
+using OxyPlot.Legends;
 using OxyPlot.Series;
 using SkiaSharp;
 using Tests.Core;
@@ -144,6 +145,8 @@ internal sealed unsafe class Program
     {
         const string xKey = "X";
         const string yKey = "Y";
+        const string cKey = "Color";
+        const string legendKey = "Legend";
 
         Axis x = new LinearAxis()
         {
@@ -151,8 +154,12 @@ internal sealed unsafe class Program
             Position = AxisPosition.Bottom,
             Title = "X Axis",
             Minimum = 0,
-            Maximum = 100
+            Maximum = 100,
+            MajorGridlineStyle = LineStyle.Solid,
+            MinorGridlineStyle = LineStyle.Dot
         };
+
+        model.Axes.Add(x);
 
         Axis y = new LinearAxis()
         {
@@ -160,24 +167,78 @@ internal sealed unsafe class Program
             Position = AxisPosition.Left,
             Title = "Y Axis",
             Minimum = 0,
-            Maximum = 100
+            Maximum = 100,
+            MajorGridlineStyle = LineStyle.Solid,
+            MinorGridlineStyle = LineStyle.Dot
         };
 
-        model.Axes.Add(x);
         model.Axes.Add(y);
 
-        LineSeries series = new()
+        Axis c = new LinearColorAxis()
+        {
+            Key = cKey,
+            Position = AxisPosition.Right,
+            Title = "Color Axis",
+            Minimum = 0,
+            Maximum = 100,
+            Palette = OxyPalettes.Cool(32),
+            LowColor = OxyColors.Undefined,
+            HighColor = OxyColors.Undefined
+        };
+
+        model.Axes.Add(c);
+
+        Legend legend = new()
+        {
+            Key = legendKey,
+            LegendPosition = LegendPosition.RightTop,
+            LegendOrientation = LegendOrientation.Vertical,
+            LegendBorder = OxyColors.Black,
+            LegendBorderThickness = 1
+        };
+
+        model.Legends.Add(legend);
+
+        ScatterSeries scatterSeries = new()
+        {
+            Title = "ScatterSeries",
+            MarkerType = MarkerType.Circle,
+            MarkerSize = 4,
+            XAxisKey = xKey,
+            YAxisKey = yKey,
+            ColorAxisKey = cKey,
+            LegendKey = legendKey
+        };
+
+        Random random = new();
+
+        for (int i = 0; i < 2500; i++)
+        {
+            ScatterPoint point = new((random.NextDouble() * 2.2 - 1) * 200, random.NextDouble() * 200)
+            {
+                Value = random.NextDouble() * 100
+            };
+
+            scatterSeries.Points.Add(point);
+        }
+
+        model.Series.Add(scatterSeries);
+
+        LineSeries lineSeries = new()
         {
             Title = "LineSeries",
-            Color = OxyColors.Blue
+            Color = OxyColors.Blue,
+            XAxisKey = xKey,
+            YAxisKey = yKey,
+            LegendKey = legendKey
         };
 
         for (int i = 0; i < 100; i++)
         {
-            series.Points.Add(new DataPoint(i, i));
+            lineSeries.Points.Add(new DataPoint(i, i));
         }
 
-        model.Series.Add(series);
+        model.Series.Add(lineSeries);
 
         model.InvalidatePlot(true);
     }
