@@ -11,7 +11,7 @@ namespace Tests.Skia;
 
 internal sealed class PlotView : SkiaView, IPlotView
 {
-    private class PlotData
+    private sealed class PlotData
     {
         public TrackerHitResult? TrackerHitResult { get; set; }
 
