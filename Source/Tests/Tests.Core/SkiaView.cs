@@ -14,10 +14,6 @@ public abstract class SkiaView(string title,
     private Texture? _texture;
     private SKSurface? _surface;
 
-    protected override void OnUpdate(UpdateEventArgs e)
-    {
-    }
-
     protected override void OnRender(RenderEventArgs e)
     {
         if (_surface != null)

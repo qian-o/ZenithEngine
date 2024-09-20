@@ -1,6 +1,9 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
 using Hexa.NET.ImGui;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
 using SkiaSharp;
 using Tests.Core;
 
@@ -78,10 +81,19 @@ internal sealed unsafe class Program
 
     private static void Load(object? sender, LoadEventArgs e)
     {
+        PlotModel model = new()
+        {
+            Title = "Simple Plot",
+            Subtitle = "This is a simple plot"
+        };
+
+        FillPlotModel(model);
+
         _views =
         [
             new AnimationView(Path.Combine("Assets", "LottieFiles", "demo1.json"), _device, _imGuiController, _grContext),
-            new AnimationView(Path.Combine("Assets", "LottieFiles", "demo2.json"), _device, _imGuiController, _grContext)
+            new AnimationView(Path.Combine("Assets", "LottieFiles", "demo2.json"), _device, _imGuiController, _grContext),
+            new PlotView(_device, _imGuiController, _grContext){ ActualModel = model }
         ];
     }
 
@@ -126,5 +138,47 @@ internal sealed unsafe class Program
         {
             view.Dispose();
         }
+    }
+
+    private static void FillPlotModel(PlotModel model)
+    {
+        const string xKey = "X";
+        const string yKey = "Y";
+
+        Axis x = new LinearAxis()
+        {
+            Key = xKey,
+            Position = AxisPosition.Bottom,
+            Title = "X Axis",
+            Minimum = 0,
+            Maximum = 100
+        };
+
+        Axis y = new LinearAxis()
+        {
+            Key = yKey,
+            Position = AxisPosition.Left,
+            Title = "Y Axis",
+            Minimum = 0,
+            Maximum = 100
+        };
+
+        model.Axes.Add(x);
+        model.Axes.Add(y);
+
+        LineSeries series = new()
+        {
+            Title = "LineSeries",
+            Color = OxyColors.Blue
+        };
+
+        for (int i = 0; i < 100; i++)
+        {
+            series.Points.Add(new DataPoint(i, i));
+        }
+
+        model.Series.Add(series);
+
+        model.InvalidatePlot(true);
     }
 }

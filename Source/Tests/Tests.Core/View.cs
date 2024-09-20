@@ -6,11 +6,11 @@ namespace Tests.Core;
 
 public abstract class View(string title) : DisposableObject
 {
-    private bool isFirstRender = true;
+    public Vector2 Position { get; private set; }
 
-    public uint Width { get; private set; } = 100;
+    public uint Width { get; private set; }
 
-    public uint Height { get; private set; } = 100;
+    public uint Height { get; private set; }
 
     public void Update(UpdateEventArgs e)
     {
@@ -19,27 +19,27 @@ public abstract class View(string title) : DisposableObject
 
     public void Render(RenderEventArgs e)
     {
-        ImGui.SetNextWindowSize(new Vector2(Width, Height), ImGuiCond.FirstUseEver);
         ImGui.Begin(title);
         {
+            Position = ImGui.GetCursorScreenPos();
+
             Vector2 size = ImGui.GetContentRegionAvail();
 
             uint width = Convert.ToUInt32(Math.Max(1, size.X));
             uint height = Convert.ToUInt32(Math.Max(1, size.Y));
 
-            if (isFirstRender || Width != width || Height != height)
+            if (Width != width || Height != height)
             {
                 Width = width;
                 Height = height;
 
                 OnResize(new ResizeEventArgs(width, height));
-
-                isFirstRender = false;
             }
 
             OnRender(e);
+
+            ImGui.End();
         }
-        ImGui.End();
     }
 
     protected abstract void OnUpdate(UpdateEventArgs e);

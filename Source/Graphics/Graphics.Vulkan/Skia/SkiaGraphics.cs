@@ -73,6 +73,6 @@ public static class SkiaGraphics
                                 backendRenderTarget,
                                 GRSurfaceOrigin.TopLeft,
                                 SKColorType.Rgba8888,
-                                SKColorSpace.CreateSrgb());
+                                SKColorSpace.CreateSrgbLinear());
     }
 }

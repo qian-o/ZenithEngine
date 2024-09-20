@@ -224,11 +224,10 @@ public unsafe class ImGuiController : DisposableObject
 
             MouseButton[] mouseButtons = Window.GetGlobalMouseState(out Vector2 position);
 
-            io.AddMouseButtonEvent(0, mouseButtons.Contains(MouseButton.Left));
-            io.AddMouseButtonEvent(1, mouseButtons.Contains(MouseButton.Right));
-            io.AddMouseButtonEvent(2, mouseButtons.Contains(MouseButton.Middle));
-            io.AddMouseButtonEvent(3, mouseButtons.Contains(MouseButton.Button4));
-            io.AddMouseButtonEvent(4, mouseButtons.Contains(MouseButton.Button5));
+            io.AddMouseButtonEvent((int)ImGuiMouseButton.Left, mouseButtons.Contains(MouseButton.Left));
+            io.AddMouseButtonEvent((int)ImGuiMouseButton.Right, mouseButtons.Contains(MouseButton.Right));
+            io.AddMouseButtonEvent((int)ImGuiMouseButton.Middle, mouseButtons.Contains(MouseButton.Middle));
+            io.AddMouseButtonEvent((int)ImGuiMouseButton.Count, mouseButtons.Contains(MouseButton.Button4));
 
             io.AddMousePosEvent(position.X, position.Y);
         }
