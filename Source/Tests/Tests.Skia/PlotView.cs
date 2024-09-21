@@ -125,7 +125,7 @@ internal sealed class PlotView : SkiaView, IPlotView
             ImGui.SetClipboardText(_plotData.ClipboardText);
         }
 
-        if (_plotData.CursorType != null)
+        if (_plotData.CursorType is not null and not CursorType.Default)
         {
             ImGuiMouseCursor cursorType = _plotData.CursorType.Value switch
             {
