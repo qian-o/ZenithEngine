@@ -159,9 +159,7 @@ internal sealed unsafe class Program
             Maximum = 100,
             AxislineStyle = LineStyle.Solid,
             MajorGridlineStyle = LineStyle.Solid,
-            MinorGridlineStyle = LineStyle.Dot,
-            PositionAtZeroCrossing = true,
-            TickStyle = TickStyle.Crossing
+            MinorGridlineStyle = LineStyle.Dot
         };
 
         model.Axes.Add(x);
@@ -175,9 +173,7 @@ internal sealed unsafe class Program
             Maximum = 100,
             AxislineStyle = LineStyle.Solid,
             MajorGridlineStyle = LineStyle.Solid,
-            MinorGridlineStyle = LineStyle.Dot,
-            PositionAtZeroCrossing = true,
-            TickStyle = TickStyle.Crossing
+            MinorGridlineStyle = LineStyle.Dot
         };
 
         model.Axes.Add(y);
