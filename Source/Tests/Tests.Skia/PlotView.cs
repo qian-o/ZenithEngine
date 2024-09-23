@@ -215,7 +215,7 @@ internal sealed class PlotView : SkiaView, IPlotView
         {
             ChangedButton = oxyMouseButton,
             Position = new ScreenPoint(mousePosition.X, mousePosition.Y),
-            ModifierKeys = OxyModifierKeys.None,
+            ModifierKeys = GetModifierKeys(),
             ClickCount = 1
         });
     }
@@ -225,7 +225,7 @@ internal sealed class PlotView : SkiaView, IPlotView
         ActualController.HandleMouseUp(this, new OxyMouseEventArgs()
         {
             Position = new ScreenPoint(mousePosition.X, mousePosition.Y),
-            ModifierKeys = OxyModifierKeys.None
+            ModifierKeys = GetModifierKeys()
         });
     }
 
@@ -234,7 +234,7 @@ internal sealed class PlotView : SkiaView, IPlotView
         ActualController.HandleMouseMove(this, new OxyMouseEventArgs()
         {
             Position = new ScreenPoint(mousePosition.X, mousePosition.Y),
-            ModifierKeys = OxyModifierKeys.None
+            ModifierKeys = GetModifierKeys()
         });
     }
 
@@ -244,7 +244,34 @@ internal sealed class PlotView : SkiaView, IPlotView
         {
             Position = new ScreenPoint(mousePosition.X, mousePosition.Y),
             Delta = Convert.ToInt32(delta * 120),
-            ModifierKeys = OxyModifierKeys.None
+            ModifierKeys = GetModifierKeys()
         });
+    }
+
+    private static OxyModifierKeys GetModifierKeys()
+    {
+        OxyModifierKeys modifierKeys = OxyModifierKeys.None;
+
+        if (ImGui.IsKeyDown(ImGuiKey.ModShift))
+        {
+            modifierKeys |= OxyModifierKeys.Shift;
+        }
+
+        if (ImGui.IsKeyDown(ImGuiKey.ModCtrl))
+        {
+            modifierKeys |= OxyModifierKeys.Control;
+        }
+
+        if (ImGui.IsKeyDown(ImGuiKey.ModAlt))
+        {
+            modifierKeys |= OxyModifierKeys.Alt;
+        }
+
+        if (ImGui.IsKeyDown(ImGuiKey.ModSuper))
+        {
+            modifierKeys |= OxyModifierKeys.Windows;
+        }
+
+        return modifierKeys;
     }
 }
