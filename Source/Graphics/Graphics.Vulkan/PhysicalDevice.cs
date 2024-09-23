@@ -38,6 +38,7 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
         Handle = physicalDevice;
         Name = Alloter.GetString(properties2.Properties.DeviceName);
         Properties = properties2.Properties;
+        Properties2 = properties2;
         DescriptorBufferProperties = descriptorBufferProperties;
         DescriptorIndexingProperties = descriptorIndexingProperties;
         Features = features;
@@ -50,6 +51,8 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
     internal override VkPhysicalDevice Handle { get; }
 
     internal PhysicalDeviceProperties Properties { get; }
+
+    internal PhysicalDeviceProperties2 Properties2 { get; }
 
     internal PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties { get; }
 

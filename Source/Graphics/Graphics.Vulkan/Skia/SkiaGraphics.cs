@@ -19,7 +19,7 @@ public static class SkiaGraphics
             GetProcedureAddress = GetProcedureAddress
         };
 
-        GRContext context = GRContext.CreateVulkan(backendContext, new GRContextOptions() { AvoidStencilBuffers = true })
+        GRContext context = GRContext.CreateVulkan(backendContext)
                             ?? throw new InvalidOperationException("Failed to create Vulkan context.");
 
         context.SetResourceCacheLimit(1024 * 1024 * 80);

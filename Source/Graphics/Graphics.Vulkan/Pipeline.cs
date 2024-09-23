@@ -361,7 +361,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
 
             if (hasDepth)
             {
-                subpass.PDepthStencilAttachment = UnsafeHelpers.AsPointer(ref references[^1]);
+                subpass.PDepthStencilAttachment = references[^1].AsPointer();
             }
 
             SubpassDependency subpassDependency = new()

@@ -39,6 +39,8 @@ public class VulkanResources : DisposableObject
 
     public PhysicalDeviceProperties Properties => PhysicalDevice.Properties;
 
+    public PhysicalDeviceProperties2 Properties2 => PhysicalDevice.Properties2;
+
     public PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties => PhysicalDevice.DescriptorBufferProperties;
 
     public PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties => PhysicalDevice.DescriptorIndexingProperties;
