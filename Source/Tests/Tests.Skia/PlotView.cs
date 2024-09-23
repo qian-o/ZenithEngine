@@ -153,15 +153,19 @@ internal sealed class PlotView : SkiaView, IPlotView
 
         if (_plotData.TrackerHitResult != null)
         {
-            ScreenPoint beginH = new((float)model.PlotArea.Left, (float)_plotData.TrackerHitResult.Position.Y);
-            ScreenPoint endH = new((float)model.PlotArea.Right, (float)_plotData.TrackerHitResult.Position.Y);
+            _renderContext.PushClip(model.PlotArea);
+            {
+                ScreenPoint beginH = new((float)model.PlotArea.Left, (float)_plotData.TrackerHitResult.Position.Y);
+                ScreenPoint endH = new((float)model.PlotArea.Right, (float)_plotData.TrackerHitResult.Position.Y);
 
-            _renderContext.DrawLine([beginH, endH], OxyColor.Parse(TrackerLineStroke), 1, EdgeRenderingMode.Automatic);
+                _renderContext.DrawLine([beginH, endH], OxyColor.Parse(TrackerLineStroke), 1, EdgeRenderingMode.Automatic);
 
-            ScreenPoint beginV = new((float)_plotData.TrackerHitResult.Position.X, (float)model.PlotArea.Top);
-            ScreenPoint endV = new((float)_plotData.TrackerHitResult.Position.X, (float)model.PlotArea.Bottom);
+                ScreenPoint beginV = new((float)_plotData.TrackerHitResult.Position.X, (float)model.PlotArea.Top);
+                ScreenPoint endV = new((float)_plotData.TrackerHitResult.Position.X, (float)model.PlotArea.Bottom);
 
-            _renderContext.DrawLine([beginV, endV], OxyColor.Parse(TrackerLineStroke), 1, EdgeRenderingMode.Automatic);
+                _renderContext.DrawLine([beginV, endV], OxyColor.Parse(TrackerLineStroke), 1, EdgeRenderingMode.Automatic);
+            }
+            _renderContext.PopClip();
 
             OxySize textSize = _renderContext.MeasureText(_plotData.TrackerHitResult.Text, model.DefaultFont, model.DefaultFontSize);
             textSize = new OxySize(textSize.Width + (TrackerTextPadding * 2), textSize.Height + (TrackerTextPadding * 2));
@@ -184,13 +188,17 @@ internal sealed class PlotView : SkiaView, IPlotView
 
         if (_plotData.ZoomRectangle != null)
         {
-            ScreenPoint leftTop = new((float)_plotData.ZoomRectangle.Value.Left, (float)_plotData.ZoomRectangle.Value.Top);
-            ScreenPoint rightTop = new((float)_plotData.ZoomRectangle.Value.Right, (float)_plotData.ZoomRectangle.Value.Top);
-            ScreenPoint rightBottom = new((float)_plotData.ZoomRectangle.Value.Right, (float)_plotData.ZoomRectangle.Value.Bottom);
-            ScreenPoint leftBottom = new((float)_plotData.ZoomRectangle.Value.Left, (float)_plotData.ZoomRectangle.Value.Bottom);
+            _renderContext.PushClip(model.PlotArea);
+            {
+                ScreenPoint leftTop = new((float)_plotData.ZoomRectangle.Value.Left, (float)_plotData.ZoomRectangle.Value.Top);
+                ScreenPoint rightTop = new((float)_plotData.ZoomRectangle.Value.Right, (float)_plotData.ZoomRectangle.Value.Top);
+                ScreenPoint rightBottom = new((float)_plotData.ZoomRectangle.Value.Right, (float)_plotData.ZoomRectangle.Value.Bottom);
+                ScreenPoint leftBottom = new((float)_plotData.ZoomRectangle.Value.Left, (float)_plotData.ZoomRectangle.Value.Bottom);
 
-            _renderContext.DrawLine([leftTop, rightTop, rightBottom, leftBottom, leftTop], OxyColors.Black, 1, EdgeRenderingMode.Automatic, [3, 1]);
-            _renderContext.FillRectangle(_plotData.ZoomRectangle.Value, OxyColor.Parse(ZoomRectangleFill), EdgeRenderingMode.Automatic);
+                _renderContext.DrawLine([leftTop, rightTop, rightBottom, leftBottom, leftTop], OxyColors.Black, 1, EdgeRenderingMode.Automatic, [3, 1]);
+                _renderContext.FillRectangle(_plotData.ZoomRectangle.Value, OxyColor.Parse(ZoomRectangleFill), EdgeRenderingMode.Automatic);
+            }
+            _renderContext.PopClip();
         }
     }
 
