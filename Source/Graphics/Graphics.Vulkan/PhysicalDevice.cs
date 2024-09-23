@@ -35,9 +35,10 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
         ExtensionProperties[] extensionProperties = new ExtensionProperties[(int)extensionPropertyCount];
         VkRes.Vk.EnumerateDeviceExtensionProperties(physicalDevice, string.Empty, &extensionPropertyCount, extensionProperties);
 
+        properties2.PNext = null;
+
         Handle = physicalDevice;
         Name = Alloter.GetString(properties2.Properties.DeviceName);
-        Properties = properties2.Properties;
         Properties2 = properties2;
         DescriptorBufferProperties = descriptorBufferProperties;
         DescriptorIndexingProperties = descriptorIndexingProperties;
@@ -49,8 +50,6 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
     }
 
     internal override VkPhysicalDevice Handle { get; }
-
-    internal PhysicalDeviceProperties Properties { get; }
 
     internal PhysicalDeviceProperties2 Properties2 { get; }
 

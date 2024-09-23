@@ -14,6 +14,7 @@ public class VulkanResources : DisposableObject
     #region Context Properties
     private Vk? _vk;
     private VkInstance? _instance;
+    private string[]? _instanceExtensions;
     private ExtDebugUtils? _extDebugUtils;
     private KhrSurface? _khrSurface;
 
@@ -23,6 +24,8 @@ public class VulkanResources : DisposableObject
 
     public VkInstance Instance => TryGetContextProperty(ref _instance)!.Value;
 
+    public string[] InstanceExtensions => TryGetContextProperty(ref _instanceExtensions)!;
+
     public ExtDebugUtils? ExtDebugUtils => TryGetContextProperty(ref _extDebugUtils);
 
     public KhrSurface KhrSurface => TryGetContextProperty(ref _khrSurface)!;
@@ -30,14 +33,15 @@ public class VulkanResources : DisposableObject
 
     #region Physical Device Properties
     private PhysicalDevice? _physicalDevice;
+    private string[]? _deviceExtensions;
 
     public bool IsInitializedPhysicalDevice { get; private set; }
 
     public PhysicalDevice PhysicalDevice => TryGetPhysicalDeviceProperty(ref _physicalDevice)!;
 
-    public VkPhysicalDevice VkPhysicalDevice => PhysicalDevice.Handle;
+    public string[] DeviceExtensions => TryGetPhysicalDeviceProperty(ref _deviceExtensions)!;
 
-    public PhysicalDeviceProperties Properties => PhysicalDevice.Properties;
+    public VkPhysicalDevice VkPhysicalDevice => PhysicalDevice.Handle;
 
     public PhysicalDeviceProperties2 Properties2 => PhysicalDevice.Properties2;
 
@@ -68,19 +72,25 @@ public class VulkanResources : DisposableObject
     public ExtDescriptorBuffer ExtDescriptorBuffer => GraphicsDevice.ExtDescriptorBuffer;
     #endregion
 
-    public void InitializeContext(Vk vk, VkInstance instance, ExtDebugUtils? extDebugUtils, KhrSurface khrSurface)
+    public void InitializeContext(Vk vk,
+                                  VkInstance instance,
+                                  string[] instanceExtensions,
+                                  ExtDebugUtils? extDebugUtils,
+                                  KhrSurface khrSurface)
     {
         _vk = vk;
         _instance = instance;
+        _instanceExtensions = instanceExtensions;
         _extDebugUtils = extDebugUtils;
         _khrSurface = khrSurface;
 
         IsInitializedContext = true;
     }
 
-    public void InitializePhysicalDevice(PhysicalDevice physicalDevice)
+    public void InitializePhysicalDevice(PhysicalDevice physicalDevice, string[] deviceExtensions)
     {
         _physicalDevice = physicalDevice;
+        _deviceExtensions = deviceExtensions;
 
         IsInitializedPhysicalDevice = true;
     }

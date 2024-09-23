@@ -4,10 +4,12 @@ using SkiaSharp;
 
 namespace Graphics.Vulkan;
 
-public static class SkiaGraphics
+public static unsafe class SkiaGraphics
 {
     public static GRContext CreateContext(GraphicsDevice graphicsDevice)
     {
+        PhysicalDeviceProperties2 properties2 = graphicsDevice.VkRes.Properties2;
+
         GRVkBackendContext backendContext = new()
         {
             VkInstance = graphicsDevice.VkRes.Instance.Handle,
@@ -16,6 +18,12 @@ public static class SkiaGraphics
             VkQueue = graphicsDevice.GraphicsExecutor.Handle.Handle,
             GraphicsQueueIndex = graphicsDevice.GraphicsExecutor.FamilyIndex,
             MaxAPIVersion = Context.ApiVersion,
+            Extensions = GRVkExtensions.Create(GetProcedureAddress,
+                                               graphicsDevice.VkRes.Instance.Handle,
+                                               graphicsDevice.VkRes.VkPhysicalDevice.Handle,
+                                               graphicsDevice.VkRes.InstanceExtensions,
+                                               graphicsDevice.VkRes.DeviceExtensions),
+            VkPhysicalDeviceFeatures2 = (nint)properties2.AsPointer(),
             GetProcedureAddress = GetProcedureAddress
         };
 

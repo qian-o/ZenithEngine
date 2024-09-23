@@ -285,7 +285,7 @@ public unsafe class Context : DisposableObject
         lock (_physicalDeviceMap)
         {
             VulkanResources vulkanResources = new();
-            vulkanResources.InitializeContext(_vk, _instance, _debugUtilsExt, _surfaceExt);
+            vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtilsExt, _surfaceExt);
 
             PhysicalDevice physicalDevice = new(vulkanResources, vkPhysicalDevice);
 
@@ -305,8 +305,8 @@ public unsafe class Context : DisposableObject
         lock (_graphicsDeviceMap)
         {
             VulkanResources vulkanResources = new();
-            vulkanResources.InitializeContext(_vk, _instance, _debugUtilsExt, _surfaceExt);
-            vulkanResources.InitializePhysicalDevice(physicalDevice);
+            vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtilsExt, _surfaceExt);
+            vulkanResources.InitializePhysicalDevice(physicalDevice, GetDeviceExtensions());
 
             GraphicsDevice graphicsDevice = new(vulkanResources,
                                                 device,
