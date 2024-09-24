@@ -395,6 +395,97 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         IsGraphics = true;
     }
 
+    internal Pipeline(VulkanResources vkRes, ref readonly ComputePipelineDescription description) : base(vkRes, ObjectType.Pipeline)
+    {
+        ComputePipelineCreateInfo createInfo = new()
+        {
+            SType = StructureType.ComputePipelineCreateInfo,
+            Flags = PipelineCreateFlags.CreateDescriptorBufferBitExt
+        };
+
+        // shader stage
+        {
+            Shader shader = description.Shader;
+            SpecializationConstant[] specializations = description.Specializations;
+
+            SpecializationInfo specializationInfo = new();
+            if (specializations.Length > 0)
+            {
+                uint specDataSize = (uint)specializations.Sum(x => FormatSizeHelpers.GetSizeInBytes(x.Type));
+
+                byte* specData = stackalloc byte[(int)specDataSize];
+
+                SpecializationMapEntry[] specializationMapEntries = new SpecializationMapEntry[specializations.Length];
+
+                uint offset = 0;
+                for (uint i = 0; i < specializations.Length; i++)
+                {
+                    SpecializationConstant specialization = specializations[i];
+
+                    ulong data = specialization.Data;
+                    uint dataSize = FormatSizeHelpers.GetSizeInBytes(specialization.Type);
+
+                    specializationMapEntries[i] = new SpecializationMapEntry
+                    {
+                        ConstantID = specialization.ID,
+                        Offset = offset,
+                        Size = dataSize
+                    };
+
+                    Unsafe.CopyBlock(specData + offset, &data, dataSize);
+
+                    offset += FormatSizeHelpers.GetSizeInBytes(specialization.Type);
+                }
+
+                specializationInfo.MapEntryCount = (uint)specializations.Length;
+                specializationInfo.PMapEntries = specializationMapEntries.AsPointer();
+                specializationInfo.DataSize = specDataSize;
+                specializationInfo.PData = specData;
+            }
+
+            createInfo.Stage = new PipelineShaderStageCreateInfo
+            {
+                SType = StructureType.PipelineShaderStageCreateInfo,
+                Stage = Formats.GetShaderStage(shader.Stage),
+                Module = shader.Handle,
+                PName = VkRes.Alloter.Allocate(shader.EntryPoint),
+                PSpecializationInfo = &specializationInfo
+            };
+        }
+
+        // layout
+        {
+            PipelineLayoutCreateInfo layoutCreateInfo = new()
+            {
+                SType = StructureType.PipelineLayoutCreateInfo
+            };
+
+            uint descriptorSetLayoutCount = (uint)description.ResourceLayouts.Length;
+
+            DescriptorSetLayout[] descriptorSetLayouts = new DescriptorSetLayout[descriptorSetLayoutCount];
+
+            for (uint i = 0; i < descriptorSetLayoutCount; i++)
+            {
+                descriptorSetLayouts[i] = description.ResourceLayouts[i].Handle;
+            }
+
+            layoutCreateInfo.SetLayoutCount = descriptorSetLayoutCount;
+            layoutCreateInfo.PSetLayouts = descriptorSetLayouts.AsPointer();
+
+            PipelineLayout pipelineLayout;
+            VkRes.Vk.CreatePipelineLayout(VkRes.VkDevice, &layoutCreateInfo, null, &pipelineLayout).ThrowCode();
+            createInfo.Layout = pipelineLayout;
+        }
+
+        VkPipeline pipeline;
+        VkRes.Vk.CreateComputePipelines(VkRes.VkDevice, default, 1, &createInfo, null, &pipeline).ThrowCode();
+
+        Handle = pipeline;
+        Layout = createInfo.Layout;
+        RenderPass = default;
+        IsCompute = true;
+    }
+
     internal override VkPipeline Handle { get; }
 
     internal VkPipelineLayout Layout { get; }
@@ -402,6 +493,8 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
     internal VkRenderPass RenderPass { get; }
 
     public bool IsGraphics { get; }
+
+    public bool IsCompute { get; }
 
     internal override ulong[] GetHandles()
     {
@@ -412,6 +505,10 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
     {
         VkRes.Vk.DestroyPipeline(VkRes.VkDevice, Handle, null);
         VkRes.Vk.DestroyPipelineLayout(VkRes.VkDevice, Layout, null);
-        VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPass, null);
+
+        if (IsGraphics)
+        {
+            VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPass, null);
+        }
     }
 }
