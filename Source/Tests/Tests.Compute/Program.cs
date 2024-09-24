@@ -1,6 +1,5 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
-using Hexa.NET.ImGui;
 using Tests.Core;
 
 namespace Tests.Compute;
@@ -87,21 +86,6 @@ internal sealed unsafe class Program
         foreach (View view in _views)
         {
             view.Render(e);
-        }
-
-        ImGui.Begin("Tests.Skia");
-        {
-            ImGui.Text($"FPS: {1.0f / e.DeltaTime}");
-
-            ImGui.Separator();
-
-            ImGui.Text($"Total Time: {e.TotalTime}");
-
-            ImGui.Separator();
-
-            ImGui.Text($"Delta Time: {e.DeltaTime}");
-
-            ImGui.End();
         }
     }
 
