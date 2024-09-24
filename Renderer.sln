@@ -21,7 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.MultiViewports", "Sou
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.SDFFontTexture", "Source\Tests\Tests.SDFFontTexture\Tests.SDFFontTexture.csproj", "{B1E4F7D8-1D9D-49AB-9886-31D1036B900C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Skia", "Source\Tests\Tests.Skia\Tests.Skia.csproj", "{F7B7FCC8-8280-4F7A-A474-079E4F348D04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Skia", "Source\Tests\Tests.Skia\Tests.Skia.csproj", "{F7B7FCC8-8280-4F7A-A474-079E4F348D04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Compute", "Source\Tests\Tests.Compute\Tests.Compute.csproj", "{D5705EE5-F085-4072-8CB8-061E5A006D8D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +63,10 @@ Global
 		{F7B7FCC8-8280-4F7A-A474-079E4F348D04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7B7FCC8-8280-4F7A-A474-079E4F348D04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7B7FCC8-8280-4F7A-A474-079E4F348D04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5705EE5-F085-4072-8CB8-061E5A006D8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5705EE5-F085-4072-8CB8-061E5A006D8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5705EE5-F085-4072-8CB8-061E5A006D8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5705EE5-F085-4072-8CB8-061E5A006D8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,6 +80,7 @@ Global
 		{B2B6A505-8C7C-48A5-8D07-509AEE184600} = {7E0DB5F2-95DA-43BD-97F2-EE375B5365F3}
 		{B1E4F7D8-1D9D-49AB-9886-31D1036B900C} = {7E0DB5F2-95DA-43BD-97F2-EE375B5365F3}
 		{F7B7FCC8-8280-4F7A-A474-079E4F348D04} = {7E0DB5F2-95DA-43BD-97F2-EE375B5365F3}
+		{D5705EE5-F085-4072-8CB8-061E5A006D8D} = {7E0DB5F2-95DA-43BD-97F2-EE375B5365F3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {13904A41-E9AB-4E3D-B6A3-45A7556A5C66}
