@@ -170,8 +170,8 @@ internal sealed class PlotView : SkiaView, IPlotView
             OxySize textSize = _renderContext.MeasureText(_plotData.TrackerHitResult.Text, model.DefaultFont, model.DefaultFontSize);
             textSize = new OxySize(textSize.Width + (TrackerTextPadding * 2), textSize.Height + (TrackerTextPadding * 2));
 
-            double x = Math.Min(Math.Max(0, _plotData.TrackerHitResult.Position.X - (textSize.Width / 2)), Width - textSize.Width);
-            double y = Math.Min(Math.Max(0, _plotData.TrackerHitResult.Position.Y - textSize.Height - 7), Height - textSize.Height);
+            double x = Math.Min(Math.Max(0, _plotData.TrackerHitResult.Position.X - (textSize.Width / 2)), ActualWidth - textSize.Width);
+            double y = Math.Min(Math.Max(0, _plotData.TrackerHitResult.Position.Y - textSize.Height - 7), ActualHeight - textSize.Height);
 
             _renderContext.DrawRectangle(new OxyRect(x, y, textSize.Width, textSize.Height),
                                          OxyColor.Parse(TrackerBackground),
