@@ -41,12 +41,15 @@ internal sealed unsafe class MainView : View
         public uint Height;
 
         [FieldOffset(80)]
+        public Vector3 Background;
+
+        [FieldOffset(92)]
         public uint AntiAliasing;
 
-        [FieldOffset(84)]
+        [FieldOffset(96)]
         public uint maxSteps;
 
-        [FieldOffset(88)]
+        [FieldOffset(100)]
         public float Epsilon;
     }
 
@@ -99,9 +102,10 @@ internal sealed unsafe class MainView : View
                 Fov = MathF.PI / 4.0f,
                 Width = _outputTexture.Width,
                 Height = _outputTexture.Height,
-                AntiAliasing = 1,
+                Background = new Vector3(0.7f, 0.7f, 0.9f),
+                AntiAliasing = 2,
                 maxSteps = 256,
-                Epsilon = 1f
+                Epsilon = 0.0001f
             };
 
             _device.UpdateBuffer(_buffer, 0, in camera);
