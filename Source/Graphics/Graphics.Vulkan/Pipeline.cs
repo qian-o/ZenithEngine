@@ -392,7 +392,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         Handle = pipeline;
         Layout = createInfo.Layout;
         RenderPass = createInfo.RenderPass;
-        IsGraphics = true;
+        PipelineBindPoint = PipelineBindPoint.Graphics;
     }
 
     internal Pipeline(VulkanResources vkRes, ref readonly ComputePipelineDescription description) : base(vkRes, ObjectType.Pipeline)
@@ -483,7 +483,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         Handle = pipeline;
         Layout = createInfo.Layout;
         RenderPass = default;
-        IsCompute = true;
+        PipelineBindPoint = PipelineBindPoint.Compute;
     }
 
     internal override VkPipeline Handle { get; }
@@ -492,9 +492,11 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
 
     internal VkRenderPass RenderPass { get; }
 
-    public bool IsGraphics { get; }
+    internal PipelineBindPoint PipelineBindPoint { get; }
 
-    public bool IsCompute { get; }
+    public bool IsGraphics => PipelineBindPoint == PipelineBindPoint.Graphics;
+
+    public bool IsCompute => PipelineBindPoint == PipelineBindPoint.Compute;
 
     internal override ulong[] GetHandles()
     {

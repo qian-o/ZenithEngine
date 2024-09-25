@@ -70,7 +70,7 @@ internal sealed unsafe class Program
 
     private static void Load(object? sender, LoadEventArgs e)
     {
-        _views = [];
+        _views = [new MainView(_device, _imGuiController)];
     }
 
     private static void Update(object? sender, UpdateEventArgs e)

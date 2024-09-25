@@ -12,7 +12,7 @@ internal static unsafe class SpirvCompilation
         _shaderc = Shaderc.GetApi();
     }
 
-    public static byte[] CompileGlslToSpirv(ref readonly ShaderDescription description)
+    public static byte[] CompileHlslToSpirv(ref readonly ShaderDescription description)
     {
         Compiler* compiler = _shaderc.CompilerInitialize();
         CompileOptions* options = _shaderc.CompileOptionsInitialize();

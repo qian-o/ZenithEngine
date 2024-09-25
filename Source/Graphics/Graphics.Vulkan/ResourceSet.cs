@@ -30,6 +30,23 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
 
     internal ResourceLayout Layout { get; }
 
+    public void UpdateSet(IBindableResource bindableResource, uint index)
+    {
+        if (Layout.IsLastBindless)
+        {
+            throw new InvalidOperationException("Resource layout is bindless.");
+        }
+
+        DescriptorType type = Layout.DescriptorTypes[index];
+
+        byte* descriptor = (byte*)Handle.Map(Layout.SizeInBytes);
+        descriptor += VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice, Layout.Handle, index);
+
+        WriteDescriptorBuffer(type, bindableResource, descriptor);
+
+        Handle.Unmap();
+    }
+
     public void UpdateBindless(IBindableResource[] boundResources)
     {
         if (!Layout.IsLastBindless)
