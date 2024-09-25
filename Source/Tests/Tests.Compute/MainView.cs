@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
@@ -9,11 +10,44 @@ namespace Tests.Compute;
 
 internal sealed unsafe class MainView : View
 {
-    private struct DispatchSize
+    [StructLayout(LayoutKind.Explicit)]
+    private struct Camera
     {
-        public uint X;
+        [FieldOffset(0)]
+        public Vector3 Position;
 
-        public uint Y;
+        [FieldOffset(16)]
+        public Vector3 Forward;
+
+        [FieldOffset(32)]
+        public Vector3 Right;
+
+        [FieldOffset(48)]
+        public Vector3 Up;
+
+        [FieldOffset(60)]
+        public float NearPlane;
+
+        [FieldOffset(64)]
+        public float FarPlane;
+
+        [FieldOffset(68)]
+        public float Fov;
+
+        [FieldOffset(72)]
+        public uint Width;
+
+        [FieldOffset(76)]
+        public uint Height;
+
+        [FieldOffset(80)]
+        public uint AntiAliasing;
+
+        [FieldOffset(84)]
+        public uint maxSteps;
+
+        [FieldOffset(88)]
+        public float Epsilon;
     }
 
     private readonly GraphicsDevice _device;
@@ -36,9 +70,9 @@ internal sealed unsafe class MainView : View
         _device = device;
         _imGuiController = imGuiController;
 
-        _buffer = device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(DispatchSize), BufferUsage.UniformBuffer));
+        _buffer = device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(Camera), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
-        _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("dispatchSize", ResourceKind.UniformBuffer, ShaderStages.Compute),
+        _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("camera", ResourceKind.UniformBuffer, ShaderStages.Compute),
                                                                                             new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.Compute)));
 
         _resourceSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _buffer));
@@ -52,6 +86,26 @@ internal sealed unsafe class MainView : View
 
     protected override void OnUpdate(UpdateEventArgs e)
     {
+        if (_outputTexture != null)
+        {
+            Camera camera = new()
+            {
+                Position = new Vector3(0.0f, 2.0f, 6.0f),
+                Forward = new Vector3(0.0f, 0.0f, -1.0f),
+                Right = new Vector3(1.0f, 0.0f, 0.0f),
+                Up = new Vector3(0.0f, 1.0f, 0.0f),
+                NearPlane = 0.1f,
+                FarPlane = 100.0f,
+                Fov = MathF.PI / 4.0f,
+                Width = _outputTexture.Width,
+                Height = _outputTexture.Height,
+                AntiAliasing = 1,
+                maxSteps = 256,
+                Epsilon = 1f
+            };
+
+            _device.UpdateBuffer(_buffer, 0, in camera);
+        }
     }
 
     protected override void OnRender(RenderEventArgs e)
@@ -75,14 +129,6 @@ internal sealed unsafe class MainView : View
 
     protected override void OnResize(ResizeEventArgs e)
     {
-        DispatchSize dispatchSize = new()
-        {
-            X = e.Width,
-            Y = e.Height
-        };
-
-        _device.UpdateBuffer(_buffer, 0, in dispatchSize);
-
         _outputTextureView?.Dispose();
 
         if (_outputTexture != null)
