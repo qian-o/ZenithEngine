@@ -68,9 +68,7 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
 
         for (uint i = 0; i < boundResources.Length; i++)
         {
-            nuint descriptorSize = WriteDescriptorBuffer(type, boundResources[i], descriptor);
-
-            descriptor += descriptorSize;
+            descriptor += WriteDescriptorBuffer(type, boundResources[i], descriptor);
         }
 
         Handle.Unmap();
