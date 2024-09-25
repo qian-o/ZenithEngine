@@ -28,6 +28,7 @@ public record struct ImGuiSizeConfig
         TabRounding = 4.0f,
         TabMinWidthForCloseButton = 0.0f,
         SeparatorTextPadding = new Vector2(20, 3),
+        DockingSeparatorSize = 2.0f,
         DisplayWindowPadding = new Vector2(19, 19),
         DisplaySafeAreaPadding = new Vector2(3, 3),
         MouseCursorScale = 1.0f
@@ -75,6 +76,8 @@ public record struct ImGuiSizeConfig
 
     public Vector2 SeparatorTextPadding { get; set; }
 
+    public float DockingSeparatorSize { get; set; }
+
     public Vector2 DisplayWindowPadding { get; set; }
 
     public Vector2 DisplaySafeAreaPadding { get; set; }
@@ -106,6 +109,7 @@ public record struct ImGuiSizeConfig
             TabRounding = ScaleFloat(TabRounding, scale),
             TabMinWidthForCloseButton = ScaleFloat(TabMinWidthForCloseButton, scale),
             SeparatorTextPadding = ScaleVector2(SeparatorTextPadding, scale),
+            DockingSeparatorSize = ScaleFloat(DockingSeparatorSize, scale),
             DisplayWindowPadding = ScaleVector2(DisplayWindowPadding, scale),
             DisplaySafeAreaPadding = ScaleVector2(DisplaySafeAreaPadding, scale),
             MouseCursorScale = ScaleFloat(MouseCursorScale, scale)
@@ -137,6 +141,7 @@ public record struct ImGuiSizeConfig
         style.TabRounding = TabRounding;
         style.TabMinWidthForCloseButton = TabMinWidthForCloseButton;
         style.SeparatorTextPadding = SeparatorTextPadding;
+        style.DockingSeparatorSize = DockingSeparatorSize;
         style.DisplayWindowPadding = DisplayWindowPadding;
         style.DisplaySafeAreaPadding = DisplaySafeAreaPadding;
         style.MouseCursorScale = MouseCursorScale;
