@@ -1,5 +1,4 @@
-﻿using Graphics.Core;
-using Silk.NET.Vulkan;
+﻿using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
@@ -7,20 +6,27 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
 {
     internal ResourceSet(VulkanResources vkRes, ref readonly ResourceSetDescription description) : base(vkRes)
     {
-        byte[] descriptor = new byte[description.Layout.SizeInBytes];
+        const BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferDstBit
+                                                  | BufferUsageFlags.ResourceDescriptorBufferBitExt
+                                                  | BufferUsageFlags.SamplerDescriptorBufferBitExt
+                                                  | BufferUsageFlags.ShaderDeviceAddressBit;
+
+        DeviceBuffer buffer = new(VkRes, bufferUsageFlags, description.Layout.SizeInBytes, true);
+
+        byte* descriptor = (byte*)buffer.Map(description.Layout.SizeInBytes);
 
         for (uint i = 0; i < description.BoundResources.Length; i++)
         {
-            ulong offset = VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice, description.Layout.Handle, i);
+            ulong offset = VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice,
+                                                                                         description.Layout.Handle,
+                                                                                         i);
 
             WriteDescriptorBuffer(description.Layout.DescriptorTypes[i],
                                   description.BoundResources[i],
-                                  descriptor.AsPointer(offset));
+                                  descriptor + offset);
         }
 
-        DeviceBuffer buffer = new(VkRes, description.Layout.SizeInBytes, true, description.Layout.IsLastBindless);
-
-        VkRes.GraphicsDevice.UpdateBuffer(buffer, 0, descriptor);
+        buffer.Unmap();
 
         Handle = buffer;
         Layout = description.Layout;
