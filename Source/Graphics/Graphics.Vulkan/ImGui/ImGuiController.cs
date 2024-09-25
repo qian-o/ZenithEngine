@@ -45,6 +45,7 @@ public unsafe class ImGuiController : DisposableObject
     private readonly PlatformSetImeDataFn _setImeData;
 
     private bool _frameBegun;
+    private float _currentDpiScale;
 
     #region Constructors
     public ImGuiController(Window window,
@@ -484,9 +485,16 @@ public unsafe class ImGuiController : DisposableObject
 
     private void OnChangedViewport(ImGuiViewport* vp)
     {
-        _dpiScaleSizes[vp->DpiScale].Apply(ImGui.ImGuiStyle());
+        if (vp->DpiScale == _currentDpiScale)
+        {
+            return;
+        }
+
+        _dpiScaleSizes[vp->DpiScale].Apply(ImGui.GetStyle());
 
         ImGui.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
+
+        _currentDpiScale = vp->DpiScale;
     }
 
     private void SetImeData(ImGuiContext* ctx, ImGuiViewport* viewport, ImGuiPlatformImeData* data)
