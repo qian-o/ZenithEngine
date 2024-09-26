@@ -14,15 +14,15 @@
     
     float fov;
     
-    uint width;
+    int width;
     
-    uint height;
+    int height;
     
     float3 background;
     
-    uint antiAliasing;
+    int antiAliasing;
     
-    uint maxSteps;
+    int maxSteps;
     
     float epsilon;
 };
@@ -271,7 +271,7 @@ float3 render(float2 pixel)
     return lerp(color, camera.background, 1.0 - exp(-0.0001 * result.x * result.x * result.x));
 };
 
-[numthreads(1, 1, 1)]
+[numthreads(8, 8, 1)]
 void main(uint3 id : SV_DispatchThreadID)
 {
     float3 color = float3(0);

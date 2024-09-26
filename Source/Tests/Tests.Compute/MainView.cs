@@ -35,19 +35,19 @@ internal sealed unsafe class MainView : View
         public float Fov;
 
         [FieldOffset(72)]
-        public uint Width;
+        public int Width;
 
         [FieldOffset(76)]
-        public uint Height;
+        public int Height;
 
         [FieldOffset(80)]
         public Vector3 Background;
 
         [FieldOffset(92)]
-        public uint AntiAliasing;
+        public int AntiAliasing;
 
         [FieldOffset(96)]
-        public uint maxSteps;
+        public int maxSteps;
 
         [FieldOffset(100)]
         public float Epsilon;
@@ -65,6 +65,8 @@ internal sealed unsafe class MainView : View
 
     private Texture? _outputTexture;
     private TextureView? _outputTextureView;
+
+    private Camera _camera;
 
     public MainView(GraphicsDevice device, ImGuiController imGuiController) : base("Compute View")
     {
@@ -85,31 +87,48 @@ internal sealed unsafe class MainView : View
         _pipeline = device.Factory.CreateComputePipeline(new ComputePipelineDescription(_shader, [_resourceLayout]));
 
         _commandList = device.Factory.CreateComputeCommandList();
+
+        _camera = new()
+        {
+            Position = new Vector3(0.0f, 2.0f, 6.0f),
+            Forward = new Vector3(0.0f, 0.0f, -1.0f),
+            Right = new Vector3(1.0f, 0.0f, 0.0f),
+            Up = new Vector3(0.0f, 1.0f, 0.0f),
+            NearPlane = 0.1f,
+            FarPlane = 100.0f,
+            Fov = MathF.PI / 4.0f,
+            Width = 100,
+            Height = 100,
+            Background = new Vector3(0.7f, 0.7f, 0.9f),
+            AntiAliasing = 4,
+            maxSteps = 256,
+            Epsilon = 0.0001f
+        };
     }
 
     protected override void OnUpdate(UpdateEventArgs e)
     {
-        if (_outputTexture != null)
+        if (ImGui.Begin("Properties"))
         {
-            Camera camera = new()
-            {
-                Position = new Vector3(0.0f, 2.0f, 6.0f),
-                Forward = new Vector3(0.0f, 0.0f, -1.0f),
-                Right = new Vector3(1.0f, 0.0f, 0.0f),
-                Up = new Vector3(0.0f, 1.0f, 0.0f),
-                NearPlane = 0.1f,
-                FarPlane = 100.0f,
-                Fov = MathF.PI / 4.0f,
-                Width = _outputTexture.Width,
-                Height = _outputTexture.Height,
-                Background = new Vector3(0.7f, 0.7f, 0.9f),
-                AntiAliasing = 2,
-                maxSteps = 256,
-                Epsilon = 0.0001f
-            };
+            ImGui.DragFloat("Near Plane", ref _camera.NearPlane, 0.1f, 0.0f, 100.0f);
+            ImGui.DragFloat("Far Plane", ref _camera.FarPlane, 0.1f, 0.0f, 100.0f);
 
-            _device.UpdateBuffer(_buffer, 0, in camera);
+            float fovDeg = _camera.Fov * 180.0f / MathF.PI;
+            if (ImGui.DragFloat("Field of View", ref fovDeg, 0.1f, 0.0f, 180.0f))
+            {
+                _camera.Fov = fovDeg * MathF.PI / 180.0f;
+            }
+
+            ImGui.ColorEdit3("Background", ref _camera.Background);
+
+            ImGui.DragInt("Anti Aliasing", ref _camera.AntiAliasing, 1, 1, 4);
+
+            ImGui.DragInt("Max Steps", ref _camera.maxSteps, 1, 1, 1024);
+
+            ImGui.End();
         }
+
+        _device.UpdateBuffer(_buffer, 0, in _camera);
     }
 
     protected override void OnRender(RenderEventArgs e)
@@ -121,7 +140,9 @@ internal sealed unsafe class MainView : View
             _commandList.SetPipeline(_pipeline);
             _commandList.SetResourceSet(0, _resourceSet);
 
-            _commandList.Dispatch(_outputTexture.Width, _outputTexture.Height, 1);
+            _commandList.Dispatch((uint)Math.Ceiling(_outputTexture.Width / 8.0),
+                                  (uint)Math.Ceiling(_outputTexture.Height / 8.0),
+                                  1);
 
             _commandList.End();
 
@@ -151,6 +172,9 @@ internal sealed unsafe class MainView : View
         _outputTextureView = _device.Factory.CreateTextureView(_outputTexture);
 
         _resourceSet.UpdateSet(_outputTextureView, 1);
+
+        _camera.Width = (int)e.Width;
+        _camera.Height = (int)e.Height;
     }
 
     protected override void Destroy()
