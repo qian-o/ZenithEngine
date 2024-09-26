@@ -485,6 +485,12 @@ public unsafe class ImGuiController : DisposableObject
 
     private void OnChangedViewport(ImGuiViewport* vp)
     {
+        // If the platform window has not been created yet, do nothing.
+        if (vp->PlatformWindowCreated == 0)
+        {
+            return;
+        }
+
         if (vp->DpiScale != _currentDpiScale)
         {
             _dpiScaleSizes[vp->DpiScale].Apply(ImGui.GetStyle());
