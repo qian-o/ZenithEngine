@@ -5,9 +5,6 @@ using OxyPlot;
 using OxyPlot.SkiaSharp;
 using SkiaSharp;
 using Tests.Core;
-using MouseButtonEventArgs = Tests.Core.MouseButtonEventArgs;
-using MouseMoveEventArgs = Tests.Core.MouseMoveEventArgs;
-using MouseWheelEventArgs = Tests.Core.MouseWheelEventArgs;
 
 namespace Tests.Skia;
 
@@ -211,7 +208,7 @@ internal sealed class PlotView : SkiaView, IPlotView
         base.Destroy();
     }
 
-    private void MouseDown(object? sender, MouseButtonEventArgs e)
+    private void MouseDown(object? sender, ImGuiMouseButtonEventArgs e)
     {
         OxyMouseButton oxyMouseButton = e.Button switch
         {
@@ -230,7 +227,7 @@ internal sealed class PlotView : SkiaView, IPlotView
         });
     }
 
-    private void MouseUp(object? sender, MouseButtonEventArgs e)
+    private void MouseUp(object? sender, ImGuiMouseButtonEventArgs e)
     {
         ActualController.HandleMouseUp(this, new OxyMouseEventArgs()
         {
@@ -239,7 +236,7 @@ internal sealed class PlotView : SkiaView, IPlotView
         });
     }
 
-    private void MouseMove(object? sender, MouseMoveEventArgs e)
+    private void MouseMove(object? sender, ImGuiMouseMoveEventArgs e)
     {
         ActualController.HandleMouseMove(this, new OxyMouseEventArgs()
         {
@@ -248,7 +245,7 @@ internal sealed class PlotView : SkiaView, IPlotView
         });
     }
 
-    private void MouseWheel(object? sender, MouseWheelEventArgs e)
+    private void MouseWheel(object? sender, ImGuiMouseWheelEventArgs e)
     {
         ActualController.HandleMouseWheel(this, new OxyMouseWheelEventArgs()
         {

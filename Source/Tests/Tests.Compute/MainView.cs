@@ -5,8 +5,6 @@ using Graphics.Core;
 using Graphics.Vulkan;
 using Hexa.NET.ImGui;
 using Tests.Core;
-using MouseButtonEventArgs = Tests.Core.MouseButtonEventArgs;
-using MouseMoveEventArgs = Tests.Core.MouseMoveEventArgs;
 
 namespace Tests.Compute;
 
@@ -237,7 +235,7 @@ internal sealed unsafe class MainView : View
         _buffer.Dispose();
     }
 
-    private void MouseDown(object? sender, MouseButtonEventArgs e)
+    private void MouseDown(object? sender, ImGuiMouseButtonEventArgs e)
     {
         if (e.Button == ImGuiMouseButton.Right)
         {
@@ -245,7 +243,7 @@ internal sealed unsafe class MainView : View
         }
     }
 
-    private void MouseUp(object? sender, MouseButtonEventArgs e)
+    private void MouseUp(object? sender, ImGuiMouseButtonEventArgs e)
     {
         if (e.Button == ImGuiMouseButton.Right)
         {
@@ -253,7 +251,7 @@ internal sealed unsafe class MainView : View
         }
     }
 
-    private void MouseMove(object? sender, MouseMoveEventArgs e)
+    private void MouseMove(object? sender, ImGuiMouseMoveEventArgs e)
     {
         if (lastMousePosition.HasValue)
         {

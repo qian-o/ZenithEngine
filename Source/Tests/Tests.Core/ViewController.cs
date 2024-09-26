@@ -3,19 +3,19 @@ using Hexa.NET.ImGui;
 
 namespace Tests.Core;
 
-public class MouseButtonEventArgs(ImGuiMouseButton button, Vector2 position) : EventArgs
+public class ImGuiMouseButtonEventArgs(ImGuiMouseButton button, Vector2 position) : EventArgs
 {
     public ImGuiMouseButton Button { get; } = button;
 
     public Vector2 Position { get; } = position;
 }
 
-public class MouseMoveEventArgs(Vector2 position) : EventArgs
+public class ImGuiMouseMoveEventArgs(Vector2 position) : EventArgs
 {
     public Vector2 Position { get; } = position;
 }
 
-public class MouseWheelEventArgs(Vector2 position, float wheel) : EventArgs
+public class ImGuiMouseWheelEventArgs(Vector2 position, float wheel) : EventArgs
 {
     public Vector2 Position { get; } = position;
 
@@ -24,10 +24,10 @@ public class MouseWheelEventArgs(Vector2 position, float wheel) : EventArgs
 
 public class ViewController(View view)
 {
-    public event EventHandler<MouseButtonEventArgs>? MouseDown;
-    public event EventHandler<MouseButtonEventArgs>? MouseUp;
-    public event EventHandler<MouseMoveEventArgs>? MouseMove;
-    public event EventHandler<MouseWheelEventArgs>? MouseWheel;
+    public event EventHandler<ImGuiMouseButtonEventArgs>? MouseDown;
+    public event EventHandler<ImGuiMouseButtonEventArgs>? MouseUp;
+    public event EventHandler<ImGuiMouseMoveEventArgs>? MouseMove;
+    public event EventHandler<ImGuiMouseWheelEventArgs>? MouseWheel;
 
     private bool isLeftMouseDown;
     private bool isRightMouseDown;
@@ -45,44 +45,44 @@ public class ViewController(View view)
         {
             isLeftMouseDown = true;
 
-            MouseDown?.Invoke(view, new MouseButtonEventArgs(ImGuiMouseButton.Left, mousePosition));
+            MouseDown?.Invoke(view, new ImGuiMouseButtonEventArgs(ImGuiMouseButton.Left, mousePosition));
         }
         else if (!ImGui.IsMouseDown(ImGuiMouseButton.Left) && isLeftMouseDown)
         {
             isLeftMouseDown = false;
 
-            MouseUp?.Invoke(view, new MouseButtonEventArgs(ImGuiMouseButton.Left, mousePosition));
+            MouseUp?.Invoke(view, new ImGuiMouseButtonEventArgs(ImGuiMouseButton.Left, mousePosition));
         }
 
         if (ImGui.IsMouseDown(ImGuiMouseButton.Right) && !isRightMouseDown)
         {
             isRightMouseDown = true;
 
-            MouseDown?.Invoke(view, new MouseButtonEventArgs(ImGuiMouseButton.Right, mousePosition));
+            MouseDown?.Invoke(view, new ImGuiMouseButtonEventArgs(ImGuiMouseButton.Right, mousePosition));
         }
         else if (!ImGui.IsMouseDown(ImGuiMouseButton.Right) && isRightMouseDown)
         {
             isRightMouseDown = false;
 
-            MouseUp?.Invoke(view, new MouseButtonEventArgs(ImGuiMouseButton.Right, mousePosition));
+            MouseUp?.Invoke(view, new ImGuiMouseButtonEventArgs(ImGuiMouseButton.Right, mousePosition));
         }
 
         if (ImGui.IsMouseDown(ImGuiMouseButton.Middle) && !isMiddleMouseDown)
         {
             isMiddleMouseDown = true;
 
-            MouseDown?.Invoke(view, new MouseButtonEventArgs(ImGuiMouseButton.Middle, mousePosition));
+            MouseDown?.Invoke(view, new ImGuiMouseButtonEventArgs(ImGuiMouseButton.Middle, mousePosition));
         }
         else if (!ImGui.IsMouseDown(ImGuiMouseButton.Middle) && isMiddleMouseDown)
         {
             isMiddleMouseDown = false;
 
-            MouseUp?.Invoke(view, new MouseButtonEventArgs(ImGuiMouseButton.Middle, mousePosition));
+            MouseUp?.Invoke(view, new ImGuiMouseButtonEventArgs(ImGuiMouseButton.Middle, mousePosition));
         }
 
         if (lastMousePosition != mousePosition)
         {
-            MouseMove?.Invoke(view, new MouseMoveEventArgs(mousePosition));
+            MouseMove?.Invoke(view, new ImGuiMouseMoveEventArgs(mousePosition));
 
             lastMousePosition = mousePosition;
         }
@@ -90,7 +90,7 @@ public class ViewController(View view)
         float wheel = ImGui.GetIO().MouseWheel;
         if (wheel != 0)
         {
-            MouseWheel?.Invoke(view, new MouseWheelEventArgs(mousePosition, wheel));
+            MouseWheel?.Invoke(view, new ImGuiMouseWheelEventArgs(mousePosition, wheel));
         }
     }
 }
