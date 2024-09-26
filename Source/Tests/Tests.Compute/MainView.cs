@@ -5,6 +5,8 @@ using Graphics.Core;
 using Graphics.Vulkan;
 using Hexa.NET.ImGui;
 using Tests.Core;
+using MouseButtonEventArgs = Tests.Core.MouseButtonEventArgs;
+using MouseMoveEventArgs = Tests.Core.MouseMoveEventArgs;
 
 namespace Tests.Compute;
 
@@ -53,6 +55,8 @@ internal sealed unsafe class MainView : View
         public float Epsilon;
     }
 
+    private readonly ViewController _viewController;
+
     private readonly GraphicsDevice _device;
     private readonly ImGuiController _imGuiController;
 
@@ -68,12 +72,23 @@ internal sealed unsafe class MainView : View
 
     private Camera _camera;
 
+    private Vector2? lastMousePosition;
+
     public MainView(GraphicsDevice device, ImGuiController imGuiController) : base("Compute View")
     {
+        _viewController = new ViewController(this)
+        {
+            UseDpiScale = false
+        };
+        _viewController.MouseDown += MouseDown;
+        _viewController.MouseUp += MouseUp;
+        _viewController.MouseMove += MouseMove;
+
         string hlsl = File.ReadAllText("Assets/Shaders/SDF.hlsl");
 
         _device = device;
         _imGuiController = imGuiController;
+
 
         _buffer = device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(Camera), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
@@ -108,6 +123,38 @@ internal sealed unsafe class MainView : View
 
     protected override void OnUpdate(UpdateEventArgs e)
     {
+        _viewController.Update();
+
+        if (ImGui.IsKeyDown(ImGuiKey.W))
+        {
+            _camera.Position += _camera.Forward * 0.1f;
+        }
+
+        if (ImGui.IsKeyDown(ImGuiKey.S))
+        {
+            _camera.Position -= _camera.Forward * 0.1f;
+        }
+
+        if (ImGui.IsKeyDown(ImGuiKey.A))
+        {
+            _camera.Position -= _camera.Right * 0.1f;
+        }
+
+        if (ImGui.IsKeyDown(ImGuiKey.D))
+        {
+            _camera.Position += _camera.Right * 0.1f;
+        }
+
+        if (ImGui.IsKeyDown(ImGuiKey.Q))
+        {
+            _camera.Position -= _camera.Up * 0.1f;
+        }
+
+        if (ImGui.IsKeyDown(ImGuiKey.E))
+        {
+            _camera.Position += _camera.Up * 0.1f;
+        }
+
         if (ImGui.Begin("Properties"))
         {
             ImGui.DragFloat("Near Plane", ref _camera.NearPlane, 0.1f, 0.0f, 100.0f);
@@ -140,8 +187,8 @@ internal sealed unsafe class MainView : View
             _commandList.SetPipeline(_pipeline);
             _commandList.SetResourceSet(0, _resourceSet);
 
-            _commandList.Dispatch((uint)Math.Ceiling(_outputTexture.Width / 8.0),
-                                  (uint)Math.Ceiling(_outputTexture.Height / 8.0),
+            _commandList.Dispatch((uint)Math.Ceiling(_outputTexture.Width / 32.0),
+                                  (uint)Math.Ceiling(_outputTexture.Height / 32.0),
                                   1);
 
             _commandList.End();
@@ -188,5 +235,40 @@ internal sealed unsafe class MainView : View
         _resourceSet.Dispose();
         _resourceLayout.Dispose();
         _buffer.Dispose();
+    }
+
+    private void MouseDown(object? sender, MouseButtonEventArgs e)
+    {
+        if (e.Button == ImGuiMouseButton.Right)
+        {
+            lastMousePosition = e.Position;
+        }
+    }
+
+    private void MouseUp(object? sender, MouseButtonEventArgs e)
+    {
+        if (e.Button == ImGuiMouseButton.Right)
+        {
+            lastMousePosition = null;
+        }
+    }
+
+    private void MouseMove(object? sender, MouseMoveEventArgs e)
+    {
+        if (lastMousePosition.HasValue)
+        {
+            Vector2 delta = e.Position - lastMousePosition.Value;
+
+            _camera.Forward = Vector3.TransformNormal(_camera.Forward, Matrix4x4.CreateFromAxisAngle(_camera.Up, -delta.X * 0.01f));
+            _camera.Forward = Vector3.TransformNormal(_camera.Forward, Matrix4x4.CreateFromAxisAngle(_camera.Right, -delta.Y * 0.01f));
+
+            _camera.Up = Vector3.Normalize(Vector3.Cross(_camera.Right, _camera.Forward));
+            _camera.Right = Vector3.Normalize(Vector3.Cross(_camera.Forward, _camera.Up));
+
+            _camera.Up.X = 0.0f;
+            _camera.Right.Y = 0.0f;
+
+            lastMousePosition = e.Position;
+        }
     }
 }

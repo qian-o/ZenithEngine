@@ -1,11 +1,13 @@
-﻿using System.Numerics;
-using Graphics.Core;
+﻿using Graphics.Core;
 using Graphics.Vulkan;
 using Hexa.NET.ImGui;
 using OxyPlot;
 using OxyPlot.SkiaSharp;
 using SkiaSharp;
 using Tests.Core;
+using MouseButtonEventArgs = Tests.Core.MouseButtonEventArgs;
+using MouseMoveEventArgs = Tests.Core.MouseMoveEventArgs;
+using MouseWheelEventArgs = Tests.Core.MouseWheelEventArgs;
 
 namespace Tests.Skia;
 
@@ -28,9 +30,9 @@ internal sealed class PlotView : SkiaView, IPlotView
     private const string TrackerBackground = "#E0FFFFA0";
     private const string ZoomRectangleFill = "#40FFFF00";
 
-    private readonly ViewController _viewController = new();
-    private readonly SkiaRenderContext _renderContext = new();
-    private readonly PlotData _plotData = new();
+    private readonly ViewController _viewController;
+    private readonly SkiaRenderContext _renderContext;
+    private readonly PlotData _plotData;
 
     private PlotModel? model;
 
@@ -38,14 +40,14 @@ internal sealed class PlotView : SkiaView, IPlotView
                     ImGuiController imGuiController,
                     GRContext grContext) : base("Plot View", device, imGuiController, grContext)
     {
-        _viewController = new ViewController();
+        _viewController = new ViewController(this);
         _renderContext = new SkiaRenderContext();
         _plotData = new PlotData();
 
-        _viewController.AddMouseDown(MouseDown);
-        _viewController.AddMouseUp(MouseUp);
-        _viewController.AddMouseMove(MouseMove);
-        _viewController.AddMouseWheel(MouseWheel);
+        _viewController.MouseDown += MouseDown;
+        _viewController.MouseUp += MouseUp;
+        _viewController.MouseMove += MouseMove;
+        _viewController.MouseWheel += MouseWheel;
     }
 
     public PlotModel? ActualModel
@@ -118,7 +120,7 @@ internal sealed class PlotView : SkiaView, IPlotView
 
     protected override void OnUpdate(UpdateEventArgs e)
     {
-        _viewController.Update(Position, DpiScale);
+        _viewController.Update();
 
         if (_plotData.ClipboardText != null)
         {
@@ -209,9 +211,9 @@ internal sealed class PlotView : SkiaView, IPlotView
         base.Destroy();
     }
 
-    private void MouseDown(ImGuiMouseButton mouseButton, Vector2 mousePosition)
+    private void MouseDown(object? sender, MouseButtonEventArgs e)
     {
-        OxyMouseButton oxyMouseButton = mouseButton switch
+        OxyMouseButton oxyMouseButton = e.Button switch
         {
             ImGuiMouseButton.Left => OxyMouseButton.Left,
             ImGuiMouseButton.Right => OxyMouseButton.Right,
@@ -222,36 +224,36 @@ internal sealed class PlotView : SkiaView, IPlotView
         ActualController.HandleMouseDown(this, new OxyMouseDownEventArgs()
         {
             ChangedButton = oxyMouseButton,
-            Position = new ScreenPoint(mousePosition.X, mousePosition.Y),
+            Position = new ScreenPoint(e.Position.X, e.Position.Y),
             ModifierKeys = GetModifierKeys(),
             ClickCount = 1
         });
     }
 
-    private void MouseUp(ImGuiMouseButton mouseButton, Vector2 mousePosition)
+    private void MouseUp(object? sender, MouseButtonEventArgs e)
     {
         ActualController.HandleMouseUp(this, new OxyMouseEventArgs()
         {
-            Position = new ScreenPoint(mousePosition.X, mousePosition.Y),
+            Position = new ScreenPoint(e.Position.X, e.Position.Y),
             ModifierKeys = GetModifierKeys()
         });
     }
 
-    private void MouseMove(Vector2 mousePosition)
+    private void MouseMove(object? sender, MouseMoveEventArgs e)
     {
         ActualController.HandleMouseMove(this, new OxyMouseEventArgs()
         {
-            Position = new ScreenPoint(mousePosition.X, mousePosition.Y),
+            Position = new ScreenPoint(e.Position.X, e.Position.Y),
             ModifierKeys = GetModifierKeys()
         });
     }
 
-    private void MouseWheel(Vector2 mousePosition, float delta)
+    private void MouseWheel(object? sender, MouseWheelEventArgs e)
     {
         ActualController.HandleMouseWheel(this, new OxyMouseWheelEventArgs()
         {
-            Position = new ScreenPoint(mousePosition.X, mousePosition.Y),
-            Delta = Convert.ToInt32(delta * 120),
+            Position = new ScreenPoint(e.Position.X, e.Position.Y),
+            Delta = Convert.ToInt32(e.Wheel * 120),
             ModifierKeys = GetModifierKeys()
         });
     }
