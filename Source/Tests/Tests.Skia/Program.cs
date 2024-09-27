@@ -94,7 +94,7 @@ internal sealed unsafe class Program
         [
             new AnimationView(Path.Combine("Assets", "LottieFiles", "demo1.json"), _device, _imGuiController, _grContext),
             new AnimationView(Path.Combine("Assets", "LottieFiles", "demo2.json"), _device, _imGuiController, _grContext),
-            new PlotView("OxyPlot View", _device, _imGuiController, _grContext){ ActualModel = model }
+            new PlotView("OxyPlot View", _device, _imGuiController, _grContext){ Model = model }
         ];
     }
 

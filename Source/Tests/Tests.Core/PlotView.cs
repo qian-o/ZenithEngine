@@ -47,7 +47,7 @@ public class PlotView : SkiaView, IPlotView
         _viewController.MouseWheel += MouseWheel;
     }
 
-    public PlotModel? ActualModel
+    public PlotModel? Model
     {
         get => model;
         set
@@ -74,6 +74,8 @@ public class PlotView : SkiaView, IPlotView
     public IController ActualController { get; set; } = new PlotController();
 
     public OxyRect ClientArea { get; private set; }
+
+    public PlotModel? ActualModel => model;
 
     Model? IView.ActualModel => model;
 
