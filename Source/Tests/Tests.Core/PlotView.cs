@@ -4,11 +4,10 @@ using Hexa.NET.ImGui;
 using OxyPlot;
 using OxyPlot.SkiaSharp;
 using SkiaSharp;
-using Tests.Core;
 
-namespace Tests.Skia;
+namespace Tests.Core;
 
-internal sealed class PlotView : SkiaView, IPlotView
+public class PlotView : SkiaView, IPlotView
 {
     private sealed class PlotData
     {
@@ -33,9 +32,10 @@ internal sealed class PlotView : SkiaView, IPlotView
 
     private PlotModel? model;
 
-    public PlotView(GraphicsDevice device,
+    public PlotView(string title,
+                    GraphicsDevice device,
                     ImGuiController imGuiController,
-                    GRContext grContext) : base("Plot View", device, imGuiController, grContext)
+                    GRContext grContext) : base(title, device, imGuiController, grContext)
     {
         _viewController = new ViewController(this);
         _renderContext = new SkiaRenderContext();
