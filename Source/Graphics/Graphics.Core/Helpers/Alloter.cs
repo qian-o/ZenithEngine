@@ -68,6 +68,21 @@ public unsafe class Alloter : DisposableObject
         }
     }
 
+    public void Free(void* marshalPtr)
+    {
+        lock (_locker)
+        {
+            if (_marshalAllocated.Remove((nint)marshalPtr))
+            {
+                Marshal.FreeHGlobal((nint)marshalPtr);
+            }
+            else if (_nativeAllocated.Remove((nint)marshalPtr))
+            {
+                NativeMemory.Free(marshalPtr);
+            }
+        }
+    }
+
     public void Clear()
     {
         lock (_locker)

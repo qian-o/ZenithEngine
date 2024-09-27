@@ -95,7 +95,12 @@ internal sealed unsafe class MainView : View
 
         _resourceSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _buffer));
 
-        _shader = device.Factory.CompileHlslToSpirv(new ShaderDescription(ShaderStages.Compute, Encoding.UTF8.GetBytes(hlsl), "main")).First();
+        ShaderDescription[] shaderDescriptions = [new ShaderDescription(ShaderStages.Compute, Encoding.UTF8.GetBytes(hlsl), "main")];
+
+        _shader = device.Factory.CompileHlslToSpirv(shaderDescriptions, (path) =>
+        {
+            return Encoding.UTF8.GetBytes(File.ReadAllText(Path.Combine("Assets/Shaders/", path)));
+        }).First();
 
         _pipeline = device.Factory.CreateComputePipeline(new ComputePipelineDescription(_shader, [_resourceLayout]));
 

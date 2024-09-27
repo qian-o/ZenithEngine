@@ -1,69 +1,9 @@
-﻿struct Camera
-{
-    float3 position;
-    
-    float3 forward;
-    
-    float3 right;
-    
-    float3 up;
-    
-    float nearPlane;
-    
-    float farPlane;
-    
-    float fov;
-    
-    int width;
-    
-    int height;
-    
-    float3 background;
-    
-    int antiAliasing;
-    
-    int maxSteps;
-    
-    float epsilon;
-};
+﻿#include "Camera.hlsl"
+#include "Maths.hlsl"
+#include "SDFShapes.hlsl"
 
 ConstantBuffer<Camera> camera : register(b0, space0);
 RWTexture2D<float4> outputTexture : register(u1, space0);
-
-float rangeMap(float value, float min, float max, float newMin, float newMax)
-{
-    return newMin + (value - min) * (newMax - newMin) / (max - min);
-}
-
-float2 opU(float2 d1, float2 d2)
-{
-    return (d1.x < d2.x) ? d1 : d2;
-}
-
-float sdBox(float3 p, float3 b)
-{
-    float3 d = abs(p) - b;
-    return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
-}
-
-float sdSphere(float3 pos)
-{
-    return length(pos) - 1.0;
-}
-
-float sdPlane(float3 p, float3 n, float h)
-{
-    return dot(p, n) + h;
-}
-
-float checkersGradBox(float2 p)
-{
-    float2 w = float2(0.001);
-
-    float2 i = 2.0 * (abs(frac((p - 0.5 * w) * 0.5) - 0.5) - abs(frac((p + 0.5 * w) * 0.5) - 0.5)) / w;
-
-    return 0.5 - 0.5 * i.x * i.y;
-}
 
 float2 map(float3 pos)
 {

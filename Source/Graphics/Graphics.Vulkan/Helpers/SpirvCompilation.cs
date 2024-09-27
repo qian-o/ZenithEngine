@@ -12,14 +12,21 @@ internal static unsafe class SpirvCompilation
         _shaderc = Shaderc.GetApi();
     }
 
-    public static byte[] CompileHlslToSpirv(ref readonly ShaderDescription description)
+    public static byte[] CompileHlslToSpirv(ref readonly ShaderDescription description, Func<string, byte[]>? includeResolver = null)
     {
+        using Alloter alloter = new();
+
         Compiler* compiler = _shaderc.CompilerInitialize();
         CompileOptions* options = _shaderc.CompileOptionsInitialize();
         CompilationResult* result;
 
         _shaderc.CompileOptionsSetSourceLanguage(options, SourceLanguage.Hlsl);
         _shaderc.CompileOptionsSetTargetEnv(options, TargetEnv.Vulkan, Context.ApiVersion);
+
+        _shaderc.CompileOptionsSetIncludeCallbacks(options,
+                                                   PfnIncludeResolveFn.From(IncludeCallback),
+                                                   PfnIncludeResultReleaseFn.From(IncludeResultReleaseCallback),
+                                                   null);
 
         result = _shaderc.CompileIntoSpv(compiler,
                                          description.ShaderBytes,
@@ -37,6 +44,35 @@ internal static unsafe class SpirvCompilation
         ReadOnlySpan<byte> spirv = new(_shaderc.ResultGetBytes(result), (int)_shaderc.ResultGetLength(result));
 
         return spirv.ToArray();
+
+        IncludeResult* IncludeCallback(void* userData,
+                                       byte* requestedSource,
+                                       int type,
+                                       byte* requestingSource,
+                                       nuint includeDepth)
+        {
+            string requestedPath = Alloter.GetString(requestedSource);
+            string requestedName = Path.GetFileName(requestedPath);
+
+            byte[] includeBytes = includeResolver?.Invoke(requestedPath) ?? [];
+
+            IncludeResult includeResult = new()
+            {
+                SourceName = alloter.Allocate(requestedName),
+                SourceNameLength = (nuint)requestedName.Length,
+                Content = alloter.Allocate(includeBytes),
+                ContentLength = (nuint)includeBytes.Length
+            };
+
+            return alloter.Allocate(includeResult);
+        }
+
+        void IncludeResultReleaseCallback(void* userData, IncludeResult* result)
+        {
+            alloter.Free(result->SourceName);
+            alloter.Free(result->Content);
+            alloter.Free(result);
+        }
     }
 
     private static ShaderKind GetShadercKind(ShaderStages stage)
