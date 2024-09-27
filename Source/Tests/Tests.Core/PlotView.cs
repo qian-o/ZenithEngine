@@ -30,7 +30,7 @@ public class PlotView : SkiaView, IPlotView
     private readonly SkiaRenderContext _renderContext;
     private readonly PlotData _plotData;
 
-    private PlotModel? model;
+    private PlotModel? actualModel;
 
     public PlotView(string title,
                     GraphicsDevice device,
@@ -47,25 +47,25 @@ public class PlotView : SkiaView, IPlotView
         _viewController.MouseWheel += MouseWheel;
     }
 
-    public PlotModel? Model
+    public PlotModel? ActualModel
     {
-        get => model;
+        get => actualModel;
         set
         {
-            if (model != value)
+            if (actualModel != value)
             {
-                if (model != null)
+                if (actualModel != null)
                 {
-                    ((IPlotModel)model).AttachPlotView(null);
+                    ((IPlotModel)actualModel).AttachPlotView(null);
                 }
 
-                model = value;
+                actualModel = value;
 
-                if (model != null)
+                if (actualModel != null)
                 {
-                    ((IPlotModel)model).AttachPlotView(this);
+                    ((IPlotModel)actualModel).AttachPlotView(this);
 
-                    model.InvalidatePlot(true);
+                    actualModel.InvalidatePlot(true);
                 }
             }
         }
@@ -75,9 +75,7 @@ public class PlotView : SkiaView, IPlotView
 
     public OxyRect ClientArea { get; private set; }
 
-    public PlotModel? ActualModel => model;
-
-    Model? IView.ActualModel => model;
+    Model? IView.ActualModel => ActualModel;
 
     public void ShowTracker(TrackerHitResult trackerHitResult)
     {
@@ -111,9 +109,9 @@ public class PlotView : SkiaView, IPlotView
 
     public void InvalidatePlot(bool updateData = true)
     {
-        if (model != null)
+        if (ActualModel != null)
         {
-            ((IPlotModel)model).Update(updateData);
+            ((IPlotModel)ActualModel).Update(updateData);
         }
     }
 
@@ -143,32 +141,32 @@ public class PlotView : SkiaView, IPlotView
 
     protected override void OnRenderSurface(SKCanvas canvas, RenderEventArgs e)
     {
-        if (model == null)
+        if (ActualModel == null)
         {
             return;
         }
 
         _renderContext.SkCanvas = canvas;
 
-        ((IPlotModel)model).Render(_renderContext, ClientArea = new OxyRect(0, 0, ActualWidth, ActualHeight));
+        ((IPlotModel)ActualModel).Render(_renderContext, ClientArea = new OxyRect(0, 0, ActualWidth, ActualHeight));
 
         if (_plotData.TrackerHitResult != null)
         {
-            _renderContext.PushClip(model.PlotArea);
+            _renderContext.PushClip(ActualModel.PlotArea);
             {
-                ScreenPoint beginH = new((float)model.PlotArea.Left, (float)_plotData.TrackerHitResult.Position.Y);
-                ScreenPoint endH = new((float)model.PlotArea.Right, (float)_plotData.TrackerHitResult.Position.Y);
+                ScreenPoint beginH = new((float)ActualModel.PlotArea.Left, (float)_plotData.TrackerHitResult.Position.Y);
+                ScreenPoint endH = new((float)ActualModel.PlotArea.Right, (float)_plotData.TrackerHitResult.Position.Y);
 
                 _renderContext.DrawLine([beginH, endH], OxyColor.Parse(TrackerLineStroke), 1, EdgeRenderingMode.Automatic);
 
-                ScreenPoint beginV = new((float)_plotData.TrackerHitResult.Position.X, (float)model.PlotArea.Top);
-                ScreenPoint endV = new((float)_plotData.TrackerHitResult.Position.X, (float)model.PlotArea.Bottom);
+                ScreenPoint beginV = new((float)_plotData.TrackerHitResult.Position.X, (float)ActualModel.PlotArea.Top);
+                ScreenPoint endV = new((float)_plotData.TrackerHitResult.Position.X, (float)ActualModel.PlotArea.Bottom);
 
                 _renderContext.DrawLine([beginV, endV], OxyColor.Parse(TrackerLineStroke), 1, EdgeRenderingMode.Automatic);
             }
             _renderContext.PopClip();
 
-            OxySize textSize = _renderContext.MeasureText(_plotData.TrackerHitResult.Text, model.DefaultFont, model.DefaultFontSize);
+            OxySize textSize = _renderContext.MeasureText(_plotData.TrackerHitResult.Text, ActualModel.DefaultFont, ActualModel.DefaultFontSize);
             textSize = new OxySize(textSize.Width + (TrackerTextPadding * 2), textSize.Height + (TrackerTextPadding * 2));
 
             double x = Math.Min(Math.Max(0, _plotData.TrackerHitResult.Position.X - (textSize.Width / 2)), ActualWidth - textSize.Width);
@@ -183,21 +181,28 @@ public class PlotView : SkiaView, IPlotView
             _renderContext.DrawText(new ScreenPoint((float)x + TrackerTextPadding, (float)y + TrackerTextPadding),
                                     _plotData.TrackerHitResult.Text,
                                     OxyColors.Black,
-                                    model.DefaultFont,
-                                    model.DefaultFontSize);
+                                    ActualModel.DefaultFont,
+                                    ActualModel.DefaultFontSize);
         }
 
         if (_plotData.ZoomRectangle != null)
         {
-            _renderContext.PushClip(model.PlotArea);
+            _renderContext.PushClip(ActualModel.PlotArea);
             {
                 ScreenPoint leftTop = new((float)_plotData.ZoomRectangle.Value.Left, (float)_plotData.ZoomRectangle.Value.Top);
                 ScreenPoint rightTop = new((float)_plotData.ZoomRectangle.Value.Right, (float)_plotData.ZoomRectangle.Value.Top);
                 ScreenPoint rightBottom = new((float)_plotData.ZoomRectangle.Value.Right, (float)_plotData.ZoomRectangle.Value.Bottom);
                 ScreenPoint leftBottom = new((float)_plotData.ZoomRectangle.Value.Left, (float)_plotData.ZoomRectangle.Value.Bottom);
 
-                _renderContext.DrawLine([leftTop, rightTop, rightBottom, leftBottom, leftTop], OxyColors.Black, 1, EdgeRenderingMode.Automatic, [3, 1]);
-                _renderContext.FillRectangle(_plotData.ZoomRectangle.Value, OxyColor.Parse(ZoomRectangleFill), EdgeRenderingMode.Automatic);
+                _renderContext.DrawLine([leftTop, rightTop, rightBottom, leftBottom, leftTop],
+                                        OxyColors.Black,
+                                        1,
+                                        EdgeRenderingMode.Automatic,
+                                        [3, 1]);
+
+                _renderContext.FillRectangle(_plotData.ZoomRectangle.Value,
+                                             OxyColor.Parse(ZoomRectangleFill),
+                                             EdgeRenderingMode.Automatic);
             }
             _renderContext.PopClip();
         }
