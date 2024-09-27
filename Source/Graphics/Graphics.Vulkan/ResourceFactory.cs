@@ -86,8 +86,20 @@ public class ResourceFactory
 
     public Pipeline CreateGraphicsPipeline(GraphicsPipelineDescription description) => CreateGraphicsPipeline(in description);
 
+    public Pipeline CreateComputePipeline(ref readonly ComputePipelineDescription description)
+    {
+        return new Pipeline(_vkRes, in description);
+    }
+
+    public Pipeline CreateComputePipeline(ComputePipelineDescription description) => CreateComputePipeline(in description);
+
     public CommandList CreateGraphicsCommandList()
     {
         return new CommandList(_vkRes, _vkRes.GraphicsDevice.GraphicsExecutor, _vkRes.GraphicsDevice.GraphicsCommandPool);
+    }
+
+    public CommandList CreateComputeCommandList()
+    {
+        return new CommandList(_vkRes, _vkRes.GraphicsDevice.ComputeExecutor, _vkRes.GraphicsDevice.ComputeCommandPool);
     }
 }

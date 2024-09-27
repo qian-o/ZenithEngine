@@ -312,9 +312,9 @@ public unsafe class ImGuiController : DisposableObject
             }
             else
             {
-                nint glyph_ranges = _imGuiFontConfig.GetGlyphRange?.Invoke(io) ?? 0;
+                char* glyph_ranges = _imGuiFontConfig.GetGlyphRange != null ? (char*)_imGuiFontConfig.GetGlyphRange(io) : io.Fonts.GetGlyphRangesDefault();
 
-                fontPtr = io.Fonts.AddFontFromFileTTF(_imGuiFontConfig.FontPath, Convert.ToInt32(_imGuiFontConfig.FontSize * display.DpiScale), null, (char*)glyph_ranges);
+                fontPtr = io.Fonts.AddFontFromFileTTF(_imGuiFontConfig.FontPath, Convert.ToInt32(_imGuiFontConfig.FontSize * display.DpiScale), null, glyph_ranges);
             }
 
             _dpiScaleFonts.Add(display.DpiScale, fontPtr);
@@ -485,16 +485,20 @@ public unsafe class ImGuiController : DisposableObject
 
     private void OnChangedViewport(ImGuiViewport* vp)
     {
-        if (vp->DpiScale == _currentDpiScale)
+        // If the platform window has not been created yet, do nothing.
+        if (vp->PlatformWindowCreated == 0)
         {
             return;
         }
 
-        _dpiScaleSizes[vp->DpiScale].Apply(ImGui.GetStyle());
+        if (vp->DpiScale != _currentDpiScale)
+        {
+            _dpiScaleSizes[vp->DpiScale].Apply(ImGui.GetStyle());
+
+            _currentDpiScale = vp->DpiScale;
+        }
 
         ImGui.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
-
-        _currentDpiScale = vp->DpiScale;
     }
 
     private void SetImeData(ImGuiContext* ctx, ImGuiViewport* viewport, ImGuiPlatformImeData* data)

@@ -81,20 +81,10 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
     }
 
     internal DeviceBuffer(VulkanResources vkRes,
+                          BufferUsageFlags bufferUsageFlags,
                           uint sizeInBytes,
-                          bool isDescriptorBuffer,
-                          bool isDynamicBuffer) : base(vkRes, ObjectType.Buffer)
+                          bool isHostVisible) : base(vkRes, ObjectType.Buffer)
     {
-        BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferSrcBit | BufferUsageFlags.TransferDstBit;
-
-        if (isDescriptorBuffer)
-        {
-            bufferUsageFlags |= BufferUsageFlags.ResourceDescriptorBufferBitExt
-                                | BufferUsageFlags.SamplerDescriptorBufferBitExt
-                                | BufferUsageFlags.ShaderDeviceAddressBit;
-        }
-
-
         BufferCreateInfo createInfo = new()
         {
             SType = StructureType.BufferCreateInfo,
@@ -109,27 +99,33 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
         MemoryRequirements memoryRequirements;
         VkRes.Vk.GetBufferMemoryRequirements(VkRes.VkDevice, buffer, &memoryRequirements);
 
+        bool isAddress = bufferUsageFlags.HasFlag(BufferUsageFlags.ShaderDeviceAddressBit);
+
         DeviceMemory deviceMemory = new(VkRes,
                                         in memoryRequirements,
-                                        isDynamicBuffer ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit,
-                                        true);
+                                        isHostVisible ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit,
+                                        isAddress);
 
         VkRes.Vk.BindBufferMemory(VkRes.VkDevice, buffer, deviceMemory.Handle, 0).ThrowCode();
 
-        BufferDeviceAddressInfo bufferDeviceAddressInfo = new()
+        ulong address = 0;
+        if (isAddress)
         {
-            SType = StructureType.BufferDeviceAddressInfo,
-            Buffer = buffer
-        };
+            BufferDeviceAddressInfo bufferDeviceAddressInfo = new()
+            {
+                SType = StructureType.BufferDeviceAddressInfo,
+                Buffer = buffer
+            };
 
-        ulong address = VkRes.Vk.GetBufferDeviceAddress(VkRes.VkDevice, &bufferDeviceAddressInfo);
+            address = VkRes.Vk.GetBufferDeviceAddress(VkRes.VkDevice, &bufferDeviceAddressInfo);
+        }
 
         Handle = buffer;
         DeviceMemory = deviceMemory;
         Address = address;
         Usage = BufferUsage.Internal;
         SizeInBytes = sizeInBytes;
-        IsHostVisible = isDynamicBuffer;
+        IsHostVisible = isHostVisible;
     }
 
     internal override VkBuffer Handle { get; }

@@ -12,7 +12,7 @@ internal static unsafe class SpirvCompilation
         _shaderc = Shaderc.GetApi();
     }
 
-    public static byte[] CompileGlslToSpirv(ref readonly ShaderDescription description)
+    public static byte[] CompileHlslToSpirv(ref readonly ShaderDescription description)
     {
         Compiler* compiler = _shaderc.CompilerInitialize();
         CompileOptions* options = _shaderc.CompileOptionsInitialize();
@@ -44,11 +44,11 @@ internal static unsafe class SpirvCompilation
         return stage switch
         {
             ShaderStages.Vertex => ShaderKind.VertexShader,
-            ShaderStages.Fragment => ShaderKind.FragmentShader,
-            ShaderStages.Compute => ShaderKind.ComputeShader,
             ShaderStages.Geometry => ShaderKind.GeometryShader,
             ShaderStages.TessellationControl => ShaderKind.TessControlShader,
             ShaderStages.TessellationEvaluation => ShaderKind.TessEvaluationShader,
+            ShaderStages.Fragment => ShaderKind.FragmentShader,
+            ShaderStages.Compute => ShaderKind.ComputeShader,
             _ => throw new NotSupportedException()
         };
     }

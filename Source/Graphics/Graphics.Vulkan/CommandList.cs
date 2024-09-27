@@ -402,10 +402,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
     public void SetPipeline(Pipeline pipeline)
     {
-        if (pipeline.IsGraphics)
-        {
-            VkRes.Vk.CmdBindPipeline(Handle, PipelineBindPoint.Graphics, pipeline.Handle);
-        }
+        VkRes.Vk.CmdBindPipeline(Handle, pipeline.PipelineBindPoint, pipeline.Handle);
 
         _currentPipeline = pipeline;
     }
@@ -428,16 +425,13 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
         uint bufferIndices = 0;
         ulong offsets = 0;
-        if (_currentPipeline.IsGraphics)
-        {
-            VkRes.ExtDescriptorBuffer.CmdSetDescriptorBufferOffsets(Handle,
-                                                                    PipelineBindPoint.Graphics,
-                                                                    _currentPipeline.Layout,
-                                                                    slot,
-                                                                    1,
-                                                                    &bufferIndices,
-                                                                    &offsets);
-        }
+        VkRes.ExtDescriptorBuffer.CmdSetDescriptorBufferOffsets(Handle,
+                                                                _currentPipeline.PipelineBindPoint,
+                                                                _currentPipeline.Layout,
+                                                                slot,
+                                                                1,
+                                                                &bufferIndices,
+                                                                &offsets);
     }
 
     public void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart)
@@ -450,6 +444,13 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
     public void DrawIndexed(uint indexCount)
     {
         DrawIndexed(indexCount, 1, 0, 0, 0);
+    }
+
+    public void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ)
+    {
+        EnsureRenderPassInactive();
+
+        VkRes.Vk.CmdDispatch(Handle, groupCountX, groupCountY, groupCountZ);
     }
 
     public void ResolveTexture(Texture source, Texture destination)

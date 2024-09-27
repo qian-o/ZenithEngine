@@ -141,12 +141,11 @@ public unsafe class Context : DisposableObject
             PpEnabledExtensionNames = _alloter.Allocate(extensions)
         };
 
-        createInfo.AddNext(out PhysicalDeviceFeatures2 features2);
-
-        features2.AddNext(out PhysicalDeviceVulkan13Features _)
-                 .AddNext(out PhysicalDeviceDescriptorIndexingFeatures _)
-                 .AddNext(out PhysicalDeviceBufferDeviceAddressFeatures _)
-                 .AddNext(out PhysicalDeviceDescriptorBufferFeaturesEXT _);
+        createInfo.AddNext(out PhysicalDeviceFeatures2 features2)
+                  .AddNext(out PhysicalDeviceVulkan13Features _)
+                  .AddNext(out PhysicalDeviceDescriptorIndexingFeatures _)
+                  .AddNext(out PhysicalDeviceBufferDeviceAddressFeatures _)
+                  .AddNext(out PhysicalDeviceDescriptorBufferFeaturesEXT _);
 
         _vk.GetPhysicalDeviceFeatures2(physicalDevice.Handle, &features2);
 
