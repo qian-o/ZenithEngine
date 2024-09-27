@@ -125,32 +125,32 @@ internal sealed unsafe class MainView : View
 
         if (ImGui.IsKeyDown(ImGuiKey.W))
         {
-            _camera.Position += _camera.Forward * 0.1f;
+            _camera.Position += _camera.Forward * e.DeltaTime * 3.0f;
         }
 
         if (ImGui.IsKeyDown(ImGuiKey.S))
         {
-            _camera.Position -= _camera.Forward * 0.1f;
+            _camera.Position -= _camera.Forward * e.DeltaTime * 3.0f;
         }
 
         if (ImGui.IsKeyDown(ImGuiKey.A))
         {
-            _camera.Position -= _camera.Right * 0.1f;
+            _camera.Position -= _camera.Right * e.DeltaTime * 3.0f;
         }
 
         if (ImGui.IsKeyDown(ImGuiKey.D))
         {
-            _camera.Position += _camera.Right * 0.1f;
+            _camera.Position += _camera.Right * e.DeltaTime * 3.0f;
         }
 
         if (ImGui.IsKeyDown(ImGuiKey.Q))
         {
-            _camera.Position -= _camera.Up * 0.1f;
+            _camera.Position -= _camera.Up * e.DeltaTime * 3.0f;
         }
 
         if (ImGui.IsKeyDown(ImGuiKey.E))
         {
-            _camera.Position += _camera.Up * 0.1f;
+            _camera.Position += _camera.Up * e.DeltaTime * 3.0f;
         }
 
         if (ImGui.Begin("Properties"))
@@ -257,16 +257,37 @@ internal sealed unsafe class MainView : View
         {
             Vector2 delta = e.Position - lastMousePosition.Value;
 
-            _camera.Forward = Vector3.TransformNormal(_camera.Forward, Matrix4x4.CreateFromAxisAngle(_camera.Up, -delta.X * 0.01f));
-            _camera.Forward = Vector3.TransformNormal(_camera.Forward, Matrix4x4.CreateFromAxisAngle(_camera.Right, -delta.Y * 0.01f));
+            float yaw = -delta.X * 0.01f;
+            float pitch = -delta.Y * 0.01f;
 
+            float newPitch = MathF.Asin(_camera.Forward.Y) + pitch;
+
+            float clipRadians = DegToRad(89.0f);
+            if (newPitch > clipRadians)
+            {
+                newPitch = clipRadians;
+            }
+            else if (newPitch < -clipRadians)
+            {
+                newPitch = -clipRadians;
+            }
+
+            pitch = newPitch - MathF.Asin(_camera.Forward.Y);
+
+            _camera.Forward = Vector3.TransformNormal(_camera.Forward,
+                                                      Matrix4x4.CreateFromAxisAngle(_camera.Up, yaw));
+            _camera.Forward = Vector3.TransformNormal(_camera.Forward,
+                                                      Matrix4x4.CreateFromAxisAngle(_camera.Right, pitch));
+
+            _camera.Right = Vector3.Normalize(Vector3.Cross(_camera.Forward, Vector3.UnitY));
             _camera.Up = Vector3.Normalize(Vector3.Cross(_camera.Right, _camera.Forward));
-            _camera.Right = Vector3.Normalize(Vector3.Cross(_camera.Forward, _camera.Up));
-
-            _camera.Up.X = 0.0f;
-            _camera.Right.Y = 0.0f;
 
             lastMousePosition = e.Position;
         }
+    }
+
+    private static float DegToRad(float degrees)
+    {
+        return degrees * MathF.PI / 180.0f;
     }
 }
