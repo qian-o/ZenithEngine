@@ -34,6 +34,7 @@ internal sealed unsafe class Program
     private static DeviceBuffer indexBuffer = null!;
     private static DeviceBuffer transformBuffer = null!;
     private static AccelerationStructure bottomLevelAS = null!;
+    private static AccelerationStructure topLevelAS = null!;
 
     private static void Main(string[] _)
     {
@@ -61,6 +62,8 @@ internal sealed unsafe class Program
     private static void Load(object? sender, LoadEventArgs e)
     {
         CreateBottomLevelAccelerationStructure();
+        CreateTopLevelAccelerationStructure();
+        CreateRayTracingPipeline();
     }
 
     private static void Update(object? sender, UpdateEventArgs e)
@@ -231,5 +234,148 @@ internal sealed unsafe class Program
                                                                                                              &accelerationDeviceAddressInfo);
 
         scratchBuffer.Dispose();
+    }
+
+    private static void CreateTopLevelAccelerationStructure()
+    {
+        TransformMatrixKHR transformMatrix = new();
+        transformMatrix.Matrix[0] = 1.0f;
+        transformMatrix.Matrix[5] = 1.0f;
+        transformMatrix.Matrix[10] = 1.0f;
+
+        AccelerationStructureInstanceKHR instance = new()
+        {
+            Transform = transformMatrix,
+            InstanceCustomIndex = 0,
+            Mask = 0xFF,
+            InstanceShaderBindingTableRecordOffset = 0,
+            AccelerationStructureReference = bottomLevelAS.Address,
+            Flags = GeometryInstanceFlagsKHR.TriangleFacingCullDisableBitKhr
+        };
+
+        DeviceBuffer instanceBuffer = new(_device.VkRes,
+                                          BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr,
+                                          (uint)sizeof(AccelerationStructureInstanceKHR),
+                                          true);
+        _device.UpdateBuffer(instanceBuffer, 0, in instance);
+
+        DeviceOrHostAddressConstKHR instanceData = new()
+        {
+            DeviceAddress = instanceBuffer.Address
+        };
+
+        AccelerationStructureGeometryKHR accelerationStructureGeometry = new()
+        {
+            SType = StructureType.AccelerationStructureGeometryKhr,
+            GeometryType = GeometryTypeKHR.InstancesKhr,
+            Geometry = new()
+            {
+                Instances = new()
+                {
+                    SType = StructureType.AccelerationStructureGeometryInstancesDataKhr,
+                    Data = instanceData,
+                    ArrayOfPointers = false
+                }
+            },
+            Flags = GeometryFlagsKHR.OpaqueBitKhr
+        };
+
+        AccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo = new()
+        {
+            SType = StructureType.AccelerationStructureBuildGeometryInfoKhr,
+            Type = AccelerationStructureTypeKHR.TopLevelKhr,
+            GeometryCount = 1,
+            PGeometries = &accelerationStructureGeometry,
+            Flags = BuildAccelerationStructureFlagsKHR.PreferFastTraceBitKhr
+        };
+
+        uint numInstances = 1;
+
+        AccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo = new()
+        {
+            SType = StructureType.AccelerationStructureBuildSizesInfoKhr
+        };
+
+        _device.VkRes.KhrAccelerationStructure.GetAccelerationStructureBuildSizes(_device.VkRes.VkDevice,
+                                                                                  AccelerationStructureBuildTypeKHR.DeviceKhr,
+                                                                                  &accelerationStructureBuildGeometryInfo,
+                                                                                  &numInstances,
+                                                                                  &accelerationStructureBuildSizesInfo);
+
+        topLevelAS = new AccelerationStructure(new DeviceBuffer(_device.VkRes,
+                                                                BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.AccelerationStructureStorageBitKhr,
+                                                                (uint)accelerationStructureBuildSizesInfo.AccelerationStructureSize,
+                                                                false));
+
+        AccelerationStructureCreateInfoKHR accelerationStructureCreateInfo = new()
+        {
+            SType = StructureType.AccelerationStructureCreateInfoKhr,
+            Buffer = topLevelAS.Buffer.Handle,
+            Size = accelerationStructureBuildSizesInfo.AccelerationStructureSize,
+            Type = AccelerationStructureTypeKHR.TopLevelKhr
+        };
+
+        AccelerationStructureKHR accelerationStructure;
+        _device.VkRes.KhrAccelerationStructure.CreateAccelerationStructure(_device.VkRes.VkDevice, &accelerationStructureCreateInfo, null, &accelerationStructure).ThrowCode();
+        topLevelAS.Handle = accelerationStructure;
+
+        DeviceBuffer scratchBuffer = new(_device.VkRes,
+                                         BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.StorageBufferBit,
+                                         (uint)accelerationStructureBuildSizesInfo.BuildScratchSize,
+                                         false);
+
+        AccelerationStructureBuildGeometryInfoKHR accelerationBuildGeometryInfo = new()
+        {
+            SType = StructureType.AccelerationStructureBuildGeometryInfoKhr,
+            Type = AccelerationStructureTypeKHR.TopLevelKhr,
+            DstAccelerationStructure = topLevelAS.Handle,
+            GeometryCount = 1,
+            PGeometries = &accelerationStructureGeometry,
+            ScratchData = new DeviceOrHostAddressKHR
+            {
+                DeviceAddress = scratchBuffer.Address
+            },
+            Mode = BuildAccelerationStructureModeKHR.BuildKhr,
+            Flags = BuildAccelerationStructureFlagsKHR.PreferFastTraceBitKhr
+        };
+
+        AccelerationStructureBuildRangeInfoKHR accelerationStructureBuildRangeInfo = new()
+        {
+            PrimitiveCount = numInstances,
+            PrimitiveOffset = 0,
+            FirstVertex = 0,
+            TransformOffset = 0
+        };
+
+        AccelerationStructureBuildRangeInfoKHR[] accelerationStructureBuildRangeInfos = [accelerationStructureBuildRangeInfo];
+        AccelerationStructureBuildRangeInfoKHR* accelerationStructureBuildRangeInfosPtr = accelerationStructureBuildRangeInfos.AsPointer();
+
+        CommandList commandList = _device.Factory.CreateGraphicsCommandList();
+
+        commandList.Begin();
+
+        _device.VkRes.KhrAccelerationStructure.CmdBuildAccelerationStructures(commandList.Handle,
+                                                                             1,
+                                                                             &accelerationBuildGeometryInfo,
+                                                                             &accelerationStructureBuildRangeInfosPtr);
+
+        commandList.End();
+
+        _device.SubmitCommands(commandList);
+
+        AccelerationStructureDeviceAddressInfoKHR accelerationDeviceAddressInfo = new()
+        {
+            SType = StructureType.AccelerationStructureDeviceAddressInfoKhr,
+            AccelerationStructure = topLevelAS.Handle
+        };
+
+        topLevelAS.Address = _device.VkRes.KhrAccelerationStructure.GetAccelerationStructureDeviceAddress(_device.VkRes.VkDevice,
+                                                                                                          &accelerationDeviceAddressInfo);
+
+        scratchBuffer.Dispose();
+    }
+
+    private static void CreateRayTracingPipeline()
+    {
     }
 }
