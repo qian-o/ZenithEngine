@@ -13,7 +13,8 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
         };
 
         properties2.AddNext(out PhysicalDeviceDescriptorBufferPropertiesEXT descriptorBufferProperties)
-                   .AddNext(out PhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties);
+                   .AddNext(out PhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties)
+                   .AddNext(out PhysicalDeviceRayTracingPipelinePropertiesKHR rayTracingPipelineProperties);
 
         VkRes.Vk.GetPhysicalDeviceProperties2(physicalDevice, &properties2);
 
@@ -42,6 +43,7 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
         Properties2 = properties2;
         DescriptorBufferProperties = descriptorBufferProperties;
         DescriptorIndexingProperties = descriptorIndexingProperties;
+        RayTracingPipelineProperties = rayTracingPipelineProperties;
         Features = features;
         MemoryProperties = memoryProperties;
         QueueFamilyProperties = queueFamilyProperties;
@@ -56,6 +58,8 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
     internal PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties { get; }
 
     internal PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties { get; }
+
+    internal PhysicalDeviceRayTracingPipelinePropertiesKHR RayTracingPipelineProperties { get; }
 
     internal PhysicalDeviceFeatures Features { get; }
 

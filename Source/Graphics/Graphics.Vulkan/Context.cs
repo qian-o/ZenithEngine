@@ -145,7 +145,9 @@ public unsafe class Context : DisposableObject
                   .AddNext(out PhysicalDeviceVulkan13Features _)
                   .AddNext(out PhysicalDeviceDescriptorIndexingFeatures _)
                   .AddNext(out PhysicalDeviceBufferDeviceAddressFeatures _)
-                  .AddNext(out PhysicalDeviceDescriptorBufferFeaturesEXT _);
+                  .AddNext(out PhysicalDeviceDescriptorBufferFeaturesEXT _)
+                  .AddNext(out PhysicalDeviceRayTracingPipelineFeaturesKHR _)
+                  .AddNext(out PhysicalDeviceAccelerationStructureFeaturesKHR _);
 
         _vk.GetPhysicalDeviceFeatures2(physicalDevice.Handle, &features2);
 
@@ -375,6 +377,13 @@ public unsafe class Context : DisposableObject
 
     private static string[] GetDeviceExtensions()
     {
-        return [KhrSwapchain.ExtensionName, ExtDescriptorBuffer.ExtensionName];
+        return
+        [
+            KhrSwapchain.ExtensionName,
+            ExtDescriptorBuffer.ExtensionName,
+            KhrRayTracingPipeline.ExtensionName,
+            KhrAccelerationStructure.ExtensionName,
+            KhrDeferredHostOperations.ExtensionName
+        ];
     }
 }
