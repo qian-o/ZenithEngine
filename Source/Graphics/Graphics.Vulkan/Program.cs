@@ -87,7 +87,10 @@ internal sealed unsafe class Program
 
         uint[] indices = [0, 1, 2];
 
-        Matrix4x4 transform = Matrix4x4.Identity;
+        TransformMatrixKHR transformMatrix = new();
+        transformMatrix.Matrix[0] = 1.0f;
+        transformMatrix.Matrix[5] = 1.0f;
+        transformMatrix.Matrix[10] = 1.0f;
 
         vertexBuffer = new DeviceBuffer(_device.VkRes,
                                         BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr,
@@ -103,9 +106,9 @@ internal sealed unsafe class Program
 
         transformBuffer = new DeviceBuffer(_device.VkRes,
                                            BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr,
-                                           (uint)sizeof(Matrix4x4),
+                                           (uint)sizeof(TransformMatrixKHR),
                                            true);
-        _device.UpdateBuffer(transformBuffer, 0, in transform);
+        _device.UpdateBuffer(transformBuffer, 0, in transformMatrix);
 
         AccelerationStructureGeometryKHR accelerationStructureGeometry = new()
         {
