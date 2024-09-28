@@ -38,6 +38,9 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
 
         KhrSwapchain = CreateDeviceExtension<KhrSwapchain>(device);
         ExtDescriptorBuffer = CreateDeviceExtension<ExtDescriptorBuffer>(device);
+        KhrRayTracingPipeline = CreateDeviceExtension<KhrRayTracingPipeline>(device);
+        KhrAccelerationStructure = CreateDeviceExtension<KhrAccelerationStructure>(device);
+        KhrDeferredHostOperations = CreateDeviceExtension<KhrDeferredHostOperations>(device);
         GraphicsExecutor = new Executor(VkRes, graphicsQueueFamilyIndex);
         ComputeExecutor = new Executor(VkRes, computeQueueFamilyIndex);
         TransferExecutor = new Executor(VkRes, transferQueueFamilyIndex);
@@ -55,6 +58,12 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
     internal KhrSwapchain KhrSwapchain { get; }
 
     internal ExtDescriptorBuffer ExtDescriptorBuffer { get; }
+
+    internal KhrRayTracingPipeline KhrRayTracingPipeline { get; }
+
+    internal KhrAccelerationStructure KhrAccelerationStructure { get; }
+
+    internal KhrDeferredHostOperations KhrDeferredHostOperations { get; }
 
     internal Executor GraphicsExecutor { get; }
 
