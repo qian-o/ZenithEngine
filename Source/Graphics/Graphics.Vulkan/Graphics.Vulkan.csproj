@@ -26,4 +26,10 @@
 		<ProjectReference Include="..\Graphics.Core\Graphics.Core.csproj" />
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<None Include="Assets\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
 </Project>

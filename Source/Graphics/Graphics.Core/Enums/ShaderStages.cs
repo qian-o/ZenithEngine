@@ -1,7 +1,7 @@
 ﻿namespace Graphics.Core;
 
 [Flags]
-public enum ShaderStages : byte
+public enum ShaderStages
 {
     /// <summary>
     /// No stages.
@@ -36,5 +36,10 @@ public enum ShaderStages : byte
     /// <summary>
     /// The compute shader stage.
     /// </summary>
-    Compute = 1 << 5
+    Compute = 1 << 5,
+
+    /// <summary>
+    /// The ray generation shader stage.
+    /// </summary>
+    RayGeneration = 1 << 6
 }

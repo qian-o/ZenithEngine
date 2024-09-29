@@ -22,6 +22,7 @@ internal static unsafe class SpirvCompilation
 
         _shaderc.CompileOptionsSetSourceLanguage(options, SourceLanguage.Hlsl);
         _shaderc.CompileOptionsSetTargetEnv(options, TargetEnv.Vulkan, Context.ApiVersion);
+        _shaderc.CompileOptionsSetOptimizationLevel(options, OptimizationLevel.Performance);
 
         _shaderc.CompileOptionsSetIncludeCallbacks(options,
                                                    PfnIncludeResolveFn.From(IncludeCallback),
@@ -85,6 +86,7 @@ internal static unsafe class SpirvCompilation
             ShaderStages.TessellationEvaluation => ShaderKind.TessEvaluationShader,
             ShaderStages.Fragment => ShaderKind.FragmentShader,
             ShaderStages.Compute => ShaderKind.ComputeShader,
+            ShaderStages.RayGeneration => ShaderKind.RaygenShader,
             _ => throw new NotSupportedException()
         };
     }

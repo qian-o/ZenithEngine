@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text;
 using Graphics.Core;
 using Silk.NET.Vulkan;
 
@@ -17,7 +18,7 @@ internal sealed unsafe class Program
         public Vector2 TexCoord = texCoord;
     }
 
-    private class AccelerationStructure(DeviceBuffer buffer)
+    private sealed class AccelerationStructure(DeviceBuffer buffer)
     {
         public DeviceBuffer Buffer { get; } = buffer;
 
@@ -35,6 +36,8 @@ internal sealed unsafe class Program
     private static DeviceBuffer transformBuffer = null!;
     private static AccelerationStructure bottomLevelAS = null!;
     private static AccelerationStructure topLevelAS = null!;
+    private static DescriptorSetLayout descriptorSetLayout;
+    private static PipelineLayout pipelineLayout;
 
     private static void Main(string[] _)
     {
@@ -377,5 +380,62 @@ internal sealed unsafe class Program
 
     private static void CreateRayTracingPipeline()
     {
+        DescriptorSetLayoutBinding accelerationStructureLayoutBinding = new()
+        {
+            Binding = 0,
+            DescriptorType = DescriptorType.AccelerationStructureKhr,
+            DescriptorCount = 1,
+            StageFlags = ShaderStageFlags.RaygenBitKhr
+        };
+
+        DescriptorSetLayoutBinding resultImageLayoutBinding = new()
+        {
+            Binding = 1,
+            DescriptorType = DescriptorType.StorageImage,
+            DescriptorCount = 1,
+            StageFlags = ShaderStageFlags.RaygenBitKhr
+        };
+
+        DescriptorSetLayoutBinding uniformBufferBinding = new()
+        {
+            Binding = 2,
+            DescriptorType = DescriptorType.UniformBuffer,
+            DescriptorCount = 1,
+            StageFlags = ShaderStageFlags.RaygenBitKhr
+        };
+
+        DescriptorSetLayoutBinding[] bindings =
+        [
+            accelerationStructureLayoutBinding,
+            resultImageLayoutBinding,
+            uniformBufferBinding
+        ];
+
+        DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = new()
+        {
+            SType = StructureType.DescriptorSetLayoutCreateInfo,
+            BindingCount = (uint)bindings.Length,
+            PBindings = bindings.AsPointer()
+        };
+
+        _device.VkRes.Vk.CreateDescriptorSetLayout(_device.VkRes.VkDevice, &descriptorSetLayoutCreateInfo, null, out descriptorSetLayout).ThrowCode();
+
+        PipelineLayoutCreateInfo pipelineLayoutCreateInfo = new()
+        {
+            SType = StructureType.PipelineLayoutCreateInfo,
+            SetLayoutCount = 1,
+            PSetLayouts = descriptorSetLayout.AsPointer()
+        };
+
+        _device.VkRes.Vk.CreatePipelineLayout(_device.VkRes.VkDevice, &pipelineLayoutCreateInfo, null, out pipelineLayout).ThrowCode();
+
+        ShaderDescription rayGenShaderDescription = new()
+        {
+            ShaderBytes = Encoding.UTF8.GetBytes(File.ReadAllText("Tests/Shaders/raygen.hlsl")),
+            Stage = ShaderStages.RayGeneration,
+            EntryPoint = "main"
+        };
+
+        Shader rayGenShader = _device.Factory.CompileHlslToSpirv(rayGenShaderDescription).First();
     }
 }
