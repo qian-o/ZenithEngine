@@ -43,9 +43,9 @@ internal static unsafe class DxcHelpers
     {
         return
         [
+            "-spirv",
             "-T", GetProfile(in shaderDescription),
             "-E", shaderDescription.EntryPoint,
-            "-spirv",
             $"-fspv-target-env=vulkan{Context.ApiVersion.Major}.{Context.ApiVersion.Minor}",
          ];
     }
@@ -54,12 +54,12 @@ internal static unsafe class DxcHelpers
     {
         return shaderDescription.Stage switch
         {
-            ShaderStages.Vertex => "vs_6_0",
-            ShaderStages.TessellationControl => "hs_6_0",
-            ShaderStages.TessellationEvaluation => "ds_6_0",
-            ShaderStages.Geometry => "gs_6_0",
-            ShaderStages.Fragment => "ps_6_0",
-            ShaderStages.Compute => "cs_6_0",
+            ShaderStages.Vertex => "vs_6_3",
+            ShaderStages.TessellationControl => "hs_6_3",
+            ShaderStages.TessellationEvaluation => "ds_6_3",
+            ShaderStages.Geometry => "gs_6_3",
+            ShaderStages.Fragment => "ps_6_3",
+            ShaderStages.Compute => "cs_6_3",
             ShaderStages.RayGeneration or
             ShaderStages.AnyHit or
             ShaderStages.ClosestHit or
