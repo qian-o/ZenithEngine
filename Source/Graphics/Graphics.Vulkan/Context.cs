@@ -147,7 +147,8 @@ public unsafe class Context : DisposableObject
                   .AddNext(out PhysicalDeviceBufferDeviceAddressFeatures _)
                   .AddNext(out PhysicalDeviceDescriptorBufferFeaturesEXT _)
                   .AddNext(out PhysicalDeviceRayTracingPipelineFeaturesKHR _)
-                  .AddNext(out PhysicalDeviceAccelerationStructureFeaturesKHR _);
+                  .AddNext(out PhysicalDeviceAccelerationStructureFeaturesKHR _)
+                  .AddNext(out PhysicalDeviceRayQueryFeaturesKHR _);
 
         _vk.GetPhysicalDeviceFeatures2(physicalDevice.Handle, &features2);
 
@@ -383,7 +384,8 @@ public unsafe class Context : DisposableObject
             ExtDescriptorBuffer.ExtensionName,
             KhrRayTracingPipeline.ExtensionName,
             KhrAccelerationStructure.ExtensionName,
-            KhrDeferredHostOperations.ExtensionName
+            KhrDeferredHostOperations.ExtensionName,
+            "VK_KHR_ray_query"
         ];
     }
 }
