@@ -11,7 +11,7 @@ struct RayPayload
 
 RaytracingAccelerationStructure rs : register(t0, space0);
 RWTexture2D<float4> image : register(u1, space0);
-ConstantBuffer<CameraProperties> cam : register(b0, space0);
+ConstantBuffer<CameraProperties> cam : register(b2, space0);
 
 [shader("raygeneration")]
 void main()

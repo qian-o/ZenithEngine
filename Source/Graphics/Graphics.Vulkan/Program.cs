@@ -38,6 +38,7 @@ internal sealed unsafe class Program
     private static AccelerationStructure topLevelAS = null!;
     private static DescriptorSetLayout descriptorSetLayout;
     private static PipelineLayout pipelineLayout;
+    private static VkPipeline rayTracingPipeline;
 
     private static void Main(string[] _)
     {
@@ -380,6 +381,8 @@ internal sealed unsafe class Program
 
     private static void CreateRayTracingPipeline()
     {
+        using Alloter alloter = new();
+
         DescriptorSetLayoutBinding accelerationStructureLayoutBinding = new()
         {
             Binding = 0,
@@ -436,6 +439,99 @@ internal sealed unsafe class Program
             EntryPoint = "main"
         };
 
-        Shader rayGenShader = _device.Factory.HlslToSpirv([rayGenShaderDescription]).First();
+        ShaderDescription missShaderDescription = new()
+        {
+            ShaderBytes = Encoding.UTF8.GetBytes(File.ReadAllText("Assets/Shaders/miss.hlsl")),
+            Stage = ShaderStages.Miss,
+            EntryPoint = "main"
+        };
+
+        ShaderDescription closestHitShaderDescription = new()
+        {
+            ShaderBytes = Encoding.UTF8.GetBytes(File.ReadAllText("Assets/Shaders/closesthit.hlsl")),
+            Stage = ShaderStages.ClosestHit,
+            EntryPoint = "main"
+        };
+
+        using Shader rayGenShader = _device.Factory.HlslToSpirv([rayGenShaderDescription]).First();
+        using Shader missShader = _device.Factory.HlslToSpirv([missShaderDescription]).First();
+        using Shader closestHitShader = _device.Factory.HlslToSpirv([closestHitShaderDescription]).First();
+
+        PipelineShaderStageCreateInfo[] shaderStages =
+        [
+            new PipelineShaderStageCreateInfo
+            {
+                SType = StructureType.PipelineShaderStageCreateInfo,
+                Stage = ShaderStageFlags.RaygenBitKhr,
+                Module = rayGenShader.Handle,
+                PName = alloter.Allocate(rayGenShader.EntryPoint)
+            },
+            new PipelineShaderStageCreateInfo
+            {
+                SType = StructureType.PipelineShaderStageCreateInfo,
+                Stage = ShaderStageFlags.MissBitKhr,
+                Module = missShader.Handle,
+                PName = alloter.Allocate(missShader.EntryPoint)
+            },
+            new PipelineShaderStageCreateInfo
+            {
+                SType = StructureType.PipelineShaderStageCreateInfo,
+                Stage = ShaderStageFlags.ClosestHitBitKhr,
+                Module = closestHitShader.Handle,
+                PName = alloter.Allocate(closestHitShader.EntryPoint)
+            }
+        ];
+
+        RayTracingShaderGroupCreateInfoKHR[] shaderGroups =
+        [
+            new RayTracingShaderGroupCreateInfoKHR
+            {
+                SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                Type = RayTracingShaderGroupTypeKHR.GeneralKhr,
+                GeneralShader = 0,
+                ClosestHitShader = Vk.ShaderUnusedKhr,
+                AnyHitShader = Vk.ShaderUnusedKhr,
+                IntersectionShader = Vk.ShaderUnusedKhr
+            },
+            new RayTracingShaderGroupCreateInfoKHR
+            {
+                SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                Type = RayTracingShaderGroupTypeKHR.GeneralKhr,
+                GeneralShader = 1,
+                ClosestHitShader = Vk.ShaderUnusedKhr,
+                AnyHitShader = Vk.ShaderUnusedKhr,
+                IntersectionShader = Vk.ShaderUnusedKhr
+            },
+            new RayTracingShaderGroupCreateInfoKHR
+            {
+                SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                Type = RayTracingShaderGroupTypeKHR.TrianglesHitGroupKhr,
+                GeneralShader = Vk.ShaderUnusedKhr,
+                ClosestHitShader = 2,
+                AnyHitShader = Vk.ShaderUnusedKhr,
+                IntersectionShader = Vk.ShaderUnusedKhr
+            }
+        ];
+
+        RayTracingPipelineCreateInfoKHR rayTracingPipelineCreateInfo = new()
+        {
+            SType = StructureType.RayTracingPipelineCreateInfoKhr,
+            StageCount = (uint)shaderStages.Length,
+            PStages = shaderStages.AsPointer(),
+            GroupCount = (uint)shaderGroups.Length,
+            PGroups = shaderGroups.AsPointer(),
+            MaxPipelineRayRecursionDepth = 1,
+            Layout = pipelineLayout,
+            BasePipelineHandle = default,
+            BasePipelineIndex = -1
+        };
+
+        _device.VkRes.KhrRayTracingPipeline.CreateRayTracingPipelines(_device.VkRes.VkDevice,
+                                                                      default,
+                                                                      default,
+                                                                      1,
+                                                                      &rayTracingPipelineCreateInfo,
+                                                                      null,
+                                                                      out rayTracingPipeline).ThrowCode();
     }
 }
