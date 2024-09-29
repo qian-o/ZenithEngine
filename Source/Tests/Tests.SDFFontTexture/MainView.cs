@@ -116,8 +116,8 @@ internal sealed unsafe class MainView : View
         _resourceSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _uniformBuffer, _normalBuffer, _sdfTextureView, _device.LinearSampler));
 
         string hlsl = File.ReadAllText("Assets/Shaders/SDF.hlsl");
-        _shaders = device.Factory.HlslToSpirvByShaderc(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
-                                                       new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
+        _shaders = device.Factory.HlslToSpirvByDxc(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
+                                                   new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
         _vertexLayoutDescriptions =
         [

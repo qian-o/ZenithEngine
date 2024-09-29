@@ -19,8 +19,6 @@
 		<PackageReference Include="Hexa.NET.ImPlot" Version="2.1.4" />
 		<PackageReference Include="Silk.NET.Input.Sdl" Version="2.21.0" />
 		<PackageReference Include="Silk.NET.Maths" Version="2.21.0" />
-		<PackageReference Include="Silk.NET.Shaderc" Version="2.21.0" />
-		<PackageReference Include="Silk.NET.Shaderc.Native" Version="2.21.0" />
 		<PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.21.0" />
 		<PackageReference Include="SkiaSharp" Version="2.88.8" />
 		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
