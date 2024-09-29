@@ -75,7 +75,7 @@ public unsafe class Context : DisposableObject
         _graphicsDeviceMap = [];
     }
 
-    public static uint ApiVersion { get; }
+    public static Version32 ApiVersion { get; }
 
     public static bool Debugging { get; }
 

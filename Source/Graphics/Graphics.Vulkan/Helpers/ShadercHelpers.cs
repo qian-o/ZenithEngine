@@ -39,7 +39,7 @@ internal static unsafe class ShadercHelpers
 
         if (_shaderc.ResultGetCompilationStatus(result) != CompilationStatus.Success)
         {
-            throw new GraphicsException($"Failed to compile shader: {_shaderc.ResultGetErrorMessageS(result)}");
+            throw new ShaderCompilationException(_shaderc.ResultGetErrorMessageS(result));
         }
 
         ReadOnlySpan<byte> spirv = new(_shaderc.ResultGetBytes(result), (int)_shaderc.ResultGetLength(result));
@@ -81,18 +81,12 @@ internal static unsafe class ShadercHelpers
         return stage switch
         {
             ShaderStages.Vertex => ShaderKind.VertexShader,
-            ShaderStages.Geometry => ShaderKind.GeometryShader,
             ShaderStages.TessellationControl => ShaderKind.TessControlShader,
             ShaderStages.TessellationEvaluation => ShaderKind.TessEvaluationShader,
+            ShaderStages.Geometry => ShaderKind.GeometryShader,
             ShaderStages.Fragment => ShaderKind.FragmentShader,
             ShaderStages.Compute => ShaderKind.ComputeShader,
-            ShaderStages.RayGeneration => ShaderKind.RaygenShader,
-            ShaderStages.AnyHit => ShaderKind.AnyhitShader,
-            ShaderStages.ClosestHit => ShaderKind.ClosesthitShader,
-            ShaderStages.Miss => ShaderKind.MissShader,
-            ShaderStages.Intersection => ShaderKind.IntersectionShader,
-            ShaderStages.Callable => ShaderKind.CallableShader,
-            _ => throw new NotSupportedException()
+            _ => throw new NotSupportedException("Shaderc does not support HLSL RayTracing Shader, please try using DXC compiler.")
         };
     }
 }
