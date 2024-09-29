@@ -35,7 +35,7 @@ struct VSOutput
 };
 
 ConstantBuffer<Frame> frame : register(b0, space0);
-StructuredBuffer<float4x4> nodeTransform : register(b1, space0);
+StructuredBuffer<float4x4> nodeTransform : register(t1, space0);
 Texture2D textureMap[] : register(t0, space1);
 SamplerState textureSampler[] : register(s0, space2);
 

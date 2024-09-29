@@ -16,7 +16,7 @@ float sdPlane(float3 p, float3 n, float h)
 
 float checkersGradBox(float2 p)
 {
-    float2 w = float2(0.001);
+    float2 w = 0.001;
 
     float2 i = 2.0 * (abs(frac((p - 0.5 * w) * 0.5) - 0.5) - abs(frac((p + 0.5 * w) * 0.5) - 0.5)) / w;
 

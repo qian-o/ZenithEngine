@@ -143,6 +143,7 @@ public unsafe class Context : DisposableObject
 
         createInfo.AddNext(out PhysicalDeviceFeatures2 features2)
                   .AddNext(out PhysicalDeviceVulkan13Features _)
+                  .AddNext(out PhysicalDeviceScalarBlockLayoutFeatures _)
                   .AddNext(out PhysicalDeviceDescriptorIndexingFeatures _)
                   .AddNext(out PhysicalDeviceBufferDeviceAddressFeatures _)
                   .AddNext(out PhysicalDeviceDescriptorBufferFeaturesEXT _)

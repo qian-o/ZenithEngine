@@ -6,6 +6,8 @@ public static class ResourceFactoryExtensions
                                                 ShaderDescription[] descriptions,
                                                 Func<string, byte[]>? includeResolver = null)
     {
+        return HlslToSpirvByDxc(factory, descriptions, includeResolver);
+
         Shader[] shaders = new Shader[descriptions.Length];
 
         for (int i = 0; i < descriptions.Length; i++)
@@ -23,7 +25,7 @@ public static class ResourceFactoryExtensions
     public static Shader[] HlslToSpirvByShaderc(this ResourceFactory factory,
                                                 params ShaderDescription[] descriptions)
     {
-        return HlslToSpirvByShaderc(factory, descriptions, null);
+        return HlslToSpirvByDxc(factory, descriptions, null);
     }
 
     public static Shader[] HlslToSpirvByDxc(this ResourceFactory factory,

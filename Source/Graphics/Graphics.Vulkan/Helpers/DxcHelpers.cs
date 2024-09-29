@@ -7,7 +7,7 @@ namespace Graphics.Vulkan;
 
 internal static unsafe class DxcHelpers
 {
-    private sealed class IncludeHandler(Func<string, byte[]>? includeResolver) : IDxcIncludeHandler
+    private sealed class IncludeHandler(Func<string, byte[]>? includeResolver) : CallbackBase, IDxcIncludeHandler
     {
         public Result LoadSource(string filename, out IDxcBlob includeSource)
         {
@@ -16,10 +16,6 @@ internal static unsafe class DxcHelpers
             includeSource = DxcCompiler.Utils.CreateBlob((nint)includeBytes.AsPointer(), includeBytes.Length, Dxc.DXC_CP_UTF8);
 
             return Result.Ok;
-        }
-
-        public void Dispose()
-        {
         }
     }
 
@@ -47,6 +43,7 @@ internal static unsafe class DxcHelpers
             "-T", GetProfile(in shaderDescription),
             "-E", shaderDescription.EntryPoint,
             $"-fspv-target-env=vulkan{Context.ApiVersion.Major}.{Context.ApiVersion.Minor}",
+            "-fvk-use-scalar-layout"
          ];
     }
 

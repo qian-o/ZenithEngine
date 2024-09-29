@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
@@ -17,19 +16,14 @@ using Texture = Graphics.Vulkan.Texture;
 internal sealed unsafe class Program
 {
     #region Structs
-    [StructLayout(LayoutKind.Explicit)]
     private struct Frame
     {
-        [FieldOffset(0)]
         public Matrix4x4 Projection;
 
-        [FieldOffset(64)]
         public Matrix4x4 View;
 
-        [FieldOffset(128)]
         public Vector4 LightPos;
 
-        [FieldOffset(144)]
         public Vector4 ViewPos;
     }
 

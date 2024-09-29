@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
@@ -10,46 +9,32 @@ namespace Tests.Compute;
 
 internal sealed unsafe class MainView : View
 {
-    [StructLayout(LayoutKind.Explicit)]
     private struct Camera
     {
-        [FieldOffset(0)]
         public Vector3 Position;
 
-        [FieldOffset(16)]
         public Vector3 Forward;
 
-        [FieldOffset(32)]
         public Vector3 Right;
 
-        [FieldOffset(48)]
         public Vector3 Up;
 
-        [FieldOffset(60)]
         public float NearPlane;
 
-        [FieldOffset(64)]
         public float FarPlane;
 
-        [FieldOffset(68)]
         public float Fov;
 
-        [FieldOffset(72)]
         public int Width;
 
-        [FieldOffset(76)]
         public int Height;
 
-        [FieldOffset(80)]
         public Vector3 Background;
 
-        [FieldOffset(92)]
         public int AntiAliasing;
 
-        [FieldOffset(96)]
         public int maxSteps;
 
-        [FieldOffset(100)]
         public float Epsilon;
     }
 
