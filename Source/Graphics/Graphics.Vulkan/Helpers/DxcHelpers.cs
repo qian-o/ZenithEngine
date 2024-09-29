@@ -19,7 +19,7 @@ internal static unsafe class DxcHelpers
         }
     }
 
-    public static byte[] CompileHlslToSpirv(ref readonly ShaderDescription description, Func<string, byte[]>? includeResolver = null)
+    public static byte[] Compile(ref readonly ShaderDescription description, Func<string, byte[]>? includeResolver = null)
     {
         using IncludeHandler includeHandler = new(includeResolver);
 

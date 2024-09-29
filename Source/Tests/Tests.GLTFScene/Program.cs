@@ -249,8 +249,8 @@ internal sealed unsafe class Program
         VertexElementDescription colorMapIndexDescription = new("ColorMapIndex", VertexElementFormat.Int1);
         VertexElementDescription normalMapIndexDescription = new("NormalMapIndex", VertexElementFormat.Int1);
 
-        _shaders = _device.Factory.HlslToSpirvByDxc(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
-                                                    new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
+        _shaders = _device.Factory.HlslToSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
+                                               new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
         _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription,
                                                                  normalDescription,

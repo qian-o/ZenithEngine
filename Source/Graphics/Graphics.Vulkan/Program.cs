@@ -436,6 +436,6 @@ internal sealed unsafe class Program
             EntryPoint = "main"
         };
 
-        Shader rayGenShader = _device.Factory.HlslToSpirvByDxc([rayGenShaderDescription]).First();
+        Shader rayGenShader = _device.Factory.HlslToSpirv([rayGenShaderDescription]).First();
     }
 }

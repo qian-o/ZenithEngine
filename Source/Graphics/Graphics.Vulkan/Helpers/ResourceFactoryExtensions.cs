@@ -2,9 +2,9 @@
 
 public static class ResourceFactoryExtensions
 {
-    public static Shader[] HlslToSpirvByDxc(this ResourceFactory factory,
-                                            ShaderDescription[] descriptions,
-                                            Func<string, byte[]>? includeResolver = null)
+    public static Shader[] HlslToSpirv(this ResourceFactory factory,
+                                       ShaderDescription[] descriptions,
+                                       Func<string, byte[]>? includeResolver = null)
     {
         Shader[] shaders = new Shader[descriptions.Length];
 
@@ -12,7 +12,7 @@ public static class ResourceFactoryExtensions
         {
             ShaderDescription description = descriptions[i];
 
-            byte[] spirv = DxcHelpers.CompileHlslToSpirv(in descriptions[i], includeResolver);
+            byte[] spirv = DxcHelpers.Compile(in descriptions[i], includeResolver);
 
             shaders[i] = factory.CreateShader(new ShaderDescription(description.Stage, spirv, description.EntryPoint));
         }
@@ -20,8 +20,8 @@ public static class ResourceFactoryExtensions
         return shaders;
     }
 
-    public static Shader[] HlslToSpirvByDxc(this ResourceFactory factory, params ShaderDescription[] descriptions)
+    public static Shader[] HlslToSpirv(this ResourceFactory factory, params ShaderDescription[] descriptions)
     {
-        return HlslToSpirvByDxc(factory, descriptions, null);
+        return HlslToSpirv(factory, descriptions, null);
     }
 }
