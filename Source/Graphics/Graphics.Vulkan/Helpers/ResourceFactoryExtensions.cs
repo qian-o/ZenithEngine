@@ -12,7 +12,7 @@ public static class ResourceFactoryExtensions
         {
             ShaderDescription description = descriptions[i];
 
-            byte[] spirv = SpirvCompilation.CompileHlslToSpirv(in descriptions[i], includeResolver);
+            byte[] spirv = ShadercHelpers.CompileHlslToSpirv(in descriptions[i], includeResolver);
 
             shaders[i] = factory.CreateShader(new ShaderDescription(description.Stage, spirv, description.EntryPoint));
         }

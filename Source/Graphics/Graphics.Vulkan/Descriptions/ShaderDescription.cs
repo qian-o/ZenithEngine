@@ -18,7 +18,7 @@ public record struct ShaderDescription
 
     /// <summary>
     /// An array containing the raw shader bytes.
-    /// Shader bytecode in SPIR-V format or UTF8-encoded GLSL source code.
+    /// Shader bytecode in SPIR-V format or UTF8-encoded HLSL source code.
     /// </summary>
     public byte[] ShaderBytes { get; set; }
 

@@ -41,5 +41,30 @@ public enum ShaderStages
     /// <summary>
     /// The ray generation shader stage.
     /// </summary>
-    RayGeneration = 1 << 6
+    RayGeneration = 1 << 6,
+
+    /// <summary>
+    /// The any-hit shader stage.
+    /// </summary>
+    AnyHit = 1 << 7,
+
+    /// <summary>
+    /// The closest-hit shader stage.
+    /// </summary>
+    ClosestHit = 1 << 8,
+
+    /// <summary>
+    /// The miss shader stage.
+    /// </summary>
+    Miss = 1 << 9,
+
+    /// <summary>
+    /// The intersection shader stage.
+    /// </summary>
+    Intersection = 1 << 10,
+
+    /// <summary>
+    /// The callable shader stage.
+    /// </summary>
+    Callable = 1 << 11
 }

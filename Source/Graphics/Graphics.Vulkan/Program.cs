@@ -431,7 +431,7 @@ internal sealed unsafe class Program
 
         ShaderDescription rayGenShaderDescription = new()
         {
-            ShaderBytes = Encoding.UTF8.GetBytes(File.ReadAllText("Tests/Shaders/raygen.hlsl")),
+            ShaderBytes = Encoding.UTF8.GetBytes(File.ReadAllText("Assets/Shaders/raygen.hlsl")),
             Stage = ShaderStages.RayGeneration,
             EntryPoint = "main"
         };

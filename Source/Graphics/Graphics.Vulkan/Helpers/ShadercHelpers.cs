@@ -3,11 +3,11 @@ using Silk.NET.Shaderc;
 
 namespace Graphics.Vulkan;
 
-internal static unsafe class SpirvCompilation
+internal static unsafe class ShadercHelpers
 {
     private static readonly Shaderc _shaderc;
 
-    static SpirvCompilation()
+    static ShadercHelpers()
     {
         _shaderc = Shaderc.GetApi();
     }
@@ -87,6 +87,11 @@ internal static unsafe class SpirvCompilation
             ShaderStages.Fragment => ShaderKind.FragmentShader,
             ShaderStages.Compute => ShaderKind.ComputeShader,
             ShaderStages.RayGeneration => ShaderKind.RaygenShader,
+            ShaderStages.AnyHit => ShaderKind.AnyhitShader,
+            ShaderStages.ClosestHit => ShaderKind.ClosesthitShader,
+            ShaderStages.Miss => ShaderKind.MissShader,
+            ShaderStages.Intersection => ShaderKind.IntersectionShader,
+            ShaderStages.Callable => ShaderKind.CallableShader,
             _ => throw new NotSupportedException()
         };
     }
