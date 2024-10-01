@@ -601,7 +601,7 @@ internal sealed unsafe class Program
 
         _device.UpdateBuffer(rayGenShaderBindingTable, 0, shaderHandleStorage, (int)handleSize);
         _device.UpdateBuffer(missShaderBindingTable, 0, shaderHandleStorage + handleSizeAligned, (int)handleSize);
-        _device.UpdateBuffer(hitShaderBindingTable, 0, shaderHandleStorage + handleSizeAligned * 2, (int)handleSize);
+        _device.UpdateBuffer(hitShaderBindingTable, 0, shaderHandleStorage + (handleSizeAligned * 2), (int)handleSize);
     }
 
     private static void CreateDescriptorSets()
