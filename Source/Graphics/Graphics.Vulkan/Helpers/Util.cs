@@ -1,4 +1,6 @@
-﻿namespace Graphics.Vulkan;
+﻿using System.Numerics;
+
+namespace Graphics.Vulkan;
 
 internal static class Util
 {
@@ -24,9 +26,9 @@ internal static class Util
         throw new InvalidOperationException("Invalid bindable resource type");
     }
 
-    public static ulong AlignedSize(ulong size, ulong alignment)
+    public static T AlignedSize<T>(T size, T alignment) where T : INumberBase<T>, IBitwiseOperators<T, T, T>
     {
-        return (size + alignment - 1) & ~(alignment - 1);
+        return (size + alignment - T.One) & ~(alignment - T.One);
     }
 
     private static uint GetDimension(uint largestLevelDimension, uint mipLevel)

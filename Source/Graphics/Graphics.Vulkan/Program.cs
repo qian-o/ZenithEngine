@@ -39,6 +39,9 @@ internal sealed unsafe class Program
     private static DescriptorSetLayout descriptorSetLayout;
     private static PipelineLayout pipelineLayout;
     private static VkPipeline rayTracingPipeline;
+    private static DeviceBuffer rayGenShaderBindingTable = null!;
+    private static DeviceBuffer missShaderBindingTable = null!;
+    private static DeviceBuffer hitShaderBindingTable = null!;
 
     private static void Main(string[] _)
     {
@@ -68,6 +71,8 @@ internal sealed unsafe class Program
         CreateBottomLevelAccelerationStructure();
         CreateTopLevelAccelerationStructure();
         CreateRayTracingPipeline();
+        CreateShaderBindingTable();
+        CreateDescriptorSets();
     }
 
     private static void Update(object? sender, UpdateEventArgs e)
@@ -533,5 +538,62 @@ internal sealed unsafe class Program
                                                                       &rayTracingPipelineCreateInfo,
                                                                       null,
                                                                       out rayTracingPipeline).ThrowCode();
+    }
+
+    private static void CreateShaderBindingTable()
+    {
+        uint handleSize = _device.VkRes.RayTracingPipelineProperties.ShaderGroupHandleSize;
+        uint handleSizeAligned = Util.AlignedSize(handleSize, _device.VkRes.RayTracingPipelineProperties.ShaderGroupHandleAlignment);
+        uint groupCount = 3;
+        uint sbtSize = groupCount * handleSizeAligned;
+
+        byte* shaderHandleStorage = stackalloc byte[(int)handleSizeAligned];
+        _device.VkRes.KhrRayTracingPipeline.GetRayTracingShaderGroupHandles(_device.VkRes.VkDevice,
+                                                                           rayTracingPipeline,
+                                                                           0,
+                                                                           groupCount,
+                                                                           sbtSize,
+                                                                           shaderHandleStorage).ThrowCode();
+
+        rayGenShaderBindingTable = new(_device.VkRes,
+                                       BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.ShaderBindingTableBitKhr,
+                                       handleSize,
+                                       true);
+
+        missShaderBindingTable = new(_device.VkRes,
+                                     BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.ShaderBindingTableBitKhr,
+                                     handleSize,
+                                     true);
+
+        hitShaderBindingTable = new(_device.VkRes,
+                                    BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.ShaderBindingTableBitKhr,
+                                    handleSize,
+                                    true);
+
+        _device.UpdateBuffer(rayGenShaderBindingTable, 0, shaderHandleStorage, (int)handleSize);
+        _device.UpdateBuffer(missShaderBindingTable, 0, shaderHandleStorage + handleSizeAligned, (int)handleSize);
+        _device.UpdateBuffer(hitShaderBindingTable, 0, shaderHandleStorage + handleSizeAligned * 2, (int)handleSize);
+    }
+
+    private static void CreateDescriptorSets()
+    {
+        DescriptorPoolSize[] poolSizes =
+        [
+            new DescriptorPoolSize
+            {
+                Type = DescriptorType.AccelerationStructureKhr,
+                DescriptorCount = 1
+            },
+            new DescriptorPoolSize
+            {
+                Type = DescriptorType.StorageImage,
+                DescriptorCount = 1
+            },
+            new DescriptorPoolSize
+            {
+                Type = DescriptorType.UniformBuffer,
+                DescriptorCount = 1
+            }
+        ];
     }
 }

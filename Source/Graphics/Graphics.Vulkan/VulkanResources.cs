@@ -49,6 +49,8 @@ public class VulkanResources : DisposableObject
 
     public PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties => PhysicalDevice.DescriptorIndexingProperties;
 
+    public PhysicalDeviceRayTracingPipelinePropertiesKHR RayTracingPipelineProperties => PhysicalDevice.RayTracingPipelineProperties;
+
     public PhysicalDeviceFeatures Features => PhysicalDevice.Features;
 
     public PhysicalDeviceMemoryProperties MemoryProperties => PhysicalDevice.MemoryProperties;
