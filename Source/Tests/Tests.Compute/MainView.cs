@@ -72,8 +72,7 @@ internal sealed unsafe class MainView : View
         _device = device;
         _imGuiController = imGuiController;
 
-
-        _buffer = device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(Camera), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _buffer = device.Factory.CreateBuffer(BufferDescription.UniformBuffer<Camera>(isDynamic: true));
 
         _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("camera", ResourceKind.UniformBuffer, ShaderStages.Compute),
                                                                                             new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.Compute)));

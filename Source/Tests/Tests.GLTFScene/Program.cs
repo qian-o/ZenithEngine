@@ -216,13 +216,13 @@ internal sealed unsafe class Program
             LoadNode(gltfNode, null, vertices, indices);
         }
 
-        _vertexBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Count), BufferUsage.VertexBuffer));
+        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.VertexBuffer<Vertex>(vertices.Count));
         _device.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
 
-        _indexBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
+        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.IndexBuffer<uint>(indices.Count));
         _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
-
-        _uboBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(UBO), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        
+        _uboBuffer = _device.Factory.CreateBuffer(BufferDescription.UniformBuffer<UBO>(isDynamic: true));
 
         ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,

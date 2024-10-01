@@ -7,6 +7,13 @@ namespace Graphics.Vulkan;
 
 internal sealed unsafe class Program
 {
+    private struct CameraProperties
+    {
+        public Matrix4x4 InverseView;
+
+        public Matrix4x4 InverseProjection;
+    }
+
     private struct Vertex(Vector3 position, Vector3 normal, Vector3 color, Vector2 texCoord)
     {
         public Vector3 Position = position;
@@ -36,12 +43,17 @@ internal sealed unsafe class Program
     private static DeviceBuffer transformBuffer = null!;
     private static AccelerationStructure bottomLevelAS = null!;
     private static AccelerationStructure topLevelAS = null!;
+    private static Texture resultImage = null!;
+    private static TextureView resultImageView = null!;
+    private static DeviceBuffer uniformBuffer = null!;
     private static DescriptorSetLayout descriptorSetLayout;
     private static PipelineLayout pipelineLayout;
     private static VkPipeline rayTracingPipeline;
     private static DeviceBuffer rayGenShaderBindingTable = null!;
     private static DeviceBuffer missShaderBindingTable = null!;
     private static DeviceBuffer hitShaderBindingTable = null!;
+    private static DescriptorPool descriptorPool;
+    private static DescriptorSet descriptorSet;
 
     private static void Main(string[] _)
     {
@@ -384,6 +396,23 @@ internal sealed unsafe class Program
         scratchBuffer.Dispose();
     }
 
+    private static void CreateResources(uint width, uint height)
+    {
+        resultImage?.Dispose();
+        resultImageView?.Dispose();
+        uniformBuffer?.Dispose();
+
+        resultImage = _device.Factory.CreateTexture(TextureDescription.Texture2D(width,
+                                                                                 height,
+                                                                                 1,
+                                                                                 PixelFormat.R8G8B8A8UNorm,
+                                                                                 TextureUsage.Storage | TextureUsage.Sampled));
+
+        resultImageView = _device.Factory.CreateTextureView(resultImage);
+
+        uniformBuffer = _device.Factory.CreateBuffer(BufferDescription.UniformBuffer<CameraProperties>());
+    }
+
     private static void CreateRayTracingPipeline()
     {
         using Alloter alloter = new();
@@ -595,5 +624,30 @@ internal sealed unsafe class Program
                 DescriptorCount = 1
             }
         ];
+
+        DescriptorPoolCreateInfo descriptorPoolCreateInfo = new()
+        {
+            SType = StructureType.DescriptorPoolCreateInfo,
+            MaxSets = 1,
+            PoolSizeCount = (uint)poolSizes.Length,
+            PPoolSizes = poolSizes.AsPointer()
+        };
+
+        _device.VkRes.Vk.CreateDescriptorPool(_device.VkRes.VkDevice,
+                                              &descriptorPoolCreateInfo,
+                                              null,
+                                              out descriptorPool).ThrowCode();
+
+        DescriptorSetAllocateInfo descriptorSetAllocateInfo = new()
+        {
+            SType = StructureType.DescriptorSetAllocateInfo,
+            DescriptorPool = descriptorPool,
+            DescriptorSetCount = 1,
+            PSetLayouts = descriptorSetLayout.AsPointer()
+        };
+
+        _device.VkRes.Vk.AllocateDescriptorSets(_device.VkRes.VkDevice,
+                                               &descriptorSetAllocateInfo,
+                                               out descriptorSet).ThrowCode();
     }
 }

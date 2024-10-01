@@ -19,4 +19,28 @@ public record struct BufferDescription
     /// Indicates the intended use of the buffer.
     /// </summary>
     public BufferUsage Usage { get; set; }
+
+    public unsafe static BufferDescription VertexBuffer<T>(int length = 1, bool isDynamic = false) where T : unmanaged
+    {
+        return new BufferDescription((uint)(length * sizeof(T)),
+                                     BufferUsage.VertexBuffer | (isDynamic ? BufferUsage.Dynamic : 0));
+    }
+
+    public unsafe static BufferDescription IndexBuffer<T>(int length = 1, bool isDynamic = false) where T : unmanaged
+    {
+        return new BufferDescription((uint)(length * sizeof(T)),
+                                     BufferUsage.IndexBuffer | (isDynamic ? BufferUsage.Dynamic : 0));
+    }
+
+    public unsafe static BufferDescription UniformBuffer<T>(int length = 1, bool isDynamic = false) where T : unmanaged
+    {
+        return new BufferDescription((uint)(length * sizeof(T)),
+                                     BufferUsage.UniformBuffer | (isDynamic ? BufferUsage.Dynamic : 0));
+    }
+
+    public unsafe static BufferDescription StorageBuffer<T>(int length = 1, bool isDynamic = false) where T : unmanaged
+    {
+        return new BufferDescription((uint)(length * sizeof(T)),
+                                     BufferUsage.StorageBuffer | (isDynamic ? BufferUsage.Dynamic : 0));
+    }
 }

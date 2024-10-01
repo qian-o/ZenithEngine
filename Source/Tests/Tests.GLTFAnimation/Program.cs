@@ -309,14 +309,14 @@ internal sealed unsafe class Program
 
         _worldSpaceMats = new Matrix4x4[_nodes.Count];
 
-        _vertexBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Count), BufferUsage.VertexBuffer));
+        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.VertexBuffer<Vertex>(vertices.Count));
         _device.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
 
-        _indexBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Count), BufferUsage.IndexBuffer));
+        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.IndexBuffer<uint>(indices.Count));
         _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
 
-        _frameBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(Frame), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-        _nodeTransformBuffer = _device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(Matrix4x4) * _worldSpaceMats.Length), BufferUsage.StorageBuffer | BufferUsage.Dynamic));
+        _frameBuffer = _device.Factory.CreateBuffer(BufferDescription.UniformBuffer<Frame>(isDynamic: true));
+        _nodeTransformBuffer = _device.Factory.CreateBuffer(BufferDescription.StorageBuffer<Matrix4x4>(_worldSpaceMats.Length, true));
 
         ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("frame", ResourceKind.UniformBuffer, ShaderStages.Vertex),
                                                              new ResourceLayoutElementDescription("nodeTransform", ResourceKind.StorageBuffer, ShaderStages.Vertex));
