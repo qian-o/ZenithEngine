@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
@@ -9,6 +10,7 @@ namespace Tests.Compute;
 
 internal sealed unsafe class MainView : View
 {
+    [StructLayout(LayoutKind.Sequential)]
     private struct Camera
     {
         public Vector3 Position;

@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
@@ -12,6 +13,7 @@ namespace Tests.SDFFontTexture;
 internal sealed unsafe class MainView : View
 {
     #region Structs
+    [StructLayout(LayoutKind.Sequential)]
     private struct Vertex
     {
         public Vector3 Position;
@@ -19,6 +21,7 @@ internal sealed unsafe class MainView : View
         public Vector2 TexCoord;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     private struct UniformBufferObject
     {
         public Matrix4x4 Model;
@@ -28,6 +31,7 @@ internal sealed unsafe class MainView : View
         public Matrix4x4 Projection;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     private struct Properties
     {
         public float PxRange;

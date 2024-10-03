@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
@@ -14,6 +15,7 @@ using Texture = Graphics.Vulkan.Texture;
 internal sealed unsafe class Program
 {
     #region Structs
+    [StructLayout(LayoutKind.Sequential)]
     private struct UBO
     {
         public Matrix4x4 Projection;
@@ -27,6 +29,7 @@ internal sealed unsafe class Program
         public Vector4 ViewPos;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     private struct Vertex(Vector3 position, Vector3 normal, Vector2 texCoord, Vector3 color, Vector4 tangent, int colorMapIndex, int normalMapIndex)
     {
         public Vector3 Position = position;
@@ -44,6 +47,7 @@ internal sealed unsafe class Program
         public int NormalMapIndex = normalMapIndex;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     private struct Primitive(uint firstIndex, uint indexCount, int materialIndex)
     {
         public uint FirstIndex = firstIndex;
