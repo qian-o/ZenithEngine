@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Graphics.Core.Window;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
 using Silk.NET.Windowing;

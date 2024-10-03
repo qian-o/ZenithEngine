@@ -7,8 +7,9 @@ using Hexa.NET.ImNodes;
 using Hexa.NET.ImPlot;
 using Silk.NET.Input;
 using Silk.NET.SDL;
+using DearImGui = Hexa.NET.ImGui.ImGui;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Vulkan.ImGui;
 
 public unsafe class ImGuiController : DisposableObject
 {
@@ -56,7 +57,7 @@ public unsafe class ImGuiController : DisposableObject
     {
         _window = window;
         _graphicsDevice = graphicsDevice;
-        _imGuiContext = ImGui.CreateContext();
+        _imGuiContext = DearImGui.CreateContext();
         _imPlotContext = ImPlot.CreateContext();
         _imNodesContext = ImNodes.CreateContext();
         _imGuiFontConfig = imGuiFontConfig;
@@ -115,10 +116,10 @@ public unsafe class ImGuiController : DisposableObject
     {
         if (_frameBegun)
         {
-            ImGui.Render();
+            DearImGui.Render();
         }
 
-        ImGui.SetCurrentContext(_imGuiContext);
+        DearImGui.SetCurrentContext(_imGuiContext);
         ImPlot.SetCurrentContext(_imPlotContext);
         ImNodes.SetCurrentContext(_imNodesContext);
 
@@ -131,10 +132,10 @@ public unsafe class ImGuiController : DisposableObject
         UpdateMouseState();
         UpdateMouseCursor();
 
-        ImGui.NewFrame();
+        DearImGui.NewFrame();
         ImGuizmo.BeginFrame();
 
-        ImGui.DockSpaceOverViewport(null, ImGuiDockNodeFlags.PassthruCentralNode, null);
+        DearImGui.DockSpaceOverViewport(null, ImGuiDockNodeFlags.PassthruCentralNode, null);
 
         _frameBegun = true;
     }
@@ -143,11 +144,11 @@ public unsafe class ImGuiController : DisposableObject
     {
         if (_frameBegun)
         {
-            ImGui.Render();
+            DearImGui.Render();
 
-            _imGuiRenderer.RenderImDrawData(commandList, ImGui.GetDrawData());
+            _imGuiRenderer.RenderImDrawData(commandList, DearImGui.GetDrawData());
 
-            ImGui.UpdatePlatformWindows();
+            DearImGui.UpdatePlatformWindows();
 
             foreach (ImGuiPlatform platform in _platforms)
             {
@@ -202,12 +203,12 @@ public unsafe class ImGuiController : DisposableObject
 
         ImNodes.DestroyContext(_imNodesContext);
         ImPlot.DestroyContext(_imPlotContext);
-        ImGui.DestroyContext(_imGuiContext);
+        DearImGui.DestroyContext(_imGuiContext);
     }
 
     private void SetPerFrameImGuiData(float deltaSeconds)
     {
-        ImGuiIOPtr io = ImGui.GetIO();
+        ImGuiIOPtr io = DearImGui.GetIO();
 
         io.DisplaySize = _window.FramebufferSize;
         io.DisplayFramebufferScale = _window.FramebufferSize / _window.Size;
@@ -219,7 +220,7 @@ public unsafe class ImGuiController : DisposableObject
     {
         if (SdlWindow.IsMouseFocusOnWindow())
         {
-            ImGuiIOPtr io = ImGui.GetIO();
+            ImGuiIOPtr io = DearImGui.GetIO();
 
             MouseButton[] mouseButtons = SdlWindow.GetGlobalMouseState(out Vector2 position);
 
@@ -234,21 +235,21 @@ public unsafe class ImGuiController : DisposableObject
 
     private void UpdateMouseCursor()
     {
-        ImGuiIOPtr io = ImGui.GetIO();
+        ImGuiIOPtr io = DearImGui.GetIO();
 
         if (io.ConfigFlags.HasFlag(ImGuiConfigFlags.NoMouseCursorChange))
         {
             return;
         }
 
-        ImGuiMouseCursor imguiCursor = ImGui.GetMouseCursor();
+        ImGuiMouseCursor imguiCursor = DearImGui.GetMouseCursor();
 
         SdlWindow.SetCursor((Cursor*)_mouseCursors[imguiCursor]);
     }
 
     private void Initialize(Action? onConfigureIO)
     {
-        ImGui.SetCurrentContext(_imGuiContext);
+        DearImGui.SetCurrentContext(_imGuiContext);
         ImPlot.SetCurrentContext(_imPlotContext);
         ImNodes.SetCurrentContext(_imNodesContext);
 
@@ -256,9 +257,9 @@ public unsafe class ImGuiController : DisposableObject
         ImNodes.SetImGuiContext(_imGuiContext);
         ImGuizmo.SetImGuiContext(_imGuiContext);
 
-        ImGui.StyleColorsDark();
+        DearImGui.StyleColorsDark();
 
-        ImGuiIOPtr io = ImGui.GetIO();
+        ImGuiIOPtr io = DearImGui.GetIO();
 
         io.Fonts.Clear();
 
@@ -284,7 +285,7 @@ public unsafe class ImGuiController : DisposableObject
 
     private void InitializePlatform()
     {
-        ImGuiViewportPtr mainViewport = ImGui.GetMainViewport();
+        ImGuiViewportPtr mainViewport = DearImGui.GetMainViewport();
         ImGuiPlatform mainPlatform = new(mainViewport, _window, _graphicsDevice);
 
         _platformsByHandle.Add((nint)mainViewport.PlatformHandle, mainPlatform);
@@ -296,7 +297,7 @@ public unsafe class ImGuiController : DisposableObject
 
     private void InitializePlatformDpiScale()
     {
-        ImGuiIOPtr io = ImGui.GetIO();
+        ImGuiIOPtr io = DearImGui.GetIO();
 
         int displayCount = SdlWindow.GetDisplayCount();
 
@@ -328,7 +329,7 @@ public unsafe class ImGuiController : DisposableObject
 
     private void InitializePlatformMonitors()
     {
-        ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
+        ImGuiPlatformIOPtr platformIO = DearImGui.GetPlatformIO();
 
         platformIO.Monitors.Resize(SdlWindow.GetDisplayCount());
 
@@ -351,7 +352,7 @@ public unsafe class ImGuiController : DisposableObject
 
     private void InitializePlatformCallbacks()
     {
-        ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
+        ImGuiPlatformIOPtr platformIO = DearImGui.GetPlatformIO();
 
         platformIO.PlatformCreateWindow = (void*)Marshal.GetFunctionPointerForDelegate(_createWindow);
         platformIO.PlatformDestroyWindow = (void*)Marshal.GetFunctionPointerForDelegate(_destroyWindow);
@@ -492,12 +493,12 @@ public unsafe class ImGuiController : DisposableObject
 
         if (vp->DpiScale != _currentDpiScale)
         {
-            _dpiScaleSizes[vp->DpiScale].Apply(ImGui.GetStyle());
+            _dpiScaleSizes[vp->DpiScale].Apply(DearImGui.GetStyle());
 
             _currentDpiScale = vp->DpiScale;
         }
 
-        ImGui.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
+        DearImGui.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
     }
 
     private void SetImeData(ImGuiContext* ctx, ImGuiViewport* viewport, ImGuiPlatformImeData* data)

@@ -2,6 +2,8 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
+using Graphics.Core.Helpers;
+using Graphics.Vulkan.Helpers;
 using Silk.NET.Core;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;

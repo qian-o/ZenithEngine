@@ -1,5 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 using Graphics.Core;
+using Graphics.Core.Helpers;
+using Graphics.Vulkan.Descriptions;
+using Graphics.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 using Viewport = Graphics.Core.Viewport;
 

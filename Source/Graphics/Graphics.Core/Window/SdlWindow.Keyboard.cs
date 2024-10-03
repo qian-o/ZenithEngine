@@ -1,4 +1,6 @@
-﻿namespace Graphics.Core;
+﻿using Graphics.Core.Window;
+
+namespace Graphics.Core;
 
 public partial class SdlWindow
 {

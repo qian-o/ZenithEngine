@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Graphics.Core;
+namespace Graphics.Core.Helpers;
 
 public unsafe class Alloter : DisposableObject
 {

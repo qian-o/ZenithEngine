@@ -1,5 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Graphics.Core;
+using Graphics.Vulkan.Descriptions;
+using Graphics.Vulkan.Helpers;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;

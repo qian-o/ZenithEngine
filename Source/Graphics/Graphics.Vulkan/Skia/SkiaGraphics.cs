@@ -1,8 +1,10 @@
 ﻿using Graphics.Core;
+using Graphics.Core.Helpers;
+using Graphics.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 using SkiaSharp;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Vulkan.Skia;
 
 public static unsafe class SkiaGraphics
 {

@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using Graphics.Core;
+using Graphics.Core.Window;
 using Hexa.NET.ImGui;
 
 namespace Tests.Core;

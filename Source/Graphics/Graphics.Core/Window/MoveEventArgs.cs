@@ -1,4 +1,4 @@
-﻿namespace Graphics.Core;
+﻿namespace Graphics.Core.Window;
 
 public class MoveEventArgs(int x, int y) : EventArgs
 {

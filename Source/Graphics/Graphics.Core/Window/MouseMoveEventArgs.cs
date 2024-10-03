@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Graphics.Core;
+namespace Graphics.Core.Window;
 
 public class MouseMoveEventArgs(Vector2 position) : EventArgs
 {

@@ -1,9 +1,11 @@
 ﻿using System.Text;
 using Graphics.Core;
+using Graphics.Core.Helpers;
+using Graphics.Vulkan.Descriptions;
 using SharpGen.Runtime;
 using Vortice.Dxc;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Vulkan.Helpers;
 
 internal static unsafe class DxcHelpers
 {

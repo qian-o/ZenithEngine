@@ -1,4 +1,4 @@
-﻿namespace Graphics.Core;
+﻿namespace Graphics.Core.Window;
 
 public class KeyCharEventArgs(char keyChar) : EventArgs
 {

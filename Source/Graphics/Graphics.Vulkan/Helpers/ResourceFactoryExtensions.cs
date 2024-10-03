@@ -1,4 +1,6 @@
-﻿namespace Graphics.Vulkan;
+﻿using Graphics.Vulkan.Descriptions;
+
+namespace Graphics.Vulkan.Helpers;
 
 public static class ResourceFactoryExtensions
 {
@@ -22,6 +24,6 @@ public static class ResourceFactoryExtensions
 
     public static Shader[] HlslToSpirv(this ResourceFactory factory, params ShaderDescription[] descriptions)
     {
-        return HlslToSpirv(factory, descriptions, null);
+        return factory.HlslToSpirv(descriptions, null);
     }
 }

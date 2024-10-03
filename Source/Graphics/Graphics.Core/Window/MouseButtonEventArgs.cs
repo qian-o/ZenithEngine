@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using Silk.NET.Input;
 
-namespace Graphics.Core;
+namespace Graphics.Core.Window;
 
 public class MouseButtonEventArgs(MouseButton mouseButton, Vector2 position) : EventArgs
 {

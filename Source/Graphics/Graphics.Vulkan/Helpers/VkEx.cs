@@ -1,7 +1,7 @@
 ﻿using Graphics.Core;
 using Silk.NET.Vulkan;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Vulkan.Helpers;
 
 internal static class VkEx
 {

@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Vulkan.Helpers;
 
 internal static class Util
 {

@@ -1,5 +1,7 @@
 ﻿using Graphics.Core;
+using Graphics.Core.Window;
 using Graphics.Vulkan;
+using Graphics.Vulkan.ImGui;
 using Hexa.NET.ImGui;
 
 internal sealed unsafe class Program

@@ -1,10 +1,13 @@
 ﻿using System.Numerics;
 using Graphics.Core;
+using Graphics.Core.Window;
+using Graphics.Vulkan.Descriptions;
 using Hexa.NET.ImGui;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
+using DearImGui = Hexa.NET.ImGui.ImGui;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Vulkan.ImGui;
 
 public unsafe class ImGuiPlatform : DisposableObject
 {
@@ -163,14 +166,14 @@ public unsafe class ImGuiPlatform : DisposableObject
 
     private void MouseWheel(object? sender, MouseWheelEventArgs e)
     {
-        ImGui.GetIO().AddMouseWheelEvent(e.ScrollWheel.X, e.ScrollWheel.Y);
+        DearImGui.GetIO().AddMouseWheelEvent(e.ScrollWheel.X, e.ScrollWheel.Y);
     }
 
     private void KeyDown(object? sender, KeyEventArgs e)
     {
         if (TryMapKey(e.Key, out ImGuiKey result))
         {
-            ImGui.GetIO().AddKeyEvent(result, true);
+            DearImGui.GetIO().AddKeyEvent(result, true);
         }
     }
 
@@ -178,13 +181,13 @@ public unsafe class ImGuiPlatform : DisposableObject
     {
         if (TryMapKey(e.Key, out ImGuiKey result))
         {
-            ImGui.GetIO().AddKeyEvent(result, false);
+            DearImGui.GetIO().AddKeyEvent(result, false);
         }
     }
 
     private void KeyChar(object? sender, KeyCharEventArgs e)
     {
-        ImGui.GetIO().AddInputCharacter(e.KeyChar);
+        DearImGui.GetIO().AddInputCharacter(e.KeyChar);
     }
 
     private void Move(object? sender, MoveEventArgs e)

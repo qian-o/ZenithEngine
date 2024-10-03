@@ -1,4 +1,4 @@
-﻿namespace Graphics.Core;
+﻿namespace Graphics.Core.Window;
 
 public class UpdateEventArgs(float deltaTime, float totalTime) : EventArgs
 {

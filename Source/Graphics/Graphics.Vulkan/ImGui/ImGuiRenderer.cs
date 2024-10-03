@@ -2,9 +2,12 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
+using Graphics.Vulkan.Descriptions;
+using Graphics.Vulkan.Helpers;
 using Hexa.NET.ImGui;
+using DearImGui = Hexa.NET.ImGui.ImGui;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Vulkan.ImGui;
 
 public unsafe class ImGuiRenderer : DisposableObject
 {
@@ -221,7 +224,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         commandList.SetPipeline(_pipeline);
         commandList.SetResourceSet(0, _resourceSet);
 
-        drawDataPtr.ScaleClipRects(ImGui.GetIO().DisplayFramebufferScale);
+        drawDataPtr.ScaleClipRects(DearImGui.GetIO().DisplayFramebufferScale);
 
         int vertexOffset = 0;
         int indexOffset = 0;
@@ -309,7 +312,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     private void CreateFontDeviceTexture()
     {
-        ImGuiIOPtr io = ImGui.GetIO();
+        ImGuiIOPtr io = DearImGui.GetIO();
 
         byte* pixels;
         int width;

@@ -1,4 +1,6 @@
-﻿using Graphics.Core;
+﻿using Graphics.Core.Helpers;
+using Graphics.Vulkan.Descriptions;
+using Graphics.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;

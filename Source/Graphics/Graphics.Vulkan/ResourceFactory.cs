@@ -1,4 +1,6 @@
-﻿namespace Graphics.Vulkan;
+﻿using Graphics.Vulkan.Descriptions;
+
+namespace Graphics.Vulkan;
 
 public class ResourceFactory
 {

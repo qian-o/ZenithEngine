@@ -2,7 +2,11 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
+using Graphics.Core.Window;
 using Graphics.Vulkan;
+using Graphics.Vulkan.Descriptions;
+using Graphics.Vulkan.Helpers;
+using Graphics.Vulkan.ImGui;
 using Hexa.NET.ImGui;
 using StbImageSharp;
 using Tests.Core;

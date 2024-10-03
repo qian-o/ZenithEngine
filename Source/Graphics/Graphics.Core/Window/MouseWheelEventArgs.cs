@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Input;
 
-namespace Graphics.Core;
+namespace Graphics.Core.Window;
 
 public class MouseWheelEventArgs(ScrollWheel scrollWheel) : EventArgs
 {

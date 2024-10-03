@@ -4,7 +4,7 @@ using BlendFactor = Graphics.Core.BlendFactor;
 using FrontFace = Graphics.Core.FrontFace;
 using PrimitiveTopology = Graphics.Core.PrimitiveTopology;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Vulkan.Helpers;
 
 internal static class Formats
 {

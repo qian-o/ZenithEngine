@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Graphics.Core;
+namespace Graphics.Core.Helpers;
 
 public static unsafe class UnsafeExtensions
 {

@@ -1,5 +1,6 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
+using Graphics.Vulkan.Descriptions;
 
 namespace Tests.Core;
 

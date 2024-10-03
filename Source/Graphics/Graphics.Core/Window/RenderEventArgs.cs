@@ -1,4 +1,4 @@
-﻿namespace Graphics.Core;
+﻿namespace Graphics.Core.Window;
 
 public class RenderEventArgs(float deltaTime, float totalTime) : EventArgs
 {
