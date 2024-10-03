@@ -5,7 +5,6 @@ using Graphics.Core;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Hexa.NET.ImGui;
-using DearImGui = Hexa.NET.ImGui.ImGui;
 
 namespace Graphics.Vulkan.ImGui;
 

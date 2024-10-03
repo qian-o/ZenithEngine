@@ -7,7 +7,6 @@ using Hexa.NET.ImNodes;
 using Hexa.NET.ImPlot;
 using Silk.NET.Input;
 using Silk.NET.SDL;
-using DearImGui = Hexa.NET.ImGui.ImGui;
 
 namespace Graphics.Vulkan.ImGui;
 
