@@ -353,8 +353,10 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         ComputeCommandPool.Dispose();
         GraphicsCommandPool.Dispose();
 
+        KhrDeferredHostOperations.Dispose();
+        KhrAccelerationStructure.Dispose();
+        KhrRayTracingPipeline.Dispose();
         ExtDescriptorBuffer.Dispose();
-
         KhrSwapchain.Dispose();
 
         VkRes.Vk.DestroyDevice(Handle, null);
