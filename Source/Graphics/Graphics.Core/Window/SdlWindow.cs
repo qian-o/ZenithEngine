@@ -7,7 +7,7 @@ using Silk.NET.Windowing;
 
 namespace Graphics.Core;
 
-public unsafe partial class Window : DisposableObject
+public unsafe partial class SdlWindow : DisposableObject
 {
     private static readonly Sdl _sdl;
     private static readonly Dictionary<MouseButton, int> _buttonMasks;
@@ -17,7 +17,7 @@ public unsafe partial class Window : DisposableObject
     private readonly IMouse _mouse;
     private readonly IKeyboard _keyboard;
 
-    static Window()
+    static SdlWindow()
     {
         _sdl = Sdl.GetApi();
         _buttonMasks = [];
@@ -28,7 +28,7 @@ public unsafe partial class Window : DisposableObject
         _buttonMasks[MouseButton.Button5] = 5;
     }
 
-    internal Window(IWindow window, IInputContext inputContext)
+    internal SdlWindow(IWindow window, IInputContext inputContext)
     {
         _window = window;
         _inputContext = inputContext;
@@ -57,7 +57,7 @@ public unsafe partial class Window : DisposableObject
         AssemblyKeyboardEvent();
     }
 
-    public static Window CreateWindowByVulkan()
+    public static SdlWindow CreateWindowByVulkan()
     {
         WindowOptions windowOptions = WindowOptions.DefaultVulkan;
         windowOptions.IsVisible = false;
@@ -72,7 +72,7 @@ public unsafe partial class Window : DisposableObject
         IWindow window = SilkWindow.Create(windowOptions);
         window.Initialize();
 
-        return new Window(window, window.CreateInput());
+        return new SdlWindow(window, window.CreateInput());
     }
 
     public static bool IsMouseFocusOnWindow()

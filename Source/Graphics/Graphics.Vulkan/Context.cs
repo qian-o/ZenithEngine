@@ -102,7 +102,7 @@ public unsafe class Context : DisposableObject
         return physicalDevices.OrderByDescending(item => item.Score).First();
     }
 
-    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice, Window window)
+    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice, SdlWindow window)
     {
         float queuePriority = 1.0f;
 

@@ -12,7 +12,7 @@ internal sealed unsafe class Program
 
     private static void Main(string[] _)
     {
-        using Window window = Window.CreateWindowByVulkan();
+        using SdlWindow window = SdlWindow.CreateWindowByVulkan();
         window.Title = "Tests.Compute";
         window.MinimumSize = new(100, 100);
 

@@ -7,13 +7,12 @@ using Hexa.NET.ImNodes;
 using Hexa.NET.ImPlot;
 using Silk.NET.Input;
 using Silk.NET.SDL;
-using Window = Graphics.Core.Window;
 
 namespace Graphics.Vulkan;
 
 public unsafe class ImGuiController : DisposableObject
 {
-    private readonly Window _window;
+    private readonly SdlWindow _window;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ImGuiContextPtr _imGuiContext;
     private readonly ImPlotContextPtr _imPlotContext;
@@ -48,7 +47,7 @@ public unsafe class ImGuiController : DisposableObject
     private float _currentDpiScale;
 
     #region Constructors
-    public ImGuiController(Window window,
+    public ImGuiController(SdlWindow window,
                            GraphicsDevice graphicsDevice,
                            ColorSpaceHandling colorSpaceHandling,
                            ImGuiFontConfig imGuiFontConfig,
@@ -89,7 +88,7 @@ public unsafe class ImGuiController : DisposableObject
         Initialize(onConfigureIO);
     }
 
-    public ImGuiController(Window window,
+    public ImGuiController(SdlWindow window,
                            GraphicsDevice graphicsDevice,
                            ImGuiFontConfig imGuiFontConfig,
                            ImGuiSizeConfig imGuiSizeConfig) : this(window,
@@ -101,7 +100,7 @@ public unsafe class ImGuiController : DisposableObject
     {
     }
 
-    public ImGuiController(Window window,
+    public ImGuiController(SdlWindow window,
                            GraphicsDevice graphicsDevice) : this(window,
                                                                  graphicsDevice,
                                                                  ColorSpaceHandling.Legacy,
@@ -190,7 +189,7 @@ public unsafe class ImGuiController : DisposableObject
 
         foreach (nint cursor in _mouseCursors.Values)
         {
-            Window.FreeCursor((Cursor*)cursor);
+            SdlWindow.FreeCursor((Cursor*)cursor);
         }
 
         foreach (ImGuiPlatform platform in _platforms)
@@ -218,11 +217,11 @@ public unsafe class ImGuiController : DisposableObject
 
     private static void UpdateMouseState()
     {
-        if (Window.IsMouseFocusOnWindow())
+        if (SdlWindow.IsMouseFocusOnWindow())
         {
             ImGuiIOPtr io = ImGui.GetIO();
 
-            MouseButton[] mouseButtons = Window.GetGlobalMouseState(out Vector2 position);
+            MouseButton[] mouseButtons = SdlWindow.GetGlobalMouseState(out Vector2 position);
 
             io.AddMouseButtonEvent((int)ImGuiMouseButton.Left, mouseButtons.Contains(MouseButton.Left));
             io.AddMouseButtonEvent((int)ImGuiMouseButton.Right, mouseButtons.Contains(MouseButton.Right));
@@ -244,7 +243,7 @@ public unsafe class ImGuiController : DisposableObject
 
         ImGuiMouseCursor imguiCursor = ImGui.GetMouseCursor();
 
-        Window.SetCursor((Cursor*)_mouseCursors[imguiCursor]);
+        SdlWindow.SetCursor((Cursor*)_mouseCursors[imguiCursor]);
     }
 
     private void Initialize(Action? onConfigureIO)
@@ -277,7 +276,7 @@ public unsafe class ImGuiController : DisposableObject
 
         foreach (ImGuiMouseCursor imGuiMouseCursor in Enum.GetValues<ImGuiMouseCursor>())
         {
-            _mouseCursors.Add(imGuiMouseCursor, (nint)Window.CreateCursor(MapMouseCursor(imGuiMouseCursor)));
+            _mouseCursors.Add(imGuiMouseCursor, (nint)SdlWindow.CreateCursor(MapMouseCursor(imGuiMouseCursor)));
         }
 
         InitializePlatform();
@@ -299,11 +298,11 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiIOPtr io = ImGui.GetIO();
 
-        int displayCount = Window.GetDisplayCount();
+        int displayCount = SdlWindow.GetDisplayCount();
 
         for (int i = 0; i < displayCount; i++)
         {
-            Display display = Window.GetDisplay(i);
+            Display display = SdlWindow.GetDisplay(i);
 
             ImFontPtr fontPtr;
             if (_imGuiFontConfig.IsDefault)
@@ -331,11 +330,11 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
 
-        platformIO.Monitors.Resize(Window.GetDisplayCount());
+        platformIO.Monitors.Resize(SdlWindow.GetDisplayCount());
 
         for (int i = 0; i < platformIO.Monitors.Size; i++)
         {
-            Display display = Window.GetDisplay(i);
+            Display display = SdlWindow.GetDisplay(i);
 
             ImGuiPlatformMonitor monitor = new()
             {
@@ -510,7 +509,7 @@ public unsafe class ImGuiController : DisposableObject
             int w = 1;
             int h = Convert.ToInt32(data->InputLineHeight);
 
-            Window.SetTextIputRect(x, y, w, h);
+            SdlWindow.SetTextIputRect(x, y, w, h);
         }
     }
 

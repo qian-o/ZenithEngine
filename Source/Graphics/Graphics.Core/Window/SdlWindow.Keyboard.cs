@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Core;
 
-public partial class Window
+public partial class SdlWindow
 {
     public event EventHandler<KeyEventArgs>? KeyDown;
     public event EventHandler<KeyEventArgs>? KeyUp;

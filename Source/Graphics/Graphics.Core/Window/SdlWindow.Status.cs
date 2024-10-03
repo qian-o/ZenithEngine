@@ -5,7 +5,7 @@ using Silk.NET.Windowing;
 
 namespace Graphics.Core;
 
-public unsafe partial class Window
+public unsafe partial class SdlWindow
 {
     private bool _swapchainExpired;
 

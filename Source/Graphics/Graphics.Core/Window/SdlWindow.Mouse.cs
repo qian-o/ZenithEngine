@@ -2,7 +2,7 @@
 
 namespace Graphics.Core;
 
-public partial class Window
+public partial class SdlWindow
 {
     public event EventHandler<MouseButtonEventArgs>? MouseDown;
     public event EventHandler<MouseButtonEventArgs>? MouseUp;

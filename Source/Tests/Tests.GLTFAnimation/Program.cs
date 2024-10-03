@@ -172,7 +172,7 @@ internal sealed unsafe class Program
 
     private static void Main(string[] _)
     {
-        using Window window = Window.CreateWindowByVulkan();
+        using SdlWindow window = SdlWindow.CreateWindowByVulkan();
         window.Title = "Tests.GLTFAnimation";
         window.MinimumSize = new(100, 100);
 
@@ -386,7 +386,7 @@ internal sealed unsafe class Program
 
     private static void Window_Update(object? sender, UpdateEventArgs e)
     {
-        Window window = (Window)sender!;
+        SdlWindow window = (SdlWindow)sender!;
 
         Frame frame = new()
         {

@@ -3,17 +3,16 @@ using Graphics.Core;
 using Hexa.NET.ImGui;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
-using Window = Graphics.Core.Window;
 
 namespace Graphics.Vulkan;
 
 public unsafe class ImGuiPlatform : DisposableObject
 {
-    private readonly Window _window;
+    private readonly SdlWindow _window;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly bool _isExternalPlatform;
 
-    internal ImGuiPlatform(ImGuiViewport* viewport, Window window, GraphicsDevice graphicsDevice)
+    internal ImGuiPlatform(ImGuiViewport* viewport, SdlWindow window, GraphicsDevice graphicsDevice)
     {
         Viewport = viewport;
 
@@ -28,7 +27,7 @@ public unsafe class ImGuiPlatform : DisposableObject
     {
         Viewport = viewport;
 
-        _window = Window.CreateWindowByVulkan();
+        _window = SdlWindow.CreateWindowByVulkan();
         _graphicsDevice = graphicsDevice;
         _isExternalPlatform = false;
 
