@@ -1,7 +1,7 @@
 ﻿namespace Graphics.Core;
 
 [Flags]
-public enum ShaderStages
+public enum ShaderStages : ushort
 {
     /// <summary>
     /// No stages.

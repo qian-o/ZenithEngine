@@ -3,6 +3,8 @@
 [Flags]
 public enum TextureUsage : byte
 {
+    None = 0,
+
     /// <summary>
     /// The Texture can be used as the target of a read-only, and can be accessed from a shader.
     /// </summary>

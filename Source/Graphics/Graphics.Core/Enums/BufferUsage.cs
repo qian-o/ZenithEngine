@@ -3,6 +3,8 @@
 [Flags]
 public enum BufferUsage : byte
 {
+    None = 0,
+
     /// <summary>
     /// Indicates can be used as the source of vertex data for drawing commands.
     /// </summary>

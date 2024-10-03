@@ -23,24 +23,24 @@ public record struct BufferDescription
     public static unsafe BufferDescription VertexBuffer<T>(int length = 1, bool isDynamic = false) where T : unmanaged
     {
         return new BufferDescription((uint)(length * sizeof(T)),
-                                     BufferUsage.VertexBuffer | (isDynamic ? BufferUsage.Dynamic : 0));
+                                     BufferUsage.VertexBuffer | (isDynamic ? BufferUsage.Dynamic : BufferUsage.None));
     }
 
     public static unsafe BufferDescription IndexBuffer<T>(int length = 1, bool isDynamic = false) where T : unmanaged
     {
         return new BufferDescription((uint)(length * sizeof(T)),
-                                     BufferUsage.IndexBuffer | (isDynamic ? BufferUsage.Dynamic : 0));
+                                     BufferUsage.IndexBuffer | (isDynamic ? BufferUsage.Dynamic : BufferUsage.None));
     }
 
     public static unsafe BufferDescription UniformBuffer<T>(int length = 1, bool isDynamic = false) where T : unmanaged
     {
         return new BufferDescription((uint)(length * sizeof(T)),
-                                     BufferUsage.UniformBuffer | (isDynamic ? BufferUsage.Dynamic : 0));
+                                     BufferUsage.UniformBuffer | (isDynamic ? BufferUsage.Dynamic : BufferUsage.None));
     }
 
     public static unsafe BufferDescription StorageBuffer<T>(int length = 1, bool isDynamic = false) where T : unmanaged
     {
         return new BufferDescription((uint)(length * sizeof(T)),
-                                     BufferUsage.StorageBuffer | (isDynamic ? BufferUsage.Dynamic : 0));
+                                     BufferUsage.StorageBuffer | (isDynamic ? BufferUsage.Dynamic : BufferUsage.None));
     }
 }
