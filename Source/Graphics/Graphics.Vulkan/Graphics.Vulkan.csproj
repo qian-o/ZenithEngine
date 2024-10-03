@@ -12,10 +12,6 @@
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-		<OutputType>Exe</OutputType>
-	</PropertyGroup>
-
 	<ItemGroup>
 		<PackageReference Include="Silk.NET.Vulkan" Version="2.21.0" />
 		<PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.21.0" />
@@ -24,12 +20,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Graphics.Core\Graphics.Core.csproj" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
-		<None Include="Assets\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
 	</ItemGroup>
 
 </Project>
