@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Graphics.Vulkan;
@@ -10,46 +9,32 @@ namespace Tests.Compute;
 
 internal sealed unsafe class MainView : View
 {
-    [StructLayout(LayoutKind.Explicit)]
     private struct Camera
     {
-        [FieldOffset(0)]
         public Vector3 Position;
 
-        [FieldOffset(16)]
         public Vector3 Forward;
 
-        [FieldOffset(32)]
         public Vector3 Right;
 
-        [FieldOffset(48)]
         public Vector3 Up;
 
-        [FieldOffset(60)]
         public float NearPlane;
 
-        [FieldOffset(64)]
         public float FarPlane;
 
-        [FieldOffset(68)]
         public float Fov;
 
-        [FieldOffset(72)]
         public int Width;
 
-        [FieldOffset(76)]
         public int Height;
 
-        [FieldOffset(80)]
         public Vector3 Background;
 
-        [FieldOffset(92)]
         public int AntiAliasing;
 
-        [FieldOffset(96)]
         public int maxSteps;
 
-        [FieldOffset(100)]
         public float Epsilon;
     }
 
@@ -87,8 +72,7 @@ internal sealed unsafe class MainView : View
         _device = device;
         _imGuiController = imGuiController;
 
-
-        _buffer = device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(Camera), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _buffer = device.Factory.CreateBuffer(BufferDescription.UniformBuffer<Camera>(isDynamic: true));
 
         _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("camera", ResourceKind.UniformBuffer, ShaderStages.Compute),
                                                                                             new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.Compute)));
@@ -97,7 +81,7 @@ internal sealed unsafe class MainView : View
 
         ShaderDescription[] shaderDescriptions = [new ShaderDescription(ShaderStages.Compute, Encoding.UTF8.GetBytes(hlsl), "main")];
 
-        _shader = device.Factory.CompileHlslToSpirv(shaderDescriptions, (path) =>
+        _shader = device.Factory.HlslToSpirv(shaderDescriptions, (path) =>
         {
             return Encoding.UTF8.GetBytes(File.ReadAllText(Path.Combine("Assets/Shaders/", path)));
         }).First();

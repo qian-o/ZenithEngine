@@ -168,14 +168,14 @@ float4 mainPS(VSOutput input) : SV_TARGET
         if (totalVBSize > _vertexBuffer.SizeInBytes)
         {
             commandList.DisposeSubmitted(_vertexBuffer);
-            _vertexBuffer = _factory.CreateBuffer(new BufferDescription((uint)(totalVBSize * 1.5f), BufferUsage.VertexBuffer));
+            _vertexBuffer = _factory.CreateBuffer(BufferDescription.VertexBuffer<ImDrawVert>(Convert.ToInt32(drawDataPtr.TotalVtxCount * 1.5)));
         }
 
         uint totalIBSize = (uint)(drawDataPtr.TotalIdxCount * sizeof(ushort));
         if (totalIBSize > _indexBuffer.SizeInBytes)
         {
             commandList.DisposeSubmitted(_indexBuffer);
-            _indexBuffer = _factory.CreateBuffer(new BufferDescription((uint)(totalIBSize * 1.5f), BufferUsage.IndexBuffer));
+            _indexBuffer = _factory.CreateBuffer(BufferDescription.IndexBuffer<ushort>(Convert.ToInt32(drawDataPtr.TotalIdxCount * 1.5)));
         }
 
         Vector2 displayPos = drawDataPtr.DisplayPos;
@@ -341,12 +341,12 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     private void CreateDeviceResources(ColorSpaceHandling colorSpaceHandling)
     {
-        _vertexBuffer = _factory.CreateBuffer(new BufferDescription(10000, BufferUsage.VertexBuffer));
-        _indexBuffer = _factory.CreateBuffer(new BufferDescription(2000, BufferUsage.IndexBuffer));
-        _uboBuffer = _factory.CreateBuffer(new BufferDescription((uint)sizeof(Matrix4x4), BufferUsage.UniformBuffer));
+        _vertexBuffer = _factory.CreateBuffer(BufferDescription.VertexBuffer<ImDrawVert>(2000));
+        _indexBuffer = _factory.CreateBuffer(BufferDescription.IndexBuffer<ushort>(4000));
+        _uboBuffer = _factory.CreateBuffer(BufferDescription.UniformBuffer<Matrix4x4>());
 
-        Shader[] shaders = _factory.CompileHlslToSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(HLSL), "mainVS"),
-                                                       new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(HLSL), "mainPS"));
+        Shader[] shaders = _factory.HlslToSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(HLSL), "mainVS"),
+                                                new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(HLSL), "mainPS"));
 
         VertexLayoutDescription vertexLayoutDescription = new(new VertexElementDescription("Position", VertexElementFormat.Float2),
                                                               new VertexElementDescription("UV", VertexElementFormat.Float2),

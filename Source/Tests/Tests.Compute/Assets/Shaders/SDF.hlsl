@@ -13,16 +13,16 @@ float2 map(float3 pos)
     result = opU(result, float2(sdSphere(position), 2.0));
 
     position = pos - float3(-1.2, 3.0, 0.0);
-    result = opU(result, float2(sdBox(position, float3(0.8)), 3.0));
+    result = opU(result, float2(sdBox(position, 0.8), 3.0));
 
     position = pos - float3(1.2, 1.0, 0.0);
-    result = opU(result, float2(sdBox(position, float3(0.8)), 4.0));
+    result = opU(result, float2(sdBox(position, 0.8), 4.0));
 
     position = pos - float3(-1.2, 1.0, 0.0);
-    result = opU(result, float2(sdBox(position, float3(0.8)), 5.0));
+    result = opU(result, float2(sdBox(position, 0.8), 5.0));
 
     position = pos - float3(1.2, 3.0, 0.0);
-    result = opU(result, float2(sdBox(position, float3(0.8)), 6.0));
+    result = opU(result, float2(sdBox(position, 0.8), 6.0));
 
     return result;
 }
@@ -148,14 +148,14 @@ float3 render(float2 pixel)
     float occ = calcAO(pos, nor);
     float ks = 1.0;
 
-    float3 color = float3(0.0);
-    float3 lin = float3(0.0);
+    float3 color = 0.0;
+    float3 lin = 0.0;
 
     if (result.y == 1.0)
     {
         float f = checkersGradBox(pos.xz);
 
-        color = 0.15 + f * float3(0.05);
+        color = 0.15 + f * 0.05;
         ks = 0.4;
     }
     else
@@ -219,7 +219,7 @@ void main(uint3 id : SV_DispatchThreadID)
         return;
     }
     
-    float3 color = float3(0);
+    float3 color = 0.0;
     
     float halfAA = camera.antiAliasing / 2.0;
     

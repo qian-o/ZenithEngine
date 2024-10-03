@@ -13,19 +13,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Hexa.NET.ImGui" Version="2.1.4" />
-		<PackageReference Include="Hexa.NET.ImGuizmo" Version="2.1.4" />
-		<PackageReference Include="Hexa.NET.ImNodes" Version="2.1.4" />
-		<PackageReference Include="Hexa.NET.ImPlot" Version="2.1.4" />
+		<PackageReference Include="Hexa.NET.ImGui" Version="2.1.6" />
+		<PackageReference Include="Hexa.NET.ImGuizmo" Version="2.1.6" />
+		<PackageReference Include="Hexa.NET.ImNodes" Version="2.1.6" />
+		<PackageReference Include="Hexa.NET.ImPlot" Version="2.1.6" />
 		<PackageReference Include="Silk.NET.Input.Sdl" Version="2.21.0" />
 		<PackageReference Include="Silk.NET.Maths" Version="2.21.0" />
-		<PackageReference Include="Silk.NET.Shaderc" Version="2.21.0" />
-		<PackageReference Include="Silk.NET.Shaderc.Native" Version="2.21.0" />
 		<PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.21.0" />
 		<PackageReference Include="SkiaSharp" Version="2.88.8" />
 		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
 		<PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="2.88.8" />
 		<PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="2.88.8" />
+		<PackageReference Include="Vortice.Dxc" Version="3.5.0" />
 	</ItemGroup>
 
 </Project>

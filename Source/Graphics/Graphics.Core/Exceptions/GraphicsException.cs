@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Core;
 
-public sealed class GraphicsException : Exception
+public class GraphicsException : Exception
 {
     public GraphicsException(string message) : base(message)
     {

@@ -22,7 +22,6 @@ internal sealed unsafe class Program
                                                     device,
                                                     new ImGuiFontConfig("Assets/Fonts/msyh.ttf", 16, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()),
                                                     ImGuiSizeConfig.Default);
-
         using CommandList commandList = device.Factory.CreateGraphicsCommandList();
 
         window.Load += Load;

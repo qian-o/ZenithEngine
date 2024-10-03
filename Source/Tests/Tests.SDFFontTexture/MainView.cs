@@ -69,10 +69,10 @@ internal sealed unsafe class MainView : View
         ImageResult imageResult = ImageResult.FromMemory(bytes, ColorComponents.RedGreenBlueAlpha);
 
         _sdfTexture = device.Factory.CreateTexture(TextureDescription.Texture2D((uint)imageResult.Width,
-                                                                                        (uint)imageResult.Height,
-                                                                                        1,
-                                                                                        PixelFormat.R8G8B8A8UNorm,
-                                                                                        TextureUsage.Sampled));
+                                                                                (uint)imageResult.Height,
+                                                                                1,
+                                                                                PixelFormat.R8G8B8A8UNorm,
+                                                                                TextureUsage.Sampled));
 
         device.UpdateTexture(_sdfTexture,
                              imageResult.Data,
@@ -97,14 +97,14 @@ internal sealed unsafe class MainView : View
 
         uint[] indices = [0, 1, 2, 2, 3, 0];
 
-        _vertexBuffer = device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(Vertex) * vertices.Length), BufferUsage.VertexBuffer | BufferUsage.Dynamic));
+        _vertexBuffer = device.Factory.CreateBuffer(BufferDescription.VertexBuffer<Vertex>(vertices.Length, true));
         device.UpdateBuffer(_vertexBuffer, 0, vertices);
 
-        _indexBuffer = device.Factory.CreateBuffer(new BufferDescription((uint)(sizeof(uint) * indices.Length), BufferUsage.IndexBuffer));
+        _indexBuffer = device.Factory.CreateBuffer(BufferDescription.IndexBuffer<uint>(indices.Length));
         device.UpdateBuffer(_indexBuffer, 0, indices);
 
-        _uniformBuffer = device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(UniformBufferObject), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-        _normalBuffer = device.Factory.CreateBuffer(new BufferDescription((uint)sizeof(Properties), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _uniformBuffer = device.Factory.CreateBuffer(BufferDescription.UniformBuffer<UniformBufferObject>(isDynamic: true));
+        _normalBuffer = device.Factory.CreateBuffer(BufferDescription.UniformBuffer<Properties>(isDynamic: true));
 
         ResourceLayoutElementDescription uboDescription = new("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex);
         ResourceLayoutElementDescription normalDescription = new("properties", ResourceKind.UniformBuffer, ShaderStages.Fragment);
@@ -116,8 +116,8 @@ internal sealed unsafe class MainView : View
         _resourceSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _uniformBuffer, _normalBuffer, _sdfTextureView, _device.LinearSampler));
 
         string hlsl = File.ReadAllText("Assets/Shaders/SDF.hlsl");
-        _shaders = device.Factory.CompileHlslToSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
-                                                     new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
+        _shaders = device.Factory.HlslToSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
+                                              new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
         _vertexLayoutDescriptions =
         [

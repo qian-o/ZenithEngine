@@ -49,6 +49,8 @@ public class VulkanResources : DisposableObject
 
     public PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties => PhysicalDevice.DescriptorIndexingProperties;
 
+    public PhysicalDeviceRayTracingPipelinePropertiesKHR RayTracingPipelineProperties => PhysicalDevice.RayTracingPipelineProperties;
+
     public PhysicalDeviceFeatures Features => PhysicalDevice.Features;
 
     public PhysicalDeviceMemoryProperties MemoryProperties => PhysicalDevice.MemoryProperties;
@@ -70,6 +72,12 @@ public class VulkanResources : DisposableObject
     public KhrSwapchain KhrSwapchain => GraphicsDevice.KhrSwapchain;
 
     public ExtDescriptorBuffer ExtDescriptorBuffer => GraphicsDevice.ExtDescriptorBuffer;
+
+    public KhrRayTracingPipeline KhrRayTracingPipeline => GraphicsDevice.KhrRayTracingPipeline;
+
+    public KhrAccelerationStructure KhrAccelerationStructure => GraphicsDevice.KhrAccelerationStructure;
+
+    public KhrDeferredHostOperations KhrDeferredHostOperations => GraphicsDevice.KhrDeferredHostOperations;
     #endregion
 
     public void InitializeContext(Vk vk,

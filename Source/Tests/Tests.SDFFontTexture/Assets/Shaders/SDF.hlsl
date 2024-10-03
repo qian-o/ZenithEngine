@@ -47,8 +47,8 @@ float screenPxRange(float2 texCoord)
     uint width, height, numberOfLevels;
     msdf.GetDimensions(0, width, height, numberOfLevels);
     
-    float2 unitRange = float2(properties.PxRange) / float2(width, height);
-    float2 screenTexSize = float2(1.0) / fwidth(texCoord);
+    float2 unitRange = properties.PxRange / float2(width, height);
+    float2 screenTexSize = 1.0 / fwidth(texCoord);
     
     return max(0.5 * dot(unitRange, screenTexSize), 1.0);
 }
