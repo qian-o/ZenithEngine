@@ -489,6 +489,10 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         PipelineBindPoint = PipelineBindPoint.Compute;
     }
 
+    internal Pipeline(VulkanResources vkRes, ref readonly RaytracingPipelineDescription description) : base(vkRes, ObjectType.Pipeline)
+    {
+    }
+
     internal override VkPipeline Handle { get; }
 
     internal VkPipelineLayout Layout { get; }
@@ -500,6 +504,8 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
     public bool IsGraphics => PipelineBindPoint == PipelineBindPoint.Graphics;
 
     public bool IsCompute => PipelineBindPoint == PipelineBindPoint.Compute;
+
+    public bool IsRaytracing => PipelineBindPoint == PipelineBindPoint.RayTracingKhr;
 
     internal override ulong[] GetHandles()
     {

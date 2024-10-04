@@ -95,6 +95,13 @@ public class ResourceFactory
 
     public Pipeline CreateComputePipeline(ComputePipelineDescription description) => CreateComputePipeline(in description);
 
+    public Pipeline CreateRaytracingPipeline(ref readonly RaytracingPipelineDescription description)
+    {
+        return new Pipeline(_vkRes, in description);
+    }
+
+    public Pipeline CreateRaytracingPipeline(RaytracingPipelineDescription description) => CreateRaytracingPipeline(in description);
+
     public BottomLevelAS CreateBottomLevelAS(ref readonly BottomLevelASDescription description)
     {
         return new BottomLevelAS(_vkRes, in description);
