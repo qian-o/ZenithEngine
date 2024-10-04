@@ -558,6 +558,65 @@ internal static class Formats
 
         return geometryFlags;
     }
+
+    public static GeometryInstanceFlagsKHR GetGeometryInstanceFlags(AccelerationStructureInstanceOptions options)
+    {
+        GeometryInstanceFlagsKHR geometryInstanceFlags = GeometryInstanceFlagsKHR.None;
+
+        if (options.HasFlag(AccelerationStructureInstanceOptions.TriangleCullDisable))
+        {
+            geometryInstanceFlags |= GeometryInstanceFlagsKHR.TriangleFacingCullDisableBitKhr;
+        }
+
+        if (options.HasFlag(AccelerationStructureInstanceOptions.TriangleFrontCounterClockwise))
+        {
+            geometryInstanceFlags |= GeometryInstanceFlagsKHR.TriangleFrontCounterclockwiseBitKhr;
+        }
+
+        if (options.HasFlag(AccelerationStructureInstanceOptions.ForceOpaque))
+        {
+            geometryInstanceFlags |= GeometryInstanceFlagsKHR.ForceOpaqueBitKhr;
+        }
+
+        if (options.HasFlag(AccelerationStructureInstanceOptions.ForceNoOpaque))
+        {
+            geometryInstanceFlags |= GeometryInstanceFlagsKHR.ForceNoOpaqueBitKhr;
+        }
+
+        return geometryInstanceFlags;
+    }
+
+    public static BuildAccelerationStructureFlagsKHR GetBuildAccelerationStructureFlags(AccelerationStructureOptions options)
+    {
+        BuildAccelerationStructureFlagsKHR buildAccelerationStructureFlags = BuildAccelerationStructureFlagsKHR.None;
+
+        if (options.HasFlag(AccelerationStructureOptions.AllowUpdate) || options.HasFlag(AccelerationStructureOptions.PerformUpdate))
+        {
+            buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.AllowUpdateBitKhr;
+        }
+
+        if (options.HasFlag(AccelerationStructureOptions.AllowCompactation))
+        {
+            buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.AllowCompactionBitKhr;
+        }
+
+        if (options.HasFlag(AccelerationStructureOptions.PreferFastTrace))
+        {
+            buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.PreferFastTraceBitKhr;
+        }
+
+        if (options.HasFlag(AccelerationStructureOptions.PreferFastBuild))
+        {
+            buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.PreferFastBuildBitKhr;
+        }
+
+        if (options.HasFlag(AccelerationStructureOptions.MinimizeMemory))
+        {
+            buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.LowMemoryBitKhr;
+        }
+
+        return buildAccelerationStructureFlags;
+    }
     #endregion
 
     #region From Vulkan Format

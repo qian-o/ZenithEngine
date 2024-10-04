@@ -102,6 +102,13 @@ public class ResourceFactory
 
     public BottomLevelAS CreateBottomLevelAS(BottomLevelASDescription description) => CreateBottomLevelAS(in description);
 
+    public TopLevelAS CreateTopLevelAS(ref readonly TopLevelASDescription description)
+    {
+        return new TopLevelAS(_vkRes, in description);
+    }
+
+    public TopLevelAS CreateTopLevelAS(TopLevelASDescription description) => CreateTopLevelAS(in description);
+
     public CommandList CreateGraphicsCommandList()
     {
         return new CommandList(_vkRes, _vkRes.GraphicsDevice.GraphicsExecutor, _vkRes.GraphicsDevice.GraphicsCommandPool);
