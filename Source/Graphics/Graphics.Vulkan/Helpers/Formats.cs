@@ -617,6 +617,17 @@ internal static class Formats
 
         return buildAccelerationStructureFlags;
     }
+
+    public static RayTracingShaderGroupTypeKHR GetRayTracingShaderGroupType(HitGroupType hitGroupType)
+    {
+        return hitGroupType switch
+        {
+            HitGroupType.General => RayTracingShaderGroupTypeKHR.GeneralKhr,
+            HitGroupType.Triangles => RayTracingShaderGroupTypeKHR.TrianglesHitGroupKhr,
+            HitGroupType.Procedural => RayTracingShaderGroupTypeKHR.ProceduralHitGroupKhr,
+            _ => throw new ArgumentOutOfRangeException(nameof(hitGroupType))
+        };
+    }
     #endregion
 
     #region From Vulkan Format

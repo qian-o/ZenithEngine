@@ -31,13 +31,24 @@ public unsafe class Shader : VulkanObject<VkShaderModule>
 
     internal string EntryPoint { get; }
 
-    protected override void Destroy()
+    internal PipelineShaderStageCreateInfo GetPipelineShaderStageCreateInfo()
     {
-        VkRes.Vk.DestroyShaderModule(VkRes.VkDevice, Handle, null);
+        return new()
+        {
+            SType = StructureType.PipelineShaderStageCreateInfo,
+            Stage = Formats.GetShaderStage(Stage),
+            Module = Handle,
+            PName = VkRes.Alloter.Allocate(EntryPoint)
+        };
     }
 
     internal override ulong[] GetHandles()
     {
-        throw new NotImplementedException();
+        return [Handle.Handle];
+    }
+
+    protected override void Destroy()
+    {
+        VkRes.Vk.DestroyShaderModule(VkRes.VkDevice, Handle, null);
     }
 }

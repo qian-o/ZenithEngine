@@ -241,14 +241,10 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
             {
                 Shader shader = shaders[i];
 
-                shaderStageCreateInfos[i] = new PipelineShaderStageCreateInfo
-                {
-                    SType = StructureType.PipelineShaderStageCreateInfo,
-                    Stage = Formats.GetShaderStage(shader.Stage),
-                    Module = shader.Handle,
-                    PName = VkRes.Alloter.Allocate(shader.EntryPoint),
-                    PSpecializationInfo = &specializationInfo
-                };
+                PipelineShaderStageCreateInfo pipelineShaderStageCreateInfo = shader.GetPipelineShaderStageCreateInfo();
+                pipelineShaderStageCreateInfo.PSpecializationInfo = &specializationInfo;
+
+                shaderStageCreateInfos[i] = pipelineShaderStageCreateInfo;
             }
 
             createInfo.StageCount = (uint)shaders.Length;
@@ -446,14 +442,10 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
                 specializationInfo.PData = specData;
             }
 
-            createInfo.Stage = new PipelineShaderStageCreateInfo
-            {
-                SType = StructureType.PipelineShaderStageCreateInfo,
-                Stage = Formats.GetShaderStage(shader.Stage),
-                Module = shader.Handle,
-                PName = VkRes.Alloter.Allocate(shader.EntryPoint),
-                PSpecializationInfo = &specializationInfo
-            };
+            PipelineShaderStageCreateInfo pipelineShaderStageCreateInfo = shader.GetPipelineShaderStageCreateInfo();
+            pipelineShaderStageCreateInfo.PSpecializationInfo = &specializationInfo;
+
+            createInfo.Stage = pipelineShaderStageCreateInfo;
         }
 
         // layout
@@ -491,6 +483,120 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
 
     internal Pipeline(VulkanResources vkRes, ref readonly RaytracingPipelineDescription description) : base(vkRes, ObjectType.Pipeline)
     {
+        RayTracingPipelineCreateInfoKHR createInfo = new()
+        {
+            SType = StructureType.RayTracingPipelineCreateInfoKhr,
+            MaxPipelineRayRecursionDepth = description.MaxTraceRecursionDepth,
+            Flags = PipelineCreateFlags.CreateDescriptorBufferBitExt
+        };
+
+        // shader stage
+        {
+            List<PipelineShaderStageCreateInfo> pipelineShaderStageCreateInfos = [];
+            List<string> pipelineShaderEntryPoints = [];
+
+            if (description.Shaders.RayGenerationShader != null)
+            {
+                Shader shader = description.Shaders.RayGenerationShader;
+
+                pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
+                pipelineShaderEntryPoints.Add(shader.EntryPoint);
+            }
+
+            if (description.Shaders.MissShader != null)
+            {
+                foreach (Shader shader in description.Shaders.MissShader)
+                {
+                    pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
+                    pipelineShaderEntryPoints.Add(shader.EntryPoint);
+                }
+            }
+
+            if (description.Shaders.ClosestHitShader != null)
+            {
+                foreach (Shader shader in description.Shaders.ClosestHitShader)
+                {
+                    pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
+                    pipelineShaderEntryPoints.Add(shader.EntryPoint);
+                }
+            }
+
+            if (description.Shaders.AnyHitShader != null)
+            {
+                foreach (Shader shader in description.Shaders.AnyHitShader)
+                {
+                    pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
+                    pipelineShaderEntryPoints.Add(shader.EntryPoint);
+                }
+            }
+
+            if (description.Shaders.IntersectionShader != null)
+            {
+                foreach (Shader shader in description.Shaders.IntersectionShader)
+                {
+                    pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
+                    pipelineShaderEntryPoints.Add(shader.EntryPoint);
+                }
+            }
+
+            PipelineShaderStageCreateInfo[] stageCreateInfos = [.. pipelineShaderStageCreateInfos];
+
+            RayTracingShaderGroupCreateInfoKHR[] rayTracingShaderGroups = new RayTracingShaderGroupCreateInfoKHR[description.HitGroups.Length];
+
+            for (int i = 0; i < description.HitGroups.Length; i++)
+            {
+                HitGroupDescription hitGroupDescription = description.HitGroups[i];
+
+                RayTracingShaderGroupCreateInfoKHR rayTracingShaderGroupCreateInfo = new RayTracingShaderGroupCreateInfoKHR
+                {
+                    SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                    Type = Formats.GetRayTracingShaderGroupType(hitGroupDescription.Type),
+                    GeneralShader = pipelineShaderEntryPoints.Contains(hitGroupDescription.GeneralEntryPoint) ? (uint)pipelineShaderEntryPoints.IndexOf(hitGroupDescription.GeneralEntryPoint) : uint.MaxValue,
+                    ClosestHitShader = pipelineShaderEntryPoints.Contains(hitGroupDescription.ClosestHitEntryPoint) ? (uint)pipelineShaderEntryPoints.IndexOf(hitGroupDescription.ClosestHitEntryPoint) : uint.MaxValue,
+                    AnyHitShader = pipelineShaderEntryPoints.Contains(hitGroupDescription.AnyHitEntryPoint) ? (uint)pipelineShaderEntryPoints.IndexOf(hitGroupDescription.AnyHitEntryPoint) : uint.MaxValue,
+                    IntersectionShader = pipelineShaderEntryPoints.Contains(hitGroupDescription.IntersectionEntryPoint) ? (uint)pipelineShaderEntryPoints.IndexOf(hitGroupDescription.IntersectionEntryPoint) : uint.MaxValue
+                };
+
+                rayTracingShaderGroups[i] = rayTracingShaderGroupCreateInfo;
+            }
+
+            createInfo.StageCount = (uint)stageCreateInfos.Length;
+            createInfo.PStages = stageCreateInfos.AsPointer();
+            createInfo.GroupCount = (uint)rayTracingShaderGroups.Length;
+            createInfo.PGroups = rayTracingShaderGroups.AsPointer();
+        }
+
+        // layout
+        {
+            PipelineLayoutCreateInfo layoutCreateInfo = new()
+            {
+                SType = StructureType.PipelineLayoutCreateInfo
+            };
+
+            uint descriptorSetLayoutCount = (uint)description.ResourceLayouts.Length;
+
+            DescriptorSetLayout[] descriptorSetLayouts = new DescriptorSetLayout[descriptorSetLayoutCount];
+
+            for (uint i = 0; i < descriptorSetLayoutCount; i++)
+            {
+                descriptorSetLayouts[i] = description.ResourceLayouts[i].Handle;
+            }
+
+            layoutCreateInfo.SetLayoutCount = descriptorSetLayoutCount;
+            layoutCreateInfo.PSetLayouts = descriptorSetLayouts.AsPointer();
+
+            PipelineLayout pipelineLayout;
+            VkRes.Vk.CreatePipelineLayout(VkRes.VkDevice, &layoutCreateInfo, null, &pipelineLayout).ThrowCode();
+            createInfo.Layout = pipelineLayout;
+        }
+
+        VkPipeline pipeline;
+        VkRes.KhrRayTracingPipeline.CreateRayTracingPipelines(VkRes.VkDevice, default, default, 1, &createInfo, null, &pipeline).ThrowCode();
+
+        Handle = pipeline;
+        Layout = createInfo.Layout;
+        RenderPass = default;
+        PipelineBindPoint = PipelineBindPoint.RayTracingKhr;
     }
 
     internal override VkPipeline Handle { get; }

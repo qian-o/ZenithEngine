@@ -2,6 +2,21 @@
 
 public record struct RaytracingPipelineDescription
 {
+    public RaytracingPipelineDescription(RaytracingShaderStateDescription shaders,
+                                         HitGroupDescription[] hitGroups,
+                                         ResourceLayout[] resourceLayouts,
+                                         uint maxTraceRecursionDepth,
+                                         uint maxPayloadSizeInBytes,
+                                         uint maxAttributeSizeInBytes)
+    {
+        Shaders = shaders;
+        HitGroups = hitGroups;
+        ResourceLayouts = resourceLayouts;
+        MaxTraceRecursionDepth = maxTraceRecursionDepth;
+        MaxPayloadSizeInBytes = maxPayloadSizeInBytes;
+        MaxAttributeSizeInBytes = maxAttributeSizeInBytes;
+    }
+
     /// <summary>
     ///  Gets or sets the raytracing shader program.
     /// </summary>
