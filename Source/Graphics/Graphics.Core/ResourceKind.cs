@@ -25,5 +25,10 @@ public enum ResourceKind : byte
     /// <summary>
     /// Bind as sampler.
     /// </summary>
-    Sampler
+    Sampler,
+
+    /// <summary>
+    /// Bind as ray tracing acceleration structure.
+    /// </summary>
+    AccelerationStructure
 }

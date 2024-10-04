@@ -89,7 +89,10 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
     private nuint WriteDescriptorBuffer(DescriptorType type, IBindableResource bindableResource, byte* buffer)
     {
         nuint descriptorSize;
-        if (type is DescriptorType.UniformBuffer or DescriptorType.UniformBufferDynamic or DescriptorType.StorageBuffer or DescriptorType.StorageBufferDynamic)
+        if (type is DescriptorType.UniformBuffer
+            or DescriptorType.UniformBufferDynamic
+            or DescriptorType.StorageBuffer
+            or DescriptorType.StorageBufferDynamic)
         {
             bool isUniform = type is DescriptorType.UniformBuffer or DescriptorType.UniformBufferDynamic;
 
@@ -148,6 +151,11 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
 
             descriptorSize = VkRes.DescriptorBufferProperties.SamplerDescriptorSize;
             GetDescriptor(new DescriptorDataEXT() { PSampler = &vkSampler });
+        }
+        else if (type == DescriptorType.AccelerationStructureKhr)
+        {
+            // TODO: Implement acceleration structure descriptor buffer.
+            throw new NotImplementedException();
         }
         else
         {

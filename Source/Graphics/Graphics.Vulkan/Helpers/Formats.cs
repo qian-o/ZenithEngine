@@ -42,6 +42,21 @@ internal static class Formats
             PixelFormat.R32G32SInt => Format.R32G32Sint,
             PixelFormat.R32G32Float => Format.R32G32Sfloat,
 
+            PixelFormat.R8G8B8UNorm => Format.R8G8B8Unorm,
+            PixelFormat.R8G8B8SNorm => Format.R8G8B8SNorm,
+            PixelFormat.R8G8B8UInt => Format.R8G8B8Uint,
+            PixelFormat.R8G8B8SInt => Format.R8G8B8Sint,
+
+            PixelFormat.R16G16B16UNorm => Format.R16G16B16Unorm,
+            PixelFormat.R16G16B16SNorm => Format.R16G16B16SNorm,
+            PixelFormat.R16G16B16UInt => Format.R16G16B16Uint,
+            PixelFormat.R16G16B16SInt => Format.R16G16B16Sint,
+            PixelFormat.R16G16B16Float => Format.R16G16B16Sfloat,
+
+            PixelFormat.R32G32B32UInt => Format.R32G32B32Uint,
+            PixelFormat.R32G32B32SInt => Format.R32G32B32Sint,
+            PixelFormat.R32G32B32Float => Format.R32G32B32Sfloat,
+
             PixelFormat.R8G8B8A8UNorm => Format.R8G8B8A8Unorm,
             PixelFormat.R8G8B8A8UNormSRgb => Format.R8G8B8A8Srgb,
             PixelFormat.B8G8R8A8UNorm => Format.B8G8R8A8Unorm,
@@ -153,6 +168,7 @@ internal static class Formats
             ResourceKind.SampledImage => DescriptorType.SampledImage,
             ResourceKind.StorageImage => DescriptorType.StorageImage,
             ResourceKind.Sampler => DescriptorType.Sampler,
+            ResourceKind.AccelerationStructure => DescriptorType.AccelerationStructureKhr,
             _ => throw new ArgumentOutOfRangeException(nameof(kind))
         };
     }
@@ -562,6 +578,21 @@ internal static class Formats
             Format.R32G32Uint => PixelFormat.R32G32UInt,
             Format.R32G32Sint => PixelFormat.R32G32SInt,
             Format.R32G32Sfloat => PixelFormat.R32G32Float,
+
+            Format.R8G8B8Unorm => PixelFormat.R8G8B8UNorm,
+            Format.R8G8B8SNorm => PixelFormat.R8G8B8SNorm,
+            Format.R8G8B8Uint => PixelFormat.R8G8B8UInt,
+            Format.R8G8B8Sint => PixelFormat.R8G8B8SInt,
+
+            Format.R16G16B16Unorm => PixelFormat.R16G16B16UNorm,
+            Format.R16G16B16SNorm => PixelFormat.R16G16B16SNorm,
+            Format.R16G16B16Uint => PixelFormat.R16G16B16UInt,
+            Format.R16G16B16Sint => PixelFormat.R16G16B16SInt,
+            Format.R16G16B16Sfloat => PixelFormat.R16G16B16Float,
+
+            Format.R32G32B32Uint => PixelFormat.R32G32B32UInt,
+            Format.R32G32B32Sint => PixelFormat.R32G32B32SInt,
+            Format.R32G32B32Sfloat => PixelFormat.R32G32B32Float,
 
             Format.R8G8B8A8Unorm => PixelFormat.R8G8B8A8UNorm,
             Format.R8G8B8A8Srgb => PixelFormat.R8G8B8A8UNormSRgb,
