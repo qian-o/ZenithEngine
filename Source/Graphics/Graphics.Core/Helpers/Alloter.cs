@@ -5,16 +5,19 @@ namespace Graphics.Core.Helpers;
 public unsafe class Alloter : DisposableObject
 {
     private readonly object _locker = new();
-    private readonly List<nint> _marshalAllocated = [];
+    private readonly Dictionary<string, nint> _marshalAllocated = [];
     private readonly List<nint> _nativeAllocated = [];
 
     public byte* Allocate(string value)
     {
         lock (_locker)
         {
-            nint ptr = Marshal.StringToHGlobalAnsi(value);
+            if (!_marshalAllocated.TryGetValue(value, out nint ptr))
+            {
+                ptr = Marshal.StringToHGlobalAnsi(value);
 
-            _marshalAllocated.Add(ptr);
+                _marshalAllocated.Add(value, ptr);
+            }
 
             return (byte*)ptr;
         }
@@ -68,15 +71,24 @@ public unsafe class Alloter : DisposableObject
         }
     }
 
+    public void Free(string value)
+    {
+        lock (_locker)
+        {
+            if (_marshalAllocated.TryGetValue(value, out nint ptr))
+            {
+                Marshal.FreeHGlobal(ptr);
+
+                _marshalAllocated.Remove(value);
+            }
+        }
+    }
+
     public void Free(void* marshalPtr)
     {
         lock (_locker)
         {
-            if (_marshalAllocated.Remove((nint)marshalPtr))
-            {
-                Marshal.FreeHGlobal((nint)marshalPtr);
-            }
-            else if (_nativeAllocated.Remove((nint)marshalPtr))
+            if (_nativeAllocated.Remove((nint)marshalPtr))
             {
                 NativeMemory.Free(marshalPtr);
             }
@@ -87,7 +99,7 @@ public unsafe class Alloter : DisposableObject
     {
         lock (_locker)
         {
-            foreach (nint ptr in _marshalAllocated)
+            foreach (nint ptr in _marshalAllocated.Values)
             {
                 Marshal.FreeHGlobal(ptr);
             }
