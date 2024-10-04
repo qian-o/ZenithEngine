@@ -154,8 +154,10 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
         }
         else if (type == DescriptorType.AccelerationStructureKhr)
         {
-            // TODO: Implement acceleration structure descriptor buffer.
-            throw new NotImplementedException();
+            TopLevelAS topLevelAS = (TopLevelAS)bindableResource;
+
+            descriptorSize = VkRes.DescriptorBufferProperties.AccelerationStructureDescriptorSize;
+            GetDescriptor(new DescriptorDataEXT() { AccelerationStructure = topLevelAS.Handle.Handle });
         }
         else
         {
