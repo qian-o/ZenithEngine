@@ -95,6 +95,13 @@ public class ResourceFactory
 
     public Pipeline CreateComputePipeline(ComputePipelineDescription description) => CreateComputePipeline(in description);
 
+    public BottomLevelAS CreateBottomLevelAS(ref readonly BottomLevelASDescription description)
+    {
+        return new BottomLevelAS(_vkRes, in description);
+    }
+
+    public BottomLevelAS CreateBottomLevelAS(BottomLevelASDescription description) => CreateBottomLevelAS(in description);
+
     public CommandList CreateGraphicsCommandList()
     {
         return new CommandList(_vkRes, _vkRes.GraphicsDevice.GraphicsExecutor, _vkRes.GraphicsDevice.GraphicsCommandPool);
