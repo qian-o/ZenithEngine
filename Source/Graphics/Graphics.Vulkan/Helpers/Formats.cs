@@ -541,6 +541,23 @@ internal static class Formats
             _ => throw new ArgumentOutOfRangeException(nameof(indexFormat))
         };
     }
+
+    public static GeometryFlagsKHR GetGeometryFlags(AccelerationStructureGeometryOptions options)
+    {
+        GeometryFlagsKHR geometryFlags = GeometryFlagsKHR.None;
+
+        if (options.HasFlag(AccelerationStructureGeometryOptions.Opaque))
+        {
+            geometryFlags |= GeometryFlagsKHR.OpaqueBitKhr;
+        }
+
+        if (options.HasFlag(AccelerationStructureGeometryOptions.NoDuplicateAnyHitInvocation))
+        {
+            geometryFlags |= GeometryFlagsKHR.NoDuplicateAnyHitInvocationBitKhr;
+        }
+
+        return geometryFlags;
+    }
     #endregion
 
     #region From Vulkan Format

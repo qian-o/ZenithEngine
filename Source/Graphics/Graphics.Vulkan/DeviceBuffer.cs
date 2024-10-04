@@ -38,6 +38,12 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
             bufferUsageFlags |= BufferUsageFlags.IndirectBufferBit;
         }
 
+        if (description.Usage.HasFlag(BufferUsage.AccelerationStructure))
+        {
+            bufferUsageFlags |= BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr
+                                | BufferUsageFlags.ShaderDeviceAddressBit;
+        }
+
         BufferCreateInfo createInfo = new()
         {
             SType = StructureType.BufferCreateInfo,
