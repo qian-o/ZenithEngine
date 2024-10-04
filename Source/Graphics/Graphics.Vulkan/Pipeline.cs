@@ -547,7 +547,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
             {
                 HitGroupDescription hitGroupDescription = description.HitGroups[i];
 
-                RayTracingShaderGroupCreateInfoKHR rayTracingShaderGroupCreateInfo = new RayTracingShaderGroupCreateInfoKHR
+                RayTracingShaderGroupCreateInfoKHR rayTracingShaderGroupCreateInfo = new()
                 {
                     SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
                     Type = Formats.GetRayTracingShaderGroupType(hitGroupDescription.Type),
