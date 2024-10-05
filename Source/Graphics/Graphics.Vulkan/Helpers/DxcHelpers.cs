@@ -39,12 +39,15 @@ internal static unsafe class DxcHelpers
 
     private static string[] GetArguments(ref readonly ShaderDescription shaderDescription)
     {
+        string shaderProfile = GetProfile(in shaderDescription);
+        bool isLib = shaderProfile.Contains("lib");
+
         return
         [
             "-fvk-use-scalar-layout",
             "-spirv",
-            "-T", GetProfile(in shaderDescription),
-             GetProfile(in shaderDescription).Contains("lib") ? string.Empty : "-E", shaderDescription.EntryPoint,
+            "-T", shaderProfile,
+             isLib ? string.Empty : "-E", shaderDescription.EntryPoint,
             $"-fspv-target-env=vulkan{Context.ApiVersion.Major}.{Context.ApiVersion.Minor}"
          ];
     }
