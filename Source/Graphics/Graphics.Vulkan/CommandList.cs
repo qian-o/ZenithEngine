@@ -456,6 +456,48 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         VkRes.Vk.CmdDispatch(Handle, groupCountX, groupCountY, groupCountZ);
     }
 
+    public void DispatchRays(uint width, uint height, uint depth)
+    {
+        if (_currentPipeline is null || !_currentPipeline.IsRaytracing)
+        {
+            throw new InvalidOperationException("No raytracing pipeline set.");
+        }
+
+        EnsureRenderPassInactive();
+
+        ShaderTable shaderTable = _currentPipeline.ShaderTable!;
+
+        StridedDeviceAddressRegionKHR raygenShaderBindingTable = new()
+        {
+            DeviceAddress = shaderTable.RaygenShaderHandleBuffer.Address,
+            Stride = shaderTable.Handle,
+            Size = shaderTable.RaygenShaderHandleBuffer.SizeInBytes
+        };
+
+        StridedDeviceAddressRegionKHR missShaderBindingTable = new()
+        {
+            DeviceAddress = shaderTable.MissShaderHandleBuffer.Address,
+            Stride = shaderTable.Handle,
+            Size = shaderTable.MissShaderHandleBuffer.SizeInBytes
+        };
+
+        StridedDeviceAddressRegionKHR hitShaderBindingTable = new()
+        {
+            DeviceAddress = shaderTable.HitGroupHandleBuffer.Address,
+            Stride = shaderTable.Handle,
+            Size = shaderTable.HitGroupHandleBuffer.SizeInBytes
+        };
+
+        VkRes.KhrRayTracingPipeline.CmdTraceRays(Handle,
+                                                 &raygenShaderBindingTable,
+                                                 &missShaderBindingTable,
+                                                 &hitShaderBindingTable,
+                                                 null,
+                                                 width,
+                                                 height,
+                                                 depth);
+    }
+
     public void ResolveTexture(Texture source, Texture destination)
     {
         if (source.SampleCount == TextureSampleCount.Count1)

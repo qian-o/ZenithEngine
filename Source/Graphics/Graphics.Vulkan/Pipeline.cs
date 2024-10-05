@@ -391,6 +391,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         Handle = pipeline;
         Layout = createInfo.Layout;
         RenderPass = createInfo.RenderPass;
+        ShaderTable = null;
         PipelineBindPoint = PipelineBindPoint.Graphics;
     }
 
@@ -478,6 +479,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         Handle = pipeline;
         Layout = createInfo.Layout;
         RenderPass = default;
+        ShaderTable = null;
         PipelineBindPoint = PipelineBindPoint.Compute;
     }
 
@@ -547,14 +549,19 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
             {
                 HitGroupDescription hitGroupDescription = description.HitGroups[i];
 
+                int generalIndex = pipelineShaderEntryPoints.IndexOf(hitGroupDescription.GeneralEntryPoint);
+                int closestHitIndex = pipelineShaderEntryPoints.IndexOf(hitGroupDescription.ClosestHitEntryPoint);
+                int anyHitIndex = pipelineShaderEntryPoints.IndexOf(hitGroupDescription.AnyHitEntryPoint);
+                int intersectionIndex = pipelineShaderEntryPoints.IndexOf(hitGroupDescription.IntersectionEntryPoint);
+
                 RayTracingShaderGroupCreateInfoKHR rayTracingShaderGroupCreateInfo = new()
                 {
                     SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
                     Type = Formats.GetRayTracingShaderGroupType(hitGroupDescription.Type),
-                    GeneralShader = pipelineShaderEntryPoints.Contains(hitGroupDescription.GeneralEntryPoint) ? (uint)pipelineShaderEntryPoints.IndexOf(hitGroupDescription.GeneralEntryPoint) : uint.MaxValue,
-                    ClosestHitShader = pipelineShaderEntryPoints.Contains(hitGroupDescription.ClosestHitEntryPoint) ? (uint)pipelineShaderEntryPoints.IndexOf(hitGroupDescription.ClosestHitEntryPoint) : uint.MaxValue,
-                    AnyHitShader = pipelineShaderEntryPoints.Contains(hitGroupDescription.AnyHitEntryPoint) ? (uint)pipelineShaderEntryPoints.IndexOf(hitGroupDescription.AnyHitEntryPoint) : uint.MaxValue,
-                    IntersectionShader = pipelineShaderEntryPoints.Contains(hitGroupDescription.IntersectionEntryPoint) ? (uint)pipelineShaderEntryPoints.IndexOf(hitGroupDescription.IntersectionEntryPoint) : uint.MaxValue
+                    GeneralShader = generalIndex == -1 ? Vk.ShaderUnusedKhr : (uint)generalIndex,
+                    ClosestHitShader = closestHitIndex == -1 ? Vk.ShaderUnusedKhr : (uint)closestHitIndex,
+                    AnyHitShader = anyHitIndex == -1 ? Vk.ShaderUnusedKhr : (uint)anyHitIndex,
+                    IntersectionShader = intersectionIndex == -1 ? Vk.ShaderUnusedKhr : (uint)intersectionIndex
                 };
 
                 rayTracingShaderGroups[i] = rayTracingShaderGroupCreateInfo;
@@ -596,6 +603,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         Handle = pipeline;
         Layout = createInfo.Layout;
         RenderPass = default;
+        ShaderTable = new ShaderTable(VkRes, this, in description);
         PipelineBindPoint = PipelineBindPoint.RayTracingKhr;
     }
 
@@ -604,6 +612,8 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
     internal VkPipelineLayout Layout { get; }
 
     internal VkRenderPass RenderPass { get; }
+
+    internal ShaderTable? ShaderTable { get; }
 
     internal PipelineBindPoint PipelineBindPoint { get; }
 
@@ -627,5 +637,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         {
             VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPass, null);
         }
+
+        ShaderTable?.Dispose();
     }
 }
