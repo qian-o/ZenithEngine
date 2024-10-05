@@ -529,6 +529,36 @@ internal static class Formats
             shaderStageFlags |= ShaderStageFlags.ComputeBit;
         }
 
+        if (stage.HasFlag(ShaderStages.RayGeneration))
+        {
+            shaderStageFlags |= ShaderStageFlags.RaygenBitKhr;
+        }
+
+        if (stage.HasFlag(ShaderStages.AnyHit))
+        {
+            shaderStageFlags |= ShaderStageFlags.AnyHitBitKhr;
+        }
+
+        if (stage.HasFlag(ShaderStages.ClosestHit))
+        {
+            shaderStageFlags |= ShaderStageFlags.ClosestHitBitKhr;
+        }
+
+        if (stage.HasFlag(ShaderStages.Miss))
+        {
+            shaderStageFlags |= ShaderStageFlags.MissBitKhr;
+        }
+
+        if (stage.HasFlag(ShaderStages.Intersection))
+        {
+            shaderStageFlags |= ShaderStageFlags.IntersectionBitKhr;
+        }
+
+        if (stage.HasFlag(ShaderStages.Callable))
+        {
+            shaderStageFlags |= ShaderStageFlags.CallableBitKhr;
+        }
+
         return shaderStageFlags;
     }
 

@@ -488,11 +488,13 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
             Size = shaderTable.HitGroupHandleBuffer.SizeInBytes
         };
 
+        StridedDeviceAddressRegionKHR callableShaderBindingTable = new();
+
         VkRes.KhrRayTracingPipeline.CmdTraceRays(Handle,
                                                  &raygenShaderBindingTable,
                                                  &missShaderBindingTable,
                                                  &hitShaderBindingTable,
-                                                 null,
+                                                 &callableShaderBindingTable,
                                                  width,
                                                  height,
                                                  depth);

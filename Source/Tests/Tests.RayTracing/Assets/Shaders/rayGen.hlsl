@@ -34,18 +34,5 @@ void rayGen()
     Payload payload;
     TraceRay(rs, RAY_FLAG_FORCE_OPAQUE, 0xff, 0, 0, 0, rayDesc, payload);
     
-    outputTexture[LaunchID.xy] = payload.color;
-}
-
-[shader("miss")]
-void miss(inout Payload payload)
-{
-    payload.color = float4(0.0, 0.0, 0.2, 1.0);
-}
-
-[shader("closesthit")]
-void closestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes attribs)
-{
-    const float3 barycentricCoords = float3(1.0f - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
-    payload.color = barycentricCoords;
+    outputTexture[LaunchID.xy] = 1.0;
 }

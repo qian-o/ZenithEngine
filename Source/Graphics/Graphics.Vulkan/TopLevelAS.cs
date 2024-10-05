@@ -21,7 +21,7 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
                 InstanceCustomIndex = asInstance.InstanceID,
                 Mask = asInstance.InstanceMask,
                 InstanceShaderBindingTableRecordOffset = asInstance.InstanceContributionToHitGroupIndex,
-                AccelerationStructureReference = asInstance.BottonLevel.Handle.Handle,
+                AccelerationStructureReference = asInstance.BottonLevel.Address,
                 Flags = Formats.GetGeometryInstanceFlags(asInstance.Options)
             };
         }
