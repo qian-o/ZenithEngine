@@ -6,7 +6,7 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-internal unsafe class ShaderTable : VulkanObject<ulong>
+internal sealed unsafe class ShaderTable : VulkanObject<ulong>
 {
     public ShaderTable(VulkanResources vkRes, Pipeline pipeline, ref readonly RaytracingPipelineDescription description) : base(vkRes, ObjectType.Buffer)
     {
