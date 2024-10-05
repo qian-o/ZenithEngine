@@ -316,14 +316,14 @@ internal sealed unsafe class Program
 
         _worldSpaceMats = new Matrix4x4[_nodes.Count];
 
-        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.VertexBuffer<Vertex>(vertices.Count));
-        _device.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
+        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(vertices.Count, BufferUsage.VertexBuffer));
+        _device.UpdateBuffer(_vertexBuffer, [.. vertices]);
 
-        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.IndexBuffer<uint>(indices.Count));
-        _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
+        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Count, BufferUsage.IndexBuffer));
+        _device.UpdateBuffer(_indexBuffer, [.. indices]);
 
-        _frameBuffer = _device.Factory.CreateBuffer(BufferDescription.UniformBuffer<Frame>(isDynamic: true));
-        _nodeTransformBuffer = _device.Factory.CreateBuffer(BufferDescription.StorageBuffer<Matrix4x4>(_worldSpaceMats.Length, true));
+        _frameBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Frame>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _nodeTransformBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Matrix4x4>(_worldSpaceMats.Length, BufferUsage.StorageBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("frame", ResourceKind.UniformBuffer, ShaderStages.Vertex),
                                                              new ResourceLayoutElementDescription("nodeTransform", ResourceKind.StorageBuffer, ShaderStages.Vertex));
@@ -399,13 +399,13 @@ internal sealed unsafe class Program
             ViewPos = new Vector4(new Vector3(0.0f, 1.0f, 5.0f), 1.0f)
         };
 
-        _device.UpdateBuffer(_frameBuffer, 0, ref frame);
+        _device.UpdateBuffer(_frameBuffer, ref frame);
 
         _animations[0].Update(e.TotalTime);
 
         TransformNodes(_root.Children, Matrix4x4.Identity);
 
-        _device.UpdateBuffer(_nodeTransformBuffer, 0, _worldSpaceMats);
+        _device.UpdateBuffer(_nodeTransformBuffer, _worldSpaceMats);
     }
 
     private static void Window_Render(object? sender, RenderEventArgs e)

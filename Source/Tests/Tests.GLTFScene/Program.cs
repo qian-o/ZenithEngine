@@ -223,13 +223,13 @@ internal sealed unsafe class Program
             LoadNode(gltfNode, null, vertices, indices);
         }
 
-        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.VertexBuffer<Vertex>(vertices.Count));
-        _device.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
+        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(vertices.Count, BufferUsage.VertexBuffer));
+        _device.UpdateBuffer(_vertexBuffer, [.. vertices]);
 
-        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.IndexBuffer<uint>(indices.Count));
-        _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
+        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Count, BufferUsage.IndexBuffer));
+        _device.UpdateBuffer(_indexBuffer, [.. indices]);
 
-        _uboBuffer = _device.Factory.CreateBuffer(BufferDescription.UniformBuffer<UBO>(isDynamic: true));
+        _uboBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<UBO>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
@@ -481,7 +481,7 @@ internal sealed unsafe class Program
         {
             _ubo.Model = node.WorldTransform;
 
-            commandList.UpdateBuffer(_uboBuffer, 0, ref _ubo);
+            commandList.UpdateBuffer(_uboBuffer, ref _ubo);
 
             foreach (Primitive primitive in node.Mesh.Primitives)
             {

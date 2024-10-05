@@ -105,14 +105,14 @@ internal sealed unsafe class MainView : View
 
         uint[] indices = [0, 1, 2, 2, 3, 0];
 
-        _vertexBuffer = device.Factory.CreateBuffer(BufferDescription.VertexBuffer<Vertex>(vertices.Length, true));
-        device.UpdateBuffer(_vertexBuffer, 0, vertices);
+        _vertexBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(vertices.Length, BufferUsage.VertexBuffer | BufferUsage.Dynamic));
+        device.UpdateBuffer(_vertexBuffer, vertices);
 
-        _indexBuffer = device.Factory.CreateBuffer(BufferDescription.IndexBuffer<uint>(indices.Length));
-        device.UpdateBuffer(_indexBuffer, 0, indices);
+        _indexBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Length, BufferUsage.IndexBuffer));
+        device.UpdateBuffer(_indexBuffer, indices);
 
-        _uniformBuffer = device.Factory.CreateBuffer(BufferDescription.UniformBuffer<UniformBufferObject>(isDynamic: true));
-        _normalBuffer = device.Factory.CreateBuffer(BufferDescription.UniformBuffer<Properties>(isDynamic: true));
+        _uniformBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<UniformBufferObject>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _normalBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Properties>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutElementDescription uboDescription = new("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex);
         ResourceLayoutElementDescription normalDescription = new("properties", ResourceKind.UniformBuffer, ShaderStages.Fragment);
@@ -200,9 +200,9 @@ internal sealed unsafe class MainView : View
 
                     properties.PxRange = _layout.Atlas!.DistanceRange;
 
-                    _commandList.UpdateBuffer(_vertexBuffer, 0, vertices);
-                    _commandList.UpdateBuffer(_uniformBuffer, 0, ref ubo);
-                    _commandList.UpdateBuffer(_normalBuffer, 0, ref properties);
+                    _commandList.UpdateBuffer(_vertexBuffer, vertices);
+                    _commandList.UpdateBuffer(_uniformBuffer, ref ubo);
+                    _commandList.UpdateBuffer(_normalBuffer, ref properties);
 
                     _commandList.DrawIndexed(_indexBuffer.SizeInBytes / sizeof(uint), 1, 0, 0, 0);
                 }

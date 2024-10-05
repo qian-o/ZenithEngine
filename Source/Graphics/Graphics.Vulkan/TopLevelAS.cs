@@ -31,7 +31,7 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
                                           (uint)(sizeof(AccelerationStructureInstanceKHR) * description.Instances.Length),
                                           true);
 
-        vkRes.GraphicsDevice.UpdateBuffer(instanceBuffer, 0, asInstances);
+        vkRes.GraphicsDevice.UpdateBuffer(instanceBuffer, asInstances);
 
         AccelerationStructureGeometryKHR asGeometry = new()
         {

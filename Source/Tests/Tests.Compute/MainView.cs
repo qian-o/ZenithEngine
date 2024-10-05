@@ -78,7 +78,7 @@ internal sealed unsafe class MainView : View
         _device = device;
         _imGuiController = imGuiController;
 
-        _buffer = device.Factory.CreateBuffer(BufferDescription.UniformBuffer<Camera>(isDynamic: true));
+        _buffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Camera>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
         _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("camera", ResourceKind.UniformBuffer, ShaderStages.Compute),
                                                                                             new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.Compute)));
@@ -168,7 +168,7 @@ internal sealed unsafe class MainView : View
             ImGui.End();
         }
 
-        _device.UpdateBuffer(_buffer, 0, in _camera);
+        _device.UpdateBuffer(_buffer, in _camera);
     }
 
     protected override void OnRender(RenderEventArgs e)
