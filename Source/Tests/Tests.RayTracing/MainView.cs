@@ -88,7 +88,7 @@ internal sealed unsafe class MainView : View
             BottonLevel = _bottomLevelAS
         };
 
-        _topLevelAS = device.Factory.CreateTopLevelAS(new TopLevelASDescription(AccelerationStructureOptions.AllowUpdate, accelerationStructureInstance));
+        _topLevelAS = device.Factory.CreateTopLevelAS(new TopLevelASDescription(AccelerationStructureOptions.PreferFastTrace, accelerationStructureInstance));
 
         _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("rs", ResourceKind.AccelerationStructure, ShaderStages.RayGeneration),
                                                                                             new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.RayGeneration)));
@@ -96,9 +96,9 @@ internal sealed unsafe class MainView : View
 
         ShaderDescription[] shaderDescriptions =
         [
-            new ShaderDescription(ShaderStages.RayGeneration,  Encoding.UTF8.GetBytes(rayGen), "rayGen"),
-            new ShaderDescription(ShaderStages.Miss,  Encoding.UTF8.GetBytes(miss), "miss"),
-            new ShaderDescription(ShaderStages.ClosestHit, Encoding.UTF8.GetBytes(closestHit), "closestHit")
+            new ShaderDescription(ShaderStages.RayGeneration,  Encoding.UTF8.GetBytes(rayGen), "main"),
+            new ShaderDescription(ShaderStages.Miss,  Encoding.UTF8.GetBytes(miss), "main"),
+            new ShaderDescription(ShaderStages.ClosestHit, Encoding.UTF8.GetBytes(closestHit), "main")
         ];
 
         Shader[] shaders = device.Factory.HlslToSpirv(shaderDescriptions);
@@ -111,31 +111,8 @@ internal sealed unsafe class MainView : View
                 MissShader = [shaders[1]],
                 ClosestHitShader = [shaders[2]]
             },
-            HitGroups =
-            [
-                new HitGroupDescription()
-                {
-                    Name = "RaygenGroup",
-                    Type = HitGroupType.General,
-                    GeneralEntryPoint = "rayGen"
-                },
-                new HitGroupDescription()
-                {
-                    Name = "MissGroup",
-                    Type = HitGroupType.General,
-                    GeneralEntryPoint = "miss"
-                },
-                new HitGroupDescription()
-                {
-                    Name = "HitGroup",
-                    Type = HitGroupType.Triangles,
-                    ClosestHitEntryPoint = "closestHit"
-                }
-            ],
             ResourceLayouts = [_resourceLayout],
-            MaxTraceRecursionDepth = 1,
-            MaxPayloadSizeInBytes = 64,
-            MaxAttributeSizeInBytes = 32
+            MaxTraceRecursionDepth = 1
         };
 
         _pipeline = device.Factory.CreateRaytracingPipeline(raytracingPipelineDescription);

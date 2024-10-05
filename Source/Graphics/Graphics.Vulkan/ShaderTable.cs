@@ -1,5 +1,4 @@
-﻿using Graphics.Core;
-using Graphics.Core.Helpers;
+﻿using Graphics.Core.Helpers;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Silk.NET.Vulkan;
@@ -14,13 +13,10 @@ internal sealed unsafe class ShaderTable : VulkanObject<ulong>
         uint handleAlignment = vkRes.RayTracingPipelineProperties.ShaderGroupHandleAlignment;
         uint handleSizeAligned = Util.AlignedSize(handleSize, handleAlignment);
 
-        string raygenShaderName = description.Shaders.RayGenerationShader.Name;
-        string[] missShaderNames = description.Shaders.MissShader.Select(x => x.Name).ToArray();
-        string[] hitGroupNames = description.HitGroups.Where(item => item.Type != HitGroupType.General)
-                                                      .Select(x => x.Name)
-                                                      .ToArray();
+        uint missShaderCount = description.Shaders.GetMissShaderCount();
+        uint hitGroupCount = description.Shaders.GetHitGroupCount();
 
-        uint length = 1 + (uint)missShaderNames.Length + (uint)hitGroupNames.Length;
+        uint length = 1 + missShaderCount + hitGroupCount;
 
         uint size = handleSizeAligned * length;
 
@@ -28,8 +24,8 @@ internal sealed unsafe class ShaderTable : VulkanObject<ulong>
         VkRes.KhrRayTracingPipeline.GetRayTracingShaderGroupHandles(VkRes.VkDevice, pipeline.Handle, 0, length, size, shaderHandleStorage.AsPointer());
 
         byte[] raygenShaderHandleStorage = shaderHandleStorage.AsSpan(0, (int)handleSizeAligned).ToArray();
-        byte[] missShaderHandleStorage = shaderHandleStorage.AsSpan((int)handleSizeAligned, (int)handleSizeAligned * missShaderNames.Length).ToArray();
-        byte[] hitGroupHandleStorage = shaderHandleStorage.AsSpan((int)handleSizeAligned * (1 + missShaderNames.Length), (int)handleSizeAligned * hitGroupNames.Length).ToArray();
+        byte[] missShaderHandleStorage = shaderHandleStorage.AsSpan((int)handleSizeAligned, (int)(handleSizeAligned * missShaderCount)).ToArray();
+        byte[] hitGroupHandleStorage = shaderHandleStorage.AsSpan((int)(handleSizeAligned * (1 + missShaderCount)), (int)(handleSizeAligned * hitGroupCount)).ToArray();
 
         DeviceBuffer raygenShaderHandleBuffer = new(VkRes,
                                                     BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.ShaderBindingTableBitKhr,

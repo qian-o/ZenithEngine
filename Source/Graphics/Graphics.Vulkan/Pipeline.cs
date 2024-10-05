@@ -495,14 +495,22 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         // shader stage
         {
             List<PipelineShaderStageCreateInfo> pipelineShaderStageCreateInfos = [];
-            List<string> pipelineShaderEntryPoints = [];
+            List<RayTracingShaderGroupCreateInfoKHR> rayTracingShaderGroupCreateInfos = [];
 
             if (description.Shaders.RayGenerationShader != null)
             {
                 Shader shader = description.Shaders.RayGenerationShader;
 
                 pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
-                pipelineShaderEntryPoints.Add(shader.EntryPoint);
+                rayTracingShaderGroupCreateInfos.Add(new RayTracingShaderGroupCreateInfoKHR
+                {
+                    SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                    Type = RayTracingShaderGroupTypeKHR.GeneralKhr,
+                    GeneralShader = (uint)(pipelineShaderStageCreateInfos.Count - 1),
+                    ClosestHitShader = Vk.ShaderUnusedKhr,
+                    AnyHitShader = Vk.ShaderUnusedKhr,
+                    IntersectionShader = Vk.ShaderUnusedKhr
+                });
             }
 
             if (description.Shaders.MissShader != null)
@@ -510,7 +518,15 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
                 foreach (Shader shader in description.Shaders.MissShader)
                 {
                     pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
-                    pipelineShaderEntryPoints.Add(shader.EntryPoint);
+                    rayTracingShaderGroupCreateInfos.Add(new RayTracingShaderGroupCreateInfoKHR
+                    {
+                        SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                        Type = RayTracingShaderGroupTypeKHR.GeneralKhr,
+                        GeneralShader = (uint)(pipelineShaderStageCreateInfos.Count - 1),
+                        ClosestHitShader = Vk.ShaderUnusedKhr,
+                        AnyHitShader = Vk.ShaderUnusedKhr,
+                        IntersectionShader = Vk.ShaderUnusedKhr
+                    });
                 }
             }
 
@@ -519,7 +535,15 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
                 foreach (Shader shader in description.Shaders.ClosestHitShader)
                 {
                     pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
-                    pipelineShaderEntryPoints.Add(shader.EntryPoint);
+                    rayTracingShaderGroupCreateInfos.Add(new RayTracingShaderGroupCreateInfoKHR
+                    {
+                        SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                        Type = RayTracingShaderGroupTypeKHR.TrianglesHitGroupKhr,
+                        GeneralShader = Vk.ShaderUnusedKhr,
+                        ClosestHitShader = (uint)(pipelineShaderStageCreateInfos.Count - 1),
+                        AnyHitShader = Vk.ShaderUnusedKhr,
+                        IntersectionShader = Vk.ShaderUnusedKhr
+                    });
                 }
             }
 
@@ -528,7 +552,15 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
                 foreach (Shader shader in description.Shaders.AnyHitShader)
                 {
                     pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
-                    pipelineShaderEntryPoints.Add(shader.EntryPoint);
+                    rayTracingShaderGroupCreateInfos.Add(new RayTracingShaderGroupCreateInfoKHR
+                    {
+                        SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                        Type = RayTracingShaderGroupTypeKHR.TrianglesHitGroupKhr,
+                        GeneralShader = Vk.ShaderUnusedKhr,
+                        ClosestHitShader = Vk.ShaderUnusedKhr,
+                        AnyHitShader = (uint)(pipelineShaderStageCreateInfos.Count - 1),
+                        IntersectionShader = Vk.ShaderUnusedKhr
+                    });
                 }
             }
 
@@ -537,35 +569,20 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
                 foreach (Shader shader in description.Shaders.IntersectionShader)
                 {
                     pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
-                    pipelineShaderEntryPoints.Add(shader.EntryPoint);
+                    rayTracingShaderGroupCreateInfos.Add(new RayTracingShaderGroupCreateInfoKHR
+                    {
+                        SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                        Type = RayTracingShaderGroupTypeKHR.ProceduralHitGroupKhr,
+                        GeneralShader = Vk.ShaderUnusedKhr,
+                        ClosestHitShader = Vk.ShaderUnusedKhr,
+                        AnyHitShader = Vk.ShaderUnusedKhr,
+                        IntersectionShader = (uint)(pipelineShaderStageCreateInfos.Count - 1)
+                    });
                 }
             }
 
             PipelineShaderStageCreateInfo[] stageCreateInfos = [.. pipelineShaderStageCreateInfos];
-
-            RayTracingShaderGroupCreateInfoKHR[] rayTracingShaderGroups = new RayTracingShaderGroupCreateInfoKHR[description.HitGroups.Length];
-
-            for (int i = 0; i < description.HitGroups.Length; i++)
-            {
-                HitGroupDescription hitGroupDescription = description.HitGroups[i];
-
-                int generalIndex = pipelineShaderEntryPoints.IndexOf(hitGroupDescription.GeneralEntryPoint);
-                int closestHitIndex = pipelineShaderEntryPoints.IndexOf(hitGroupDescription.ClosestHitEntryPoint);
-                int anyHitIndex = pipelineShaderEntryPoints.IndexOf(hitGroupDescription.AnyHitEntryPoint);
-                int intersectionIndex = pipelineShaderEntryPoints.IndexOf(hitGroupDescription.IntersectionEntryPoint);
-
-                RayTracingShaderGroupCreateInfoKHR rayTracingShaderGroupCreateInfo = new()
-                {
-                    SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
-                    Type = Formats.GetRayTracingShaderGroupType(hitGroupDescription.Type),
-                    GeneralShader = generalIndex == -1 ? Vk.ShaderUnusedKhr : (uint)generalIndex,
-                    ClosestHitShader = closestHitIndex == -1 ? Vk.ShaderUnusedKhr : (uint)closestHitIndex,
-                    AnyHitShader = anyHitIndex == -1 ? Vk.ShaderUnusedKhr : (uint)anyHitIndex,
-                    IntersectionShader = intersectionIndex == -1 ? Vk.ShaderUnusedKhr : (uint)intersectionIndex
-                };
-
-                rayTracingShaderGroups[i] = rayTracingShaderGroupCreateInfo;
-            }
+            RayTracingShaderGroupCreateInfoKHR[] rayTracingShaderGroups = [.. rayTracingShaderGroupCreateInfos];
 
             createInfo.StageCount = (uint)stageCreateInfos.Length;
             createInfo.PStages = stageCreateInfos.AsPointer();

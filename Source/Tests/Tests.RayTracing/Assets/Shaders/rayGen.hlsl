@@ -12,7 +12,7 @@ float rangeMap(float value, float min, float max, float newMin, float newMax)
 }
 
 [shader("raygeneration")]
-void rayGen()
+void main()
 {
     const float fov = 45.0;
     const float3 position = float3(0, 0.0, -2.0);

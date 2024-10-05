@@ -39,4 +39,38 @@ public record struct RaytracingShaderStateDescription
     /// Gets or sets the Intersection shader program.
     /// </summary>
     public Shader[] IntersectionShader { get; set; }
+
+    public readonly uint GetMissShaderCount()
+    {
+        if (MissShader != null)
+        {
+            return (uint)MissShader.Length;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    public readonly uint GetHitGroupCount()
+    {
+        uint count = 0;
+
+        if (ClosestHitShader != null)
+        {
+            count += (uint)ClosestHitShader.Length;
+        }
+
+        if (AnyHitShader != null)
+        {
+            count += (uint)AnyHitShader.Length;
+        }
+
+        if (IntersectionShader != null)
+        {
+            count += (uint)IntersectionShader.Length;
+        }
+
+        return count;
+    }
 }

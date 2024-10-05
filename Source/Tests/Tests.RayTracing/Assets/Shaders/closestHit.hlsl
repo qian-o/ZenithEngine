@@ -4,7 +4,7 @@
 };
 
 [shader("closesthit")]
-void closestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes attribs)
+void main(inout Payload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
     const float3 barycentricCoords = float3(1.0f - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
     
