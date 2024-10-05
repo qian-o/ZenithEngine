@@ -12,7 +12,7 @@ float rangeMap(float value, float min, float max, float newMin, float newMax)
 }
 
 [shader("raygeneration")]
-void main()
+void rayGen()
 {
     const float fov = 45.0;
     const float3 position = float3(0, 0.0, -2.0);
@@ -45,4 +45,19 @@ void main()
     
     outputTexture[LaunchID.xy] = payload.color;
 
+}
+
+[shader("miss")]
+void miss(inout Payload payload)
+{
+    payload.color = float4(0.0, 0.0, 0.2, 1.0);
+}
+
+
+[shader("closesthit")]
+void closestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+    const float3 barycentricCoords = float3(1.0f - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+    
+    payload.color = float4(barycentricCoords, 1.0);
 }

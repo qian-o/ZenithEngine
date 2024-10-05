@@ -41,11 +41,11 @@ internal static unsafe class DxcHelpers
     {
         return
         [
+            "-fvk-use-scalar-layout",
             "-spirv",
             "-T", GetProfile(in shaderDescription),
-            "-E", shaderDescription.EntryPoint,
-            $"-fspv-target-env=vulkan{Context.ApiVersion.Major}.{Context.ApiVersion.Minor}",
-            "-fvk-use-scalar-layout"
+             GetProfile(in shaderDescription).Contains("lib") ? string.Empty : "-E", shaderDescription.EntryPoint,
+            $"-fspv-target-env=vulkan{Context.ApiVersion.Major}.{Context.ApiVersion.Minor}"
          ];
     }
 

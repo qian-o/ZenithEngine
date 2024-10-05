@@ -50,9 +50,7 @@ internal sealed unsafe class MainView : View
 
         ushort[] indices = [0, 1, 2];
 
-        string rayGen = File.ReadAllText("Assets/Shaders/rayGen.hlsl");
-        string miss = File.ReadAllText("Assets/Shaders/miss.hlsl");
-        string closestHit = File.ReadAllText("Assets/Shaders/closestHit.hlsl");
+        string hlsl = File.ReadAllText("Assets/Shaders/rayTracing.hlsl");
 
         _device = device;
         _imGuiController = imGuiController;
@@ -96,9 +94,9 @@ internal sealed unsafe class MainView : View
 
         ShaderDescription[] shaderDescriptions =
         [
-            new ShaderDescription(ShaderStages.RayGeneration,  Encoding.UTF8.GetBytes(rayGen), "main"),
-            new ShaderDescription(ShaderStages.Miss,  Encoding.UTF8.GetBytes(miss), "main"),
-            new ShaderDescription(ShaderStages.ClosestHit, Encoding.UTF8.GetBytes(closestHit), "main")
+            new ShaderDescription(ShaderStages.RayGeneration,  Encoding.UTF8.GetBytes(hlsl), "rayGen"),
+            new ShaderDescription(ShaderStages.Miss,  Encoding.UTF8.GetBytes(hlsl), "miss"),
+            new ShaderDescription(ShaderStages.ClosestHit, Encoding.UTF8.GetBytes(hlsl), "closestHit")
         ];
 
         Shader[] shaders = device.Factory.HlslToSpirv(shaderDescriptions);
