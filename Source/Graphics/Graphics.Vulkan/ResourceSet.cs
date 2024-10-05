@@ -157,7 +157,7 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
             TopLevelAS topLevelAS = (TopLevelAS)bindableResource;
 
             descriptorSize = VkRes.DescriptorBufferProperties.AccelerationStructureDescriptorSize;
-            GetDescriptor(new DescriptorDataEXT() { AccelerationStructure = topLevelAS.Handle.Handle });
+            GetDescriptor(new DescriptorDataEXT() { AccelerationStructure = topLevelAS.Address });
         }
         else
         {

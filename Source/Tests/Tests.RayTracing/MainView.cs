@@ -24,20 +24,11 @@ internal sealed unsafe class MainView : View
         public Vector3 Color = color;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    private struct CameraProperties
-    {
-        public Matrix4x4 ViewInverse;
-
-        public Matrix4x4 ProjInverse;
-    }
-
     private readonly GraphicsDevice _device;
     private readonly ImGuiController _imGuiController;
 
     private readonly DeviceBuffer _vertexBuffer;
     private readonly DeviceBuffer _indexBuffer;
-    private readonly DeviceBuffer _buffer;
     private readonly BottomLevelAS _bottomLevelAS;
     private readonly TopLevelAS _topLevelAS;
     private readonly ResourceLayout _resourceLayout;
@@ -54,7 +45,7 @@ internal sealed unsafe class MainView : View
         [
             new(new Vector3(-1.0f, -1.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f)),
             new(new Vector3(1.0f, -1.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(0.0f, 1.0f, 0.0f)),
-            new(new Vector3(1.0f, 1.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(0.0f, 0.0f, 1.0f))
+            new(new Vector3(0.0f, 1.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(0.0f, 0.0f, 1.0f))
         ];
 
         ushort[] indices = [0, 1, 2];
@@ -71,8 +62,6 @@ internal sealed unsafe class MainView : View
 
         _indexBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<ushort>(indices.Length, BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure));
         device.UpdateBuffer(_indexBuffer, indices);
-
-        _buffer = device.Factory.CreateBuffer(BufferDescription.Buffer<CameraProperties>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
         AccelerationStructureTriangles accelerationStructureTriangles = new()
         {
@@ -102,10 +91,8 @@ internal sealed unsafe class MainView : View
         _topLevelAS = device.Factory.CreateTopLevelAS(new TopLevelASDescription(AccelerationStructureOptions.AllowUpdate, accelerationStructureInstance));
 
         _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("rs", ResourceKind.AccelerationStructure, ShaderStages.RayGeneration),
-                                                                                            new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.RayGeneration),
-                                                                                            new ResourceLayoutElementDescription("cameraProperties", ResourceKind.UniformBuffer, ShaderStages.RayGeneration)));
+                                                                                            new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.RayGeneration)));
         _resourceSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _topLevelAS));
-        _resourceSet.UpdateSet(_buffer, 2);
 
         ShaderDescription[] shaderDescriptions =
         [
@@ -157,16 +144,6 @@ internal sealed unsafe class MainView : View
 
     protected override void OnUpdate(UpdateEventArgs e)
     {
-        Matrix4x4 view = Matrix4x4.CreateLookAt(new Vector3(0.0f, 0.0f, -2.5f), Vector3.Zero, Vector3.UnitY);
-        Matrix4x4 perspective = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4.0f, (float)Width / Height, 0.1f, 512.0f);
-
-        CameraProperties cameraProperties = new()
-        {
-            ViewInverse = Matrix4x4.Transpose(view),
-            ProjInverse = Matrix4x4.Transpose(perspective)
-        };
-
-        _device.UpdateBuffer(_buffer, in cameraProperties);
     }
 
     protected override void OnRender(RenderEventArgs e)

@@ -131,6 +131,17 @@ float3 render(float2 pixel)
         x *= scale;
         y *= scale / aspectRatio;
     }
+
+    if (aspectRatio > 1.0)
+    {
+        x *= aspectRatio * scale;
+        y *= scale;
+    }
+    else
+    {
+        x *= scale;
+        y *= scale / aspectRatio;
+    }
     
     float3 position = camera.position;
     float3 direction = normalize(camera.forward + x * camera.right + y * camera.up);

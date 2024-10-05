@@ -1,38 +1,48 @@
-﻿struct CameraProperties
-{
-    float4x4 viewInverse;
-    
-    float4x4 projInverse;
-};
-
-struct Payload
+﻿struct Payload
 {
     float4 color;
 };
 
 RaytracingAccelerationStructure rs : register(t0, space0);
 RWTexture2D<float4> outputTexture : register(u1, space0);
-ConstantBuffer<CameraProperties> cameraProperties : register(b2, space0);
+
+float rangeMap(float value, float min, float max, float newMin, float newMax)
+{
+    return newMin + (value - min) * (newMax - newMin) / (max - min);
+}
 
 [shader("raygeneration")]
 void rayGen()
 {
+    const float fov = 45.0;
+    const float3 position = float3(0, 0.0, -2.0);
+    const float3 forward = normalize(float3(0, 0, 1));
+    const float3 right = normalize(cross(float3(0, 1, 0), forward));
+    const float3 up = cross(forward, right);
+    
     uint3 LaunchID = DispatchRaysIndex();
     uint3 LaunchSize = DispatchRaysDimensions();
-
-    const float2 pixelCenter = float2(LaunchID.xy) + float2(0.5, 0.5);
-    const float2 inUV = pixelCenter / float2(LaunchSize.xy);
-    float2 d = inUV * 2.0 - 1.0;
-    float4 target = mul(cameraProperties.projInverse, float4(d.x, d.y, 1, 1));
+    
+    float x = LaunchID.x + 0.5;
+    float y = LaunchID.y + 0.5;
+    
+    float scale = tan(radians(fov));
+    float aspectRatio = LaunchSize.x / float(LaunchSize.y);
+    
+    x = rangeMap(x, 0, LaunchSize.x - 1, -1.0, 1.0);
+    y = rangeMap(y, 0, LaunchSize.y - 1, 1.0, -1.0);
+    
+    float3 direction = normalize(forward + x * right + y * up);
     
     RayDesc rayDesc;
-    rayDesc.Origin = mul(cameraProperties.viewInverse, float4(0, 0, 0, 1)).xyz;
-    rayDesc.Direction = mul(cameraProperties.viewInverse, float4(normalize(target.xyz), 0)).xyz;
+    rayDesc.Origin = position;
+    rayDesc.Direction = direction;
     rayDesc.TMin = 0.001;
-    rayDesc.TMax = 10000.0;
+    rayDesc.TMax = 100.0;
     
     Payload payload;
     TraceRay(rs, RAY_FLAG_FORCE_OPAQUE, 0xff, 0, 0, 0, rayDesc, payload);
     
-    outputTexture[LaunchID.xy] = 1.0;
+    outputTexture[LaunchID.xy] = payload.color;
+
 }
