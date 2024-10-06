@@ -530,53 +530,37 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
                 }
             }
 
-            if (description.Shaders.ClosestHitShader != null)
+            if (description.Shaders.HitGroupShader != null)
             {
-                foreach (Shader shader in description.Shaders.ClosestHitShader)
+                foreach (HitGroupDescription hitGroupDescription in description.Shaders.HitGroupShader)
                 {
-                    pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
+                    uint closestHitShader = hitGroupDescription.ClosestHitShader != null ? (uint)pipelineShaderStageCreateInfos.Count : Vk.ShaderUnusedKhr;
+                    uint anyHitShader = hitGroupDescription.AnyHitShader != null ? (uint)pipelineShaderStageCreateInfos.Count + 1 : Vk.ShaderUnusedKhr;
+                    uint intersectionShader = hitGroupDescription.IntersectionShader != null ? (uint)pipelineShaderStageCreateInfos.Count + 2 : Vk.ShaderUnusedKhr;
+
+                    if (closestHitShader != Vk.ShaderUnusedKhr)
+                    {
+                        pipelineShaderStageCreateInfos.Add(hitGroupDescription.ClosestHitShader!.GetPipelineShaderStageCreateInfo());
+                    }
+
+                    if (anyHitShader != Vk.ShaderUnusedKhr)
+                    {
+                        pipelineShaderStageCreateInfos.Add(hitGroupDescription.AnyHitShader!.GetPipelineShaderStageCreateInfo());
+                    }
+
+                    if (intersectionShader != Vk.ShaderUnusedKhr)
+                    {
+                        pipelineShaderStageCreateInfos.Add(hitGroupDescription.IntersectionShader!.GetPipelineShaderStageCreateInfo());
+                    }
+
                     rayTracingShaderGroupCreateInfos.Add(new RayTracingShaderGroupCreateInfoKHR
                     {
                         SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
                         Type = RayTracingShaderGroupTypeKHR.TrianglesHitGroupKhr,
                         GeneralShader = Vk.ShaderUnusedKhr,
-                        ClosestHitShader = (uint)(pipelineShaderStageCreateInfos.Count - 1),
-                        AnyHitShader = Vk.ShaderUnusedKhr,
-                        IntersectionShader = Vk.ShaderUnusedKhr
-                    });
-                }
-            }
-
-            if (description.Shaders.AnyHitShader != null)
-            {
-                foreach (Shader shader in description.Shaders.AnyHitShader)
-                {
-                    pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
-                    rayTracingShaderGroupCreateInfos.Add(new RayTracingShaderGroupCreateInfoKHR
-                    {
-                        SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
-                        Type = RayTracingShaderGroupTypeKHR.TrianglesHitGroupKhr,
-                        GeneralShader = Vk.ShaderUnusedKhr,
-                        ClosestHitShader = Vk.ShaderUnusedKhr,
-                        AnyHitShader = (uint)(pipelineShaderStageCreateInfos.Count - 1),
-                        IntersectionShader = Vk.ShaderUnusedKhr
-                    });
-                }
-            }
-
-            if (description.Shaders.IntersectionShader != null)
-            {
-                foreach (Shader shader in description.Shaders.IntersectionShader)
-                {
-                    pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
-                    rayTracingShaderGroupCreateInfos.Add(new RayTracingShaderGroupCreateInfoKHR
-                    {
-                        SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
-                        Type = RayTracingShaderGroupTypeKHR.ProceduralHitGroupKhr,
-                        GeneralShader = Vk.ShaderUnusedKhr,
-                        ClosestHitShader = Vk.ShaderUnusedKhr,
-                        AnyHitShader = Vk.ShaderUnusedKhr,
-                        IntersectionShader = (uint)(pipelineShaderStageCreateInfos.Count - 1)
+                        ClosestHitShader = closestHitShader,
+                        AnyHitShader = anyHitShader,
+                        IntersectionShader = intersectionShader
                     });
                 }
             }

@@ -13,6 +13,7 @@ using SharpGLTF.Schema2;
 using SharpGLTF.Validation;
 using StbImageSharp;
 using Tests.Core;
+using AlphaMode = SharpGLTF.Schema2.AlphaMode;
 using GLTFTexture = SharpGLTF.Schema2.Texture;
 using Texture = Graphics.Vulkan.Texture;
 
@@ -40,6 +41,8 @@ internal sealed unsafe class MainView : View
         public uint VertexBuffer;
 
         public uint IndexBuffer;
+
+        public bool AlphaMask;
 
         public float AlphaCutoff;
 
@@ -124,23 +127,23 @@ internal sealed unsafe class MainView : View
         _topLevel = device.Factory.CreateTopLevelAS(in topLevelASDescription);
 
         _resourceLayout0 = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("as", ResourceKind.AccelerationStructure, ShaderStages.RayGeneration),
-                                                                                             new ResourceLayoutElementDescription("geometryNodes", ResourceKind.StorageBuffer, ShaderStages.ClosestHit),
+                                                                                             new ResourceLayoutElementDescription("geometryNodes", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit),
                                                                                              new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.RayGeneration)));
         _resourceSet0 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout0, _topLevel, _geometryNodesBuffer));
 
-        _resourceLayout1 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_vertexBuffers.Count, new ResourceLayoutElementDescription("vertexArray", ResourceKind.StorageBuffer, ShaderStages.ClosestHit)));
+        _resourceLayout1 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_vertexBuffers.Count, new ResourceLayoutElementDescription("vertexArray", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
         _resourceSet1 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout1));
         _resourceSet1.UpdateBindless([.. _vertexBuffers]);
 
-        _resourceLayout2 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_indexBuffers.Count, new ResourceLayoutElementDescription("indexArray", ResourceKind.StorageBuffer, ShaderStages.ClosestHit)));
+        _resourceLayout2 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_indexBuffers.Count, new ResourceLayoutElementDescription("indexArray", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
         _resourceSet2 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout2));
         _resourceSet2.UpdateBindless([.. _indexBuffers]);
 
-        _resourceLayout3 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_textureViews.Count, new ResourceLayoutElementDescription("textureArray", ResourceKind.SampledImage, ShaderStages.ClosestHit)));
+        _resourceLayout3 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_textureViews.Count, new ResourceLayoutElementDescription("textureArray", ResourceKind.SampledImage, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
         _resourceSet3 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout3));
         _resourceSet3.UpdateBindless([.. _textureViews]);
 
-        _resourceLayout4 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless(2, new ResourceLayoutElementDescription("samplerArray", ResourceKind.Sampler, ShaderStages.ClosestHit)));
+        _resourceLayout4 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless(2, new ResourceLayoutElementDescription("samplerArray", ResourceKind.Sampler, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
         _resourceSet4 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout4));
         _resourceSet4.UpdateBindless([device.Aniso4xSampler, device.LinearSampler]);
 
@@ -150,18 +153,26 @@ internal sealed unsafe class MainView : View
         [
             new ShaderDescription(ShaderStages.RayGeneration,  shaderBytes, "rayGen"),
             new ShaderDescription(ShaderStages.Miss,  shaderBytes, "miss"),
-            new ShaderDescription(ShaderStages.ClosestHit, shaderBytes, "closestHit")
+            new ShaderDescription(ShaderStages.ClosestHit, shaderBytes, "closestHit"),
+            new ShaderDescription(ShaderStages.AnyHit, shaderBytes, "anyHit")
         ];
 
         Shader[] shaders = device.Factory.HlslToSpirv(shaderDescriptions);
 
         RaytracingPipelineDescription raytracingPipelineDescription = new()
         {
-            Shaders = new RaytracingShaderStateDescription()
+            Shaders = new RaytracingShaderDescription()
             {
                 RayGenerationShader = shaders[0],
                 MissShader = [shaders[1]],
-                ClosestHitShader = [shaders[2]]
+                HitGroupShader =
+                [
+                    new HitGroupDescription()
+                    {
+                        ClosestHitShader = shaders[2],
+                        AnyHitShader = shaders[3]
+                    }
+                ]
             },
             ResourceLayouts = [_resourceLayout0, _resourceLayout1, _resourceLayout2, _resourceLayout3, _resourceLayout4],
             MaxTraceRecursionDepth = 6
@@ -378,6 +389,7 @@ internal sealed unsafe class MainView : View
             {
                 VertexBuffer = (uint)_vertexBuffers.Count,
                 IndexBuffer = (uint)_indexBuffers.Count,
+                AlphaMask = primitive.Material.Alpha == AlphaMode.MASK,
                 AlphaCutoff = primitive.Material.AlphaCutoff,
                 DoubleSided = primitive.Material.DoubleSided
             };

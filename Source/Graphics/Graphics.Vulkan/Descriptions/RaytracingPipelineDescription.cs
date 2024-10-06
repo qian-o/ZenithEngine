@@ -2,7 +2,7 @@
 
 public record struct RaytracingPipelineDescription
 {
-    public RaytracingPipelineDescription(RaytracingShaderStateDescription shaders,
+    public RaytracingPipelineDescription(RaytracingShaderDescription shaders,
                                          ResourceLayout[] resourceLayouts,
                                          uint maxTraceRecursionDepth)
     {
@@ -14,7 +14,7 @@ public record struct RaytracingPipelineDescription
     /// <summary>
     ///  Gets or sets the raytracing shader program.
     /// </summary>
-    public RaytracingShaderStateDescription Shaders { get; set; }
+    public RaytracingShaderDescription Shaders { get; set; }
 
     /// <summary>
     /// Describes the resources layout input.

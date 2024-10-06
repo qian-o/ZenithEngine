@@ -17,6 +17,8 @@ struct GeometryNode
 
     uint indexBuffer;
     
+    bool alphaMask;
+    
     float alphaCutoff;
     
     bool doubleSided;
@@ -130,4 +132,21 @@ void closestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
     float4 color = textureArray[node.baseColorTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0) * float4(vertex.color, 1.0);
     
     payload.color = color;
+}
+
+[shader("anyhit")]
+void anyHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+    float3 barycentricCoords = float3(1.0f - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
+    
+    GeometryNode node = geometryNodes[GeometryIndex()];
+    
+    Vertex vertex = getVertex(vertexArray[node.vertexBuffer], indexArray[node.indexBuffer], PrimitiveIndex(), barycentricCoords);
+
+    float4 color = textureArray[node.baseColorTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0) * float4(vertex.color, 1.0);
+    
+    if (node.alphaMask && color.a < node.alphaCutoff)
+    {
+        IgnoreHit();
+    }
 }

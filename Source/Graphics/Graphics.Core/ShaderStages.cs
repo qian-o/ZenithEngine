@@ -44,9 +44,9 @@ public enum ShaderStages : ushort
     RayGeneration = 1 << 6,
 
     /// <summary>
-    /// The any-hit shader stage.
+    /// The miss shader stage.
     /// </summary>
-    AnyHit = 1 << 7,
+    Miss = 1 << 7,
 
     /// <summary>
     /// The closest-hit shader stage.
@@ -54,9 +54,9 @@ public enum ShaderStages : ushort
     ClosestHit = 1 << 8,
 
     /// <summary>
-    /// The miss shader stage.
+    /// The any-hit shader stage.
     /// </summary>
-    Miss = 1 << 9,
+    AnyHit = 1 << 9,
 
     /// <summary>
     /// The intersection shader stage.
