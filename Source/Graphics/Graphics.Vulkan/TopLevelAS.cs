@@ -27,7 +27,7 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
         }
 
         using DeviceBuffer instanceBuffer = new(vkRes,
-                                                BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr,
+                                                BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr,
                                                 (uint)(sizeof(AccelerationStructureInstanceKHR) * description.Instances.Length),
                                                 true);
 
@@ -81,7 +81,7 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
                                                                           &asBuildSizesInfo);
 
         DeviceBuffer asBuffer = new(VkRes,
-                                    BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.AccelerationStructureStorageBitKhr,
+                                    BufferUsageFlags.AccelerationStructureStorageBitKhr,
                                     (uint)asBuildSizesInfo.AccelerationStructureSize,
                                     false);
 
@@ -105,7 +105,7 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
         ulong topLevelASAddress = VkRes.KhrAccelerationStructure.GetAccelerationStructureDeviceAddress(VkRes.VkDevice, &asDeviceAddressInfo);
 
         using DeviceBuffer scratchBuffer = new(VkRes,
-                                               BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.StorageBufferBit,
+                                               BufferUsageFlags.StorageBufferBit,
                                                (uint)asBuildSizesInfo.BuildScratchSize,
                                                false);
 

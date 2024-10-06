@@ -1,4 +1,5 @@
-﻿using Graphics.Core;
+﻿using System.Numerics;
+using Graphics.Core;
 
 namespace Graphics.Vulkan;
 
@@ -21,4 +22,6 @@ public class AccelerationStructureTriangles : AccelerationStructureGeometry
     public uint IndexCount { get; set; }
 
     public uint IndexOffset { get; set; }
+
+    public Matrix4x4 Transform { get; set; } = Matrix4x4.Identity;
 }

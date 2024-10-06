@@ -10,8 +10,7 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
     {
         const BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferDstBit
                                                   | BufferUsageFlags.ResourceDescriptorBufferBitExt
-                                                  | BufferUsageFlags.SamplerDescriptorBufferBitExt
-                                                  | BufferUsageFlags.ShaderDeviceAddressBit;
+                                                  | BufferUsageFlags.SamplerDescriptorBufferBitExt;
 
         DeviceBuffer buffer = new(VkRes, bufferUsageFlags, description.Layout.SizeInBytes, true);
 

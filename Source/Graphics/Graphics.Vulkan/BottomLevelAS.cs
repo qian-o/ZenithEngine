@@ -24,6 +24,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
             {
                 ulong vertexAddress = triangles.VertexBuffer.Address + triangles.VertexOffset;
                 ulong indexAddress = triangles.IndexBuffer != null ? triangles.IndexBuffer.Address + triangles.IndexOffset : 0;
+                TransformMatrixKHR* transformAddress = VkRes.Alloter.Allocate(Util.GetTransformMatrix(triangles.Transform));
 
                 asGeometry = new AccelerationStructureGeometryKHR
                 {
@@ -42,11 +43,15 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                             VertexFormat = Formats.GetPixelFormat(triangles.VertexFormat, false),
                             VertexStride = triangles.VertexStride,
                             MaxVertex = triangles.VertexCount,
+                            IndexType = triangles.IndexBuffer != null ? Formats.GetIndexType(triangles.IndexFormat) : IndexType.NoneKhr,
                             IndexData = new DeviceOrHostAddressConstKHR
                             {
                                 DeviceAddress = indexAddress
                             },
-                            IndexType = triangles.IndexBuffer != null ? Formats.GetIndexType(triangles.IndexFormat) : IndexType.NoneKhr
+                            TransformData = new DeviceOrHostAddressConstKHR
+                            {
+                                HostAddress = transformAddress
+                            }
                         }
                     }
                 };
@@ -118,7 +123,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                                                                           &asBuildSizesInfo);
 
         DeviceBuffer asBuffer = new(VkRes,
-                                    BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.AccelerationStructureStorageBitKhr,
+                                    BufferUsageFlags.AccelerationStructureStorageBitKhr,
                                     (uint)asBuildSizesInfo.AccelerationStructureSize,
                                     false);
 
@@ -142,7 +147,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
         ulong bottomLevelASAddress = VkRes.KhrAccelerationStructure.GetAccelerationStructureDeviceAddress(VkRes.VkDevice, &asDeviceAddressInfo);
 
         using DeviceBuffer scratchBuffer = new(VkRes,
-                                               BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.StorageBufferBit,
+                                               BufferUsageFlags.StorageBufferBit,
                                                (uint)asBuildSizesInfo.BuildScratchSize,
                                                false);
 
@@ -169,6 +174,8 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
         Handle = bottomLevelAS;
         Address = bottomLevelASAddress;
         DeviceBuffer = asBuffer;
+
+        VkRes.Alloter.Clear();
     }
 
     internal override AccelerationStructureKHR Handle { get; }

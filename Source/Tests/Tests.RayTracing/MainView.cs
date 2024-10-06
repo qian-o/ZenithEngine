@@ -1,125 +1,83 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Text;
 using Graphics.Core;
 using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
-using Graphics.Vulkan.Helpers;
 using Graphics.Vulkan.ImGui;
 using Hexa.NET.ImGui;
+using SharpGLTF.Schema2;
+using SharpGLTF.Validation;
+using StbImageSharp;
 using Tests.Core;
+using GLTFTexture = SharpGLTF.Schema2.Texture;
+using Texture = Graphics.Vulkan.Texture;
 
 namespace Tests.RayTracing;
 
 internal sealed unsafe class MainView : View
 {
     [StructLayout(LayoutKind.Sequential)]
-    private struct Vertex(Vector3 position, Vector3 normal, Vector3 color)
+    private struct Vertex(Vector3 position, Vector3 normal, Vector2 texCoord, Vector3 color, Vector4 tangent)
     {
         public Vector3 Position = position;
 
         public Vector3 Normal = normal;
 
+        public Vector2 TexCoord = texCoord;
+
         public Vector3 Color = color;
+
+        public Vector4 Tangent = tangent;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct GeometryNode
+    {
+        public ulong VertexBuffer;
+
+        public ulong IndexBuffer;
+
+        public Vector4 BaseColorFactor;
+
+        public ulong BaseColorTextureIndex;
+
+        public uint NormalTextureIndex;
+
+        public float AlphaCutoff;
+
+        public bool DoubleSided;
     }
 
     private readonly GraphicsDevice _device;
     private readonly ImGuiController _imGuiController;
 
-    private readonly DeviceBuffer _vertexBuffer;
-    private readonly DeviceBuffer _indexBuffer;
-    private readonly BottomLevelAS _bottomLevelAS;
-    private readonly TopLevelAS _topLevelAS;
-    private readonly ResourceLayout _resourceLayout;
-    private readonly ResourceSet _resourceSet;
-    private readonly Pipeline _pipeline;
-    private readonly CommandList _commandList;
+    private readonly List<Texture> _textures;
+    private readonly List<TextureView> _textureViews;
+    private readonly List<DeviceBuffer> _vertexBuffers;
+    private readonly List<DeviceBuffer?> _indexBuffers;
+    private readonly List<GeometryNode> _geometryNodes;
+    private readonly List<BottomLevelAS> _bottomLevels;
+    private readonly TopLevelAS _topLevel;
 
     private Texture? _outputTexture;
     private TextureView? _outputTextureView;
 
     public MainView(GraphicsDevice device, ImGuiController imGuiController) : base("Ray Tracing")
     {
-        Vertex[] vertices =
-        [
-            new(new Vector3(-1.0f, -1.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 0.0f)),
-            new(new Vector3(1.0f, -1.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(0.0f, 1.0f, 0.0f)),
-            new(new Vector3(0.0f, 1.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(0.0f, 0.0f, 1.0f))
-        ];
-
-        ushort[] indices = [0, 1, 2];
-
-        string hlsl = File.ReadAllText("Assets/Shaders/rayTracing.hlsl");
-
         _device = device;
         _imGuiController = imGuiController;
 
-        _vertexBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(vertices.Length, BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure));
-        device.UpdateBuffer(_vertexBuffer, vertices);
+        _textures = [];
+        _textureViews = [];
+        _vertexBuffers = [];
+        _indexBuffers = [];
+        _geometryNodes = [];
+        _bottomLevels = [];
 
-        _indexBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<ushort>(indices.Length, BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure));
-        device.UpdateBuffer(_indexBuffer, indices);
+        LoadGLTF("Assets/Models/Sponza/glTF/Sponza.gltf");
 
-        AccelerationStructureTriangles accelerationStructureTriangles = new()
-        {
-            VertexBuffer = _vertexBuffer,
-            VertexFormat = PixelFormat.R32G32B32Float,
-            VertexStride = (uint)sizeof(Vertex),
-            VertexCount = (uint)vertices.Length,
-            VertexOffset = 0,
-            IndexBuffer = _indexBuffer,
-            IndexFormat = IndexFormat.U16,
-            IndexCount = (uint)indices.Length,
-            IndexOffset = 0,
-        };
-
-        _bottomLevelAS = device.Factory.CreateBottomLevelAS(new BottomLevelASDescription(accelerationStructureTriangles));
-
-        AccelerationStructureInstance accelerationStructureInstance = new()
-        {
-            Transform4x4 = Matrix4x4.Identity,
-            InstanceID = 0,
-            InstanceMask = 0xFF,
-            InstanceContributionToHitGroupIndex = 0,
-            Options = AccelerationStructureInstanceOptions.None,
-            BottonLevel = _bottomLevelAS
-        };
-
-        _topLevelAS = device.Factory.CreateTopLevelAS(new TopLevelASDescription(AccelerationStructureOptions.PreferFastTrace, accelerationStructureInstance));
-
-        _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("rs", ResourceKind.AccelerationStructure, ShaderStages.RayGeneration),
-                                                                                            new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.RayGeneration)));
-        _resourceSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _topLevelAS));
-
-        ShaderDescription[] shaderDescriptions =
-        [
-            new ShaderDescription(ShaderStages.RayGeneration,  Encoding.UTF8.GetBytes(hlsl), "rayGen"),
-            new ShaderDescription(ShaderStages.Miss,  Encoding.UTF8.GetBytes(hlsl), "miss"),
-            new ShaderDescription(ShaderStages.ClosestHit, Encoding.UTF8.GetBytes(hlsl), "closestHit")
-        ];
-
-        Shader[] shaders = device.Factory.HlslToSpirv(shaderDescriptions);
-
-        RaytracingPipelineDescription raytracingPipelineDescription = new()
-        {
-            Shaders = new RaytracingShaderStateDescription()
-            {
-                RayGenerationShader = shaders[0],
-                MissShader = [shaders[1]],
-                ClosestHitShader = [shaders[2]]
-            },
-            ResourceLayouts = [_resourceLayout],
-            MaxTraceRecursionDepth = 1
-        };
-
-        _pipeline = device.Factory.CreateRaytracingPipeline(raytracingPipelineDescription);
-        _commandList = device.Factory.CreateGraphicsCommandList();
-
-        foreach (Shader shader in shaders)
-        {
-            shader.Dispose();
-        }
+        // TODO: Create top level acceleration structure.
     }
 
     protected override void OnUpdate(UpdateEventArgs e)
@@ -130,18 +88,6 @@ internal sealed unsafe class MainView : View
     {
         if (_outputTexture != null)
         {
-            _commandList.Begin();
-
-            _commandList.SetPipeline(_pipeline);
-
-            _commandList.SetResourceSet(0, _resourceSet);
-
-            _commandList.DispatchRays(_outputTexture.Width, _outputTexture.Height, 1);
-
-            _commandList.End();
-
-            _device.SubmitCommands(_commandList);
-
             ImGui.Image(_imGuiController.GetBinding(_device.Factory, _outputTexture), new Vector2(_outputTexture.Width, _outputTexture.Height));
         }
     }
@@ -164,22 +110,163 @@ internal sealed unsafe class MainView : View
                                                                                     TextureUsage.Storage | TextureUsage.Sampled));
 
         _outputTextureView = _device.Factory.CreateTextureView(_outputTexture);
-
-        _resourceSet.UpdateSet(_outputTextureView, 1);
     }
 
     protected override void Destroy()
     {
         _outputTextureView?.Dispose();
         _outputTexture?.Dispose();
+    }
 
-        _commandList.Dispose();
-        _pipeline.Dispose();
-        _resourceSet.Dispose();
-        _resourceLayout.Dispose();
-        _topLevelAS.Dispose();
-        _bottomLevelAS.Dispose();
-        _indexBuffer.Dispose();
-        _vertexBuffer.Dispose();
+    private void LoadGLTF(string path)
+    {
+        ModelRoot root = ModelRoot.Load(path, new ReadSettings() { Validation = ValidationMode.Skip });
+
+        #region Load Textures
+        using CommandList commandList = _device.Factory.CreateGraphicsCommandList();
+
+        commandList.Begin();
+
+        foreach (GLTFTexture gltfTexture in root.LogicalTextures)
+        {
+            using MemoryStream stream = new(gltfTexture.PrimaryImage.Content.Content.Span.ToArray());
+
+            if (ImageInfo.FromStream(stream) is not ImageInfo imageInfo)
+            {
+                continue;
+            }
+
+            int width = imageInfo.Width;
+            int height = imageInfo.Height;
+
+            ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
+
+            uint mipLevels = Math.Max(1, (uint)MathF.Log2(Math.Max(width, height))) + 1;
+
+            TextureDescription description = TextureDescription.Texture2D((uint)width,
+                                                                          (uint)height,
+                                                                          mipLevels,
+                                                                          PixelFormat.R8G8B8A8UNorm,
+                                                                          TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
+
+            Texture texture = _device.Factory.CreateTexture(in description);
+            texture.Name = gltfTexture.Name;
+
+            TextureView textureView = _device.Factory.CreateTextureView(texture);
+            textureView.Name = gltfTexture.Name;
+
+            commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
+            commandList.GenerateMipmaps(texture);
+
+            _textures.Add(texture);
+            _textureViews.Add(textureView);
+        }
+
+        commandList.End();
+
+        _device.SubmitCommands(commandList);
+        #endregion
+
+        #region Load Meshes
+        foreach (Node node in root.LogicalNodes)
+        {
+            LoadNode(node);
+        }
+        #endregion
+    }
+
+    private void LoadNode(Node node)
+    {
+        foreach (Node children in node.VisualChildren)
+        {
+            LoadNode(children);
+        }
+
+        if (node.Mesh == null)
+        {
+            return;
+        }
+
+        foreach (MeshPrimitive primitive in node.Mesh.Primitives)
+        {
+            List<Vertex> vertices = [];
+            List<uint> indices = [];
+
+            uint vertexCount = 0;
+
+            IList<Vector3>? positionBuffer = null;
+            IList<Vector3>? normalBuffer = null;
+            IList<Vector2>? texCoordBuffer = null;
+            IList<Vector3>? colorBuffer = null;
+            IList<Vector4>? tangentBuffer = null;
+
+            if (primitive.VertexAccessors.TryGetValue("POSITION", out Accessor? positionAccessor))
+            {
+                vertexCount = (uint)positionAccessor.Count;
+
+                positionBuffer = positionAccessor.AsVector3Array();
+            }
+
+            if (primitive.VertexAccessors.TryGetValue("NORMAL", out Accessor? normalAccessor))
+            {
+                normalBuffer = normalAccessor.AsVector3Array();
+            }
+
+            if (primitive.VertexAccessors.TryGetValue("TEXCOORD_0", out Accessor? texCoordAccessor))
+            {
+                texCoordBuffer = texCoordAccessor.AsVector2Array();
+            }
+
+            if (primitive.VertexAccessors.TryGetValue("COLOR_0", out Accessor? colorAccessor))
+            {
+                colorBuffer = colorAccessor.AsVector3Array();
+            }
+
+            if (primitive.VertexAccessors.TryGetValue("TANGENT", out Accessor? tangentAccessor))
+            {
+                tangentBuffer = tangentAccessor.AsVector4Array();
+            }
+
+            if (vertexCount == 0)
+            {
+                continue;
+            }
+
+            for (uint i = 0; i < vertexCount; i++)
+            {
+                Vector3 position = positionBuffer != null ? positionBuffer[(int)i] : Vector3.Zero;
+                Vector3 normal = normalBuffer != null ? normalBuffer[(int)i] : Vector3.Zero;
+                Vector2 texCoord = texCoordBuffer != null ? texCoordBuffer[(int)i] : Vector2.Zero;
+                Vector3 color = colorBuffer != null ? colorBuffer[(int)i] : Vector3.One;
+                Vector4 tangent = tangentBuffer != null ? tangentBuffer[(int)i] : Vector4.Zero;
+
+                vertices.Add(new Vertex(position,
+                                        normal,
+                                        texCoord,
+                                        color,
+                                        tangent));
+            }
+
+            if (primitive.IndexAccessor != null)
+            {
+                indices.AddRange(primitive.IndexAccessor.AsIndicesArray());
+            }
+
+            const BufferUsage bufferUsage = BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure;
+
+            DeviceBuffer vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(vertices.Count, bufferUsage));
+            _device.UpdateBuffer(vertexBuffer, vertices.ToArray());
+
+            DeviceBuffer? indexBuffer = null;
+            if (indices.Count > 0)
+            {
+                indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Count, bufferUsage));
+
+                _device.UpdateBuffer(indexBuffer, indices.ToArray());
+            }
+
+            _vertexBuffers.Add(vertexBuffer);
+            _indexBuffers.Add(indexBuffer);
+        }
     }
 }

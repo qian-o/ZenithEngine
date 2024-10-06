@@ -28,19 +28,19 @@ internal sealed unsafe class ShaderTable : VulkanObject<ulong>
         byte[] hitGroupHandleStorage = shaderHandleStorage.AsSpan((int)(handleSizeAligned * (1 + missShaderCount)), (int)(handleSizeAligned * hitGroupCount)).ToArray();
 
         DeviceBuffer raygenShaderHandleBuffer = new(VkRes,
-                                                    BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.ShaderBindingTableBitKhr,
+                                                    BufferUsageFlags.ShaderBindingTableBitKhr,
                                                     (uint)raygenShaderHandleStorage.Length,
                                                     true);
         vkRes.GraphicsDevice.UpdateBuffer(raygenShaderHandleBuffer, raygenShaderHandleStorage);
 
         DeviceBuffer missShaderHandleBuffer = new(VkRes,
-                                                  BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.ShaderBindingTableBitKhr,
+                                                  BufferUsageFlags.ShaderBindingTableBitKhr,
                                                   (uint)missShaderHandleStorage.Length,
                                                   true);
         vkRes.GraphicsDevice.UpdateBuffer(missShaderHandleBuffer, missShaderHandleStorage);
 
         DeviceBuffer hitGroupHandleBuffer = new(VkRes,
-                                                BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.ShaderBindingTableBitKhr,
+                                                BufferUsageFlags.ShaderBindingTableBitKhr,
                                                 (uint)hitGroupHandleStorage.Length,
                                                 true);
         vkRes.GraphicsDevice.UpdateBuffer(hitGroupHandleBuffer, hitGroupHandleStorage);

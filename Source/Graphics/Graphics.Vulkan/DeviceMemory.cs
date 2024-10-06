@@ -7,8 +7,7 @@ public unsafe class DeviceMemory : VulkanObject<VkDeviceMemory>
 {
     internal DeviceMemory(VulkanResources vkRes,
                           ref readonly MemoryRequirements requirements,
-                          MemoryPropertyFlags flags,
-                          bool isAddress) : base(vkRes, ObjectType.DeviceMemory)
+                          MemoryPropertyFlags flags) : base(vkRes, ObjectType.DeviceMemory)
     {
         MemoryAllocateInfo allocateInfo = new()
         {
@@ -17,12 +16,9 @@ public unsafe class DeviceMemory : VulkanObject<VkDeviceMemory>
             MemoryTypeIndex = VkRes.PhysicalDevice.FindMemoryTypeIndex(requirements.MemoryTypeBits, flags)
         };
 
-        if (isAddress)
-        {
-            allocateInfo.AddNext(out MemoryAllocateFlagsInfoKHR memoryAllocateFlagsInfo);
+        allocateInfo.AddNext(out MemoryAllocateFlagsInfoKHR memoryAllocateFlagsInfo);
 
-            memoryAllocateFlagsInfo.Flags = MemoryAllocateFlags.AddressBit;
-        }
+        memoryAllocateFlagsInfo.Flags = MemoryAllocateFlags.AddressBit;
 
         VkDeviceMemory deviceMemory;
         VkRes.Vk.AllocateMemory(VkRes.VkDevice, &allocateInfo, null, &deviceMemory).ThrowCode();
