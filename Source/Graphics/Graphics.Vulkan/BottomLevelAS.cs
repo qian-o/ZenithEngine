@@ -9,6 +9,23 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
 {
     internal BottomLevelAS(VulkanResources vkRes, ref readonly BottomLevelASDescription description) : base(vkRes, ObjectType.AccelerationStructureKhr)
     {
+        using DeviceBuffer transformBuffer = new(VkRes,
+                                                 BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr,
+                                                 (uint)(description.Geometries.Length * sizeof(TransformMatrixKHR)),
+                                                 true);
+
+        for (int i = 0; i < description.Geometries.Length; i++)
+        {
+            AccelerationStructureGeometry accelerationStructureGeometry = description.Geometries[i];
+
+            if (accelerationStructureGeometry is AccelerationStructureTriangles triangles)
+            {
+                TransformMatrixKHR transform = Util.GetTransformMatrix(triangles.Transform);
+
+                VkRes.GraphicsDevice.UpdateBuffer(transformBuffer, in transform, (uint)(i * sizeof(TransformMatrixKHR)));
+            }
+        }
+
         AccelerationStructureGeometryKHR[] asGeometries = new AccelerationStructureGeometryKHR[description.Geometries.Length];
         AccelerationStructureBuildRangeInfoKHR[] asBuildRangeInfos = new AccelerationStructureBuildRangeInfoKHR[description.Geometries.Length];
         uint[] maxPrimitiveCounts = new uint[description.Geometries.Length];
@@ -24,7 +41,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
             {
                 ulong vertexAddress = triangles.VertexBuffer.Address + triangles.VertexOffset;
                 ulong indexAddress = triangles.IndexBuffer != null ? triangles.IndexBuffer.Address + triangles.IndexOffset : 0;
-                TransformMatrixKHR* transformAddress = VkRes.Alloter.Allocate(Util.GetTransformMatrix(triangles.Transform));
+                ulong transformAddress = transformBuffer.Address + (uint)(i * sizeof(TransformMatrixKHR));
 
                 asGeometry = new AccelerationStructureGeometryKHR
                 {
@@ -50,7 +67,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                             },
                             TransformData = new DeviceOrHostAddressConstKHR
                             {
-                                HostAddress = transformAddress
+                                DeviceAddress = transformAddress
                             }
                         }
                     }
@@ -174,8 +191,6 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
         Handle = bottomLevelAS;
         Address = bottomLevelASAddress;
         DeviceBuffer = asBuffer;
-
-        VkRes.Alloter.Clear();
     }
 
     internal override AccelerationStructureKHR Handle { get; }

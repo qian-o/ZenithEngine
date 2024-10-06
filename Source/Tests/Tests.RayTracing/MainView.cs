@@ -6,6 +6,7 @@ using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.ImGui;
 using Hexa.NET.ImGui;
+using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
 using SharpGLTF.Validation;
 using StbImageSharp;
@@ -38,15 +39,15 @@ internal sealed unsafe class MainView : View
 
         public ulong IndexBuffer;
 
-        public Vector4 BaseColorFactor;
-
-        public ulong BaseColorTextureIndex;
-
-        public uint NormalTextureIndex;
-
         public float AlphaCutoff;
 
         public bool DoubleSided;
+
+        public Vector4 BaseColorFactor;
+
+        public uint BaseColorTextureIndex;
+
+        public uint NormalTextureIndex;
     }
 
     private readonly GraphicsDevice _device;
@@ -57,7 +58,8 @@ internal sealed unsafe class MainView : View
     private readonly List<DeviceBuffer> _vertexBuffers;
     private readonly List<DeviceBuffer?> _indexBuffers;
     private readonly List<GeometryNode> _geometryNodes;
-    private readonly List<BottomLevelAS> _bottomLevels;
+    private readonly List<AccelerationStructureTriangles> _triangles;
+    private readonly BottomLevelAS _bottomLevel;
     private readonly TopLevelAS _topLevel;
 
     private Texture? _outputTexture;
@@ -73,11 +75,16 @@ internal sealed unsafe class MainView : View
         _vertexBuffers = [];
         _indexBuffers = [];
         _geometryNodes = [];
-        _bottomLevels = [];
+        _triangles = [];
 
         LoadGLTF("Assets/Models/Sponza/glTF/Sponza.gltf");
 
-        // TODO: Create top level acceleration structure.
+        BottomLevelASDescription bottomLevelASDescription = new()
+        {
+            Geometries = [.. _triangles]
+        };
+
+        _bottomLevel = device.Factory.CreateBottomLevelAS(in bottomLevelASDescription);
     }
 
     protected override void OnUpdate(UpdateEventArgs e)
@@ -265,8 +272,50 @@ internal sealed unsafe class MainView : View
                 _device.UpdateBuffer(indexBuffer, indices.ToArray());
             }
 
+            GeometryNode geometryNode = new()
+            {
+                VertexBuffer = vertexBuffer.Address,
+                IndexBuffer = indexBuffer?.Address ?? 0,
+                AlphaCutoff = primitive.Material.AlphaCutoff,
+                DoubleSided = primitive.Material.DoubleSided
+            };
+
+            if (primitive.Material.FindChannel(KnownChannel.BaseColor.ToString()) is MaterialChannel baseColorChannel)
+            {
+                geometryNode.BaseColorFactor = baseColorChannel.Color;
+
+                if (baseColorChannel.Texture != null)
+                {
+                    geometryNode.BaseColorTextureIndex = (uint)baseColorChannel.Texture.LogicalIndex;
+                }
+            }
+
+            if (primitive.Material.FindChannel(KnownChannel.Normal.ToString()) is MaterialChannel normalChannel)
+            {
+                if (normalChannel.Texture != null)
+                {
+                    geometryNode.NormalTextureIndex = (uint)normalChannel.Texture.LogicalIndex;
+                }
+            }
+
+            AccelerationStructureTriangles accelerationStructureTriangles = new()
+            {
+                VertexBuffer = vertexBuffer,
+                VertexFormat = PixelFormat.R32G32B32Float,
+                VertexStride = (uint)sizeof(Vertex),
+                VertexCount = (uint)vertices.Count,
+                VertexOffset = 0,
+                IndexBuffer = indexBuffer,
+                IndexFormat = IndexFormat.U32,
+                IndexCount = (uint)indices.Count,
+                IndexOffset = 0,
+                Transform = node.WorldMatrix
+            };
+
             _vertexBuffers.Add(vertexBuffer);
             _indexBuffers.Add(indexBuffer);
+            _geometryNodes.Add(geometryNode);
+            _triangles.Add(accelerationStructureTriangles);
         }
     }
 }
