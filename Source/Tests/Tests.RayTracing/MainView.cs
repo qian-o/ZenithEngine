@@ -1,9 +1,11 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Text;
 using Graphics.Core;
 using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
+using Graphics.Vulkan.Helpers;
 using Graphics.Vulkan.ImGui;
 using Hexa.NET.ImGui;
 using SharpGLTF.Materials;
@@ -35,9 +37,9 @@ internal sealed unsafe class MainView : View
     [StructLayout(LayoutKind.Sequential)]
     private struct GeometryNode
     {
-        public ulong VertexBuffer;
+        public uint VertexBuffer;
 
-        public ulong IndexBuffer;
+        public uint IndexBuffer;
 
         public float AlphaCutoff;
 
@@ -56,11 +58,25 @@ internal sealed unsafe class MainView : View
     private readonly List<Texture> _textures;
     private readonly List<TextureView> _textureViews;
     private readonly List<DeviceBuffer> _vertexBuffers;
-    private readonly List<DeviceBuffer?> _indexBuffers;
+    private readonly List<DeviceBuffer> _indexBuffers;
     private readonly List<GeometryNode> _geometryNodes;
     private readonly List<AccelerationStructureTriangles> _triangles;
+
+    private readonly DeviceBuffer _geometryNodesBuffer;
     private readonly BottomLevelAS _bottomLevel;
     private readonly TopLevelAS _topLevel;
+    private readonly ResourceLayout _resourceLayout0;
+    private readonly ResourceSet _resourceSet0;
+    private readonly ResourceLayout _resourceLayout1;
+    private readonly ResourceSet _resourceSet1;
+    private readonly ResourceLayout _resourceLayout2;
+    private readonly ResourceSet _resourceSet2;
+    private readonly ResourceLayout _resourceLayout3;
+    private readonly ResourceSet _resourceSet3;
+    private readonly ResourceLayout _resourceLayout4;
+    private readonly ResourceSet _resourceSet4;
+    private readonly Pipeline _pipeline;
+    private readonly CommandList _commandList;
 
     private Texture? _outputTexture;
     private TextureView? _outputTextureView;
@@ -79,12 +95,85 @@ internal sealed unsafe class MainView : View
 
         LoadGLTF("Assets/Models/Sponza/glTF/Sponza.gltf");
 
+        _geometryNodesBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<GeometryNode>(_geometryNodes.Count, BufferUsage.StorageBuffer));
+        device.UpdateBuffer(_geometryNodesBuffer, _geometryNodes.ToArray());
+
         BottomLevelASDescription bottomLevelASDescription = new()
         {
             Geometries = [.. _triangles]
         };
 
         _bottomLevel = device.Factory.CreateBottomLevelAS(in bottomLevelASDescription);
+
+        AccelerationStructureInstance accelerationStructureInstance = new()
+        {
+            Transform4x4 = Matrix4x4.Identity,
+            InstanceID = 0,
+            InstanceMask = 0xFF,
+            InstanceContributionToHitGroupIndex = 0,
+            Options = AccelerationStructureInstanceOptions.None,
+            BottonLevel = _bottomLevel
+        };
+
+        TopLevelASDescription topLevelASDescription = new()
+        {
+            Instances = [accelerationStructureInstance],
+            Options = AccelerationStructureOptions.PreferFastTrace
+        };
+
+        _topLevel = device.Factory.CreateTopLevelAS(in topLevelASDescription);
+
+        _resourceLayout0 = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("as", ResourceKind.AccelerationStructure, ShaderStages.RayGeneration),
+                                                                                             new ResourceLayoutElementDescription("geometryNodes", ResourceKind.StorageBuffer, ShaderStages.ClosestHit),
+                                                                                             new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.RayGeneration)));
+        _resourceSet0 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout0, _topLevel, _geometryNodesBuffer));
+
+        _resourceLayout1 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_vertexBuffers.Count, new ResourceLayoutElementDescription("vertexArray", ResourceKind.StorageBuffer, ShaderStages.ClosestHit)));
+        _resourceSet1 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout1));
+        _resourceSet1.UpdateBindless([.. _vertexBuffers]);
+
+        _resourceLayout2 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_indexBuffers.Count, new ResourceLayoutElementDescription("indexArray", ResourceKind.StorageBuffer, ShaderStages.ClosestHit)));
+        _resourceSet2 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout2));
+        _resourceSet2.UpdateBindless([.. _indexBuffers]);
+
+        _resourceLayout3 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_textureViews.Count, new ResourceLayoutElementDescription("textureArray", ResourceKind.SampledImage, ShaderStages.ClosestHit)));
+        _resourceSet3 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout3));
+        _resourceSet3.UpdateBindless([.. _textureViews]);
+
+        _resourceLayout4 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless(2, new ResourceLayoutElementDescription("samplerArray", ResourceKind.Sampler, ShaderStages.ClosestHit)));
+        _resourceSet4 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout4));
+        _resourceSet4.UpdateBindless([device.Aniso4xSampler, device.LinearSampler]);
+
+        byte[] shaderBytes = Encoding.UTF8.GetBytes(File.ReadAllText("Assets/Shaders/rayTracing.hlsl"));
+
+        ShaderDescription[] shaderDescriptions =
+        [
+            new ShaderDescription(ShaderStages.RayGeneration,  shaderBytes, "rayGen"),
+            new ShaderDescription(ShaderStages.Miss,  shaderBytes, "miss"),
+            new ShaderDescription(ShaderStages.ClosestHit, shaderBytes, "closestHit")
+        ];
+
+        Shader[] shaders = device.Factory.HlslToSpirv(shaderDescriptions);
+
+        RaytracingPipelineDescription raytracingPipelineDescription = new()
+        {
+            Shaders = new RaytracingShaderStateDescription()
+            {
+                RayGenerationShader = shaders[0],
+                MissShader = [shaders[1]],
+                ClosestHitShader = [shaders[2]]
+            },
+            ResourceLayouts = [_resourceLayout0, _resourceLayout1, _resourceLayout2, _resourceLayout3, _resourceLayout4],
+            MaxTraceRecursionDepth = 6
+        };
+
+        _pipeline = device.Factory.CreateRaytracingPipeline(raytracingPipelineDescription);
+        _commandList = device.Factory.CreateGraphicsCommandList();
+
+        foreach (Shader shader in shaders)
+        {
+            shader.Dispose();
+        }
     }
 
     protected override void OnUpdate(UpdateEventArgs e)
@@ -95,6 +184,22 @@ internal sealed unsafe class MainView : View
     {
         if (_outputTexture != null)
         {
+            _commandList.Begin();
+
+            _commandList.SetPipeline(_pipeline);
+
+            _commandList.SetResourceSet(0, _resourceSet0);
+            _commandList.SetResourceSet(1, _resourceSet1);
+            _commandList.SetResourceSet(2, _resourceSet2);
+            _commandList.SetResourceSet(3, _resourceSet3);
+            _commandList.SetResourceSet(4, _resourceSet4);
+
+            _commandList.DispatchRays(_outputTexture.Width, _outputTexture.Height, 1);
+
+            _commandList.End();
+
+            _device.SubmitCommands(_commandList);
+
             ImGui.Image(_imGuiController.GetBinding(_device.Factory, _outputTexture), new Vector2(_outputTexture.Width, _outputTexture.Height));
         }
     }
@@ -117,6 +222,8 @@ internal sealed unsafe class MainView : View
                                                                                     TextureUsage.Storage | TextureUsage.Sampled));
 
         _outputTextureView = _device.Factory.CreateTextureView(_outputTexture);
+
+        _resourceSet0.UpdateSet(_outputTextureView, 2);
     }
 
     protected override void Destroy()
@@ -264,18 +371,13 @@ internal sealed unsafe class MainView : View
             DeviceBuffer vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(vertices.Count, bufferUsage));
             _device.UpdateBuffer(vertexBuffer, vertices.ToArray());
 
-            DeviceBuffer? indexBuffer = null;
-            if (indices.Count > 0)
-            {
-                indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Count, bufferUsage));
-
-                _device.UpdateBuffer(indexBuffer, indices.ToArray());
-            }
+            DeviceBuffer indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Count, bufferUsage));
+            _device.UpdateBuffer(indexBuffer, indices.ToArray());
 
             GeometryNode geometryNode = new()
             {
-                VertexBuffer = vertexBuffer.Address,
-                IndexBuffer = indexBuffer?.Address ?? 0,
+                VertexBuffer = (uint)_vertexBuffers.Count,
+                IndexBuffer = (uint)_indexBuffers.Count,
                 AlphaCutoff = primitive.Material.AlphaCutoff,
                 DoubleSided = primitive.Material.DoubleSided
             };
