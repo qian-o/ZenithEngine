@@ -115,6 +115,11 @@ internal sealed unsafe class MainView : View
 
         _pipeline = device.Factory.CreateRaytracingPipeline(raytracingPipelineDescription);
         _commandList = device.Factory.CreateGraphicsCommandList();
+
+        foreach (Shader shader in shaders)
+        {
+            shader.Dispose();
+        }
     }
 
     protected override void OnUpdate(UpdateEventArgs e)
@@ -165,5 +170,16 @@ internal sealed unsafe class MainView : View
 
     protected override void Destroy()
     {
+        _outputTextureView?.Dispose();
+        _outputTexture?.Dispose();
+
+        _commandList.Dispose();
+        _pipeline.Dispose();
+        _resourceSet.Dispose();
+        _resourceLayout.Dispose();
+        _topLevelAS.Dispose();
+        _bottomLevelAS.Dispose();
+        _indexBuffer.Dispose();
+        _vertexBuffer.Dispose();
     }
 }

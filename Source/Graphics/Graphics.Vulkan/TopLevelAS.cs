@@ -26,10 +26,10 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
             };
         }
 
-        DeviceBuffer instanceBuffer = new(vkRes,
-                                          BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr,
-                                          (uint)(sizeof(AccelerationStructureInstanceKHR) * description.Instances.Length),
-                                          true);
+        using DeviceBuffer instanceBuffer = new(vkRes,
+                                                BufferUsageFlags.ShaderDeviceAddressBit | BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr,
+                                                (uint)(sizeof(AccelerationStructureInstanceKHR) * description.Instances.Length),
+                                                true);
 
         vkRes.GraphicsDevice.UpdateBuffer(instanceBuffer, asInstances);
 
