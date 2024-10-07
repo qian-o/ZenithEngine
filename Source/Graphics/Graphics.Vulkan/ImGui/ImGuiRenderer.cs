@@ -347,8 +347,8 @@ float4 mainPS(VSOutput input) : SV_TARGET
         _indexBuffer = _factory.CreateBuffer(BufferDescription.Buffer<ushort>(4000, BufferUsage.IndexBuffer));
         _uboBuffer = _factory.CreateBuffer(BufferDescription.Buffer<Matrix4x4>(1, BufferUsage.UniformBuffer));
 
-        Shader[] shaders = _factory.HlslToSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(HLSL), "mainVS"),
-                                                new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(HLSL), "mainPS"));
+        Shader[] shaders = _factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(HLSL), "mainVS"),
+                                                       new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(HLSL), "mainPS"));
 
         VertexLayoutDescription vertexLayoutDescription = new(new VertexElementDescription("Position", VertexElementFormat.Float2),
                                                               new VertexElementDescription("UV", VertexElementFormat.Float2),

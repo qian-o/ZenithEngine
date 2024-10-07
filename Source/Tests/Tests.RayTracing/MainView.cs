@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Text;
 using Graphics.Core;
 using Graphics.Core.Window;
 using Graphics.Vulkan;
@@ -174,7 +173,9 @@ internal sealed unsafe class MainView : View
         _resourceSet4 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout4));
         _resourceSet4.UpdateBindless([device.Aniso4xSampler, device.LinearSampler]);
 
-        byte[] shaderBytes = Encoding.UTF8.GetBytes(File.ReadAllText("Assets/Shaders/rayTracing.hlsl"));
+        byte[] shaderBytes = DxcHelpers.Compile(ShaderStages.Library,
+                                                File.ReadAllText("Assets/Shaders/rayTracing.hlsl"),
+                                                string.Empty);
 
         ShaderDescription[] shaderDescriptions =
         [
@@ -184,7 +185,7 @@ internal sealed unsafe class MainView : View
             new ShaderDescription(ShaderStages.AnyHit, shaderBytes, "anyHit")
         ];
 
-        Shader[] shaders = device.Factory.HlslToSpirv(shaderDescriptions);
+        Shader[] shaders = shaderDescriptions.Select(device.Factory.CreateShader).ToArray();
 
         RaytracingPipelineDescription raytracingPipelineDescription = new()
         {

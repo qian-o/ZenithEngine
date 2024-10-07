@@ -66,5 +66,10 @@ public enum ShaderStages : ushort
     /// <summary>
     /// The callable shader stage.
     /// </summary>
-    Callable = 1 << 11
+    Callable = 1 << 11,
+
+    /// <summary>
+    /// The library shader stage.
+    /// </summary>
+    Library = 1 << 12
 }

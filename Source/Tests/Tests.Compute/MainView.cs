@@ -84,7 +84,7 @@ internal sealed unsafe class MainView : View
 
         ShaderDescription[] shaderDescriptions = [new ShaderDescription(ShaderStages.Compute, Encoding.UTF8.GetBytes(hlsl), "main")];
 
-        _shader = device.Factory.HlslToSpirv(shaderDescriptions, (path) =>
+        _shader = device.Factory.CreateShaderByHLSL(shaderDescriptions, (path) =>
         {
             return Encoding.UTF8.GetBytes(File.ReadAllText(Path.Combine("Assets/Shaders/", path)));
         }).First();
