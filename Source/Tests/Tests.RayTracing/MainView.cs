@@ -36,14 +36,29 @@ internal sealed unsafe class MainView : View
         public float FarPlane;
 
         public float Fov;
+
+        public override readonly int GetHashCode()
+        {
+            return HashCode.Combine(Position, Forward, Right, Up, NearPlane, FarPlane, Fov);
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct Other
     {
-        public int AntiAliasing;
+        public int PathTracerSampleIndex;
+
+        public float PathTracerAccumulationFactor;
+
+        public Vector2 PixelOffset;
 
         public int LightCount;
+
+        public int NumRays;
+
+        public int FrameCount;
+
+        public int NumBounces;
     };
 
     [StructLayout(LayoutKind.Sequential)]
@@ -51,7 +66,11 @@ internal sealed unsafe class MainView : View
     {
         public Vector3 Position;
 
-        public Vector3 Intensity;
+        public Vector4 AmbientColor;
+
+        public Vector4 DiffuseColor;
+
+        public Vector4 SpecularColor;
     };
 
     [StructLayout(LayoutKind.Sequential)]
@@ -88,6 +107,137 @@ internal sealed unsafe class MainView : View
         public uint NormalTextureIndex;
     }
 
+    private static readonly Vector2[] HaltonSequence =
+    [
+        new Vector2(5.000000e-01f, 6.666667e-01f),
+        new Vector2(2.500000e-01f, 3.333333e-01f),
+        new Vector2(7.500000e-01f, 2.222222e-01f),
+        new Vector2(1.250000e-01f, 8.888889e-01f),
+        new Vector2(6.250000e-01f, 5.555556e-01f),
+        new Vector2(3.750000e-01f, 1.111111e-01f),
+        new Vector2(8.750000e-01f, 7.777778e-01f),
+        new Vector2(6.250000e-02f, 4.444444e-01f),
+        new Vector2(5.625000e-01f, 7.407407e-02f),
+        new Vector2(3.125000e-01f, 7.407407e-01f),
+        new Vector2(8.125000e-01f, 4.074074e-01f),
+        new Vector2(1.875000e-01f, 2.962963e-01f),
+        new Vector2(6.875000e-01f, 9.629630e-01f),
+        new Vector2(4.375000e-01f, 6.296296e-01f),
+        new Vector2(9.375000e-01f, 1.851852e-01f),
+        new Vector2(3.125000e-02f, 8.518519e-01f),
+        new Vector2(5.312500e-01f, 5.185185e-01f),
+        new Vector2(2.812500e-01f, 3.703704e-02f),
+        new Vector2(7.812500e-01f, 7.037037e-01f),
+        new Vector2(1.562500e-01f, 3.703704e-01f),
+        new Vector2(6.562500e-01f, 2.592593e-01f),
+        new Vector2(4.062500e-01f, 9.259259e-01f),
+        new Vector2(9.062500e-01f, 5.925926e-01f),
+        new Vector2(9.375000e-02f, 1.481481e-01f),
+        new Vector2(5.937500e-01f, 8.148148e-01f),
+        new Vector2(3.437500e-01f, 4.814815e-01f),
+        new Vector2(8.437500e-01f, 2.469136e-02f),
+        new Vector2(2.187500e-01f, 6.913580e-01f),
+        new Vector2(7.187500e-01f, 3.580247e-01f),
+        new Vector2(4.687500e-01f, 2.469136e-01f),
+        new Vector2(9.687500e-01f, 9.135802e-01f),
+        new Vector2(1.562500e-02f, 5.802469e-01f),
+        new Vector2(5.156250e-01f, 1.358025e-01f),
+        new Vector2(2.656250e-01f, 8.024691e-01f),
+        new Vector2(7.656250e-01f, 4.691358e-01f),
+        new Vector2(1.406250e-01f, 9.876543e-02f),
+        new Vector2(6.406250e-01f, 7.654321e-01f),
+        new Vector2(3.906250e-01f, 4.320988e-01f),
+        new Vector2(8.906250e-01f, 3.209877e-01f),
+        new Vector2(7.812500e-02f, 9.876543e-01f),
+        new Vector2(5.781250e-01f, 6.543210e-01f),
+        new Vector2(3.281250e-01f, 2.098765e-01f),
+        new Vector2(8.281250e-01f, 8.765432e-01f),
+        new Vector2(2.031250e-01f, 5.432099e-01f),
+        new Vector2(7.031250e-01f, 6.172840e-02f),
+        new Vector2(4.531250e-01f, 7.283951e-01f),
+        new Vector2(9.531250e-01f, 3.950617e-01f),
+        new Vector2(4.687500e-02f, 2.839506e-01f),
+        new Vector2(5.468750e-01f, 9.506173e-01f),
+        new Vector2(2.968750e-01f, 6.172840e-01f),
+        new Vector2(7.968750e-01f, 1.728395e-01f),
+        new Vector2(1.718750e-01f, 8.395062e-01f),
+        new Vector2(6.718750e-01f, 5.061728e-01f),
+        new Vector2(4.218750e-01f, 1.234568e-02f),
+        new Vector2(9.218750e-01f, 6.790123e-01f),
+        new Vector2(1.093750e-01f, 3.456790e-01f),
+        new Vector2(6.093750e-01f, 2.345679e-01f),
+        new Vector2(3.593750e-01f, 9.012346e-01f),
+        new Vector2(8.593750e-01f, 5.679012e-01f),
+        new Vector2(2.343750e-01f, 1.234568e-01f),
+        new Vector2(7.343750e-01f, 7.901235e-01f),
+        new Vector2(4.843750e-01f, 4.567901e-01f),
+        new Vector2(9.843750e-01f, 8.641975e-02f),
+        new Vector2(7.812500e-03f, 7.530864e-01f),
+        new Vector2(5.078125e-01f, 4.197531e-01f),
+        new Vector2(2.578125e-01f, 3.086420e-01f),
+        new Vector2(7.578125e-01f, 9.753086e-01f),
+        new Vector2(1.328125e-01f, 6.419753e-01f),
+        new Vector2(6.328125e-01f, 1.975309e-01f),
+        new Vector2(3.828125e-01f, 8.641975e-01f),
+        new Vector2(8.828125e-01f, 5.308642e-01f),
+        new Vector2(7.031250e-02f, 4.938272e-02f),
+        new Vector2(5.703125e-01f, 7.160494e-01f),
+        new Vector2(3.203125e-01f, 3.827160e-01f),
+        new Vector2(8.203125e-01f, 2.716049e-01f),
+        new Vector2(1.953125e-01f, 9.382716e-01f),
+        new Vector2(6.953125e-01f, 6.049383e-01f),
+        new Vector2(4.453125e-01f, 1.604938e-01f),
+        new Vector2(9.453125e-01f, 8.271605e-01f),
+        new Vector2(3.906250e-02f, 4.938272e-01f),
+        new Vector2(5.390625e-01f, 8.230453e-03f),
+        new Vector2(2.890625e-01f, 6.748971e-01f),
+        new Vector2(7.890625e-01f, 3.415638e-01f),
+        new Vector2(1.640625e-01f, 2.304527e-01f),
+        new Vector2(6.640625e-01f, 8.971193e-01f),
+        new Vector2(4.140625e-01f, 5.637860e-01f),
+        new Vector2(9.140625e-01f, 1.193416e-01f),
+        new Vector2(1.015625e-01f, 7.860082e-01f),
+        new Vector2(6.015625e-01f, 4.526749e-01f),
+        new Vector2(3.515625e-01f, 8.230453e-02f),
+        new Vector2(8.515625e-01f, 7.489712e-01f),
+        new Vector2(2.265625e-01f, 4.156379e-01f),
+        new Vector2(7.265625e-01f, 3.045267e-01f),
+        new Vector2(4.765625e-01f, 9.711934e-01f),
+        new Vector2(9.765625e-01f, 6.378601e-01f),
+        new Vector2(2.343750e-02f, 1.934156e-01f),
+        new Vector2(5.234375e-01f, 8.600823e-01f),
+        new Vector2(2.734375e-01f, 5.267490e-01f),
+        new Vector2(7.734375e-01f, 4.526749e-02f),
+        new Vector2(1.484375e-01f, 7.119342e-01f),
+        new Vector2(6.484375e-01f, 3.786008e-01f),
+        new Vector2(3.984375e-01f, 2.674897e-01f),
+        new Vector2(8.984375e-01f, 9.341564e-01f),
+        new Vector2(8.593750e-02f, 6.008230e-01f),
+        new Vector2(5.859375e-01f, 1.563786e-01f),
+        new Vector2(3.359375e-01f, 8.230453e-01f),
+        new Vector2(8.359375e-01f, 4.897119e-01f),
+        new Vector2(2.109375e-01f, 3.292181e-02f),
+        new Vector2(7.109375e-01f, 6.995885e-01f),
+        new Vector2(4.609375e-01f, 3.662551e-01f),
+        new Vector2(9.609375e-01f, 2.551440e-01f),
+        new Vector2(5.468750e-02f, 9.218107e-01f),
+        new Vector2(5.546875e-01f, 5.884774e-01f),
+        new Vector2(3.046875e-01f, 1.440329e-01f),
+        new Vector2(8.046875e-01f, 8.106996e-01f),
+        new Vector2(1.796875e-01f, 4.773663e-01f),
+        new Vector2(6.796875e-01f, 1.069959e-01f),
+        new Vector2(4.296875e-01f, 7.736626e-01f),
+        new Vector2(9.296875e-01f, 4.403292e-01f),
+        new Vector2(1.171875e-01f, 3.292181e-01f),
+        new Vector2(6.171875e-01f, 9.958848e-01f),
+        new Vector2(3.671875e-01f, 6.625514e-01f),
+        new Vector2(8.671875e-01f, 2.181070e-01f),
+        new Vector2(2.421875e-01f, 8.847737e-01f),
+        new Vector2(7.421875e-01f, 5.514403e-01f),
+        new Vector2(4.921875e-01f, 6.995885e-02f),
+        new Vector2(9.921875e-01f, 7.366255e-01f),
+    ];
+
     private readonly GraphicsDevice _device;
     private readonly ImGuiController _imGuiController;
     private readonly ViewController _viewController;
@@ -122,6 +272,10 @@ internal sealed unsafe class MainView : View
 
     private Camera _camera;
     private Other _other;
+    private int _pathTracerSampleIndex;
+    private int _pathTracerNumSamples = 256;
+
+    private int cameraHashCode;
 
     private Texture? _outputTexture;
     private TextureView? _outputTextureView;
@@ -146,7 +300,9 @@ internal sealed unsafe class MainView : View
         _lights.Add(new Light()
         {
             Position = new Vector3(-50.0f, 500.0f, 75.0f),
-            Intensity = new Vector3(0.5f)
+            AmbientColor = new Vector4(0.1f, 0.1f, 0.1f, 1.0f),
+            DiffuseColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+            SpecularColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f)
         });
 
         _cameraBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Camera>(1, BufferUsage.ConstantBuffer));
@@ -186,7 +342,7 @@ internal sealed unsafe class MainView : View
 
         _resourceLayout0 = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("as", ResourceKind.AccelerationStructure, ShaderStages.RayGeneration | ShaderStages.ClosestHit),
                                                                                              new ResourceLayoutElementDescription("camera", ResourceKind.ConstantBuffer, ShaderStages.RayGeneration | ShaderStages.ClosestHit),
-                                                                                             new ResourceLayoutElementDescription("other", ResourceKind.ConstantBuffer, ShaderStages.ClosestHit),
+                                                                                             new ResourceLayoutElementDescription("other", ResourceKind.ConstantBuffer, ShaderStages.RayGeneration | ShaderStages.ClosestHit),
                                                                                              new ResourceLayoutElementDescription("lights", ResourceKind.StorageBuffer, ShaderStages.ClosestHit),
                                                                                              new ResourceLayoutElementDescription("geometryNodes", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit),
                                                                                              new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.RayGeneration)));
@@ -214,11 +370,15 @@ internal sealed unsafe class MainView : View
 
         ShaderDescription[] shaderDescriptions =
         [
-            new ShaderDescription(ShaderStages.RayGeneration,  shaderBytes, "rayGen"),
-            new ShaderDescription(ShaderStages.Miss,  shaderBytes, "miss"),
-            new ShaderDescription(ShaderStages.Miss,  shaderBytes, "missShadow"),
+            new ShaderDescription(ShaderStages.RayGeneration, shaderBytes, "rayGen"),
+            new ShaderDescription(ShaderStages.Miss, shaderBytes, "miss"),
+            new ShaderDescription(ShaderStages.Miss, shaderBytes, "missShadow"),
+            new ShaderDescription(ShaderStages.Miss, shaderBytes, "missAO"),
+            new ShaderDescription(ShaderStages.Miss, shaderBytes, "missGI"),
             new ShaderDescription(ShaderStages.ClosestHit, shaderBytes, "closestHit"),
             new ShaderDescription(ShaderStages.ClosestHit, shaderBytes, "shadowChs"),
+            new ShaderDescription(ShaderStages.ClosestHit, shaderBytes, "aoChs"),
+            new ShaderDescription(ShaderStages.ClosestHit, shaderBytes, "giChs"),
             new ShaderDescription(ShaderStages.AnyHit, shaderBytes, "anyHit")
         ];
 
@@ -229,17 +389,25 @@ internal sealed unsafe class MainView : View
             Shaders = new RaytracingShaderDescription()
             {
                 RayGenerationShader = shaders[0],
-                MissShader = [shaders[1], shaders[2]],
+                MissShader = [shaders[1], shaders[2], shaders[3], shaders[4]],
                 HitGroupShader =
                 [
                     new HitGroupDescription()
                     {
-                        ClosestHitShader = shaders[3],
-                        AnyHitShader = shaders[5]
+                        ClosestHitShader = shaders[5],
+                        AnyHitShader = shaders[9]
                     },
                     new HitGroupDescription()
                     {
-                        ClosestHitShader = shaders[4]
+                        ClosestHitShader = shaders[6]
+                    },
+                    new HitGroupDescription()
+                    {
+                        ClosestHitShader = shaders[7]
+                    },
+                    new HitGroupDescription()
+                    {
+                        ClosestHitShader = shaders[8]
                     }
                 ]
             },
@@ -268,8 +436,13 @@ internal sealed unsafe class MainView : View
 
         _other = new Other()
         {
-            AntiAliasing = 1,
-            LightCount = _lights.Count
+            PathTracerSampleIndex = 0,
+            PathTracerAccumulationFactor = 1.0f,
+            PixelOffset = HaltonSequence[0],
+            LightCount = _lights.Count,
+            NumRays = 4,
+            FrameCount = 0,
+            NumBounces = 3
         };
     }
 
@@ -282,7 +455,15 @@ internal sealed unsafe class MainView : View
         {
             _cameraController.ShowEditor();
 
-            ImGui.DragInt("Anti Aliasing", ref _other.AntiAliasing, 1, 1, 4);
+            if (ImGui.DragInt("Num Rays", ref _other.NumRays, 1, 1, 16))
+            {
+                _pathTracerSampleIndex = 0;
+            }
+
+            if (ImGui.DragInt("Num Bounces", ref _other.NumBounces, 1, 0, 4))
+            {
+                _pathTracerSampleIndex = 0;
+            }
 
             // Show lights
             for (int i = 0; i < _lights.Count; i++)
@@ -293,13 +474,37 @@ internal sealed unsafe class MainView : View
 
                 ImGui.PushID(i);
 
-                ImGui.DragFloat3("Position", ref light.Position);
-                ImGui.DragFloat3("Intensity", ref light.Intensity);
+                if (ImGui.DragFloat3("Position", ref light.Position))
+                {
+                    _pathTracerSampleIndex = 0;
+                }
+
+                if (ImGui.ColorEdit4("Ambient Color", ref light.AmbientColor))
+                {
+                    _pathTracerSampleIndex = 0;
+                }
+
+                if (ImGui.ColorEdit4("Diffuse Color", ref light.DiffuseColor))
+                {
+                    _pathTracerSampleIndex = 0;
+                }
+
+                if (ImGui.ColorEdit4("Specular Color", ref light.SpecularColor))
+                {
+                    _pathTracerSampleIndex = 0;
+                }
 
                 ImGui.PopID();
 
                 _lights[i] = light;
             }
+
+            if (ImGui.DragInt("Num Samples", ref _pathTracerNumSamples, 1, 1, 1024))
+            {
+                _pathTracerSampleIndex = 0;
+            }
+
+            ImGui.ProgressBar((float)_pathTracerSampleIndex / _pathTracerNumSamples, Vector2.Zero);
 
             ImGui.End();
         }
@@ -312,6 +517,18 @@ internal sealed unsafe class MainView : View
         _camera.FarPlane = _cameraController.FarPlane;
         _camera.Fov = _cameraController.FovRadians;
 
+        if (cameraHashCode != _camera.GetHashCode())
+        {
+            _pathTracerSampleIndex = 0;
+
+            cameraHashCode = _camera.GetHashCode();
+        }
+
+        _other.FrameCount++;
+        _other.PathTracerSampleIndex = _pathTracerSampleIndex;
+        _other.PathTracerAccumulationFactor = 1.0f / (_pathTracerSampleIndex + 1.0f);
+        _other.PixelOffset = HaltonSequence[_other.FrameCount % HaltonSequence.Length];
+
         _device.UpdateBuffer(_cameraBuffer, in _camera);
         _device.UpdateBuffer(_otherBuffer, in _other);
         _device.UpdateBuffer(_lightsBuffer, _lights.ToArray());
@@ -321,21 +538,26 @@ internal sealed unsafe class MainView : View
     {
         if (_outputTexture != null)
         {
-            _commandList.Begin();
+            if (_pathTracerSampleIndex < _pathTracerNumSamples)
+            {
+                _commandList.Begin();
 
-            _commandList.SetPipeline(_pipeline);
+                _commandList.SetPipeline(_pipeline);
 
-            _commandList.SetResourceSet(0, _resourceSet0);
-            _commandList.SetResourceSet(1, _resourceSet1);
-            _commandList.SetResourceSet(2, _resourceSet2);
-            _commandList.SetResourceSet(3, _resourceSet3);
-            _commandList.SetResourceSet(4, _resourceSet4);
+                _commandList.SetResourceSet(0, _resourceSet0);
+                _commandList.SetResourceSet(1, _resourceSet1);
+                _commandList.SetResourceSet(2, _resourceSet2);
+                _commandList.SetResourceSet(3, _resourceSet3);
+                _commandList.SetResourceSet(4, _resourceSet4);
 
-            _commandList.DispatchRays(_outputTexture.Width, _outputTexture.Height, 1);
+                _commandList.DispatchRays(_outputTexture.Width, _outputTexture.Height, 1);
 
-            _commandList.End();
+                _commandList.End();
 
-            _device.SubmitCommands(_commandList);
+                _device.SubmitCommands(_commandList);
+
+                _pathTracerSampleIndex++;
+            }
 
             ImGui.Image(_imGuiController.GetBinding(_device.Factory, _outputTexture), new Vector2(_outputTexture.Width, _outputTexture.Height));
         }
@@ -361,6 +583,8 @@ internal sealed unsafe class MainView : View
         _outputTextureView = _device.Factory.CreateTextureView(_outputTexture);
 
         _resourceSet0.UpdateSet(_outputTextureView, 5);
+
+        _pathTracerSampleIndex = 0;
     }
 
     protected override void Destroy()
