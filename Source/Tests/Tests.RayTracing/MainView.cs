@@ -41,9 +41,9 @@ internal sealed unsafe class MainView : View
     [StructLayout(LayoutKind.Sequential)]
     private struct Other
     {
-        public uint AntiAliasing;
+        public int AntiAliasing;
 
-        public uint LightCount;
+        public int LightCount;
     };
 
     [StructLayout(LayoutKind.Sequential)]
@@ -51,9 +51,7 @@ internal sealed unsafe class MainView : View
     {
         public Vector3 Position;
 
-        public Vector3 Color;
-
-        public float Intensity;
+        public Vector3 Intensity;
     };
 
     [StructLayout(LayoutKind.Sequential)]
@@ -101,6 +99,7 @@ internal sealed unsafe class MainView : View
     private readonly List<DeviceBuffer> _indexBuffers;
     private readonly List<GeometryNode> _geometryNodes;
     private readonly List<AccelerationStructureTriangles> _triangles;
+    private readonly List<Light> _lights;
 
     private readonly DeviceBuffer _cameraBuffer;
     private readonly DeviceBuffer _otherBuffer;
@@ -122,6 +121,7 @@ internal sealed unsafe class MainView : View
     private readonly CommandList _commandList;
 
     private Camera _camera;
+    private Other _other;
 
     private Texture? _outputTexture;
     private TextureView? _outputTextureView;
@@ -139,12 +139,23 @@ internal sealed unsafe class MainView : View
         _indexBuffers = [];
         _geometryNodes = [];
         _triangles = [];
+        _lights = [];
 
         LoadGLTF("Assets/Models/Sponza/glTF/Sponza.gltf");
 
+        _lights.Add(new Light()
+        {
+            Position = new Vector3(-50.0f, 500.0f, 75.0f),
+            Intensity = new Vector3(0.5f)
+        });
+
         _cameraBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Camera>(1, BufferUsage.ConstantBuffer));
+
         _otherBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Other>(1, BufferUsage.ConstantBuffer));
-        _lightsBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Light>(1, BufferUsage.ConstantBuffer));
+
+        _lightsBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Light>(_lights.Count, BufferUsage.StorageBuffer));
+        device.UpdateBuffer(_lightsBuffer, _lights.ToArray());
+
         _geometryNodesBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<GeometryNode>(_geometryNodes.Count, BufferUsage.StorageBuffer));
         device.UpdateBuffer(_geometryNodesBuffer, _geometryNodes.ToArray());
 
@@ -173,11 +184,13 @@ internal sealed unsafe class MainView : View
 
         _topLevel = device.Factory.CreateTopLevelAS(in topLevelASDescription);
 
-        _resourceLayout0 = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("as", ResourceKind.AccelerationStructure, ShaderStages.RayGeneration),
-                                                                                             new ResourceLayoutElementDescription("camera", ResourceKind.ConstantBuffer, ShaderStages.RayGeneration),
+        _resourceLayout0 = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("as", ResourceKind.AccelerationStructure, ShaderStages.RayGeneration | ShaderStages.ClosestHit),
+                                                                                             new ResourceLayoutElementDescription("camera", ResourceKind.ConstantBuffer, ShaderStages.RayGeneration | ShaderStages.ClosestHit),
+                                                                                             new ResourceLayoutElementDescription("other", ResourceKind.ConstantBuffer, ShaderStages.ClosestHit),
+                                                                                             new ResourceLayoutElementDescription("lights", ResourceKind.StorageBuffer, ShaderStages.ClosestHit),
                                                                                              new ResourceLayoutElementDescription("geometryNodes", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit),
                                                                                              new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.RayGeneration)));
-        _resourceSet0 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout0, _topLevel, _cameraBuffer, _geometryNodesBuffer));
+        _resourceSet0 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout0, _topLevel, _cameraBuffer, _otherBuffer, _lightsBuffer, _geometryNodesBuffer));
 
         _resourceLayout1 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_vertexBuffers.Count, new ResourceLayoutElementDescription("vertexArray", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
         _resourceSet1 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout1));
@@ -203,7 +216,9 @@ internal sealed unsafe class MainView : View
         [
             new ShaderDescription(ShaderStages.RayGeneration,  shaderBytes, "rayGen"),
             new ShaderDescription(ShaderStages.Miss,  shaderBytes, "miss"),
+            new ShaderDescription(ShaderStages.Miss,  shaderBytes, "missShadow"),
             new ShaderDescription(ShaderStages.ClosestHit, shaderBytes, "closestHit"),
+            new ShaderDescription(ShaderStages.ClosestHit, shaderBytes, "shadowChs"),
             new ShaderDescription(ShaderStages.AnyHit, shaderBytes, "anyHit")
         ];
 
@@ -214,13 +229,17 @@ internal sealed unsafe class MainView : View
             Shaders = new RaytracingShaderDescription()
             {
                 RayGenerationShader = shaders[0],
-                MissShader = [shaders[1]],
+                MissShader = [shaders[1], shaders[2]],
                 HitGroupShader =
                 [
                     new HitGroupDescription()
                     {
-                        ClosestHitShader = shaders[2],
-                        AnyHitShader = shaders[3]
+                        ClosestHitShader = shaders[3],
+                        AnyHitShader = shaders[5]
+                    },
+                    new HitGroupDescription()
+                    {
+                        ClosestHitShader = shaders[4]
                     }
                 ]
             },
@@ -246,6 +265,12 @@ internal sealed unsafe class MainView : View
             FarPlane = _cameraController.FarPlane,
             Fov = _cameraController.FovRadians
         };
+
+        _other = new Other()
+        {
+            AntiAliasing = 1,
+            LightCount = _lights.Count
+        };
     }
 
     protected override void OnUpdate(UpdateEventArgs e)
@@ -256,6 +281,25 @@ internal sealed unsafe class MainView : View
         if (ImGui.Begin("Properties"))
         {
             _cameraController.ShowEditor();
+
+            ImGui.DragInt("Anti Aliasing", ref _other.AntiAliasing, 1, 1, 4);
+
+            // Show lights
+            for (int i = 0; i < _lights.Count; i++)
+            {
+                Light light = _lights[i];
+
+                ImGui.Text($"Light {i}");
+
+                ImGui.PushID(i);
+
+                ImGui.DragFloat3("Position", ref light.Position);
+                ImGui.DragFloat3("Intensity", ref light.Intensity);
+
+                ImGui.PopID();
+
+                _lights[i] = light;
+            }
 
             ImGui.End();
         }
@@ -269,6 +313,8 @@ internal sealed unsafe class MainView : View
         _camera.Fov = _cameraController.FovRadians;
 
         _device.UpdateBuffer(_cameraBuffer, in _camera);
+        _device.UpdateBuffer(_otherBuffer, in _other);
+        _device.UpdateBuffer(_lightsBuffer, _lights.ToArray());
     }
 
     protected override void OnRender(RenderEventArgs e)
@@ -314,7 +360,7 @@ internal sealed unsafe class MainView : View
 
         _outputTextureView = _device.Factory.CreateTextureView(_outputTexture);
 
-        _resourceSet0.UpdateSet(_outputTextureView, 3);
+        _resourceSet0.UpdateSet(_outputTextureView, 5);
     }
 
     protected override void Destroy()
@@ -337,6 +383,8 @@ internal sealed unsafe class MainView : View
         _topLevel.Dispose();
         _bottomLevel.Dispose();
         _geometryNodesBuffer.Dispose();
+        _lightsBuffer.Dispose();
+        _otherBuffer.Dispose();
         _cameraBuffer.Dispose();
 
         foreach (DeviceBuffer indexBuffer in _indexBuffers)

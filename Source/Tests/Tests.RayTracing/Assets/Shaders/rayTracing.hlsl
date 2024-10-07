@@ -17,18 +17,16 @@
 
 struct Other
 {
-    uint antiAliasing;
+    int antiAliasing;
     
-    uint lightCount;
+    int lightCount;
 };
 
 struct Light
 {
     float3 position;
     
-    float3 color;
-    
-    float intensity;
+    float3 intensity;
 };
 
 struct Vertex
@@ -68,6 +66,16 @@ struct Payload
     float4 color;
 };
 
+struct ShadowRayPayload
+{
+    bool hit;
+};
+
+struct AORayPayload
+{
+    float aoValue;
+};
+
 RaytracingAccelerationStructure as : register(t0, space0);
 ConstantBuffer<Camera> camera : register(b1, space0);
 ConstantBuffer<Other> other : register(b2, space0);
@@ -101,6 +109,11 @@ Vertex getVertex(StructuredBuffer<Vertex> vertexBuffer, StructuredBuffer<uint> i
     result.tangent = v0.tangent * barycentrics.x + v1.tangent * barycentrics.y + v2.tangent * barycentrics.z;
     
     return result;
+}
+
+float3 hitWorldPosition()
+{
+    return WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
 }
 
 [shader("raygeneration")]
@@ -148,6 +161,12 @@ void miss(inout Payload payload)
     payload.color = float4(0.0, 0.0, 0.2, 1.0);
 }
 
+[shader("miss")]
+void missShadow(inout ShadowRayPayload payload)
+{
+    payload.hit = false;
+}
+
 [shader("closesthit")]
 void closestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
@@ -156,10 +175,49 @@ void closestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes 
     GeometryNode node = geometryNodes[GeometryIndex()];
     
     Vertex vertex = getVertex(vertexArray[node.vertexBuffer], indexArray[node.indexBuffer], PrimitiveIndex(), barycentricCoords);
-
-    float4 color = textureArray[node.baseColorTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0) * float4(vertex.color, 1.0);
+    vertex.position = hitWorldPosition();
     
-    payload.color = color;
+    float4 baseColor = textureArray[node.baseColorTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0) * float4(vertex.color, 1.0);
+    
+    float3 finalColor = float3(0.0, 0.0, 0.0);
+    
+    for (int i = 0; i < other.lightCount; ++i)
+    {
+        Light light = lights[i];
+        
+        float3 lightDir = normalize(light.position - vertex.position);
+        float3 normal = normalize(vertex.normal);
+        
+        float diff = max(dot(normal, lightDir), 0.0);
+        float3 diffuse = diff * light.intensity;
+        
+        RayDesc shadowRay;
+        shadowRay.Origin = vertex.position;
+        shadowRay.Direction = lightDir;
+        shadowRay.TMin = 0.001;
+        shadowRay.TMax = length(light.position - vertex.position);
+        
+        ShadowRayPayload shadowPayload;
+        shadowPayload.hit = true;
+        TraceRay(as, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xff, 1, 0, 1, shadowRay, shadowPayload);
+        
+        if (shadowPayload.hit)
+        {
+            finalColor += baseColor.rgb * 0.05;
+        }
+        else
+        {
+            finalColor += diffuse * baseColor.rgb;
+        }
+    }
+    
+    payload.color = float4(finalColor, baseColor.a);
+}
+
+[shader("closesthit")]
+void shadowChs(inout ShadowRayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+    payload.hit = true;
 }
 
 [shader("anyhit")]
