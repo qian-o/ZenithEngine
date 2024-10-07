@@ -21,7 +21,7 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
             bufferUsageFlags |= BufferUsageFlags.IndexBufferBit;
         }
 
-        if (description.Usage.HasFlag(BufferUsage.UniformBuffer))
+        if (description.Usage.HasFlag(BufferUsage.ConstantBuffer))
         {
             bufferUsageFlags |= BufferUsageFlags.UniformBufferBit;
         }

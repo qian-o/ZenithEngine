@@ -39,6 +39,24 @@ internal sealed unsafe class MainView : View
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    private struct Other
+    {
+        public uint AntiAliasing;
+
+        public uint LightCount;
+    };
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Light
+    {
+        public Vector3 Position;
+
+        public Vector3 Color;
+
+        public float Intensity;
+    };
+
+    [StructLayout(LayoutKind.Sequential)]
     private struct Vertex(Vector3 position, Vector3 normal, Vector2 texCoord, Vector3 color, Vector4 tangent)
     {
         public Vector3 Position = position;
@@ -85,6 +103,8 @@ internal sealed unsafe class MainView : View
     private readonly List<AccelerationStructureTriangles> _triangles;
 
     private readonly DeviceBuffer _cameraBuffer;
+    private readonly DeviceBuffer _otherBuffer;
+    private readonly DeviceBuffer _lightsBuffer;
     private readonly DeviceBuffer _geometryNodesBuffer;
     private readonly BottomLevelAS _bottomLevel;
     private readonly TopLevelAS _topLevel;
@@ -122,7 +142,9 @@ internal sealed unsafe class MainView : View
 
         LoadGLTF("Assets/Models/Sponza/glTF/Sponza.gltf");
 
-        _cameraBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Camera>(1, BufferUsage.UniformBuffer));
+        _cameraBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Camera>(1, BufferUsage.ConstantBuffer));
+        _otherBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Other>(1, BufferUsage.ConstantBuffer));
+        _lightsBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Light>(1, BufferUsage.ConstantBuffer));
         _geometryNodesBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<GeometryNode>(_geometryNodes.Count, BufferUsage.StorageBuffer));
         device.UpdateBuffer(_geometryNodesBuffer, _geometryNodes.ToArray());
 

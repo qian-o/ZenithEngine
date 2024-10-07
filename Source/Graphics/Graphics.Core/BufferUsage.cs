@@ -16,9 +16,9 @@ public enum BufferUsage : ushort
     IndexBuffer = 1 << 1,
 
     /// <summary>
-    /// Indicates can be used as a uniform Buffer.
+    /// Indicates can be used as a constant Buffer.
     /// </summary>
-    UniformBuffer = 1 << 2,
+    ConstantBuffer = 1 << 2,
 
     /// <summary>
     /// Indicates can be used as a read-write storage Buffer.

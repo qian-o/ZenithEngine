@@ -322,7 +322,7 @@ internal sealed unsafe class Program
         _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Count, BufferUsage.IndexBuffer));
         _device.UpdateBuffer(_indexBuffer, [.. indices]);
 
-        _frameBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Frame>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _frameBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Frame>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
         _nodeTransformBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Matrix4x4>(_worldSpaceMats.Length, BufferUsage.StorageBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("frame", ResourceKind.ConstantBuffer, ShaderStages.Vertex),

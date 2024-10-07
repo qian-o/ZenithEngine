@@ -229,7 +229,7 @@ internal sealed unsafe class Program
         _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Count, BufferUsage.IndexBuffer));
         _device.UpdateBuffer(_indexBuffer, [.. indices]);
 
-        _uboBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<UBO>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _uboBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<UBO>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("ubo", ResourceKind.ConstantBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,

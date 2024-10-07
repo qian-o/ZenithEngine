@@ -13,7 +13,7 @@ public unsafe class ImGuiRenderer : DisposableObject
     private const string HLSL = @"
 [[vk::constant_id(0)]] const bool UseLegacyColorSpaceHandling = false;
 
-struct UBO
+struct CBO
 {
     float4x4 Projection;
 };
@@ -32,7 +32,7 @@ struct VSOutput
     [[vk::location(1)]] float4 Color : COLOR0;
 };
 
-ConstantBuffer<UBO> ubo : register(b0, space0);
+ConstantBuffer<CBO> cbo : register(b0, space0);
 SamplerState pointSampler : register(s1, space0);
 Texture2D textureColor : register(t0, space1);
 
@@ -45,7 +45,7 @@ VSOutput mainVS(VSInput input)
 {
     VSOutput output;
 
-    output.Position = mul(ubo.Projection, float4(input.Position, 0.0f, 1.0f));
+    output.Position = mul(cbo.Projection, float4(input.Position, 0.0f, 1.0f));
     output.UV = input.UV;
     output.Color = input.Color;
 
@@ -75,7 +75,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     private DeviceBuffer _vertexBuffer = null!;
     private DeviceBuffer _indexBuffer = null!;
-    private DeviceBuffer _uboBuffer = null!;
+    private DeviceBuffer _cboBuffer = null!;
     private ResourceLayout _layout0 = null!;
     private ResourceLayout _layout1 = null!;
     private ResourceSet _resourceSet = null!;
@@ -215,7 +215,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
                                                                               -1.0f,
                                                                               1.0f);
 
-            commandList.UpdateBuffer(_uboBuffer, ref orthoProjection);
+            commandList.UpdateBuffer(_cboBuffer, ref orthoProjection);
         }
 
         commandList.SetVertexBuffer(0, _vertexBuffer);
@@ -276,7 +276,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
     {
         _vertexBuffer.Dispose();
         _indexBuffer.Dispose();
-        _uboBuffer.Dispose();
+        _cboBuffer.Dispose();
         _layout0.Dispose();
         _layout1.Dispose();
         _resourceSet.Dispose();
@@ -345,7 +345,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
     {
         _vertexBuffer = _factory.CreateBuffer(BufferDescription.Buffer<ImDrawVert>(2000, BufferUsage.VertexBuffer));
         _indexBuffer = _factory.CreateBuffer(BufferDescription.Buffer<ushort>(4000, BufferUsage.IndexBuffer));
-        _uboBuffer = _factory.CreateBuffer(BufferDescription.Buffer<Matrix4x4>(1, BufferUsage.UniformBuffer));
+        _cboBuffer = _factory.CreateBuffer(BufferDescription.Buffer<Matrix4x4>(1, BufferUsage.ConstantBuffer));
 
         Shader[] shaders = _factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(HLSL), "mainVS"),
                                                        new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(HLSL), "mainPS"));
@@ -354,14 +354,14 @@ float4 mainPS(VSOutput input) : SV_TARGET
                                                               new VertexElementDescription("UV", VertexElementFormat.Float2),
                                                               new VertexElementDescription("Color", VertexElementFormat.Byte4Norm));
 
-        ResourceLayoutDescription set0 = new(new ResourceLayoutElementDescription("ubo", ResourceKind.ConstantBuffer, ShaderStages.Vertex),
+        ResourceLayoutDescription set0 = new(new ResourceLayoutElementDescription("cbo", ResourceKind.ConstantBuffer, ShaderStages.Vertex),
                                              new ResourceLayoutElementDescription("pointSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
         ResourceLayoutDescription set1 = new(new ResourceLayoutElementDescription("textureColor", ResourceKind.SampledImage, ShaderStages.Fragment));
 
         _layout0 = _factory.CreateResourceLayout(set0);
         _layout1 = _factory.CreateResourceLayout(set1);
-        _resourceSet = _factory.CreateResourceSet(new ResourceSetDescription(_layout0, _uboBuffer, _graphicsDevice.PointSampler));
+        _resourceSet = _factory.CreateResourceSet(new ResourceSetDescription(_layout0, _cboBuffer, _graphicsDevice.PointSampler));
 
         GraphicsPipelineDescription pipelineDescription = new()
         {

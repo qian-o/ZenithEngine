@@ -15,6 +15,22 @@
     float fov;
 };
 
+struct Other
+{
+    uint antiAliasing;
+    
+    uint lightCount;
+};
+
+struct Light
+{
+    float3 position;
+    
+    float3 color;
+    
+    float intensity;
+};
+
 struct Vertex
 {
     float3 position;
@@ -54,8 +70,10 @@ struct Payload
 
 RaytracingAccelerationStructure as : register(t0, space0);
 ConstantBuffer<Camera> camera : register(b1, space0);
-StructuredBuffer<GeometryNode> geometryNodes : register(t2, space0);
-RWTexture2D<float4> outputTexture : register(u3, space0);
+ConstantBuffer<Other> other : register(b2, space0);
+StructuredBuffer<Light> lights : register(t3, space0);
+StructuredBuffer<GeometryNode> geometryNodes : register(t4, space0);
+RWTexture2D<float4> outputTexture : register(u5, space0);
 
 StructuredBuffer<Vertex> vertexArray[] : register(t0, space1);
 StructuredBuffer<uint> indexArray[] : register(t0, space2);

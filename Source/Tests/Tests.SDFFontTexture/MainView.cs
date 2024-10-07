@@ -111,8 +111,8 @@ internal sealed unsafe class MainView : View
         _indexBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Length, BufferUsage.IndexBuffer));
         device.UpdateBuffer(_indexBuffer, indices);
 
-        _uniformBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<UniformBufferObject>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-        _normalBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Properties>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        _uniformBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<UniformBufferObject>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
+        _normalBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Properties>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutElementDescription uboDescription = new("ubo", ResourceKind.ConstantBuffer, ShaderStages.Vertex);
         ResourceLayoutElementDescription normalDescription = new("properties", ResourceKind.ConstantBuffer, ShaderStages.Fragment);

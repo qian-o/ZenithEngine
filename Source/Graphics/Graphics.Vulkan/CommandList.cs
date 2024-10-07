@@ -241,7 +241,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
         // Add a memory barrier to ensure that the buffer is ready to be used
         {
-            bool needToProtectUniformBuffer = buffer.Usage.HasFlag(BufferUsage.UniformBuffer);
+            bool needToProtectUniformBuffer = buffer.Usage.HasFlag(BufferUsage.ConstantBuffer);
 
             MemoryBarrier memoryBarrier = new()
             {
