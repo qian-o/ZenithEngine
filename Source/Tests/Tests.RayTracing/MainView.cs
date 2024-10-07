@@ -46,6 +46,8 @@ internal sealed unsafe class MainView : View
     [StructLayout(LayoutKind.Sequential)]
     private struct Other
     {
+        public int FrameCount;
+
         public int PathTracerSampleIndex;
 
         public float PathTracerAccumulationFactor;
@@ -56,9 +58,38 @@ internal sealed unsafe class MainView : View
 
         public int NumRays;
 
-        public int FrameCount;
+        public float AORadius;
+
+        public float AORayMin;
 
         public int NumBounces;
+
+        public float DiffuseCoef;
+
+        public float SpecularCoef;
+
+        public float SpecularPower;
+
+        public float ReflectanceCoef;
+
+        public int MaxRecursionDepth;
+
+        public override readonly int GetHashCode()
+        {
+            HashCode hashCode = new();
+            hashCode.Add(LightCount);
+            hashCode.Add(NumRays);
+            hashCode.Add(AORadius);
+            hashCode.Add(AORayMin);
+            hashCode.Add(NumBounces);
+            hashCode.Add(DiffuseCoef);
+            hashCode.Add(SpecularCoef);
+            hashCode.Add(SpecularPower);
+            hashCode.Add(ReflectanceCoef);
+            hashCode.Add(MaxRecursionDepth);
+
+            return hashCode.ToHashCode();
+        }
     };
 
     [StructLayout(LayoutKind.Sequential)]
@@ -105,6 +136,8 @@ internal sealed unsafe class MainView : View
         public uint BaseColorTextureIndex;
 
         public uint NormalTextureIndex;
+
+        public uint RoughnessTextureIndex;
     }
 
     private static readonly Vector2[] HaltonSequence =
@@ -276,6 +309,7 @@ internal sealed unsafe class MainView : View
     private int _pathTracerNumSamples = 256;
 
     private int cameraHashCode;
+    private int otherHashCode;
 
     private Texture? _outputTexture;
     private TextureView? _outputTextureView;
@@ -441,8 +475,15 @@ internal sealed unsafe class MainView : View
             PixelOffset = HaltonSequence[0],
             LightCount = _lights.Count,
             NumRays = 4,
+            AORadius = 0.4f,
+            AORayMin = 0.01f,
             FrameCount = 0,
-            NumBounces = 3
+            NumBounces = 3,
+            DiffuseCoef = 0.9f,
+            SpecularCoef = 0.7f,
+            SpecularPower = 50,
+            ReflectanceCoef = 0.5f,
+            MaxRecursionDepth = 2
         };
     }
 
@@ -455,17 +496,6 @@ internal sealed unsafe class MainView : View
         {
             _cameraController.ShowEditor();
 
-            if (ImGui.DragInt("Num Rays", ref _other.NumRays, 1, 1, 16))
-            {
-                _pathTracerSampleIndex = 0;
-            }
-
-            if (ImGui.DragInt("Num Bounces", ref _other.NumBounces, 1, 0, 4))
-            {
-                _pathTracerSampleIndex = 0;
-            }
-
-            // Show lights
             for (int i = 0; i < _lights.Count; i++)
             {
                 Light light = _lights[i];
@@ -499,6 +529,16 @@ internal sealed unsafe class MainView : View
                 _lights[i] = light;
             }
 
+            ImGui.DragInt("Num Rays", ref _other.NumRays, 1, 1, 16);
+            ImGui.DragFloat("AO Radius", ref _other.AORadius, 0.01f, 0.01f, 1.0f);
+            ImGui.DragFloat("AO Ray Min", ref _other.AORayMin, 0.01f, 0.01f, 1.0f);
+            ImGui.DragInt("Num Bounces", ref _other.NumBounces, 1, 0, 4);
+            ImGui.DragFloat("Diffuse Coef", ref _other.DiffuseCoef, 0.01f, 0.0f, 1.0f);
+            ImGui.DragFloat("Specular Coef", ref _other.SpecularCoef, 0.01f, 0.0f, 1.0f);
+            ImGui.DragFloat("Specular Power", ref _other.SpecularPower, 1, 1, 100);
+            ImGui.DragFloat("Reflectance Coef", ref _other.ReflectanceCoef, 0.01f, 0.0f, 1.0f);
+            ImGui.DragInt("Max Recursion Depth", ref _other.MaxRecursionDepth, 1, 1, 2);
+
             if (ImGui.DragInt("Num Samples", ref _pathTracerNumSamples, 1, 1, 1024))
             {
                 _pathTracerSampleIndex = 0;
@@ -522,6 +562,13 @@ internal sealed unsafe class MainView : View
             _pathTracerSampleIndex = 0;
 
             cameraHashCode = _camera.GetHashCode();
+        }
+
+        if (otherHashCode != _other.GetHashCode())
+        {
+            _pathTracerSampleIndex = 0;
+
+            otherHashCode = _other.GetHashCode();
         }
 
         _other.FrameCount++;
@@ -798,6 +845,14 @@ internal sealed unsafe class MainView : View
                 if (normalChannel.Texture != null)
                 {
                     geometryNode.NormalTextureIndex = (uint)normalChannel.Texture.LogicalIndex;
+                }
+            }
+
+            if (primitive.Material.FindChannel(KnownChannel.MetallicRoughness.ToString()) is MaterialChannel roughnessChannel)
+            {
+                if (roughnessChannel.Texture != null)
+                {
+                    geometryNode.RoughnessTextureIndex = (uint)roughnessChannel.Texture.LogicalIndex;
                 }
             }
 

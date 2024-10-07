@@ -17,6 +17,8 @@
 
 struct Other
 {
+    int frameCount;
+    
     int pathTracerSampleIndex;
     
     float pathTracerAccumulationFactor;
@@ -27,9 +29,21 @@ struct Other
     
     int numRays;
     
-    int frameCount;
+    float aoRadius;
+    
+    float aoRayMin;
     
     int numBounces;
+    
+    float diffuseCoef;
+    
+    float specularCoef;
+    
+    float specularPower;
+    
+    float reflectanceCoef;
+    
+    int maxRecursionDepth;
 };
 
 struct Light
@@ -73,6 +87,8 @@ struct GeometryNode
     uint baseColorTextureIndex;
     
     uint normalTextureIndex;
+    
+    uint roughnessTextureIndex;
 };
 
 struct Ray
@@ -86,6 +102,7 @@ struct Ray
 struct RayPayload
 {
     float4 color;
+    uint recursionDepth;
 };
 
 struct ShadowRayPayload
@@ -168,6 +185,24 @@ float nextRand(inout uint s)
     return float(s & 0x00FFFFFF) / float(0x01000000);
 }
 
+// Rotation with angle (in radians) and axis
+float3x3 angleAxis3x3(float angle, float3 axis)
+{
+    float c, s;
+    sincos(angle, s, c);
+
+    float t = 1 - c;
+    float x = axis.x;
+    float y = axis.y;
+    float z = axis.z;
+
+    return float3x3(
+		t * x * x + c, t * x * y - s * z, t * x * z + s * y,
+		t * x * y + s * z, t * y * y + c, t * y * z - s * x,
+		t * x * z - s * y, t * y * z + s * x, t * z * z + c
+		);
+}
+
 // Utility function to get a vector perpendicular to an input vector 
 //    (from "Efficient Construction of Perpendicular Vectors Without Branching")
 float3 getPerpendicularVector(float3 u)
@@ -177,6 +212,37 @@ float3 getPerpendicularVector(float3 u)
     uint ym = (a.y - a.z) < 0 ? (1 ^ xm) : 0;
     uint zm = 1 ^ (xm | ym);
     return cross(u, float3(xm, ym, zm));
+}
+
+float3 getConeSample(inout uint randSeed, float3 shadePosition, float3 lightPosition, float radius)
+{
+    float3 toLight = normalize(lightPosition - shadePosition);
+
+    float3 perpL = getPerpendicularVector(toLight);
+
+    float3 toLightEdge = normalize((lightPosition + perpL * radius) - shadePosition);
+
+    float coneAngle = radius > 0 ? acos(dot(toLight, toLightEdge)) * 2.0 : 0.0;
+
+    float cosAngle = cos(coneAngle);
+
+    float2 randVal = float2(nextRand(randSeed), nextRand(randSeed));
+
+    float z = randVal.x * (1.0f - cosAngle) + cosAngle;
+    float phi = randVal.y * 2.0f * 3.14159265f;
+
+    float x = sqrt(1.0f - z * z) * cos(phi);
+    float y = sqrt(1.0f - z * z) * sin(phi);
+    float3 north = float3(0.f, 0.f, 1.f);
+
+	// Find the rotation axis `u` and rotation angle `rot` [1]
+    float3 axis = normalize(cross(north, toLight));
+    float angle = acos(dot(toLight, north));
+
+	// Convert rotation axis and angle to 3x3 rotation matrix [2]
+    float3x3 R = angleAxis3x3(angle, axis);
+
+    return mul(R, float3(x, y, z));
 }
 
 // Get a cosine-weighted random vector centered around a specified normal direction.
@@ -193,6 +259,12 @@ float3 getCosHemisphereSample(inout uint randSeed, float3 hitNorm)
 
 	// Get our cosine-weighted hemisphere lobe sample direction
     return tangent * (r * cos(phi).x) + bitangent * (r * sin(phi)) + hitNorm.xyz * sqrt(1 - randVal.x);
+}
+
+float3 fresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
+{
+    float cosi = saturate(dot(-I, N));
+    return f0 + (1 - f0) * pow(1 - cosi, 5);
 }
 
 float3 traceGIRay(Ray ray, uint depth, uint seed)
@@ -241,8 +313,13 @@ bool traceShadowRay(Ray ray)
     return payload.hit;
 }
 
-float4 traceRadianceRay(Ray ray)
+float4 traceRadianceRay(Ray ray, in uint currentRayRecursionDepth)
 {
+    if (currentRayRecursionDepth >= other.maxRecursionDepth)
+    {
+        return 0;
+    }
+    
     RayDesc rayDesc;
     rayDesc.Origin = ray.origin;
     rayDesc.Direction = ray.direction;
@@ -250,6 +327,7 @@ float4 traceRadianceRay(Ray ray)
     rayDesc.TMax = ray.max;
     
     RayPayload payload;
+    payload.recursionDepth = currentRayRecursionDepth + 1;
     TraceRay(as, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xff, 0, 0, 0, rayDesc, payload);
     
     return payload.color;
@@ -345,7 +423,7 @@ void rayGen()
     ray.min = camera.nearPlane;
     ray.max = camera.farPlane;
     
-    float4 color = traceRadianceRay(ray);
+    float4 color = traceRadianceRay(ray, 0);
     
     if (other.pathTracerSampleIndex == 0)
     {
@@ -397,9 +475,31 @@ void closestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     Vertex vertex = getVertex(vertexArray[node.vertexBuffer], indexArray[node.indexBuffer], PrimitiveIndex(), barycentricCoords);
     vertex.position = hitWorldPosition();
     
+    float3 N = normalize(vertex.normal);
+    float3 T = normalize(vertex.tangent.xyz);
+    float3 B = cross(vertex.normal, vertex.tangent.xyz) * vertex.tangent.w;
+    float3x3 TBN = float3x3(T, B, N);
+    vertex.normal = mul(normalize(textureArray[node.normalTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0).xyz * 2.0 - float3(1.0, 1.0, 1.0)), TBN);
+    
     float4 albedo = textureArray[node.baseColorTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0) * float4(vertex.color, 1.0);
     
-    float4 color = calculatePhongLighting(albedo, vertex.normal, 0.9, 0.7, 50);
+    float4 color = calculatePhongLighting(albedo, vertex.normal, other.diffuseCoef, other.specularCoef, other.specularPower);
+    
+    float roughness = textureArray[node.roughnessTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0).g;
+    
+    Ray ray;
+    ray.origin = vertex.position;
+    ray.direction = reflect(WorldRayDirection(), vertex.normal);
+    ray.direction = getConeSample(randSeed, vertex.position, vertex.position + ray.direction, roughness);
+    ray.min = camera.nearPlane;
+    ray.max = camera.farPlane;
+        
+    float4 reflectionColor = traceRadianceRay(ray, payload.recursionDepth);
+        
+    float3 fresnelR = fresnelReflectanceSchlick(WorldRayDirection(), vertex.normal, float3(0.5, 0.5, 0.5));
+    float4 reflectedColor = float4(fresnelR, 1) * reflectionColor;
+        
+    color = lerp(color, reflectedColor, other.reflectanceCoef);
     
     float ambientOcclusion = 0.0f;
     for (int i = 0; i < other.numRays; i++)
@@ -410,8 +510,8 @@ void closestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
         Ray ray;
         ray.origin = vertex.position;
         ray.direction = aoDir;
-        ray.min = 0.01;
-        ray.max = 0.4;
+        ray.min = other.aoRayMin;
+        ray.max = other.aoRadius;
         
         ambientOcclusion += traceAORay(ray);
     }
@@ -459,6 +559,12 @@ void giChs(inout GIRayPayload payload, in BuiltInTriangleIntersectionAttributes 
     Vertex vertex = getVertex(vertexArray[node.vertexBuffer], indexArray[node.indexBuffer], PrimitiveIndex(), barycentricCoords);
     vertex.position = hitWorldPosition();
     
+    float3 N = normalize(vertex.normal);
+    float3 T = normalize(vertex.tangent.xyz);
+    float3 B = cross(vertex.normal, vertex.tangent.xyz) * vertex.tangent.w;
+    float3x3 TBN = float3x3(T, B, N);
+    vertex.normal = mul(normalize(textureArray[node.normalTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0).xyz * 2.0 - float3(1.0, 1.0, 1.0)), TBN);
+    
     float4 albedo = textureArray[node.baseColorTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0) * float4(vertex.color, 1.0);
     
     float4 color = calculatePhongLighting(albedo, vertex.normal, 0.9, 0.7, 50);
@@ -472,8 +578,8 @@ void giChs(inout GIRayPayload payload, in BuiltInTriangleIntersectionAttributes 
         Ray ray;
         ray.origin = vertex.position;
         ray.direction = aoDir;
-        ray.min = 0.01;
-        ray.max = 0.4;
+        ray.min = other.aoRayMin;
+        ray.max = other.aoRadius;
         
         ambientOcclusion += traceAORay(ray);
     }
