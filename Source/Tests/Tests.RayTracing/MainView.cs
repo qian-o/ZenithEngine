@@ -298,6 +298,43 @@ internal sealed unsafe class MainView : View
     {
         _outputTextureView?.Dispose();
         _outputTexture?.Dispose();
+
+        _commandList.Dispose();
+        _pipeline.Dispose();
+        _resourceSet4.Dispose();
+        _resourceLayout4.Dispose();
+        _resourceSet3.Dispose();
+        _resourceLayout3.Dispose();
+        _resourceSet2.Dispose();
+        _resourceLayout2.Dispose();
+        _resourceSet1.Dispose();
+        _resourceLayout1.Dispose();
+        _resourceSet0.Dispose();
+        _resourceLayout0.Dispose();
+        _topLevel.Dispose();
+        _bottomLevel.Dispose();
+        _geometryNodesBuffer.Dispose();
+        _cameraBuffer.Dispose();
+
+        foreach (DeviceBuffer indexBuffer in _indexBuffers)
+        {
+            indexBuffer.Dispose();
+        }
+
+        foreach (DeviceBuffer vertexBuffer in _vertexBuffers)
+        {
+            vertexBuffer.Dispose();
+        }
+
+        foreach (TextureView textureView in _textureViews)
+        {
+            textureView.Dispose();
+        }
+
+        foreach (Texture texture in _textures)
+        {
+            texture.Dispose();
+        }
     }
 
     private void LoadGLTF(string path)

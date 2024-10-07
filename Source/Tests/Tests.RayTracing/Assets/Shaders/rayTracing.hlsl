@@ -152,7 +152,7 @@ void anyHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes attr
     GeometryNode node = geometryNodes[GeometryIndex()];
     
     Vertex vertex = getVertex(vertexArray[node.vertexBuffer], indexArray[node.indexBuffer], PrimitiveIndex(), barycentricCoords);
-
+    
     float4 color = textureArray[node.baseColorTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0) * float4(vertex.color, 1.0);
     
     if (node.alphaMask && color.a < node.alphaCutoff)
