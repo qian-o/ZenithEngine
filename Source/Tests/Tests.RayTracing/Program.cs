@@ -2,6 +2,7 @@
 using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.ImGui;
+using Hexa.NET.ImGui;
 using Tests.Core;
 
 namespace Tests.RayTracing;
@@ -87,6 +88,21 @@ internal sealed unsafe class Program
         foreach (View view in _views)
         {
             view.Render(e);
+        }
+
+        ImGui.Begin("Tests.RayTracing");
+        {
+            ImGui.Text($"FPS: {1.0f / e.DeltaTime}");
+
+            ImGui.Separator();
+
+            ImGui.Text($"Total Time: {e.TotalTime}");
+
+            ImGui.Separator();
+
+            ImGui.Text($"Delta Time: {e.DeltaTime}");
+
+            ImGui.End();
         }
     }
 
