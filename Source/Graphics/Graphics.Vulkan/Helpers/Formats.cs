@@ -163,7 +163,7 @@ internal static class Formats
 
         return kind switch
         {
-            ResourceKind.UniformBuffer => dynamic ? DescriptorType.UniformBufferDynamic : DescriptorType.UniformBuffer,
+            ResourceKind.ConstantBuffer => dynamic ? DescriptorType.UniformBufferDynamic : DescriptorType.UniformBuffer,
             ResourceKind.StorageBuffer => dynamic ? DescriptorType.StorageBufferDynamic : DescriptorType.StorageBuffer,
             ResourceKind.SampledImage => DescriptorType.SampledImage,
             ResourceKind.StorageImage => DescriptorType.StorageImage,

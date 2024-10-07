@@ -114,8 +114,8 @@ internal sealed unsafe class MainView : View
         _uniformBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<UniformBufferObject>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
         _normalBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Properties>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
 
-        ResourceLayoutElementDescription uboDescription = new("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex);
-        ResourceLayoutElementDescription normalDescription = new("properties", ResourceKind.UniformBuffer, ShaderStages.Fragment);
+        ResourceLayoutElementDescription uboDescription = new("ubo", ResourceKind.ConstantBuffer, ShaderStages.Vertex);
+        ResourceLayoutElementDescription normalDescription = new("properties", ResourceKind.ConstantBuffer, ShaderStages.Fragment);
         ResourceLayoutElementDescription msdfDescription = new("msdf", ResourceKind.SampledImage, ShaderStages.Fragment);
         ResourceLayoutElementDescription msdfSamplerDescription = new("msdfSampler", ResourceKind.Sampler, ShaderStages.Fragment);
 

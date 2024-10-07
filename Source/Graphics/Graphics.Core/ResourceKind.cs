@@ -3,9 +3,9 @@
 public enum ResourceKind : byte
 {
     /// <summary>
-    /// Bind as uniform buffer.
+    /// Bind as constant buffer.
     /// </summary>
-    UniformBuffer,
+    ConstantBuffer,
 
     /// <summary>
     /// Bind as read-write storage buffer.

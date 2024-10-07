@@ -153,7 +153,7 @@ internal sealed unsafe class MainView : View
         _topLevel = device.Factory.CreateTopLevelAS(in topLevelASDescription);
 
         _resourceLayout0 = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("as", ResourceKind.AccelerationStructure, ShaderStages.RayGeneration),
-                                                                                             new ResourceLayoutElementDescription("camera", ResourceKind.UniformBuffer, ShaderStages.RayGeneration),
+                                                                                             new ResourceLayoutElementDescription("camera", ResourceKind.ConstantBuffer, ShaderStages.RayGeneration),
                                                                                              new ResourceLayoutElementDescription("geometryNodes", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit),
                                                                                              new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.RayGeneration)));
         _resourceSet0 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout0, _topLevel, _cameraBuffer, _geometryNodesBuffer));

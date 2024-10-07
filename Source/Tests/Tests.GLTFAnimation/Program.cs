@@ -325,7 +325,7 @@ internal sealed unsafe class Program
         _frameBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Frame>(1, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
         _nodeTransformBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Matrix4x4>(_worldSpaceMats.Length, BufferUsage.StorageBuffer | BufferUsage.Dynamic));
 
-        ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("frame", ResourceKind.UniformBuffer, ShaderStages.Vertex),
+        ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("frame", ResourceKind.ConstantBuffer, ShaderStages.Vertex),
                                                              new ResourceLayoutElementDescription("nodeTransform", ResourceKind.StorageBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
                                                                                              new ResourceLayoutElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
