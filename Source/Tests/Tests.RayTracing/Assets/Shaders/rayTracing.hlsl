@@ -1,4 +1,21 @@
-﻿struct Vertex
+﻿struct Camera
+{
+    float3 position;
+    
+    float3 forward;
+    
+    float3 right;
+    
+    float3 up;
+    
+    float nearPlane;
+    
+    float farPlane;
+    
+    float fov;
+};
+
+struct Vertex
 {
     float3 position;
     
@@ -36,8 +53,9 @@ struct Payload
 };
 
 RaytracingAccelerationStructure as : register(t0, space0);
-StructuredBuffer<GeometryNode> geometryNodes : register(t1, space0);
-RWTexture2D<float4> outputTexture : register(u2, space0);
+ConstantBuffer<Camera> camera : register(b1, space0);
+StructuredBuffer<GeometryNode> geometryNodes : register(t2, space0);
+RWTexture2D<float4> outputTexture : register(u3, space0);
 
 StructuredBuffer<Vertex> vertexArray[] : register(t0, space1);
 StructuredBuffer<uint> indexArray[] : register(t0, space2);
@@ -70,19 +88,13 @@ Vertex getVertex(StructuredBuffer<Vertex> vertexBuffer, StructuredBuffer<uint> i
 [shader("raygeneration")]
 void rayGen()
 {
-    const float fov = 45.0;
-    const float3 position = float3(0, 2.0, -2.0);
-    const float3 forward = normalize(float3(0, 0, 1));
-    const float3 right = normalize(cross(float3(0, 1, 0), forward));
-    const float3 up = cross(forward, right);
-    
     uint3 LaunchID = DispatchRaysIndex();
     uint3 LaunchSize = DispatchRaysDimensions();
     
     float x = LaunchID.x + 0.5;
     float y = LaunchID.y + 0.5;
     
-    float scale = tan(radians(fov));
+    float scale = tan(camera.fov);
     float aspectRatio = LaunchSize.x / float(LaunchSize.y);
     
     x = rangeMap(x, 0, LaunchSize.x - 1, -1.0, 1.0);
@@ -99,13 +111,11 @@ void rayGen()
         y *= scale / aspectRatio;
     }
     
-    float3 direction = normalize(forward + x * right + y * up);
-    
     RayDesc rayDesc;
-    rayDesc.Origin = position;
-    rayDesc.Direction = direction;
-    rayDesc.TMin = 0.001;
-    rayDesc.TMax = 10000.0;
+    rayDesc.Origin = camera.position;
+    rayDesc.Direction = normalize(camera.forward + x * camera.right + y * camera.up);
+    rayDesc.TMin = camera.nearPlane;
+    rayDesc.TMax = camera.farPlane;
     
     Payload payload;
     TraceRay(as, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xff, 0, 0, 0, rayDesc, payload);

@@ -22,6 +22,24 @@ namespace Tests.RayTracing;
 internal sealed unsafe class MainView : View
 {
     [StructLayout(LayoutKind.Sequential)]
+    private struct Camera
+    {
+        public Vector3 Position;
+
+        public Vector3 Forward;
+
+        public Vector3 Right;
+
+        public Vector3 Up;
+
+        public float NearPlane;
+
+        public float FarPlane;
+
+        public float Fov;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     private struct Vertex(Vector3 position, Vector3 normal, Vector2 texCoord, Vector3 color, Vector4 tangent)
     {
         public Vector3 Position = position;
@@ -57,6 +75,8 @@ internal sealed unsafe class MainView : View
 
     private readonly GraphicsDevice _device;
     private readonly ImGuiController _imGuiController;
+    private readonly ViewController _viewController;
+    private readonly CameraController _cameraController;
 
     private readonly List<Texture> _textures;
     private readonly List<TextureView> _textureViews;
@@ -65,6 +85,7 @@ internal sealed unsafe class MainView : View
     private readonly List<GeometryNode> _geometryNodes;
     private readonly List<AccelerationStructureTriangles> _triangles;
 
+    private readonly DeviceBuffer _cameraBuffer;
     private readonly DeviceBuffer _geometryNodesBuffer;
     private readonly BottomLevelAS _bottomLevel;
     private readonly TopLevelAS _topLevel;
@@ -81,6 +102,8 @@ internal sealed unsafe class MainView : View
     private readonly Pipeline _pipeline;
     private readonly CommandList _commandList;
 
+    private Camera _camera;
+
     private Texture? _outputTexture;
     private TextureView? _outputTextureView;
 
@@ -88,6 +111,8 @@ internal sealed unsafe class MainView : View
     {
         _device = device;
         _imGuiController = imGuiController;
+        _viewController = new ViewController(this);
+        _cameraController = new CameraController(_viewController);
 
         _textures = [];
         _textureViews = [];
@@ -98,6 +123,7 @@ internal sealed unsafe class MainView : View
 
         LoadGLTF("Assets/Models/Sponza/glTF/Sponza.gltf");
 
+        _cameraBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Camera>(1, BufferUsage.UniformBuffer));
         _geometryNodesBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<GeometryNode>(_geometryNodes.Count, BufferUsage.StorageBuffer));
         device.UpdateBuffer(_geometryNodesBuffer, _geometryNodes.ToArray());
 
@@ -127,9 +153,10 @@ internal sealed unsafe class MainView : View
         _topLevel = device.Factory.CreateTopLevelAS(in topLevelASDescription);
 
         _resourceLayout0 = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("as", ResourceKind.AccelerationStructure, ShaderStages.RayGeneration),
+                                                                                             new ResourceLayoutElementDescription("camera", ResourceKind.UniformBuffer, ShaderStages.RayGeneration),
                                                                                              new ResourceLayoutElementDescription("geometryNodes", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit),
                                                                                              new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.RayGeneration)));
-        _resourceSet0 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout0, _topLevel, _geometryNodesBuffer));
+        _resourceSet0 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout0, _topLevel, _cameraBuffer, _geometryNodesBuffer));
 
         _resourceLayout1 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_vertexBuffers.Count, new ResourceLayoutElementDescription("vertexArray", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
         _resourceSet1 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout1));
@@ -185,10 +212,40 @@ internal sealed unsafe class MainView : View
         {
             shader.Dispose();
         }
+
+        _camera = new Camera()
+        {
+            Position = _cameraController.Position,
+            Forward = _cameraController.Forward,
+            Right = _cameraController.Right,
+            Up = _cameraController.Up,
+            NearPlane = _cameraController.NearPlane,
+            FarPlane = _cameraController.FarPlane,
+            Fov = _cameraController.FovRadians
+        };
     }
 
     protected override void OnUpdate(UpdateEventArgs e)
     {
+        _viewController.Update();
+        _cameraController.Update(e.DeltaTime);
+
+        if (ImGui.Begin("Properties"))
+        {
+            _cameraController.ShowEditor();
+
+            ImGui.End();
+        }
+
+        _camera.Position = _cameraController.Position;
+        _camera.Forward = _cameraController.Forward;
+        _camera.Right = _cameraController.Right;
+        _camera.Up = _cameraController.Up;
+        _camera.NearPlane = _cameraController.NearPlane;
+        _camera.FarPlane = _cameraController.FarPlane;
+        _camera.Fov = _cameraController.FovRadians;
+
+        _device.UpdateBuffer(_cameraBuffer, in _camera);
     }
 
     protected override void OnRender(RenderEventArgs e)
@@ -234,7 +291,7 @@ internal sealed unsafe class MainView : View
 
         _outputTextureView = _device.Factory.CreateTextureView(_outputTexture);
 
-        _resourceSet0.UpdateSet(_outputTextureView, 2);
+        _resourceSet0.UpdateSet(_outputTextureView, 3);
     }
 
     protected override void Destroy()
