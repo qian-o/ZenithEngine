@@ -281,7 +281,7 @@ internal sealed unsafe class MainView : View
     private readonly List<DeviceBuffer> _vertexBuffers;
     private readonly List<DeviceBuffer> _indexBuffers;
     private readonly List<GeometryNode> _geometryNodes;
-    private readonly List<AccelerationStructureTriangles> _triangles;
+    private readonly List<ASTriangles> _triangles;
     private readonly List<Light> _lights;
 
     private readonly DeviceBuffer _cameraBuffer;
@@ -356,20 +356,20 @@ internal sealed unsafe class MainView : View
 
         _bottomLevel = device.Factory.CreateBottomLevelAS(in bottomLevelASDescription);
 
-        AccelerationStructureInstance accelerationStructureInstance = new()
+        ASInstance instance = new()
         {
             Transform4x4 = Matrix4x4.Identity,
             InstanceID = 0,
             InstanceMask = 0xFF,
             InstanceContributionToHitGroupIndex = 0,
-            Mask = AccelerationStructureInstanceMask.None,
+            Mask = ASInstanceMask.None,
             BottonLevel = _bottomLevel
         };
 
         TopLevelASDescription topLevelASDescription = new()
         {
-            Instances = [accelerationStructureInstance],
-            Mask = AccelerationStructureBuildMask.PreferFastTrace
+            Instances = [instance],
+            Mask = ASBuildMask.PreferFastTrace
         };
 
         _topLevel = device.Factory.CreateTopLevelAS(in topLevelASDescription);
@@ -856,7 +856,7 @@ internal sealed unsafe class MainView : View
                 }
             }
 
-            AccelerationStructureTriangles accelerationStructureTriangles = new()
+            ASTriangles triangles = new()
             {
                 VertexBuffer = vertexBuffer,
                 VertexFormat = PixelFormat.R32G32B32Float,
@@ -873,7 +873,7 @@ internal sealed unsafe class MainView : View
             _vertexBuffers.Add(vertexBuffer);
             _indexBuffers.Add(indexBuffer);
             _geometryNodes.Add(geometryNode);
-            _triangles.Add(accelerationStructureTriangles);
+            _triangles.Add(triangles);
         }
     }
 }

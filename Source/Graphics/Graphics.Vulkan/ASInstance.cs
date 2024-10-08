@@ -10,7 +10,7 @@ namespace Graphics.Vulkan;
 /// directly into GPU memory from compute shaders for instance, following the same
 /// layout.
 /// </summary>
-public class AccelerationStructureInstance
+public class ASInstance
 {
     /// <summary>
     /// the bottom-level acceleration structure that is being instanced.
@@ -38,7 +38,7 @@ public class AccelerationStructureInstance
     /// Flags from Evergine.Common.Graphics.Raytracing.AccelerationStructureInstanceFlags
     /// to apply to the instance.
     /// </summary>
-    public AccelerationStructureInstanceMask Mask { get; set; }
+    public ASInstanceMask Mask { get; set; }
 
     /// <summary>
     /// A 4x4 transform matrix in row major layout representing the instance-to-world

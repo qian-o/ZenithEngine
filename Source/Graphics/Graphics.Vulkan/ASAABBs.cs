@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Vulkan;
 
-public class AccelerationStructureAABBs : AccelerationStructureGeometry
+public class ASAABBs : ASGeometry
 {
     public required DeviceBuffer AABBs { get; set; }
 

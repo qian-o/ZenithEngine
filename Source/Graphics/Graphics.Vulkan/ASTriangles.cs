@@ -3,7 +3,7 @@ using Graphics.Core;
 
 namespace Graphics.Vulkan;
 
-public class AccelerationStructureTriangles : AccelerationStructureGeometry
+public class ASTriangles : ASGeometry
 {
     public required DeviceBuffer VertexBuffer { get; set; }
 

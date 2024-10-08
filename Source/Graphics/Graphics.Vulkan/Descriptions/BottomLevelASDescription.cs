@@ -2,10 +2,10 @@
 
 public record struct BottomLevelASDescription
 {
-    public BottomLevelASDescription(params AccelerationStructureGeometry[] geometries)
+    public BottomLevelASDescription(params ASGeometry[] geometries)
     {
         Geometries = geometries;
     }
 
-    public AccelerationStructureGeometry[] Geometries { get; set; }
+    public ASGeometry[] Geometries { get; set; }
 }

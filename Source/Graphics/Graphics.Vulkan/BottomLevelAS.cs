@@ -16,9 +16,9 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
 
         for (int i = 0; i < description.Geometries.Length; i++)
         {
-            AccelerationStructureGeometry accelerationStructureGeometry = description.Geometries[i];
+            ASGeometry geometry = description.Geometries[i];
 
-            if (accelerationStructureGeometry is AccelerationStructureTriangles triangles)
+            if (geometry is ASTriangles triangles)
             {
                 TransformMatrixKHR transform = Util.GetTransformMatrix(triangles.Transform);
 
@@ -26,24 +26,24 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
             }
         }
 
-        AccelerationStructureGeometryKHR[] asGeometries = new AccelerationStructureGeometryKHR[description.Geometries.Length];
-        AccelerationStructureBuildRangeInfoKHR[] asBuildRangeInfos = new AccelerationStructureBuildRangeInfoKHR[description.Geometries.Length];
+        AccelerationStructureGeometryKHR[] geometries = new AccelerationStructureGeometryKHR[description.Geometries.Length];
+        AccelerationStructureBuildRangeInfoKHR[] buildRangeInfos = new AccelerationStructureBuildRangeInfoKHR[description.Geometries.Length];
         uint[] maxPrimitiveCounts = new uint[description.Geometries.Length];
 
         for (int i = 0; i < description.Geometries.Length; i++)
         {
-            AccelerationStructureGeometry accelerationStructureGeometry = description.Geometries[i];
+            ASGeometry geometry = description.Geometries[i];
 
-            AccelerationStructureGeometryKHR asGeometry;
-            AccelerationStructureBuildRangeInfoKHR asBuildRangeInfo;
+            AccelerationStructureGeometryKHR geometryKhr;
+            AccelerationStructureBuildRangeInfoKHR buildRangeInfoKhr;
 
-            if (accelerationStructureGeometry is AccelerationStructureTriangles triangles)
+            if (geometry is ASTriangles triangles)
             {
                 ulong vertexAddress = triangles.VertexBuffer.Address + triangles.VertexOffset;
                 ulong indexAddress = triangles.IndexBuffer != null ? triangles.IndexBuffer.Address + triangles.IndexOffset : 0;
                 ulong transformAddress = transformBuffer.Address + (uint)(i * sizeof(TransformMatrixKHR));
 
-                asGeometry = new AccelerationStructureGeometryKHR
+                geometryKhr = new AccelerationStructureGeometryKHR
                 {
                     SType = StructureType.AccelerationStructureGeometryKhr,
                     Flags = Formats.GetGeometryFlags(triangles.Mask),
@@ -73,7 +73,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                     }
                 };
 
-                asBuildRangeInfo = new AccelerationStructureBuildRangeInfoKHR
+                buildRangeInfoKhr = new AccelerationStructureBuildRangeInfoKHR
                 {
                     PrimitiveCount = (triangles.IndexBuffer != null) ? (triangles.IndexCount / 3) : (triangles.VertexCount / 3),
                     PrimitiveOffset = 0,
@@ -81,9 +81,9 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                     TransformOffset = 0
                 };
             }
-            else if (accelerationStructureGeometry is AccelerationStructureAABBs aabbs)
+            else if (geometry is ASAABBs aabbs)
             {
-                asGeometry = new AccelerationStructureGeometryKHR
+                geometryKhr = new AccelerationStructureGeometryKHR
                 {
                     SType = StructureType.AccelerationStructureGeometryKhr,
                     Flags = Formats.GetGeometryFlags(aabbs.Mask),
@@ -102,7 +102,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                     }
                 };
 
-                asBuildRangeInfo = new AccelerationStructureBuildRangeInfoKHR
+                buildRangeInfoKhr = new AccelerationStructureBuildRangeInfoKHR
                 {
                     PrimitiveCount = (uint)aabbs.Count,
                     PrimitiveOffset = aabbs.Offset,
@@ -115,81 +115,82 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                 throw new NotSupportedException("Geometry type not supported.");
             }
 
-            asGeometries[i] = asGeometry;
-            asBuildRangeInfos[i] = asBuildRangeInfo;
-            maxPrimitiveCounts[i] = asBuildRangeInfo.PrimitiveCount;
+            geometries[i] = geometryKhr;
+            buildRangeInfos[i] = buildRangeInfoKhr;
+            maxPrimitiveCounts[i] = buildRangeInfoKhr.PrimitiveCount;
         }
 
-        AccelerationStructureBuildGeometryInfoKHR asBuildGeometryInfo = new()
+        AccelerationStructureBuildGeometryInfoKHR buildGeometryInfo = new()
         {
             SType = StructureType.AccelerationStructureBuildGeometryInfoKhr,
             Type = AccelerationStructureTypeKHR.BottomLevelKhr,
-            GeometryCount = (uint)asGeometries.Length,
-            PGeometries = asGeometries.AsPointer(),
+            GeometryCount = (uint)geometries.Length,
+            PGeometries = geometries.AsPointer(),
             Flags = BuildAccelerationStructureFlagsKHR.PreferFastTraceBitKhr
         };
-        AccelerationStructureBuildSizesInfoKHR asBuildSizesInfo = new()
+
+        AccelerationStructureBuildSizesInfoKHR buildSizesInfo = new()
         {
             SType = StructureType.AccelerationStructureBuildSizesInfoKhr
         };
 
         VkRes.KhrAccelerationStructure.GetAccelerationStructureBuildSizes(VkRes.VkDevice,
                                                                           AccelerationStructureBuildTypeKHR.DeviceKhr,
-                                                                          &asBuildGeometryInfo,
+                                                                          &buildGeometryInfo,
                                                                           maxPrimitiveCounts.AsPointer(),
-                                                                          &asBuildSizesInfo);
+                                                                          &buildSizesInfo);
 
         DeviceBuffer asBuffer = new(VkRes,
                                     BufferUsageFlags.AccelerationStructureStorageBitKhr,
-                                    (uint)asBuildSizesInfo.AccelerationStructureSize,
+                                    (uint)buildSizesInfo.AccelerationStructureSize,
                                     false);
 
-        AccelerationStructureCreateInfoKHR asCreateInfo = new()
+        AccelerationStructureCreateInfoKHR createInfo = new()
         {
             SType = StructureType.AccelerationStructureCreateInfoKhr,
             Buffer = asBuffer.Handle,
-            Size = asBuildSizesInfo.AccelerationStructureSize,
+            Size = buildSizesInfo.AccelerationStructureSize,
             Type = AccelerationStructureTypeKHR.BottomLevelKhr
         };
 
-        AccelerationStructureKHR bottomLevelAS;
-        VkRes.KhrAccelerationStructure.CreateAccelerationStructure(VkRes.VkDevice, &asCreateInfo, null, &bottomLevelAS).ThrowCode();
+        AccelerationStructureKHR blas;
+        VkRes.KhrAccelerationStructure.CreateAccelerationStructure(VkRes.VkDevice, &createInfo, null, &blas).ThrowCode();
 
-        AccelerationStructureDeviceAddressInfoKHR asDeviceAddressInfo = new()
+        AccelerationStructureDeviceAddressInfoKHR deviceAddressInfo = new()
         {
             SType = StructureType.AccelerationStructureDeviceAddressInfoKhr,
-            AccelerationStructure = bottomLevelAS
+            AccelerationStructure = blas
         };
 
-        ulong bottomLevelASAddress = VkRes.KhrAccelerationStructure.GetAccelerationStructureDeviceAddress(VkRes.VkDevice, &asDeviceAddressInfo);
+        ulong blasAddress = VkRes.KhrAccelerationStructure.GetAccelerationStructureDeviceAddress(VkRes.VkDevice, &deviceAddressInfo);
 
         using DeviceBuffer scratchBuffer = new(VkRes,
                                                BufferUsageFlags.StorageBufferBit,
-                                               (uint)asBuildSizesInfo.BuildScratchSize,
+                                               (uint)buildSizesInfo.BuildScratchSize,
                                                false);
 
-        asBuildGeometryInfo.Mode = BuildAccelerationStructureModeKHR.BuildKhr;
-        asBuildGeometryInfo.DstAccelerationStructure = bottomLevelAS;
-        asBuildGeometryInfo.ScratchData = new DeviceOrHostAddressKHR
+        buildGeometryInfo.Mode = BuildAccelerationStructureModeKHR.BuildKhr;
+        buildGeometryInfo.DstAccelerationStructure = blas;
+        buildGeometryInfo.ScratchData = new DeviceOrHostAddressKHR
         {
             DeviceAddress = scratchBuffer.Address
         };
 
-        using StagingCommandPool stagingCommandPool = new(VkRes, VkRes.GraphicsDevice.GraphicsExecutor);
+        using StagingCommandPool commandPool = new(VkRes, VkRes.GraphicsDevice.GraphicsExecutor);
 
-        CommandBuffer commandBuffer = stagingCommandPool.BeginNewCommandBuffer();
+        CommandBuffer commandBuffer = commandPool.BeginNewCommandBuffer();
 
-        AccelerationStructureBuildRangeInfoKHR* pAsBuildRangeInfos = asBuildRangeInfos.AsPointer();
+        AccelerationStructureBuildRangeInfoKHR* pBuildRangeInfos = buildRangeInfos.AsPointer();
 
         VkRes.KhrAccelerationStructure.CmdBuildAccelerationStructures(commandBuffer,
                                                                       1,
-                                                                      &asBuildGeometryInfo,
-                                                                      &pAsBuildRangeInfos);
+                                                                      &buildGeometryInfo,
+                                                                      &pBuildRangeInfos);
 
-        stagingCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
+        commandPool.EndAndSubmitCommandBuffer(commandBuffer);
 
-        Handle = bottomLevelAS;
-        Address = bottomLevelASAddress;
+        Handle = blas;
+        Address = blasAddress;
         DeviceBuffer = asBuffer;
     }
 

@@ -9,20 +9,20 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
 {
     internal TopLevelAS(VulkanResources vkRes, ref readonly TopLevelASDescription description) : base(vkRes, ObjectType.AccelerationStructureKhr)
     {
-        AccelerationStructureInstanceKHR[] asInstances = new AccelerationStructureInstanceKHR[description.Instances.Length];
+        AccelerationStructureInstanceKHR[] instances = new AccelerationStructureInstanceKHR[description.Instances.Length];
 
         for (int i = 0; i < description.Instances.Length; i++)
         {
-            AccelerationStructureInstance asInstance = description.Instances[i];
+            ASInstance instance = description.Instances[i];
 
-            asInstances[i] = new()
+            instances[i] = new()
             {
-                Transform = Util.GetTransformMatrix(asInstance.Transform4x4),
-                InstanceCustomIndex = asInstance.InstanceID,
-                Mask = asInstance.InstanceMask,
-                InstanceShaderBindingTableRecordOffset = asInstance.InstanceContributionToHitGroupIndex,
-                AccelerationStructureReference = asInstance.BottonLevel.Address,
-                Flags = Formats.GetGeometryInstanceFlags(asInstance.Mask)
+                Transform = Util.GetTransformMatrix(instance.Transform4x4),
+                InstanceCustomIndex = instance.InstanceID,
+                Mask = instance.InstanceMask,
+                InstanceShaderBindingTableRecordOffset = instance.InstanceContributionToHitGroupIndex,
+                AccelerationStructureReference = instance.BottonLevel.Address,
+                Flags = Formats.GetGeometryInstanceFlags(instance.Mask)
             };
         }
 
@@ -31,9 +31,9 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
                                                 (uint)(sizeof(AccelerationStructureInstanceKHR) * description.Instances.Length),
                                                 true);
 
-        vkRes.GraphicsDevice.UpdateBuffer(instanceBuffer, asInstances);
+        vkRes.GraphicsDevice.UpdateBuffer(instanceBuffer, instances);
 
-        AccelerationStructureGeometryKHR asGeometry = new()
+        AccelerationStructureGeometryKHR geometry = new()
         {
             SType = StructureType.AccelerationStructureGeometryKhr,
             Flags = GeometryFlagsKHR.OpaqueBitKhr,
@@ -52,16 +52,16 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
             }
         };
 
-        AccelerationStructureBuildGeometryInfoKHR asBuildGeometryInfo = new()
+        AccelerationStructureBuildGeometryInfoKHR buildGeometryInfo = new()
         {
             SType = StructureType.AccelerationStructureBuildGeometryInfoKhr,
             Type = AccelerationStructureTypeKHR.TopLevelKhr,
             GeometryCount = 1,
-            PGeometries = &asGeometry,
+            PGeometries = &geometry,
             Flags = Formats.GetBuildAccelerationStructureFlags(description.Mask)
         };
 
-        AccelerationStructureBuildRangeInfoKHR asBuildRangeInfo = new()
+        AccelerationStructureBuildRangeInfoKHR buildRangeInfo = new()
         {
             PrimitiveCount = (uint)description.Instances.Length,
             PrimitiveOffset = description.Offset,
@@ -69,67 +69,67 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
             TransformOffset = 0
         };
 
-        AccelerationStructureBuildSizesInfoKHR asBuildSizesInfo = new()
+        AccelerationStructureBuildSizesInfoKHR buildSizesInfo = new()
         {
             SType = StructureType.AccelerationStructureBuildSizesInfoKhr
         };
 
         VkRes.KhrAccelerationStructure.GetAccelerationStructureBuildSizes(VkRes.VkDevice,
                                                                           AccelerationStructureBuildTypeKHR.DeviceKhr,
-                                                                          &asBuildGeometryInfo,
-                                                                          &asBuildRangeInfo.PrimitiveCount,
-                                                                          &asBuildSizesInfo);
+                                                                          &buildGeometryInfo,
+                                                                          &buildRangeInfo.PrimitiveCount,
+                                                                          &buildSizesInfo);
 
         DeviceBuffer asBuffer = new(VkRes,
                                     BufferUsageFlags.AccelerationStructureStorageBitKhr,
-                                    (uint)asBuildSizesInfo.AccelerationStructureSize,
+                                    (uint)buildSizesInfo.AccelerationStructureSize,
                                     false);
 
-        AccelerationStructureCreateInfoKHR asCreateInfo = new()
+        AccelerationStructureCreateInfoKHR createInfo = new()
         {
             SType = StructureType.AccelerationStructureCreateInfoKhr,
             Buffer = asBuffer.Handle,
-            Size = asBuildSizesInfo.AccelerationStructureSize,
+            Size = buildSizesInfo.AccelerationStructureSize,
             Type = AccelerationStructureTypeKHR.TopLevelKhr
         };
 
-        AccelerationStructureKHR topLevelAS;
-        VkRes.KhrAccelerationStructure.CreateAccelerationStructure(VkRes.VkDevice, &asCreateInfo, null, &topLevelAS).ThrowCode();
+        AccelerationStructureKHR tlas;
+        VkRes.KhrAccelerationStructure.CreateAccelerationStructure(VkRes.VkDevice, &createInfo, null, &tlas).ThrowCode();
 
         AccelerationStructureDeviceAddressInfoKHR asDeviceAddressInfo = new()
         {
             SType = StructureType.AccelerationStructureDeviceAddressInfoKhr,
-            AccelerationStructure = topLevelAS
+            AccelerationStructure = tlas
         };
 
         ulong topLevelASAddress = VkRes.KhrAccelerationStructure.GetAccelerationStructureDeviceAddress(VkRes.VkDevice, &asDeviceAddressInfo);
 
         using DeviceBuffer scratchBuffer = new(VkRes,
                                                BufferUsageFlags.StorageBufferBit,
-                                               (uint)asBuildSizesInfo.BuildScratchSize,
+                                               (uint)buildSizesInfo.BuildScratchSize,
                                                false);
 
-        asBuildGeometryInfo.Mode = BuildAccelerationStructureModeKHR.BuildKhr;
-        asBuildGeometryInfo.DstAccelerationStructure = topLevelAS;
-        asBuildGeometryInfo.ScratchData = new DeviceOrHostAddressKHR
+        buildGeometryInfo.Mode = BuildAccelerationStructureModeKHR.BuildKhr;
+        buildGeometryInfo.DstAccelerationStructure = tlas;
+        buildGeometryInfo.ScratchData = new DeviceOrHostAddressKHR
         {
             DeviceAddress = scratchBuffer.Address
         };
 
-        using StagingCommandPool stagingCommandPool = new(VkRes, VkRes.GraphicsDevice.GraphicsExecutor);
+        using StagingCommandPool commandPool = new(VkRes, VkRes.GraphicsDevice.GraphicsExecutor);
 
-        CommandBuffer commandBuffer = stagingCommandPool.BeginNewCommandBuffer();
+        CommandBuffer commandBuffer = commandPool.BeginNewCommandBuffer();
 
-        AccelerationStructureBuildRangeInfoKHR* pAsBuildRangeInfos = asBuildRangeInfo.AsPointer();
+        AccelerationStructureBuildRangeInfoKHR* pBuildRangeInfos = buildRangeInfo.AsPointer();
 
         VkRes.KhrAccelerationStructure.CmdBuildAccelerationStructures(commandBuffer,
                                                                       1,
-                                                                      &asBuildGeometryInfo,
-                                                                      &pAsBuildRangeInfos);
+                                                                      &buildGeometryInfo,
+                                                                      &pBuildRangeInfos);
 
-        stagingCommandPool.EndAndSubmitCommandBuffer(commandBuffer);
+        commandPool.EndAndSubmitCommandBuffer(commandBuffer);
 
-        Handle = topLevelAS;
+        Handle = tlas;
         Address = topLevelASAddress;
         DeviceBuffer = asBuffer;
     }
