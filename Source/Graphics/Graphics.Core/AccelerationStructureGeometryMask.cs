@@ -1,7 +1,7 @@
 ﻿namespace Graphics.Core;
 
 [Flags]
-public enum AsGeometryMask : byte
+public enum AccelerationStructureGeometryMask : byte
 {
     /// <summary>
     /// No flags.

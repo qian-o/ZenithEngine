@@ -38,7 +38,7 @@ public class AccelerationStructureInstance
     /// Flags from Evergine.Common.Graphics.Raytracing.AccelerationStructureInstanceFlags
     /// to apply to the instance.
     /// </summary>
-    public AsInstanceMask Mask { get; set; }
+    public AccelerationStructureInstanceMask Mask { get; set; }
 
     /// <summary>
     /// A 4x4 transform matrix in row major layout representing the instance-to-world

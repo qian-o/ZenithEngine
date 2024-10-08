@@ -362,14 +362,14 @@ internal sealed unsafe class MainView : View
             InstanceID = 0,
             InstanceMask = 0xFF,
             InstanceContributionToHitGroupIndex = 0,
-            Mask = AsInstanceMask.None,
+            Mask = AccelerationStructureInstanceMask.None,
             BottonLevel = _bottomLevel
         };
 
         TopLevelASDescription topLevelASDescription = new()
         {
             Instances = [accelerationStructureInstance],
-            Mask = AsBuildMask.PreferFastTrace
+            Mask = AccelerationStructureBuildMask.PreferFastTrace
         };
 
         _topLevel = device.Factory.CreateTopLevelAS(in topLevelASDescription);
