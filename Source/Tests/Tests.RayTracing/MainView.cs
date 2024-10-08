@@ -1,11 +1,13 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
 using Graphics.Core;
+using Graphics.Core.RayTracing;
 using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Graphics.Vulkan.ImGui;
+using Graphics.Vulkan.RayTracing;
 using Hexa.NET.ImGui;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
@@ -281,7 +283,7 @@ internal sealed unsafe class MainView : View
     private readonly List<DeviceBuffer> _vertexBuffers;
     private readonly List<DeviceBuffer> _indexBuffers;
     private readonly List<GeometryNode> _geometryNodes;
-    private readonly List<ASTriangles> _triangles;
+    private readonly List<Triangles> _triangles;
     private readonly List<Light> _lights;
 
     private readonly DeviceBuffer _cameraBuffer;
@@ -356,20 +358,20 @@ internal sealed unsafe class MainView : View
 
         _bottomLevel = device.Factory.CreateBottomLevelAS(in bottomLevelASDescription);
 
-        ASInstance instance = new()
+        Instance instance = new()
         {
             Transform4x4 = Matrix4x4.Identity,
             InstanceID = 0,
             InstanceMask = 0xFF,
             InstanceContributionToHitGroupIndex = 0,
-            Mask = ASInstanceMask.None,
-            BottonLevel = _bottomLevel
+            Mask = InstanceMask.None,
+            BottomLevel = _bottomLevel
         };
 
         TopLevelASDescription topLevelASDescription = new()
         {
             Instances = [instance],
-            Mask = ASBuildMask.PreferFastTrace
+            Mask = BuildMask.PreferFastTrace
         };
 
         _topLevel = device.Factory.CreateTopLevelAS(in topLevelASDescription);
@@ -856,7 +858,7 @@ internal sealed unsafe class MainView : View
                 }
             }
 
-            ASTriangles triangles = new()
+            Triangles triangles = new()
             {
                 VertexBuffer = vertexBuffer,
                 VertexFormat = PixelFormat.R32G32B32Float,

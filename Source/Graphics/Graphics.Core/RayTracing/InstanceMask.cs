@@ -1,7 +1,7 @@
-﻿namespace Graphics.Core;
+﻿namespace Graphics.Core.RayTracing;
 
 [Flags]
-public enum ASInstanceMask : byte
+public enum InstanceMask : byte
 {
     /// <summary>
     /// No flags.

@@ -3,7 +3,7 @@ using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Vulkan.RayTracing;
 
 public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindableResource
 {
@@ -13,7 +13,7 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
 
         for (int i = 0; i < description.Instances.Length; i++)
         {
-            ASInstance instance = description.Instances[i];
+            Instance instance = description.Instances[i];
 
             instances[i] = new()
             {
@@ -21,7 +21,7 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
                 InstanceCustomIndex = instance.InstanceID,
                 Mask = instance.InstanceMask,
                 InstanceShaderBindingTableRecordOffset = instance.InstanceContributionToHitGroupIndex,
-                AccelerationStructureReference = instance.BottonLevel.Address,
+                AccelerationStructureReference = instance.BottomLevel.Address,
                 Flags = Formats.GetGeometryInstanceFlags(instance.Mask)
             };
         }

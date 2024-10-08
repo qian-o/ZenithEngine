@@ -1,9 +1,9 @@
 ﻿using System.Numerics;
 using Graphics.Core;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Vulkan.RayTracing;
 
-public class ASTriangles : ASGeometry
+public class Triangles : Geometry
 {
     public required DeviceBuffer VertexBuffer { get; set; }
 

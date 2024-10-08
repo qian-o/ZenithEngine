@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
-using Graphics.Core;
+using Graphics.Core.RayTracing;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Vulkan.RayTracing;
 
 /// <summary>
 /// This data structure is used in GPU memory during acceleration structure build.
@@ -10,12 +10,12 @@ namespace Graphics.Vulkan;
 /// directly into GPU memory from compute shaders for instance, following the same
 /// layout.
 /// </summary>
-public class ASInstance
+public class Instance
 {
     /// <summary>
     /// the bottom-level acceleration structure that is being instanced.
     /// </summary>
-    public required BottomLevelAS BottonLevel { get; set; }
+    public required BottomLevelAS BottomLevel { get; set; }
 
     /// <summary>
     /// An arbitrary 24-bit value that can be accessed via InstanceID() in shader.
@@ -38,7 +38,7 @@ public class ASInstance
     /// Flags from Evergine.Common.Graphics.Raytracing.AccelerationStructureInstanceFlags
     /// to apply to the instance.
     /// </summary>
-    public ASInstanceMask Mask { get; set; }
+    public InstanceMask Mask { get; set; }
 
     /// <summary>
     /// A 4x4 transform matrix in row major layout representing the instance-to-world

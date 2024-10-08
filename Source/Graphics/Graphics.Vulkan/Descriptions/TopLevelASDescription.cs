@@ -1,23 +1,24 @@
-﻿using Graphics.Core;
+﻿using Graphics.Core.RayTracing;
+using Graphics.Vulkan.RayTracing;
 
 namespace Graphics.Vulkan.Descriptions;
 
 public record struct TopLevelASDescription
 {
-    public TopLevelASDescription(ASBuildMask mask, ASInstance[] instances, uint offset)
+    public TopLevelASDescription(BuildMask mask, Instance[] instances, uint offset)
     {
         Mask = mask;
         Instances = instances;
         Offset = offset;
     }
 
-    public TopLevelASDescription(ASBuildMask mask, params ASInstance[] instances) : this(mask, instances, 0)
+    public TopLevelASDescription(BuildMask mask, params Instance[] instances) : this(mask, instances, 0)
     {
     }
 
-    public ASBuildMask Mask { get; set; }
+    public BuildMask Mask { get; set; }
 
-    public ASInstance[] Instances { get; set; }
+    public Instance[] Instances { get; set; }
 
     public uint Offset { get; set; }
 }

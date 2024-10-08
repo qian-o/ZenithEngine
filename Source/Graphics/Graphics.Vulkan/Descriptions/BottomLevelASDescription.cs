@@ -1,11 +1,13 @@
-﻿namespace Graphics.Vulkan.Descriptions;
+﻿using Graphics.Vulkan.RayTracing;
+
+namespace Graphics.Vulkan.Descriptions;
 
 public record struct BottomLevelASDescription
 {
-    public BottomLevelASDescription(params ASGeometry[] geometries)
+    public BottomLevelASDescription(params Geometry[] geometries)
     {
         Geometries = geometries;
     }
 
-    public ASGeometry[] Geometries { get; set; }
+    public Geometry[] Geometries { get; set; }
 }

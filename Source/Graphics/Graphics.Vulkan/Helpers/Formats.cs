@@ -1,4 +1,5 @@
 ﻿using Graphics.Core;
+using Graphics.Core.RayTracing;
 using Silk.NET.Vulkan;
 using BlendFactor = Graphics.Core.BlendFactor;
 using FrontFace = Graphics.Core.FrontFace;
@@ -572,16 +573,16 @@ internal static class Formats
         };
     }
 
-    public static GeometryFlagsKHR GetGeometryFlags(ASGeometryMask mask)
+    public static GeometryFlagsKHR GetGeometryFlags(GeometryMask mask)
     {
         GeometryFlagsKHR geometryFlags = GeometryFlagsKHR.None;
 
-        if (mask.HasFlag(ASGeometryMask.Opaque))
+        if (mask.HasFlag(GeometryMask.Opaque))
         {
             geometryFlags |= GeometryFlagsKHR.OpaqueBitKhr;
         }
 
-        if (mask.HasFlag(ASGeometryMask.NoDuplicateAnyHitInvocation))
+        if (mask.HasFlag(GeometryMask.NoDuplicateAnyHitInvocation))
         {
             geometryFlags |= GeometryFlagsKHR.NoDuplicateAnyHitInvocationBitKhr;
         }
@@ -589,26 +590,26 @@ internal static class Formats
         return geometryFlags;
     }
 
-    public static GeometryInstanceFlagsKHR GetGeometryInstanceFlags(ASInstanceMask mask)
+    public static GeometryInstanceFlagsKHR GetGeometryInstanceFlags(InstanceMask mask)
     {
         GeometryInstanceFlagsKHR geometryInstanceFlags = GeometryInstanceFlagsKHR.None;
 
-        if (mask.HasFlag(ASInstanceMask.TriangleCullDisable))
+        if (mask.HasFlag(InstanceMask.TriangleCullDisable))
         {
             geometryInstanceFlags |= GeometryInstanceFlagsKHR.TriangleFacingCullDisableBitKhr;
         }
 
-        if (mask.HasFlag(ASInstanceMask.TriangleFrontCounterClockwise))
+        if (mask.HasFlag(InstanceMask.TriangleFrontCounterClockwise))
         {
             geometryInstanceFlags |= GeometryInstanceFlagsKHR.TriangleFrontCounterclockwiseBitKhr;
         }
 
-        if (mask.HasFlag(ASInstanceMask.ForceOpaque))
+        if (mask.HasFlag(InstanceMask.ForceOpaque))
         {
             geometryInstanceFlags |= GeometryInstanceFlagsKHR.ForceOpaqueBitKhr;
         }
 
-        if (mask.HasFlag(ASInstanceMask.ForceNoOpaque))
+        if (mask.HasFlag(InstanceMask.ForceNoOpaque))
         {
             geometryInstanceFlags |= GeometryInstanceFlagsKHR.ForceNoOpaqueBitKhr;
         }
@@ -616,31 +617,31 @@ internal static class Formats
         return geometryInstanceFlags;
     }
 
-    public static BuildAccelerationStructureFlagsKHR GetBuildAccelerationStructureFlags(ASBuildMask mask)
+    public static BuildAccelerationStructureFlagsKHR GetBuildAccelerationStructureFlags(BuildMask mask)
     {
         BuildAccelerationStructureFlagsKHR buildAccelerationStructureFlags = BuildAccelerationStructureFlagsKHR.None;
 
-        if (mask.HasFlag(ASBuildMask.AllowUpdate) || mask.HasFlag(ASBuildMask.PerformUpdate))
+        if (mask.HasFlag(BuildMask.AllowUpdate) || mask.HasFlag(BuildMask.PerformUpdate))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.AllowUpdateBitKhr;
         }
 
-        if (mask.HasFlag(ASBuildMask.AllowCompactation))
+        if (mask.HasFlag(BuildMask.AllowCompactation))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.AllowCompactionBitKhr;
         }
 
-        if (mask.HasFlag(ASBuildMask.PreferFastTrace))
+        if (mask.HasFlag(BuildMask.PreferFastTrace))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.PreferFastTraceBitKhr;
         }
 
-        if (mask.HasFlag(ASBuildMask.PreferFastBuild))
+        if (mask.HasFlag(BuildMask.PreferFastBuild))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.PreferFastBuildBitKhr;
         }
 
-        if (mask.HasFlag(ASBuildMask.MinimizeMemory))
+        if (mask.HasFlag(BuildMask.MinimizeMemory))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.LowMemoryBitKhr;
         }

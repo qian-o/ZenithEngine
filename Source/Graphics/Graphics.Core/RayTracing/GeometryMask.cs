@@ -1,7 +1,7 @@
-﻿namespace Graphics.Core;
+﻿namespace Graphics.Core.RayTracing;
 
 [Flags]
-public enum ASGeometryMask : byte
+public enum GeometryMask : byte
 {
     /// <summary>
     /// No flags.

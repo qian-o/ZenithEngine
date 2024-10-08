@@ -1,5 +1,6 @@
 ﻿using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
+using Graphics.Vulkan.RayTracing;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;

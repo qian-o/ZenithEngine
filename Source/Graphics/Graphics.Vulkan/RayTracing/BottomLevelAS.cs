@@ -3,7 +3,7 @@ using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 
-namespace Graphics.Vulkan;
+namespace Graphics.Vulkan.RayTracing;
 
 public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBindableResource
 {
@@ -16,9 +16,9 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
 
         for (int i = 0; i < description.Geometries.Length; i++)
         {
-            ASGeometry geometry = description.Geometries[i];
+            Geometry geometry = description.Geometries[i];
 
-            if (geometry is ASTriangles triangles)
+            if (geometry is Triangles triangles)
             {
                 TransformMatrixKHR transform = Util.GetTransformMatrix(triangles.Transform);
 
@@ -32,12 +32,12 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
 
         for (int i = 0; i < description.Geometries.Length; i++)
         {
-            ASGeometry geometry = description.Geometries[i];
+            Geometry geometry = description.Geometries[i];
 
             AccelerationStructureGeometryKHR geometryKhr;
             AccelerationStructureBuildRangeInfoKHR buildRangeInfoKhr;
 
-            if (geometry is ASTriangles triangles)
+            if (geometry is Triangles triangles)
             {
                 ulong vertexAddress = triangles.VertexBuffer.Address + triangles.VertexOffset;
                 ulong indexAddress = triangles.IndexBuffer != null ? triangles.IndexBuffer.Address + triangles.IndexOffset : 0;
@@ -75,13 +75,13 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
 
                 buildRangeInfoKhr = new AccelerationStructureBuildRangeInfoKHR
                 {
-                    PrimitiveCount = (triangles.IndexBuffer != null) ? (triangles.IndexCount / 3) : (triangles.VertexCount / 3),
+                    PrimitiveCount = triangles.IndexBuffer != null ? triangles.IndexCount / 3 : triangles.VertexCount / 3,
                     PrimitiveOffset = 0,
                     FirstVertex = 0,
                     TransformOffset = 0
                 };
             }
-            else if (geometry is ASAABBs aabbs)
+            else if (geometry is AABBs aabbs)
             {
                 geometryKhr = new AccelerationStructureGeometryKHR
                 {
@@ -95,7 +95,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                             SType = StructureType.AccelerationStructureGeometryAabbsDataKhr,
                             Data = new DeviceOrHostAddressConstKHR
                             {
-                                DeviceAddress = aabbs.AABBs.Address
+                                DeviceAddress = aabbs.Buffer.Address
                             },
                             Stride = aabbs.Stride
                         }
