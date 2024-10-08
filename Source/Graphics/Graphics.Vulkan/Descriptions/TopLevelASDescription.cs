@@ -4,18 +4,18 @@ namespace Graphics.Vulkan.Descriptions;
 
 public record struct TopLevelASDescription
 {
-    public TopLevelASDescription(AccelerationStructureOptions options, AccelerationStructureInstance[] instances, uint offset)
+    public TopLevelASDescription(AsBuildMask mask, AccelerationStructureInstance[] instances, uint offset)
     {
-        Options = options;
+        Mask = mask;
         Instances = instances;
         Offset = offset;
     }
 
-    public TopLevelASDescription(AccelerationStructureOptions options, params AccelerationStructureInstance[] instances) : this(options, instances, 0)
+    public TopLevelASDescription(AsBuildMask mask, params AccelerationStructureInstance[] instances) : this(mask, instances, 0)
     {
     }
 
-    public AccelerationStructureOptions Options { get; set; }
+    public AsBuildMask Mask { get; set; }
 
     public AccelerationStructureInstance[] Instances { get; set; }
 

@@ -1,7 +1,7 @@
 ﻿namespace Graphics.Core;
 
 [Flags]
-public enum AccelerationStructureInstanceOptions : byte
+public enum AsInstanceMask : byte
 {
     /// <summary>
     /// No flags.

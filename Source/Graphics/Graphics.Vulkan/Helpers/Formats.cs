@@ -572,16 +572,16 @@ internal static class Formats
         };
     }
 
-    public static GeometryFlagsKHR GetGeometryFlags(AccelerationStructureGeometryOptions options)
+    public static GeometryFlagsKHR GetGeometryFlags(AsGeometryMask mask)
     {
         GeometryFlagsKHR geometryFlags = GeometryFlagsKHR.None;
 
-        if (options.HasFlag(AccelerationStructureGeometryOptions.Opaque))
+        if (mask.HasFlag(AsGeometryMask.Opaque))
         {
             geometryFlags |= GeometryFlagsKHR.OpaqueBitKhr;
         }
 
-        if (options.HasFlag(AccelerationStructureGeometryOptions.NoDuplicateAnyHitInvocation))
+        if (mask.HasFlag(AsGeometryMask.NoDuplicateAnyHitInvocation))
         {
             geometryFlags |= GeometryFlagsKHR.NoDuplicateAnyHitInvocationBitKhr;
         }
@@ -589,26 +589,26 @@ internal static class Formats
         return geometryFlags;
     }
 
-    public static GeometryInstanceFlagsKHR GetGeometryInstanceFlags(AccelerationStructureInstanceOptions options)
+    public static GeometryInstanceFlagsKHR GetGeometryInstanceFlags(AsInstanceMask mask)
     {
         GeometryInstanceFlagsKHR geometryInstanceFlags = GeometryInstanceFlagsKHR.None;
 
-        if (options.HasFlag(AccelerationStructureInstanceOptions.TriangleCullDisable))
+        if (mask.HasFlag(AsInstanceMask.TriangleCullDisable))
         {
             geometryInstanceFlags |= GeometryInstanceFlagsKHR.TriangleFacingCullDisableBitKhr;
         }
 
-        if (options.HasFlag(AccelerationStructureInstanceOptions.TriangleFrontCounterClockwise))
+        if (mask.HasFlag(AsInstanceMask.TriangleFrontCounterClockwise))
         {
             geometryInstanceFlags |= GeometryInstanceFlagsKHR.TriangleFrontCounterclockwiseBitKhr;
         }
 
-        if (options.HasFlag(AccelerationStructureInstanceOptions.ForceOpaque))
+        if (mask.HasFlag(AsInstanceMask.ForceOpaque))
         {
             geometryInstanceFlags |= GeometryInstanceFlagsKHR.ForceOpaqueBitKhr;
         }
 
-        if (options.HasFlag(AccelerationStructureInstanceOptions.ForceNoOpaque))
+        if (mask.HasFlag(AsInstanceMask.ForceNoOpaque))
         {
             geometryInstanceFlags |= GeometryInstanceFlagsKHR.ForceNoOpaqueBitKhr;
         }
@@ -616,31 +616,31 @@ internal static class Formats
         return geometryInstanceFlags;
     }
 
-    public static BuildAccelerationStructureFlagsKHR GetBuildAccelerationStructureFlags(AccelerationStructureOptions options)
+    public static BuildAccelerationStructureFlagsKHR GetBuildAccelerationStructureFlags(AsBuildMask mask)
     {
         BuildAccelerationStructureFlagsKHR buildAccelerationStructureFlags = BuildAccelerationStructureFlagsKHR.None;
 
-        if (options.HasFlag(AccelerationStructureOptions.AllowUpdate) || options.HasFlag(AccelerationStructureOptions.PerformUpdate))
+        if (mask.HasFlag(AsBuildMask.AllowUpdate) || mask.HasFlag(AsBuildMask.PerformUpdate))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.AllowUpdateBitKhr;
         }
 
-        if (options.HasFlag(AccelerationStructureOptions.AllowCompactation))
+        if (mask.HasFlag(AsBuildMask.AllowCompactation))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.AllowCompactionBitKhr;
         }
 
-        if (options.HasFlag(AccelerationStructureOptions.PreferFastTrace))
+        if (mask.HasFlag(AsBuildMask.PreferFastTrace))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.PreferFastTraceBitKhr;
         }
 
-        if (options.HasFlag(AccelerationStructureOptions.PreferFastBuild))
+        if (mask.HasFlag(AsBuildMask.PreferFastBuild))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.PreferFastBuildBitKhr;
         }
 
-        if (options.HasFlag(AccelerationStructureOptions.MinimizeMemory))
+        if (mask.HasFlag(AsBuildMask.MinimizeMemory))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.LowMemoryBitKhr;
         }

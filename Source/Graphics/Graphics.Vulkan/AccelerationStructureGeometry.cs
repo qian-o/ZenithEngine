@@ -4,5 +4,5 @@ namespace Graphics.Vulkan;
 
 public abstract class AccelerationStructureGeometry
 {
-    public AccelerationStructureGeometryOptions Options { get; set; }
+    public AsGeometryMask Mask { get; set; }
 }
