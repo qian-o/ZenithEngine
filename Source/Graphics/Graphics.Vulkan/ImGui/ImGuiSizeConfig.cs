@@ -27,6 +27,7 @@ public record struct ImGuiSizeConfig
         LogSliderDeadzone = 4.0f,
         TabRounding = 4.0f,
         TabMinWidthForCloseButton = 0.0f,
+        TabBarOverlineSize = 2.0f,
         SeparatorTextPadding = new Vector2(20, 3),
         DockingSeparatorSize = 2.0f,
         DisplayWindowPadding = new Vector2(19, 19),
@@ -74,6 +75,8 @@ public record struct ImGuiSizeConfig
 
     public float TabMinWidthForCloseButton { get; set; }
 
+    public float TabBarOverlineSize { get; set; }
+
     public Vector2 SeparatorTextPadding { get; set; }
 
     public float DockingSeparatorSize { get; set; }
@@ -108,6 +111,7 @@ public record struct ImGuiSizeConfig
             LogSliderDeadzone = ScaleFloat(LogSliderDeadzone, scale),
             TabRounding = ScaleFloat(TabRounding, scale),
             TabMinWidthForCloseButton = ScaleFloat(TabMinWidthForCloseButton, scale),
+            TabBarOverlineSize = ScaleFloat(TabBarOverlineSize, scale),
             SeparatorTextPadding = ScaleVector2(SeparatorTextPadding, scale),
             DockingSeparatorSize = ScaleFloat(DockingSeparatorSize, scale),
             DisplayWindowPadding = ScaleVector2(DisplayWindowPadding, scale),
@@ -140,6 +144,7 @@ public record struct ImGuiSizeConfig
         style.LogSliderDeadzone = LogSliderDeadzone;
         style.TabRounding = TabRounding;
         style.TabMinWidthForCloseButton = TabMinWidthForCloseButton;
+        style.TabBarOverlineSize = TabBarOverlineSize;
         style.SeparatorTextPadding = SeparatorTextPadding;
         style.DockingSeparatorSize = DockingSeparatorSize;
         style.DisplayWindowPadding = DisplayWindowPadding;
