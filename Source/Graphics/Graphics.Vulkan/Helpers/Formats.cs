@@ -157,9 +157,9 @@ internal static class Formats
         };
     }
 
-    public static DescriptorType GetDescriptorType(ResourceKind kind, ResourceLayoutElementOptions options)
+    public static DescriptorType GetDescriptorType(ResourceKind kind, ElementOptions options)
     {
-        bool dynamic = options.HasFlag(ResourceLayoutElementOptions.DynamicBinding);
+        bool dynamic = options.HasFlag(ElementOptions.DynamicBinding);
 
         return kind switch
         {

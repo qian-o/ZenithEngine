@@ -354,10 +354,10 @@ float4 mainPS(VSOutput input) : SV_TARGET
                                                               new VertexElementDescription("UV", VertexElementFormat.Float2),
                                                               new VertexElementDescription("Color", VertexElementFormat.Byte4Norm));
 
-        ResourceLayoutDescription set0 = new(new ResourceLayoutElementDescription("cbo", ResourceKind.ConstantBuffer, ShaderStages.Vertex),
-                                             new ResourceLayoutElementDescription("pointSampler", ResourceKind.Sampler, ShaderStages.Fragment));
+        ResourceLayoutDescription set0 = new(new ElementDescription("cbo", ResourceKind.ConstantBuffer, ShaderStages.Vertex),
+                                             new ElementDescription("pointSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
-        ResourceLayoutDescription set1 = new(new ResourceLayoutElementDescription("textureColor", ResourceKind.SampledImage, ShaderStages.Fragment));
+        ResourceLayoutDescription set1 = new(new ElementDescription("textureColor", ResourceKind.SampledImage, ShaderStages.Fragment));
 
         _layout0 = _factory.CreateResourceLayout(set0);
         _layout1 = _factory.CreateResourceLayout(set1);

@@ -2,7 +2,7 @@
 
 public record struct ResourceLayoutDescription
 {
-    public ResourceLayoutDescription(params ResourceLayoutElementDescription[] elements)
+    public ResourceLayoutDescription(params ElementDescription[] elements)
     {
         Elements = elements;
     }
@@ -10,7 +10,7 @@ public record struct ResourceLayoutDescription
     /// <summary>
     /// The array describes the elements in the resource layout.
     /// </summary>
-    public ResourceLayoutElementDescription[] Elements { get; set; }
+    public ElementDescription[] Elements { get; set; }
 
     /// <summary>
     /// Last element in the array is a bindless resource.
@@ -22,7 +22,7 @@ public record struct ResourceLayoutDescription
     /// </summary>
     public uint MaxDescriptorCount { get; set; }
 
-    public static ResourceLayoutDescription Bindless(uint maxDescriptorCount, params ResourceLayoutElementDescription[] elements)
+    public static ResourceLayoutDescription Bindless(uint maxDescriptorCount, params ElementDescription[] elements)
     {
         ResourceLayoutDescription description = new(elements)
         {

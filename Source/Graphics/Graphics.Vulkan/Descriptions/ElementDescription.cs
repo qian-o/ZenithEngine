@@ -2,12 +2,12 @@
 
 namespace Graphics.Vulkan.Descriptions;
 
-public record struct ResourceLayoutElementDescription
+public record struct ElementDescription
 {
-    public ResourceLayoutElementDescription(string name,
-                                            ResourceKind kind,
-                                            ShaderStages stages,
-                                            ResourceLayoutElementOptions options)
+    public ElementDescription(string name,
+                              ResourceKind kind,
+                              ShaderStages stages,
+                              ElementOptions options)
     {
         Name = name;
         Kind = kind;
@@ -15,9 +15,9 @@ public record struct ResourceLayoutElementDescription
         Options = options;
     }
 
-    public ResourceLayoutElementDescription(string name,
-                                            ResourceKind kind,
-                                            ShaderStages stages) : this(name, kind, stages, ResourceLayoutElementOptions.None)
+    public ElementDescription(string name,
+                              ResourceKind kind,
+                              ShaderStages stages) : this(name, kind, stages, ElementOptions.None)
     {
     }
 
@@ -39,5 +39,5 @@ public record struct ResourceLayoutElementDescription
     /// <summary>
     /// Miscellaneous resource options for this element.
     /// </summary>
-    public ResourceLayoutElementOptions Options { get; set; }
+    public ElementOptions Options { get; set; }
 }

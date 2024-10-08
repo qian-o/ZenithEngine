@@ -374,27 +374,27 @@ internal sealed unsafe class MainView : View
 
         _topLevel = device.Factory.CreateTopLevelAS(in topLevelASDescription);
 
-        _resourceLayout0 = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("as", ResourceKind.AccelerationStructure, ShaderStages.RayGeneration | ShaderStages.ClosestHit),
-                                                                                             new ResourceLayoutElementDescription("camera", ResourceKind.ConstantBuffer, ShaderStages.RayGeneration | ShaderStages.ClosestHit),
-                                                                                             new ResourceLayoutElementDescription("other", ResourceKind.ConstantBuffer, ShaderStages.RayGeneration | ShaderStages.ClosestHit),
-                                                                                             new ResourceLayoutElementDescription("lights", ResourceKind.StorageBuffer, ShaderStages.ClosestHit),
-                                                                                             new ResourceLayoutElementDescription("geometryNodes", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit),
-                                                                                             new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.RayGeneration)));
+        _resourceLayout0 = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ElementDescription("as", ResourceKind.AccelerationStructure, ShaderStages.RayGeneration | ShaderStages.ClosestHit),
+                                                                                             new ElementDescription("camera", ResourceKind.ConstantBuffer, ShaderStages.RayGeneration | ShaderStages.ClosestHit),
+                                                                                             new ElementDescription("other", ResourceKind.ConstantBuffer, ShaderStages.RayGeneration | ShaderStages.ClosestHit),
+                                                                                             new ElementDescription("lights", ResourceKind.StorageBuffer, ShaderStages.ClosestHit),
+                                                                                             new ElementDescription("geometryNodes", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit),
+                                                                                             new ElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.RayGeneration)));
         _resourceSet0 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout0, _topLevel, _cameraBuffer, _otherBuffer, _lightsBuffer, _geometryNodesBuffer));
 
-        _resourceLayout1 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_vertexBuffers.Count, new ResourceLayoutElementDescription("vertexArray", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
+        _resourceLayout1 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_vertexBuffers.Count, new ElementDescription("vertexArray", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
         _resourceSet1 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout1));
         _resourceSet1.UpdateBindless([.. _vertexBuffers]);
 
-        _resourceLayout2 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_indexBuffers.Count, new ResourceLayoutElementDescription("indexArray", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
+        _resourceLayout2 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_indexBuffers.Count, new ElementDescription("indexArray", ResourceKind.StorageBuffer, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
         _resourceSet2 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout2));
         _resourceSet2.UpdateBindless([.. _indexBuffers]);
 
-        _resourceLayout3 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_textureViews.Count, new ResourceLayoutElementDescription("textureArray", ResourceKind.SampledImage, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
+        _resourceLayout3 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_textureViews.Count, new ElementDescription("textureArray", ResourceKind.SampledImage, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
         _resourceSet3 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout3));
         _resourceSet3.UpdateBindless([.. _textureViews]);
 
-        _resourceLayout4 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless(2, new ResourceLayoutElementDescription("samplerArray", ResourceKind.Sampler, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
+        _resourceLayout4 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless(2, new ElementDescription("samplerArray", ResourceKind.Sampler, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
         _resourceSet4 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout4));
         _resourceSet4.UpdateBindless([device.Aniso4xSampler, device.LinearSampler]);
 

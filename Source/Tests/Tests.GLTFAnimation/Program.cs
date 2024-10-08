@@ -325,12 +325,12 @@ internal sealed unsafe class Program
         _frameBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Frame>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
         _nodeTransformBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Matrix4x4>(_worldSpaceMats.Length, BufferUsage.StorageBuffer | BufferUsage.Dynamic));
 
-        ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("frame", ResourceKind.ConstantBuffer, ShaderStages.Vertex),
-                                                             new ResourceLayoutElementDescription("nodeTransform", ResourceKind.StorageBuffer, ShaderStages.Vertex));
+        ResourceLayoutDescription uboLayoutDescription = new(new ElementDescription("frame", ResourceKind.ConstantBuffer, ShaderStages.Vertex),
+                                                             new ElementDescription("nodeTransform", ResourceKind.StorageBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
-                                                                                             new ResourceLayoutElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
+                                                                                             new ElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
         ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
-                                                                                                 new ResourceLayoutElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
+                                                                                                 new ElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
         _uboLayout = _device.Factory.CreateResourceLayout(in uboLayoutDescription);
         _uboSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_uboLayout, _frameBuffer, _nodeTransformBuffer));

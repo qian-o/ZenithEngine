@@ -14,7 +14,7 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
 
         for (uint i = 0; i < description.Elements.Length; i++)
         {
-            ResourceLayoutElementDescription element = description.Elements[i];
+            ElementDescription element = description.Elements[i];
 
             DescriptorSetLayoutBinding binding = new()
             {
