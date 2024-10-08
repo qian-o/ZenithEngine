@@ -370,9 +370,9 @@ float4 mainPS(VSOutput input) : SV_TARGET
             RasterizerState = RasterizerStateDescription.CullNone,
             PrimitiveTopology = PrimitiveTopology.TriangleList,
             ResourceLayouts = [_layout0, _layout1],
-            ShaderSet = new ShaderSetDescription([vertexLayoutDescription],
-                                                 shaders,
-                                                 [new SpecializationConstant(0, colorSpaceHandling == ColorSpaceHandling.Legacy)]),
+            Shaders = new GraphicsShaderDescription([vertexLayoutDescription],
+                                                    shaders,
+                                                    [new SpecializationConstant(0, colorSpaceHandling == ColorSpaceHandling.Legacy)]),
             Outputs = _graphicsDevice.MainSwapchain.OutputDescription
         };
 

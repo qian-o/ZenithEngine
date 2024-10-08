@@ -8,7 +8,7 @@ public record struct GraphicsPipelineDescription
                                        DepthStencilStateDescription depthStencilState,
                                        RasterizerStateDescription rasterizerState,
                                        PrimitiveTopology primitiveTopology,
-                                       ShaderSetDescription shaderSet,
+                                       GraphicsShaderDescription shaders,
                                        ResourceLayout[] resourceLayouts,
                                        OutputDescription outputs)
     {
@@ -16,7 +16,7 @@ public record struct GraphicsPipelineDescription
         DepthStencilState = depthStencilState;
         RasterizerState = rasterizerState;
         PrimitiveTopology = primitiveTopology;
-        ShaderSet = shaderSet;
+        Shaders = shaders;
         ResourceLayouts = resourceLayouts;
         Outputs = outputs;
     }
@@ -44,7 +44,7 @@ public record struct GraphicsPipelineDescription
     /// <summary>
     /// A description of the shader set to be used.
     /// </summary>
-    public ShaderSetDescription ShaderSet { get; set; }
+    public GraphicsShaderDescription Shaders { get; set; }
 
     /// <summary>
     /// This controls the resource layout of the shaders.

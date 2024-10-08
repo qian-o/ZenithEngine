@@ -2,16 +2,16 @@
 
 namespace Graphics.Vulkan.Descriptions;
 
-public record struct ShaderSetDescription
+public record struct GraphicsShaderDescription
 {
-    public ShaderSetDescription(VertexLayoutDescription[] vertexLayouts, Shader[] shaders, SpecializationConstant[] specializations)
+    public GraphicsShaderDescription(VertexLayoutDescription[] vertexLayouts, Shader[] shaders, SpecializationConstant[] specializations)
     {
         VertexLayouts = vertexLayouts;
         Shaders = shaders;
         Specializations = specializations;
     }
 
-    public ShaderSetDescription(VertexLayoutDescription[] vertexLayouts, Shader[] shaders) : this(vertexLayouts, shaders, [])
+    public GraphicsShaderDescription(VertexLayoutDescription[] vertexLayouts, Shader[] shaders) : this(vertexLayouts, shaders, [])
     {
     }
 

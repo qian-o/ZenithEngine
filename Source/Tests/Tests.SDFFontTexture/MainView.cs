@@ -237,7 +237,7 @@ internal sealed unsafe class MainView : View
             RasterizerState = RasterizerStateDescription.Default,
             PrimitiveTopology = PrimitiveTopology.TriangleList,
             ResourceLayouts = [_resourceLayout],
-            ShaderSet = new ShaderSetDescription(_vertexLayoutDescriptions, _shaders),
+            Shaders = new GraphicsShaderDescription(_vertexLayoutDescriptions, _shaders),
             Outputs = framebufferObject.Framebuffer.OutputDescription
         };
 

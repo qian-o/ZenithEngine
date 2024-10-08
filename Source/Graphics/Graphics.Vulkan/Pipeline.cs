@@ -146,8 +146,8 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
 
         // vertex input state
         {
-            uint bindingCount = (uint)description.ShaderSet.VertexLayouts.Length;
-            uint attributeCount = (uint)description.ShaderSet.VertexLayouts.Sum(x => x.Elements.Length);
+            uint bindingCount = (uint)description.Shaders.VertexLayouts.Length;
+            uint attributeCount = (uint)description.Shaders.VertexLayouts.Sum(x => x.Elements.Length);
 
             VertexInputBindingDescription[] bindingDescriptions = new VertexInputBindingDescription[bindingCount];
             VertexInputAttributeDescription[] attributeDescriptions = new VertexInputAttributeDescription[attributeCount];
@@ -156,7 +156,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
             uint targetLocation = 0;
             for (uint binding = 0; binding < bindingCount; binding++)
             {
-                VertexLayoutDescription vertexLayout = description.ShaderSet.VertexLayouts[binding];
+                VertexLayoutDescription vertexLayout = description.Shaders.VertexLayouts[binding];
 
                 bindingDescriptions[binding] = new VertexInputBindingDescription
                 {
@@ -198,8 +198,8 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
 
         // shader stage
         {
-            Shader[] shaders = description.ShaderSet.Shaders;
-            SpecializationConstant[] specializations = description.ShaderSet.Specializations;
+            Shader[] shaders = description.Shaders.Shaders;
+            SpecializationConstant[] specializations = description.Shaders.Specializations;
 
             SpecializationInfo specializationInfo = new();
             if (specializations.Length > 0)
