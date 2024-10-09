@@ -22,7 +22,7 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
                 Mask = instance.InstanceMask,
                 InstanceShaderBindingTableRecordOffset = instance.InstanceContributionToHitGroupIndex,
                 AccelerationStructureReference = instance.BottomLevel.Address,
-                Flags = Formats.GetGeometryInstanceFlags(instance.Mask)
+                Flags = Formats.GetGeometryInstanceFlags(instance.Type)
             };
         }
 
@@ -58,7 +58,7 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
             Type = AccelerationStructureTypeKHR.TopLevelKhr,
             GeometryCount = 1,
             PGeometries = &geometry,
-            Flags = Formats.GetBuildAccelerationStructureFlags(description.Mask)
+            Flags = Formats.GetBuildAccelerationStructureFlags(description.Options)
         };
 
         AccelerationStructureBuildRangeInfoKHR buildRangeInfo = new()

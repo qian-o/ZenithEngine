@@ -1,30 +1,26 @@
 ﻿namespace Graphics.Core.RayTracing;
 
-[Flags]
-public enum AccelStructInstanceMask : byte
+public enum AccelStructInstanceType : byte
 {
-    /// <summary>
-    /// No flags.
-    /// </summary>
-    None = 0,
+    None,
 
     /// <summary>
     /// Disables front/back face culling for this instance.
     /// </summary>
-    TriangleCullDisable = 1 << 0,
+    TriangleCullDisable,
 
     /// <summary>
     /// This flag reverses front and back facings.
     /// </summary>
-    TriangleFrontCounterClockwise = 1 << 1,
+    TriangleFrontCounterClockwise,
 
     /// <summary>
     /// Applied to all the geometries in the bottom-level acceleration structure referenced by the instance.
     /// </summary>
-    ForceOpaque = 1 << 2,
+    ForceOpaque,
 
     /// <summary>
     /// Applied to any of the geometries in the bottom-level acceleration structure referenced by the instance.
     /// </summary>
-    ForceNoOpaque = 1 << 3
+    ForceNoOpaque
 }

@@ -573,75 +573,53 @@ internal static class Formats
         };
     }
 
-    public static GeometryFlagsKHR GetGeometryFlags(AccelStructGeometryMask mask)
+    public static GeometryFlagsKHR GetGeometryFlags(AccelStructGeometryType type)
     {
-        GeometryFlagsKHR geometryFlags = GeometryFlagsKHR.None;
-
-        if (mask.HasFlag(AccelStructGeometryMask.Opaque))
+        return type switch
         {
-            geometryFlags |= GeometryFlagsKHR.OpaqueBitKhr;
-        }
-
-        if (mask.HasFlag(AccelStructGeometryMask.NoDuplicateAnyHitInvocation))
-        {
-            geometryFlags |= GeometryFlagsKHR.NoDuplicateAnyHitInvocationBitKhr;
-        }
-
-        return geometryFlags;
+            AccelStructGeometryType.Opaque => GeometryFlagsKHR.OpaqueBitKhr,
+            AccelStructGeometryType.NoDuplicateAnyHitInvocation => GeometryFlagsKHR.NoDuplicateAnyHitInvocationBitKhr,
+            _ => GeometryFlagsKHR.None
+        };
     }
 
-    public static GeometryInstanceFlagsKHR GetGeometryInstanceFlags(AccelStructInstanceMask mask)
+    public static GeometryInstanceFlagsKHR GetGeometryInstanceFlags(AccelStructInstanceType type)
     {
-        GeometryInstanceFlagsKHR geometryInstanceFlags = GeometryInstanceFlagsKHR.None;
-
-        if (mask.HasFlag(AccelStructInstanceMask.TriangleCullDisable))
+        return type switch
         {
-            geometryInstanceFlags |= GeometryInstanceFlagsKHR.TriangleFacingCullDisableBitKhr;
-        }
-
-        if (mask.HasFlag(AccelStructInstanceMask.TriangleFrontCounterClockwise))
-        {
-            geometryInstanceFlags |= GeometryInstanceFlagsKHR.TriangleFrontCounterclockwiseBitKhr;
-        }
-
-        if (mask.HasFlag(AccelStructInstanceMask.ForceOpaque))
-        {
-            geometryInstanceFlags |= GeometryInstanceFlagsKHR.ForceOpaqueBitKhr;
-        }
-
-        if (mask.HasFlag(AccelStructInstanceMask.ForceNoOpaque))
-        {
-            geometryInstanceFlags |= GeometryInstanceFlagsKHR.ForceNoOpaqueBitKhr;
-        }
-
-        return geometryInstanceFlags;
+            AccelStructInstanceType.TriangleCullDisable => GeometryInstanceFlagsKHR.TriangleFacingCullDisableBitKhr,
+            AccelStructInstanceType.TriangleFrontCounterClockwise => GeometryInstanceFlagsKHR.TriangleFrontCounterclockwiseBitKhr,
+            AccelStructInstanceType.ForceOpaque => GeometryInstanceFlagsKHR.ForceOpaqueBitKhr,
+            AccelStructInstanceType.ForceNoOpaque => GeometryInstanceFlagsKHR.ForceNoOpaqueBitKhr,
+            _ => GeometryInstanceFlagsKHR.None
+        };
     }
 
-    public static BuildAccelerationStructureFlagsKHR GetBuildAccelerationStructureFlags(AccelStructBuildMask mask)
+    public static BuildAccelerationStructureFlagsKHR GetBuildAccelerationStructureFlags(AccelStructBuildOptions options)
     {
         BuildAccelerationStructureFlagsKHR buildAccelerationStructureFlags = BuildAccelerationStructureFlagsKHR.None;
 
-        if (mask.HasFlag(AccelStructBuildMask.AllowUpdate) || mask.HasFlag(AccelStructBuildMask.PerformUpdate))
+        if (options.HasFlag(AccelStructBuildOptions.AllowUpdate) || options.HasFlag(AccelStructBuildOptions.PerformUpdate))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.AllowUpdateBitKhr;
         }
 
-        if (mask.HasFlag(AccelStructBuildMask.AllowCompactation))
+        if (options.HasFlag(AccelStructBuildOptions.AllowCompactation))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.AllowCompactionBitKhr;
         }
 
-        if (mask.HasFlag(AccelStructBuildMask.PreferFastTrace))
+        if (options.HasFlag(AccelStructBuildOptions.PreferFastTrace))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.PreferFastTraceBitKhr;
         }
 
-        if (mask.HasFlag(AccelStructBuildMask.PreferFastBuild))
+        if (options.HasFlag(AccelStructBuildOptions.PreferFastBuild))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.PreferFastBuildBitKhr;
         }
 
-        if (mask.HasFlag(AccelStructBuildMask.MinimizeMemory))
+        if (options.HasFlag(AccelStructBuildOptions.MinimizeMemory))
         {
             buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.LowMemoryBitKhr;
         }

@@ -4,5 +4,5 @@ namespace Graphics.Vulkan.RayTracing;
 
 public abstract class AccelStructGeometry
 {
-    public AccelStructGeometryMask Mask { get; set; }
+    public AccelStructGeometryType Type { get; set; }
 }

@@ -1,20 +1,16 @@
 ﻿namespace Graphics.Core.RayTracing;
 
-[Flags]
-public enum AccelStructGeometryMask : byte
+public enum AccelStructGeometryType : byte
 {
-    /// <summary>
-    /// No flags.
-    /// </summary>
-    None = 0,
+    None,
 
     /// <summary>
     /// Geometry is opaque.
     /// </summary>
-    Opaque = 1 << 0,
+    Opaque,
 
     /// <summary>
     /// Geometry is no duplicate.
     /// </summary>
-    NoDuplicateAnyHitInvocation = 1 << 1
+    NoDuplicateAnyHitInvocation
 }
