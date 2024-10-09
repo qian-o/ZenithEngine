@@ -1,7 +1,7 @@
 ﻿namespace Graphics.Core;
 
 [Flags]
-public enum BufferUsage : byte
+public enum BufferUsage : ushort
 {
     None = 0,
 
@@ -16,9 +16,9 @@ public enum BufferUsage : byte
     IndexBuffer = 1 << 1,
 
     /// <summary>
-    /// Indicates can be used as a uniform Buffer.
+    /// Indicates can be used as a constant Buffer.
     /// </summary>
-    UniformBuffer = 1 << 2,
+    ConstantBuffer = 1 << 2,
 
     /// <summary>
     /// Indicates can be used as a read-write storage Buffer.
@@ -43,5 +43,10 @@ public enum BufferUsage : byte
     /// <summary>
     /// Indicates will be used as a internal Buffer.
     /// </summary>
-    Internal = 1 << 7
+    Internal = 1 << 7,
+
+    /// <summary>
+    /// Indicates will be used in a RayTracing acceleration structure.
+    /// </summary>
+    AccelerationStructure = 1 << 8
 }

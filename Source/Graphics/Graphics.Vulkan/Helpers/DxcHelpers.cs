@@ -1,13 +1,11 @@
-﻿using System.Text;
-using Graphics.Core;
+﻿using Graphics.Core;
 using Graphics.Core.Helpers;
-using Graphics.Vulkan.Descriptions;
 using SharpGen.Runtime;
 using Vortice.Dxc;
 
 namespace Graphics.Vulkan.Helpers;
 
-internal static unsafe class DxcHelpers
+public static unsafe class DxcHelpers
 {
     private sealed class IncludeHandler(Func<string, byte[]>? includeResolver) : CallbackBase, IDxcIncludeHandler
     {
@@ -21,12 +19,12 @@ internal static unsafe class DxcHelpers
         }
     }
 
-    public static byte[] Compile(ref readonly ShaderDescription description, Func<string, byte[]>? includeResolver = null)
+    public static byte[] Compile(ShaderStages stage, string hlsl, string entryPoint, Func<string, byte[]>? includeResolver = null)
     {
         using IncludeHandler includeHandler = new(includeResolver);
 
-        IDxcResult result = DxcCompiler.Compile(Encoding.UTF8.GetString(description.ShaderBytes),
-                                                GetArguments(in description),
+        IDxcResult result = DxcCompiler.Compile(hlsl,
+                                                GetArguments(stage, entryPoint),
                                                 includeHandler);
 
         if (result.GetStatus() != Result.Ok)
@@ -37,21 +35,24 @@ internal static unsafe class DxcHelpers
         return result.GetResult().AsBytes();
     }
 
-    private static string[] GetArguments(ref readonly ShaderDescription shaderDescription)
+    private static string[] GetArguments(ShaderStages stage, string entryPoint)
     {
+        string shaderProfile = GetProfile(stage);
+        bool isLib = shaderProfile.Contains("lib");
+
         return
         [
+            "-fvk-use-scalar-layout",
             "-spirv",
-            "-T", GetProfile(in shaderDescription),
-            "-E", shaderDescription.EntryPoint,
-            $"-fspv-target-env=vulkan{Context.ApiVersion.Major}.{Context.ApiVersion.Minor}",
-            "-fvk-use-scalar-layout"
+            "-T", shaderProfile,
+             isLib ? string.Empty : "-E", entryPoint,
+            $"-fspv-target-env=vulkan{Context.ApiVersion.Major}.{Context.ApiVersion.Minor}"
          ];
     }
 
-    private static string GetProfile(ref readonly ShaderDescription shaderDescription)
+    private static string GetProfile(ShaderStages stage)
     {
-        return shaderDescription.Stage switch
+        return stage switch
         {
             ShaderStages.Vertex => "vs_6_3",
             ShaderStages.TessellationControl => "hs_6_3",
@@ -64,7 +65,8 @@ internal static unsafe class DxcHelpers
             ShaderStages.ClosestHit or
             ShaderStages.Miss or
             ShaderStages.Intersection or
-            ShaderStages.Callable => "lib_6_3",
+            ShaderStages.Callable or
+            ShaderStages.Library => "lib_6_3",
             _ => throw new NotSupportedException("Unsupported shader stage.")
         };
     }

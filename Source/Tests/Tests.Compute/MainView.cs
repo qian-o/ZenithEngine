@@ -9,6 +9,7 @@ using Graphics.Vulkan.Helpers;
 using Graphics.Vulkan.ImGui;
 using Hexa.NET.ImGui;
 using Tests.Core;
+using Tests.Core.Helpers;
 
 namespace Tests.Compute;
 
@@ -45,6 +46,7 @@ internal sealed unsafe class MainView : View
     }
 
     private readonly ViewController _viewController;
+    private readonly CameraController _cameraController;
 
     private readonly GraphicsDevice _device;
     private readonly ImGuiController _imGuiController;
@@ -61,33 +63,29 @@ internal sealed unsafe class MainView : View
 
     private Camera _camera;
 
-    private Vector2? lastMousePosition;
-
     public MainView(GraphicsDevice device, ImGuiController imGuiController) : base("Compute View")
     {
         _viewController = new ViewController(this)
         {
             UseDpiScale = false
         };
-        _viewController.MouseDown += MouseDown;
-        _viewController.MouseUp += MouseUp;
-        _viewController.MouseMove += MouseMove;
+        _cameraController = new CameraController(_viewController);
 
         string hlsl = File.ReadAllText("Assets/Shaders/SDF.hlsl");
 
         _device = device;
         _imGuiController = imGuiController;
 
-        _buffer = device.Factory.CreateBuffer(BufferDescription.UniformBuffer<Camera>(isDynamic: true));
+        _buffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Camera>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
 
-        _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ResourceLayoutElementDescription("camera", ResourceKind.UniformBuffer, ShaderStages.Compute),
-                                                                                            new ResourceLayoutElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.Compute)));
+        _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(new ElementDescription("camera", ResourceKind.ConstantBuffer, ShaderStages.Compute),
+                                                                                            new ElementDescription("outputTexture", ResourceKind.StorageImage, ShaderStages.Compute)));
 
         _resourceSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _buffer));
 
         ShaderDescription[] shaderDescriptions = [new ShaderDescription(ShaderStages.Compute, Encoding.UTF8.GetBytes(hlsl), "main")];
 
-        _shader = device.Factory.HlslToSpirv(shaderDescriptions, (path) =>
+        _shader = device.Factory.CreateShaderByHLSL(shaderDescriptions, (path) =>
         {
             return Encoding.UTF8.GetBytes(File.ReadAllText(Path.Combine("Assets/Shaders/", path)));
         }).First();
@@ -98,8 +96,8 @@ internal sealed unsafe class MainView : View
 
         _camera = new()
         {
-            Position = new Vector3(0.0f, 2.0f, 6.0f),
-            Forward = new Vector3(0.0f, 0.0f, -1.0f),
+            Position = _cameraController.Position = new Vector3(0.0f, 2.0f, 6.0f),
+            Forward = _cameraController.Forward = new Vector3(0.0f, 0.0f, -1.0f),
             Right = new Vector3(1.0f, 0.0f, 0.0f),
             Up = new Vector3(0.0f, 1.0f, 0.0f),
             NearPlane = 0.1f,
@@ -117,47 +115,11 @@ internal sealed unsafe class MainView : View
     protected override void OnUpdate(UpdateEventArgs e)
     {
         _viewController.Update();
-
-        if (ImGui.IsKeyDown(ImGuiKey.W))
-        {
-            _camera.Position += _camera.Forward * e.DeltaTime * 3.0f;
-        }
-
-        if (ImGui.IsKeyDown(ImGuiKey.S))
-        {
-            _camera.Position -= _camera.Forward * e.DeltaTime * 3.0f;
-        }
-
-        if (ImGui.IsKeyDown(ImGuiKey.A))
-        {
-            _camera.Position -= _camera.Right * e.DeltaTime * 3.0f;
-        }
-
-        if (ImGui.IsKeyDown(ImGuiKey.D))
-        {
-            _camera.Position += _camera.Right * e.DeltaTime * 3.0f;
-        }
-
-        if (ImGui.IsKeyDown(ImGuiKey.Q))
-        {
-            _camera.Position -= _camera.Up * e.DeltaTime * 3.0f;
-        }
-
-        if (ImGui.IsKeyDown(ImGuiKey.E))
-        {
-            _camera.Position += _camera.Up * e.DeltaTime * 3.0f;
-        }
+        _cameraController.Update(e.DeltaTime);
 
         if (ImGui.Begin("Properties"))
         {
-            ImGui.DragFloat("Near Plane", ref _camera.NearPlane, 0.1f, 0.0f, 100.0f);
-            ImGui.DragFloat("Far Plane", ref _camera.FarPlane, 0.1f, 0.0f, 100.0f);
-
-            float fovDeg = _camera.Fov * 180.0f / MathF.PI;
-            if (ImGui.DragFloat("Field of View", ref fovDeg, 0.1f, 0.0f, 180.0f))
-            {
-                _camera.Fov = fovDeg * MathF.PI / 180.0f;
-            }
+            _cameraController.ShowEditor();
 
             ImGui.ColorEdit3("Background", ref _camera.Background);
 
@@ -168,7 +130,15 @@ internal sealed unsafe class MainView : View
             ImGui.End();
         }
 
-        _device.UpdateBuffer(_buffer, 0, in _camera);
+        _camera.Position = _cameraController.Position;
+        _camera.Forward = _cameraController.Forward;
+        _camera.Right = _cameraController.Right;
+        _camera.Up = _cameraController.Up;
+        _camera.NearPlane = _cameraController.NearPlane;
+        _camera.FarPlane = _cameraController.FarPlane;
+        _camera.Fov = _cameraController.Fov.ToRadians();
+
+        _device.UpdateBuffer(_buffer, in _camera);
     }
 
     protected override void OnRender(RenderEventArgs e)
@@ -228,61 +198,5 @@ internal sealed unsafe class MainView : View
         _resourceSet.Dispose();
         _resourceLayout.Dispose();
         _buffer.Dispose();
-    }
-
-    private void MouseDown(object? sender, ImGuiMouseButtonEventArgs e)
-    {
-        if (e.Button == ImGuiMouseButton.Right)
-        {
-            lastMousePosition = e.Position;
-        }
-    }
-
-    private void MouseUp(object? sender, ImGuiMouseButtonEventArgs e)
-    {
-        if (e.Button == ImGuiMouseButton.Right)
-        {
-            lastMousePosition = null;
-        }
-    }
-
-    private void MouseMove(object? sender, ImGuiMouseMoveEventArgs e)
-    {
-        if (lastMousePosition.HasValue)
-        {
-            Vector2 delta = e.Position - lastMousePosition.Value;
-
-            float yaw = -delta.X * 0.01f;
-            float pitch = -delta.Y * 0.01f;
-
-            float newPitch = MathF.Asin(_camera.Forward.Y) + pitch;
-
-            float clipRadians = DegToRad(89.0f);
-            if (newPitch > clipRadians)
-            {
-                newPitch = clipRadians;
-            }
-            else if (newPitch < -clipRadians)
-            {
-                newPitch = -clipRadians;
-            }
-
-            pitch = newPitch - MathF.Asin(_camera.Forward.Y);
-
-            _camera.Forward = Vector3.TransformNormal(_camera.Forward,
-                                                      Matrix4x4.CreateFromAxisAngle(_camera.Up, yaw));
-            _camera.Forward = Vector3.TransformNormal(_camera.Forward,
-                                                      Matrix4x4.CreateFromAxisAngle(_camera.Right, pitch));
-
-            _camera.Right = Vector3.Normalize(Vector3.Cross(_camera.Forward, Vector3.UnitY));
-            _camera.Up = Vector3.Normalize(Vector3.Cross(_camera.Right, _camera.Forward));
-
-            lastMousePosition = e.Position;
-        }
-    }
-
-    private static float DegToRad(float degrees)
-    {
-        return degrees * MathF.PI / 180.0f;
     }
 }

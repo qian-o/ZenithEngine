@@ -60,6 +60,11 @@ public enum PixelFormat : byte
     R8G8SNorm,
 
     /// <summary>
+    /// RGB component order. Each component is an 8-bit signed normalized integer.
+    /// </summary>
+    R8G8B8SNorm,
+
+    /// <summary>
     /// BC1 block compressed format with no alpha.
     /// </summary>
     BC1RgbUNorm,
@@ -193,6 +198,61 @@ public enum PixelFormat : byte
     /// RG component order. Each component is a 32-bit signed floating-point value.
     /// </summary>
     R32G32Float,
+
+    /// <summary>
+    /// RGB component order. Each component is an 8-bit unsigned normalized integer.
+    /// </summary>
+    R8G8B8UNorm,
+
+    /// <summary>
+    /// RGB component order. Each component is an 8-bit unsigned integer.
+    /// </summary>
+    R8G8B8UInt,
+
+    /// <summary>
+    /// RGB component order. Each component is an 8-bit signed integer.
+    /// </summary>
+    R8G8B8SInt,
+
+    /// <summary>
+    /// RGB component order. Each component is a 16-bit unsigned normalized integer.
+    /// </summary>
+    R16G16B16UNorm,
+
+    /// <summary>
+    /// RGB component order. Each component is a 16-bit signed normalized integer.
+    /// </summary>
+    R16G16B16SNorm,
+
+    /// <summary>
+    /// RGB component order. Each component is a 16-bit unsigned integer.
+    /// </summary>
+    R16G16B16UInt,
+
+    /// <summary>
+    /// RGB component order. Each component is a 16-bit signed integer.
+    /// </summary>
+    R16G16B16SInt,
+
+    /// <summary>
+    /// RGB component order. Each component is a 16-bit signed floating-point value.
+    /// </summary>
+    R16G16B16Float,
+
+    /// <summary>
+    /// RGB component order. Each component is a 32-bit unsigned integer.
+    /// </summary>
+    R32G32B32UInt,
+
+    /// <summary>
+    /// RGB component order. Each component is a 32-bit signed integer.
+    /// </summary>
+    R32G32B32SInt,
+
+    /// <summary>
+    /// RGB component order. Each component is a 32-bit signed floating-point value.
+    /// </summary>
+    R32G32B32Float,
 
     /// <summary>
     /// RGBA component order. Each component is an 8-bit signed normalized integer.

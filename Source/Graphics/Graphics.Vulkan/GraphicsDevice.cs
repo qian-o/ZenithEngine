@@ -148,7 +148,7 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         }
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
+    public void UpdateBuffer<T>(DeviceBuffer buffer, T[] source, uint bufferOffsetInBytes = 0) where T : unmanaged
     {
         fixed (T* sourcePointer = source)
         {
@@ -156,7 +156,7 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         }
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ref readonly T source) where T : unmanaged
+    public void UpdateBuffer<T>(DeviceBuffer buffer, ref readonly T source, uint bufferOffsetInBytes = 0) where T : unmanaged
     {
         fixed (T* sourcePointer = &source)
         {

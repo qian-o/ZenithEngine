@@ -105,27 +105,27 @@ internal sealed unsafe class MainView : View
 
         uint[] indices = [0, 1, 2, 2, 3, 0];
 
-        _vertexBuffer = device.Factory.CreateBuffer(BufferDescription.VertexBuffer<Vertex>(vertices.Length, true));
-        device.UpdateBuffer(_vertexBuffer, 0, vertices);
+        _vertexBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(vertices.Length, BufferUsage.VertexBuffer | BufferUsage.Dynamic));
+        device.UpdateBuffer(_vertexBuffer, vertices);
 
-        _indexBuffer = device.Factory.CreateBuffer(BufferDescription.IndexBuffer<uint>(indices.Length));
-        device.UpdateBuffer(_indexBuffer, 0, indices);
+        _indexBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Length, BufferUsage.IndexBuffer));
+        device.UpdateBuffer(_indexBuffer, indices);
 
-        _uniformBuffer = device.Factory.CreateBuffer(BufferDescription.UniformBuffer<UniformBufferObject>(isDynamic: true));
-        _normalBuffer = device.Factory.CreateBuffer(BufferDescription.UniformBuffer<Properties>(isDynamic: true));
+        _uniformBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<UniformBufferObject>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
+        _normalBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Properties>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
 
-        ResourceLayoutElementDescription uboDescription = new("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex);
-        ResourceLayoutElementDescription normalDescription = new("properties", ResourceKind.UniformBuffer, ShaderStages.Fragment);
-        ResourceLayoutElementDescription msdfDescription = new("msdf", ResourceKind.SampledImage, ShaderStages.Fragment);
-        ResourceLayoutElementDescription msdfSamplerDescription = new("msdfSampler", ResourceKind.Sampler, ShaderStages.Fragment);
+        ElementDescription uboDescription = new("ubo", ResourceKind.ConstantBuffer, ShaderStages.Vertex);
+        ElementDescription normalDescription = new("properties", ResourceKind.ConstantBuffer, ShaderStages.Fragment);
+        ElementDescription msdfDescription = new("msdf", ResourceKind.SampledImage, ShaderStages.Fragment);
+        ElementDescription msdfSamplerDescription = new("msdfSampler", ResourceKind.Sampler, ShaderStages.Fragment);
 
         _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(uboDescription, normalDescription, msdfDescription, msdfSamplerDescription));
 
         _resourceSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _uniformBuffer, _normalBuffer, _sdfTextureView, _device.LinearSampler));
 
         string hlsl = File.ReadAllText("Assets/Shaders/SDF.hlsl");
-        _shaders = device.Factory.HlslToSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
-                                              new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
+        _shaders = device.Factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
+                                                     new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
         _vertexLayoutDescriptions =
         [
@@ -200,9 +200,9 @@ internal sealed unsafe class MainView : View
 
                     properties.PxRange = _layout.Atlas!.DistanceRange;
 
-                    _commandList.UpdateBuffer(_vertexBuffer, 0, vertices);
-                    _commandList.UpdateBuffer(_uniformBuffer, 0, ref ubo);
-                    _commandList.UpdateBuffer(_normalBuffer, 0, ref properties);
+                    _commandList.UpdateBuffer(_vertexBuffer, vertices);
+                    _commandList.UpdateBuffer(_uniformBuffer, ref ubo);
+                    _commandList.UpdateBuffer(_normalBuffer, ref properties);
 
                     _commandList.DrawIndexed(_indexBuffer.SizeInBytes / sizeof(uint), 1, 0, 0, 0);
                 }
@@ -237,7 +237,7 @@ internal sealed unsafe class MainView : View
             RasterizerState = RasterizerStateDescription.Default,
             PrimitiveTopology = PrimitiveTopology.TriangleList,
             ResourceLayouts = [_resourceLayout],
-            ShaderSet = new ShaderSetDescription(_vertexLayoutDescriptions, _shaders),
+            Shaders = new GraphicsShaderDescription(_vertexLayoutDescriptions, _shaders),
             Outputs = framebufferObject.Framebuffer.OutputDescription
         };
 

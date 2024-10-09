@@ -241,7 +241,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
         // Add a memory barrier to ensure that the buffer is ready to be used
         {
-            bool needToProtectUniformBuffer = buffer.Usage.HasFlag(BufferUsage.UniformBuffer);
+            bool needToProtectUniformBuffer = buffer.Usage.HasFlag(BufferUsage.ConstantBuffer);
 
             MemoryBarrier memoryBarrier = new()
             {
@@ -265,7 +265,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         RecordUsedStagingBuffer(stagingBuffer);
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
+    public void UpdateBuffer<T>(DeviceBuffer buffer, T[] source, uint bufferOffsetInBytes = 0) where T : unmanaged
     {
         fixed (T* sourcePointer = source)
         {
@@ -273,7 +273,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         }
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, ref readonly T source) where T : unmanaged
+    public void UpdateBuffer<T>(DeviceBuffer buffer, ref readonly T source, uint bufferOffsetInBytes = 0) where T : unmanaged
     {
         fixed (T* sourcePointer = &source)
         {
@@ -454,6 +454,50 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         EnsureRenderPassInactive();
 
         VkRes.Vk.CmdDispatch(Handle, groupCountX, groupCountY, groupCountZ);
+    }
+
+    public void DispatchRays(uint width, uint height, uint depth)
+    {
+        if (_currentPipeline is null || !_currentPipeline.IsRaytracing)
+        {
+            throw new InvalidOperationException("No raytracing pipeline set.");
+        }
+
+        EnsureRenderPassInactive();
+
+        ShaderTable shaderTable = _currentPipeline.ShaderTable!;
+
+        StridedDeviceAddressRegionKHR raygenShaderBindingTable = new()
+        {
+            DeviceAddress = shaderTable.RaygenShaderHandleBuffer.Address,
+            Stride = shaderTable.Handle,
+            Size = shaderTable.RaygenShaderHandleBuffer.SizeInBytes
+        };
+
+        StridedDeviceAddressRegionKHR missShaderBindingTable = new()
+        {
+            DeviceAddress = shaderTable.MissShaderHandleBuffer.Address,
+            Stride = shaderTable.Handle,
+            Size = shaderTable.MissShaderHandleBuffer.SizeInBytes
+        };
+
+        StridedDeviceAddressRegionKHR hitShaderBindingTable = new()
+        {
+            DeviceAddress = shaderTable.HitGroupHandleBuffer.Address,
+            Stride = shaderTable.Handle,
+            Size = shaderTable.HitGroupHandleBuffer.SizeInBytes
+        };
+
+        StridedDeviceAddressRegionKHR callableShaderBindingTable = new();
+
+        VkRes.KhrRayTracingPipeline.CmdTraceRays(Handle,
+                                                 &raygenShaderBindingTable,
+                                                 &missShaderBindingTable,
+                                                 &hitShaderBindingTable,
+                                                 &callableShaderBindingTable,
+                                                 width,
+                                                 height,
+                                                 depth);
     }
 
     public void ResolveTexture(Texture source, Texture destination)

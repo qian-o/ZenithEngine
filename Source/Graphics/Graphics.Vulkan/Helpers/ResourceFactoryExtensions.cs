@@ -1,12 +1,13 @@
-﻿using Graphics.Vulkan.Descriptions;
+﻿using System.Text;
+using Graphics.Vulkan.Descriptions;
 
 namespace Graphics.Vulkan.Helpers;
 
 public static class ResourceFactoryExtensions
 {
-    public static Shader[] HlslToSpirv(this ResourceFactory factory,
-                                       ShaderDescription[] descriptions,
-                                       Func<string, byte[]>? includeResolver = null)
+    public static Shader[] CreateShaderByHLSL(this ResourceFactory factory,
+                                              ShaderDescription[] descriptions,
+                                              Func<string, byte[]>? includeResolver = null)
     {
         Shader[] shaders = new Shader[descriptions.Length];
 
@@ -14,7 +15,10 @@ public static class ResourceFactoryExtensions
         {
             ShaderDescription description = descriptions[i];
 
-            byte[] spirv = DxcHelpers.Compile(in descriptions[i], includeResolver);
+            byte[] spirv = DxcHelpers.Compile(description.Stage,
+                                              Encoding.UTF8.GetString(description.ShaderBytes),
+                                              description.EntryPoint,
+                                              includeResolver);
 
             shaders[i] = factory.CreateShader(new ShaderDescription(description.Stage, spirv, description.EntryPoint));
         }
@@ -22,8 +26,8 @@ public static class ResourceFactoryExtensions
         return shaders;
     }
 
-    public static Shader[] HlslToSpirv(this ResourceFactory factory, params ShaderDescription[] descriptions)
+    public static Shader[] CreateShaderByHLSL(this ResourceFactory factory, params ShaderDescription[] descriptions)
     {
-        return factory.HlslToSpirv(descriptions, null);
+        return factory.CreateShaderByHLSL(descriptions, null);
     }
 }

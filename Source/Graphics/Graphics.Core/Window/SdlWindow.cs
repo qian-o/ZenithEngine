@@ -147,4 +147,17 @@ public unsafe partial class SdlWindow : DisposableObject
                            new Vector2(work.Size.X, work.Size.Y),
                            ddpi == 0 ? 1.0f : ddpi / 96.0f);
     }
+
+    public static Display[] GetDisplays()
+    {
+        int count = GetDisplayCount();
+        Display[] displays = new Display[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            displays[i] = GetDisplay(i);
+        }
+
+        return displays;
+    }
 }

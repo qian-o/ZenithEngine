@@ -23,6 +23,7 @@ public unsafe class Shader : VulkanObject<VkShaderModule>
         Handle = shaderModule;
         Stage = description.Stage;
         EntryPoint = description.EntryPoint;
+        PointerName = VkRes.Alloter.Allocate(EntryPoint);
     }
 
     internal override VkShaderModule Handle { get; }
@@ -31,13 +32,28 @@ public unsafe class Shader : VulkanObject<VkShaderModule>
 
     internal string EntryPoint { get; }
 
-    protected override void Destroy()
+    internal byte* PointerName { get; }
+
+    internal PipelineShaderStageCreateInfo GetPipelineShaderStageCreateInfo()
     {
-        VkRes.Vk.DestroyShaderModule(VkRes.VkDevice, Handle, null);
+        return new()
+        {
+            SType = StructureType.PipelineShaderStageCreateInfo,
+            Stage = Formats.GetShaderStage(Stage),
+            Module = Handle,
+            PName = PointerName
+        };
     }
 
     internal override ulong[] GetHandles()
     {
-        throw new NotImplementedException();
+        return [Handle.Handle];
+    }
+
+    protected override void Destroy()
+    {
+        VkRes.Vk.DestroyShaderModule(VkRes.VkDevice, Handle, null);
+
+        VkRes.Alloter.Free(EntryPoint);
     }
 }

@@ -46,8 +46,7 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
 
         DeviceMemory deviceMemory = new(VkRes,
                                         in memoryRequirements,
-                                        MemoryPropertyFlags.DeviceLocalBit,
-                                        false);
+                                        MemoryPropertyFlags.DeviceLocalBit);
 
         VkRes.Vk.BindImageMemory(VkRes.VkDevice, image, deviceMemory.Handle, 0).ThrowCode();
 

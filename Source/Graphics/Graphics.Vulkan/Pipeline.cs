@@ -146,8 +146,8 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
 
         // vertex input state
         {
-            uint bindingCount = (uint)description.ShaderSet.VertexLayouts.Length;
-            uint attributeCount = (uint)description.ShaderSet.VertexLayouts.Sum(x => x.Elements.Length);
+            uint bindingCount = (uint)description.Shaders.VertexLayouts.Length;
+            uint attributeCount = (uint)description.Shaders.VertexLayouts.Sum(x => x.Elements.Length);
 
             VertexInputBindingDescription[] bindingDescriptions = new VertexInputBindingDescription[bindingCount];
             VertexInputAttributeDescription[] attributeDescriptions = new VertexInputAttributeDescription[attributeCount];
@@ -156,7 +156,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
             uint targetLocation = 0;
             for (uint binding = 0; binding < bindingCount; binding++)
             {
-                VertexLayoutDescription vertexLayout = description.ShaderSet.VertexLayouts[binding];
+                VertexLayoutDescription vertexLayout = description.Shaders.VertexLayouts[binding];
 
                 bindingDescriptions[binding] = new VertexInputBindingDescription
                 {
@@ -198,8 +198,8 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
 
         // shader stage
         {
-            Shader[] shaders = description.ShaderSet.Shaders;
-            SpecializationConstant[] specializations = description.ShaderSet.Specializations;
+            Shader[] shaders = description.Shaders.Shaders;
+            SpecializationConstant[] specializations = description.Shaders.Specializations;
 
             SpecializationInfo specializationInfo = new();
             if (specializations.Length > 0)
@@ -241,14 +241,10 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
             {
                 Shader shader = shaders[i];
 
-                shaderStageCreateInfos[i] = new PipelineShaderStageCreateInfo
-                {
-                    SType = StructureType.PipelineShaderStageCreateInfo,
-                    Stage = Formats.GetShaderStage(shader.Stage),
-                    Module = shader.Handle,
-                    PName = VkRes.Alloter.Allocate(shader.EntryPoint),
-                    PSpecializationInfo = &specializationInfo
-                };
+                PipelineShaderStageCreateInfo pipelineShaderStageCreateInfo = shader.GetPipelineShaderStageCreateInfo();
+                pipelineShaderStageCreateInfo.PSpecializationInfo = &specializationInfo;
+
+                shaderStageCreateInfos[i] = pipelineShaderStageCreateInfo;
             }
 
             createInfo.StageCount = (uint)shaders.Length;
@@ -395,6 +391,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         Handle = pipeline;
         Layout = createInfo.Layout;
         RenderPass = createInfo.RenderPass;
+        ShaderTable = null;
         PipelineBindPoint = PipelineBindPoint.Graphics;
     }
 
@@ -446,14 +443,10 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
                 specializationInfo.PData = specData;
             }
 
-            createInfo.Stage = new PipelineShaderStageCreateInfo
-            {
-                SType = StructureType.PipelineShaderStageCreateInfo,
-                Stage = Formats.GetShaderStage(shader.Stage),
-                Module = shader.Handle,
-                PName = VkRes.Alloter.Allocate(shader.EntryPoint),
-                PSpecializationInfo = &specializationInfo
-            };
+            PipelineShaderStageCreateInfo pipelineShaderStageCreateInfo = shader.GetPipelineShaderStageCreateInfo();
+            pipelineShaderStageCreateInfo.PSpecializationInfo = &specializationInfo;
+
+            createInfo.Stage = pipelineShaderStageCreateInfo;
         }
 
         // layout
@@ -486,7 +479,133 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         Handle = pipeline;
         Layout = createInfo.Layout;
         RenderPass = default;
+        ShaderTable = null;
         PipelineBindPoint = PipelineBindPoint.Compute;
+    }
+
+    internal Pipeline(VulkanResources vkRes, ref readonly RaytracingPipelineDescription description) : base(vkRes, ObjectType.Pipeline)
+    {
+        RayTracingPipelineCreateInfoKHR createInfo = new()
+        {
+            SType = StructureType.RayTracingPipelineCreateInfoKhr,
+            MaxPipelineRayRecursionDepth = description.MaxTraceRecursionDepth,
+            Flags = PipelineCreateFlags.CreateDescriptorBufferBitExt
+        };
+
+        // shader stage
+        {
+            List<PipelineShaderStageCreateInfo> pipelineShaderStageCreateInfos = [];
+            List<RayTracingShaderGroupCreateInfoKHR> rayTracingShaderGroupCreateInfos = [];
+
+            if (description.Shaders.RayGenerationShader != null)
+            {
+                Shader shader = description.Shaders.RayGenerationShader;
+
+                pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
+                rayTracingShaderGroupCreateInfos.Add(new RayTracingShaderGroupCreateInfoKHR
+                {
+                    SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                    Type = RayTracingShaderGroupTypeKHR.GeneralKhr,
+                    GeneralShader = (uint)(pipelineShaderStageCreateInfos.Count - 1),
+                    ClosestHitShader = Vk.ShaderUnusedKhr,
+                    AnyHitShader = Vk.ShaderUnusedKhr,
+                    IntersectionShader = Vk.ShaderUnusedKhr
+                });
+            }
+
+            if (description.Shaders.MissShader != null)
+            {
+                foreach (Shader shader in description.Shaders.MissShader)
+                {
+                    pipelineShaderStageCreateInfos.Add(shader.GetPipelineShaderStageCreateInfo());
+                    rayTracingShaderGroupCreateInfos.Add(new RayTracingShaderGroupCreateInfoKHR
+                    {
+                        SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                        Type = RayTracingShaderGroupTypeKHR.GeneralKhr,
+                        GeneralShader = (uint)(pipelineShaderStageCreateInfos.Count - 1),
+                        ClosestHitShader = Vk.ShaderUnusedKhr,
+                        AnyHitShader = Vk.ShaderUnusedKhr,
+                        IntersectionShader = Vk.ShaderUnusedKhr
+                    });
+                }
+            }
+
+            if (description.Shaders.HitGroupShader != null)
+            {
+                foreach (HitGroupDescription hitGroupDescription in description.Shaders.HitGroupShader)
+                {
+                    uint closestHitShader = hitGroupDescription.ClosestHitShader != null ? (uint)pipelineShaderStageCreateInfos.Count : Vk.ShaderUnusedKhr;
+                    uint anyHitShader = hitGroupDescription.AnyHitShader != null ? (uint)pipelineShaderStageCreateInfos.Count + 1 : Vk.ShaderUnusedKhr;
+                    uint intersectionShader = hitGroupDescription.IntersectionShader != null ? (uint)pipelineShaderStageCreateInfos.Count + 2 : Vk.ShaderUnusedKhr;
+
+                    if (closestHitShader != Vk.ShaderUnusedKhr)
+                    {
+                        pipelineShaderStageCreateInfos.Add(hitGroupDescription.ClosestHitShader!.GetPipelineShaderStageCreateInfo());
+                    }
+
+                    if (anyHitShader != Vk.ShaderUnusedKhr)
+                    {
+                        pipelineShaderStageCreateInfos.Add(hitGroupDescription.AnyHitShader!.GetPipelineShaderStageCreateInfo());
+                    }
+
+                    if (intersectionShader != Vk.ShaderUnusedKhr)
+                    {
+                        pipelineShaderStageCreateInfos.Add(hitGroupDescription.IntersectionShader!.GetPipelineShaderStageCreateInfo());
+                    }
+
+                    rayTracingShaderGroupCreateInfos.Add(new RayTracingShaderGroupCreateInfoKHR
+                    {
+                        SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                        Type = RayTracingShaderGroupTypeKHR.TrianglesHitGroupKhr,
+                        GeneralShader = Vk.ShaderUnusedKhr,
+                        ClosestHitShader = closestHitShader,
+                        AnyHitShader = anyHitShader,
+                        IntersectionShader = intersectionShader
+                    });
+                }
+            }
+
+            PipelineShaderStageCreateInfo[] stageCreateInfos = [.. pipelineShaderStageCreateInfos];
+            RayTracingShaderGroupCreateInfoKHR[] rayTracingShaderGroups = [.. rayTracingShaderGroupCreateInfos];
+
+            createInfo.StageCount = (uint)stageCreateInfos.Length;
+            createInfo.PStages = stageCreateInfos.AsPointer();
+            createInfo.GroupCount = (uint)rayTracingShaderGroups.Length;
+            createInfo.PGroups = rayTracingShaderGroups.AsPointer();
+        }
+
+        // layout
+        {
+            PipelineLayoutCreateInfo layoutCreateInfo = new()
+            {
+                SType = StructureType.PipelineLayoutCreateInfo
+            };
+
+            uint descriptorSetLayoutCount = (uint)description.ResourceLayouts.Length;
+
+            DescriptorSetLayout[] descriptorSetLayouts = new DescriptorSetLayout[descriptorSetLayoutCount];
+
+            for (uint i = 0; i < descriptorSetLayoutCount; i++)
+            {
+                descriptorSetLayouts[i] = description.ResourceLayouts[i].Handle;
+            }
+
+            layoutCreateInfo.SetLayoutCount = descriptorSetLayoutCount;
+            layoutCreateInfo.PSetLayouts = descriptorSetLayouts.AsPointer();
+
+            PipelineLayout pipelineLayout;
+            VkRes.Vk.CreatePipelineLayout(VkRes.VkDevice, &layoutCreateInfo, null, &pipelineLayout).ThrowCode();
+            createInfo.Layout = pipelineLayout;
+        }
+
+        VkPipeline pipeline;
+        VkRes.KhrRayTracingPipeline.CreateRayTracingPipelines(VkRes.VkDevice, default, default, 1, &createInfo, null, &pipeline).ThrowCode();
+
+        Handle = pipeline;
+        Layout = createInfo.Layout;
+        RenderPass = default;
+        ShaderTable = new ShaderTable(VkRes, this, in description);
+        PipelineBindPoint = PipelineBindPoint.RayTracingKhr;
     }
 
     internal override VkPipeline Handle { get; }
@@ -495,11 +614,15 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
 
     internal VkRenderPass RenderPass { get; }
 
+    internal ShaderTable? ShaderTable { get; }
+
     internal PipelineBindPoint PipelineBindPoint { get; }
 
     public bool IsGraphics => PipelineBindPoint == PipelineBindPoint.Graphics;
 
     public bool IsCompute => PipelineBindPoint == PipelineBindPoint.Compute;
+
+    public bool IsRaytracing => PipelineBindPoint == PipelineBindPoint.RayTracingKhr;
 
     internal override ulong[] GetHandles()
     {
@@ -515,5 +638,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         {
             VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPass, null);
         }
+
+        ShaderTable?.Dispose();
     }
 }

@@ -3,9 +3,9 @@
 public enum ResourceKind : byte
 {
     /// <summary>
-    /// Bind as uniform buffer.
+    /// Bind as constant buffer.
     /// </summary>
-    UniformBuffer,
+    ConstantBuffer,
 
     /// <summary>
     /// Bind as read-write storage buffer.
@@ -25,5 +25,10 @@ public enum ResourceKind : byte
     /// <summary>
     /// Bind as sampler.
     /// </summary>
-    Sampler
+    Sampler,
+
+    /// <summary>
+    /// Bind as ray tracing acceleration structure.
+    /// </summary>
+    AccelerationStructure
 }

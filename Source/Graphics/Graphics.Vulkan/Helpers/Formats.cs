@@ -1,4 +1,5 @@
 ﻿using Graphics.Core;
+using Graphics.Core.RayTracing;
 using Silk.NET.Vulkan;
 using BlendFactor = Graphics.Core.BlendFactor;
 using FrontFace = Graphics.Core.FrontFace;
@@ -41,6 +42,21 @@ internal static class Formats
             PixelFormat.R32G32UInt => Format.R32G32Uint,
             PixelFormat.R32G32SInt => Format.R32G32Sint,
             PixelFormat.R32G32Float => Format.R32G32Sfloat,
+
+            PixelFormat.R8G8B8UNorm => Format.R8G8B8Unorm,
+            PixelFormat.R8G8B8SNorm => Format.R8G8B8SNorm,
+            PixelFormat.R8G8B8UInt => Format.R8G8B8Uint,
+            PixelFormat.R8G8B8SInt => Format.R8G8B8Sint,
+
+            PixelFormat.R16G16B16UNorm => Format.R16G16B16Unorm,
+            PixelFormat.R16G16B16SNorm => Format.R16G16B16SNorm,
+            PixelFormat.R16G16B16UInt => Format.R16G16B16Uint,
+            PixelFormat.R16G16B16SInt => Format.R16G16B16Sint,
+            PixelFormat.R16G16B16Float => Format.R16G16B16Sfloat,
+
+            PixelFormat.R32G32B32UInt => Format.R32G32B32Uint,
+            PixelFormat.R32G32B32SInt => Format.R32G32B32Sint,
+            PixelFormat.R32G32B32Float => Format.R32G32B32Sfloat,
 
             PixelFormat.R8G8B8A8UNorm => Format.R8G8B8A8Unorm,
             PixelFormat.R8G8B8A8UNormSRgb => Format.R8G8B8A8Srgb,
@@ -142,17 +158,18 @@ internal static class Formats
         };
     }
 
-    public static DescriptorType GetDescriptorType(ResourceKind kind, ResourceLayoutElementOptions options)
+    public static DescriptorType GetDescriptorType(ResourceKind kind, ElementOptions options)
     {
-        bool dynamic = options.HasFlag(ResourceLayoutElementOptions.DynamicBinding);
+        bool dynamic = options.HasFlag(ElementOptions.DynamicBinding);
 
         return kind switch
         {
-            ResourceKind.UniformBuffer => dynamic ? DescriptorType.UniformBufferDynamic : DescriptorType.UniformBuffer,
+            ResourceKind.ConstantBuffer => dynamic ? DescriptorType.UniformBufferDynamic : DescriptorType.UniformBuffer,
             ResourceKind.StorageBuffer => dynamic ? DescriptorType.StorageBufferDynamic : DescriptorType.StorageBuffer,
             ResourceKind.SampledImage => DescriptorType.SampledImage,
             ResourceKind.StorageImage => DescriptorType.StorageImage,
             ResourceKind.Sampler => DescriptorType.Sampler,
+            ResourceKind.AccelerationStructure => DescriptorType.AccelerationStructureKhr,
             _ => throw new ArgumentOutOfRangeException(nameof(kind))
         };
     }
@@ -513,6 +530,36 @@ internal static class Formats
             shaderStageFlags |= ShaderStageFlags.ComputeBit;
         }
 
+        if (stage.HasFlag(ShaderStages.RayGeneration))
+        {
+            shaderStageFlags |= ShaderStageFlags.RaygenBitKhr;
+        }
+
+        if (stage.HasFlag(ShaderStages.AnyHit))
+        {
+            shaderStageFlags |= ShaderStageFlags.AnyHitBitKhr;
+        }
+
+        if (stage.HasFlag(ShaderStages.ClosestHit))
+        {
+            shaderStageFlags |= ShaderStageFlags.ClosestHitBitKhr;
+        }
+
+        if (stage.HasFlag(ShaderStages.Miss))
+        {
+            shaderStageFlags |= ShaderStageFlags.MissBitKhr;
+        }
+
+        if (stage.HasFlag(ShaderStages.Intersection))
+        {
+            shaderStageFlags |= ShaderStageFlags.IntersectionBitKhr;
+        }
+
+        if (stage.HasFlag(ShaderStages.Callable))
+        {
+            shaderStageFlags |= ShaderStageFlags.CallableBitKhr;
+        }
+
         return shaderStageFlags;
     }
 
@@ -524,6 +571,82 @@ internal static class Formats
             IndexFormat.U32 => IndexType.Uint32,
             _ => throw new ArgumentOutOfRangeException(nameof(indexFormat))
         };
+    }
+
+    public static GeometryFlagsKHR GetGeometryFlags(GeometryMask mask)
+    {
+        GeometryFlagsKHR geometryFlags = GeometryFlagsKHR.None;
+
+        if (mask.HasFlag(GeometryMask.Opaque))
+        {
+            geometryFlags |= GeometryFlagsKHR.OpaqueBitKhr;
+        }
+
+        if (mask.HasFlag(GeometryMask.NoDuplicateAnyHitInvocation))
+        {
+            geometryFlags |= GeometryFlagsKHR.NoDuplicateAnyHitInvocationBitKhr;
+        }
+
+        return geometryFlags;
+    }
+
+    public static GeometryInstanceFlagsKHR GetGeometryInstanceFlags(InstanceMask mask)
+    {
+        GeometryInstanceFlagsKHR geometryInstanceFlags = GeometryInstanceFlagsKHR.None;
+
+        if (mask.HasFlag(InstanceMask.TriangleCullDisable))
+        {
+            geometryInstanceFlags |= GeometryInstanceFlagsKHR.TriangleFacingCullDisableBitKhr;
+        }
+
+        if (mask.HasFlag(InstanceMask.TriangleFrontCounterClockwise))
+        {
+            geometryInstanceFlags |= GeometryInstanceFlagsKHR.TriangleFrontCounterclockwiseBitKhr;
+        }
+
+        if (mask.HasFlag(InstanceMask.ForceOpaque))
+        {
+            geometryInstanceFlags |= GeometryInstanceFlagsKHR.ForceOpaqueBitKhr;
+        }
+
+        if (mask.HasFlag(InstanceMask.ForceNoOpaque))
+        {
+            geometryInstanceFlags |= GeometryInstanceFlagsKHR.ForceNoOpaqueBitKhr;
+        }
+
+        return geometryInstanceFlags;
+    }
+
+    public static BuildAccelerationStructureFlagsKHR GetBuildAccelerationStructureFlags(BuildMask mask)
+    {
+        BuildAccelerationStructureFlagsKHR buildAccelerationStructureFlags = BuildAccelerationStructureFlagsKHR.None;
+
+        if (mask.HasFlag(BuildMask.AllowUpdate) || mask.HasFlag(BuildMask.PerformUpdate))
+        {
+            buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.AllowUpdateBitKhr;
+        }
+
+        if (mask.HasFlag(BuildMask.AllowCompactation))
+        {
+            buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.AllowCompactionBitKhr;
+        }
+
+        if (mask.HasFlag(BuildMask.PreferFastTrace))
+        {
+            buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.PreferFastTraceBitKhr;
+        }
+
+        if (mask.HasFlag(BuildMask.PreferFastBuild))
+        {
+            buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.PreferFastBuildBitKhr;
+        }
+
+        if (mask.HasFlag(BuildMask.MinimizeMemory))
+        {
+            buildAccelerationStructureFlags |= BuildAccelerationStructureFlagsKHR.LowMemoryBitKhr;
+        }
+
+        return buildAccelerationStructureFlags;
     }
     #endregion
 
@@ -562,6 +685,21 @@ internal static class Formats
             Format.R32G32Uint => PixelFormat.R32G32UInt,
             Format.R32G32Sint => PixelFormat.R32G32SInt,
             Format.R32G32Sfloat => PixelFormat.R32G32Float,
+
+            Format.R8G8B8Unorm => PixelFormat.R8G8B8UNorm,
+            Format.R8G8B8SNorm => PixelFormat.R8G8B8SNorm,
+            Format.R8G8B8Uint => PixelFormat.R8G8B8UInt,
+            Format.R8G8B8Sint => PixelFormat.R8G8B8SInt,
+
+            Format.R16G16B16Unorm => PixelFormat.R16G16B16UNorm,
+            Format.R16G16B16SNorm => PixelFormat.R16G16B16SNorm,
+            Format.R16G16B16Uint => PixelFormat.R16G16B16UInt,
+            Format.R16G16B16Sint => PixelFormat.R16G16B16SInt,
+            Format.R16G16B16Sfloat => PixelFormat.R16G16B16Float,
+
+            Format.R32G32B32Uint => PixelFormat.R32G32B32UInt,
+            Format.R32G32B32Sint => PixelFormat.R32G32B32SInt,
+            Format.R32G32B32Sfloat => PixelFormat.R32G32B32Float,
 
             Format.R8G8B8A8Unorm => PixelFormat.R8G8B8A8UNorm,
             Format.R8G8B8A8Srgb => PixelFormat.R8G8B8A8UNormSRgb,

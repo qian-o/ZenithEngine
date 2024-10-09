@@ -298,12 +298,8 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiIOPtr io = DearImGui.GetIO();
 
-        int displayCount = SdlWindow.GetDisplayCount();
-
-        for (int i = 0; i < displayCount; i++)
+        foreach (Display display in SdlWindow.GetDisplays().DistinctBy(item => item.DpiScale))
         {
-            Display display = SdlWindow.GetDisplay(i);
-
             ImFontPtr fontPtr;
             if (_imGuiFontConfig.IsDefault)
             {

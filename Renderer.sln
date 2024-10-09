@@ -23,7 +23,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.SDFFontTexture", "Sou
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Skia", "Source\Tests\Tests.Skia\Tests.Skia.csproj", "{F7B7FCC8-8280-4F7A-A474-079E4F348D04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Compute", "Source\Tests\Tests.Compute\Tests.Compute.csproj", "{D5705EE5-F085-4072-8CB8-061E5A006D8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Compute", "Source\Tests\Tests.Compute\Tests.Compute.csproj", "{D5705EE5-F085-4072-8CB8-061E5A006D8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.RayTracing", "Source\Tests\Tests.RayTracing\Tests.RayTracing.csproj", "{CD1BD3B6-EE26-4475-BD13-C1C17B4AD2C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,6 +69,10 @@ Global
 		{D5705EE5-F085-4072-8CB8-061E5A006D8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5705EE5-F085-4072-8CB8-061E5A006D8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5705EE5-F085-4072-8CB8-061E5A006D8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD1BD3B6-EE26-4475-BD13-C1C17B4AD2C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD1BD3B6-EE26-4475-BD13-C1C17B4AD2C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD1BD3B6-EE26-4475-BD13-C1C17B4AD2C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD1BD3B6-EE26-4475-BD13-C1C17B4AD2C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,6 +87,7 @@ Global
 		{B1E4F7D8-1D9D-49AB-9886-31D1036B900C} = {7E0DB5F2-95DA-43BD-97F2-EE375B5365F3}
 		{F7B7FCC8-8280-4F7A-A474-079E4F348D04} = {7E0DB5F2-95DA-43BD-97F2-EE375B5365F3}
 		{D5705EE5-F085-4072-8CB8-061E5A006D8D} = {7E0DB5F2-95DA-43BD-97F2-EE375B5365F3}
+		{CD1BD3B6-EE26-4475-BD13-C1C17B4AD2C8} = {7E0DB5F2-95DA-43BD-97F2-EE375B5365F3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {13904A41-E9AB-4E3D-B6A3-45A7556A5C66}

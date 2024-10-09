@@ -223,19 +223,19 @@ internal sealed unsafe class Program
             LoadNode(gltfNode, null, vertices, indices);
         }
 
-        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.VertexBuffer<Vertex>(vertices.Count));
-        _device.UpdateBuffer(_vertexBuffer, 0, [.. vertices]);
+        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(vertices.Count, BufferUsage.VertexBuffer));
+        _device.UpdateBuffer(_vertexBuffer, [.. vertices]);
 
-        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.IndexBuffer<uint>(indices.Count));
-        _device.UpdateBuffer(_indexBuffer, 0, [.. indices]);
+        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Count, BufferUsage.IndexBuffer));
+        _device.UpdateBuffer(_indexBuffer, [.. indices]);
 
-        _uboBuffer = _device.Factory.CreateBuffer(BufferDescription.UniformBuffer<UBO>(isDynamic: true));
+        _uboBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<UBO>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
 
-        ResourceLayoutDescription uboLayoutDescription = new(new ResourceLayoutElementDescription("ubo", ResourceKind.UniformBuffer, ShaderStages.Vertex));
+        ResourceLayoutDescription uboLayoutDescription = new(new ElementDescription("ubo", ResourceKind.ConstantBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
-                                                                                             new ResourceLayoutElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
+                                                                                             new ElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
         ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
-                                                                                                 new ResourceLayoutElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
+                                                                                                 new ElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
         _uboLayout = _device.Factory.CreateResourceLayout(in uboLayoutDescription);
         _uboSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_uboLayout, _uboBuffer));
@@ -256,8 +256,8 @@ internal sealed unsafe class Program
         VertexElementDescription colorMapIndexDescription = new("ColorMapIndex", VertexElementFormat.Int1);
         VertexElementDescription normalMapIndexDescription = new("NormalMapIndex", VertexElementFormat.Int1);
 
-        _shaders = _device.Factory.HlslToSpirv(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
-                                               new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
+        _shaders = _device.Factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
+                                                      new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
         _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription,
                                                                  normalDescription,
@@ -280,7 +280,7 @@ internal sealed unsafe class Program
                 RasterizerState = _materials[i].DoubleSided ? RasterizerStateDescription.CullNone : RasterizerStateDescription.Default,
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
                 ResourceLayouts = [_uboLayout, _textureMapLayout, _textureSamplerLayout],
-                ShaderSet = new ShaderSetDescription(_vertexLayoutDescriptions, _shaders, [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
+                Shaders = new GraphicsShaderDescription(_vertexLayoutDescriptions, _shaders, [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
                 Outputs = _device.MainSwapchain.OutputDescription
             };
 
@@ -481,7 +481,7 @@ internal sealed unsafe class Program
         {
             _ubo.Model = node.WorldTransform;
 
-            commandList.UpdateBuffer(_uboBuffer, 0, ref _ubo);
+            commandList.UpdateBuffer(_uboBuffer, ref _ubo);
 
             foreach (Primitive primitive in node.Mesh.Primitives)
             {

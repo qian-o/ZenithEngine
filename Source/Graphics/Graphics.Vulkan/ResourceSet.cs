@@ -1,5 +1,6 @@
 ﻿using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
+using Graphics.Vulkan.RayTracing;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
@@ -10,8 +11,7 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
     {
         const BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferDstBit
                                                   | BufferUsageFlags.ResourceDescriptorBufferBitExt
-                                                  | BufferUsageFlags.SamplerDescriptorBufferBitExt
-                                                  | BufferUsageFlags.ShaderDeviceAddressBit;
+                                                  | BufferUsageFlags.SamplerDescriptorBufferBitExt;
 
         DeviceBuffer buffer = new(VkRes, bufferUsageFlags, description.Layout.SizeInBytes, true);
 
@@ -89,7 +89,10 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
     private nuint WriteDescriptorBuffer(DescriptorType type, IBindableResource bindableResource, byte* buffer)
     {
         nuint descriptorSize;
-        if (type is DescriptorType.UniformBuffer or DescriptorType.UniformBufferDynamic or DescriptorType.StorageBuffer or DescriptorType.StorageBufferDynamic)
+        if (type is DescriptorType.UniformBuffer
+            or DescriptorType.UniformBufferDynamic
+            or DescriptorType.StorageBuffer
+            or DescriptorType.StorageBufferDynamic)
         {
             bool isUniform = type is DescriptorType.UniformBuffer or DescriptorType.UniformBufferDynamic;
 
@@ -148,6 +151,13 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
 
             descriptorSize = VkRes.DescriptorBufferProperties.SamplerDescriptorSize;
             GetDescriptor(new DescriptorDataEXT() { PSampler = &vkSampler });
+        }
+        else if (type == DescriptorType.AccelerationStructureKhr)
+        {
+            TopLevelAS topLevelAS = (TopLevelAS)bindableResource;
+
+            descriptorSize = VkRes.DescriptorBufferProperties.AccelerationStructureDescriptorSize;
+            GetDescriptor(new DescriptorDataEXT() { AccelerationStructure = topLevelAS.Address });
         }
         else
         {

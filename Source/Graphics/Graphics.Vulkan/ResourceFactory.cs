@@ -1,4 +1,5 @@
 ﻿using Graphics.Vulkan.Descriptions;
+using Graphics.Vulkan.RayTracing;
 
 namespace Graphics.Vulkan;
 
@@ -94,6 +95,27 @@ public class ResourceFactory
     }
 
     public Pipeline CreateComputePipeline(ComputePipelineDescription description) => CreateComputePipeline(in description);
+
+    public Pipeline CreateRaytracingPipeline(ref readonly RaytracingPipelineDescription description)
+    {
+        return new Pipeline(_vkRes, in description);
+    }
+
+    public Pipeline CreateRaytracingPipeline(RaytracingPipelineDescription description) => CreateRaytracingPipeline(in description);
+
+    public BottomLevelAS CreateBottomLevelAS(ref readonly BottomLevelASDescription description)
+    {
+        return new BottomLevelAS(_vkRes, in description);
+    }
+
+    public BottomLevelAS CreateBottomLevelAS(BottomLevelASDescription description) => CreateBottomLevelAS(in description);
+
+    public TopLevelAS CreateTopLevelAS(ref readonly TopLevelASDescription description)
+    {
+        return new TopLevelAS(_vkRes, in description);
+    }
+
+    public TopLevelAS CreateTopLevelAS(TopLevelASDescription description) => CreateTopLevelAS(in description);
 
     public CommandList CreateGraphicsCommandList()
     {
