@@ -19,7 +19,7 @@ internal sealed unsafe class Program
 {
     #region Structs
     [StructLayout(LayoutKind.Sequential)]
-    private struct UBO
+    private struct CBO
     {
         public Matrix4x4 Projection;
 
@@ -121,7 +121,7 @@ internal sealed unsafe class Program
     private static Pipeline[] _pipelines = null!;
     private static CommandList _commandList = null!;
 
-    private static UBO _ubo;
+    private static CBO _cbo;
 
     private static void Main(string[] _)
     {
@@ -229,15 +229,15 @@ internal sealed unsafe class Program
         _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Count, BufferUsage.IndexBuffer));
         _device.UpdateBuffer(_indexBuffer, [.. indices]);
 
-        _cboBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<UBO>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
+        _cboBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<CBO>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
 
-        ResourceLayoutDescription uboLayoutDescription = new(new ElementDescription("ubo", ResourceKind.ConstantBuffer, ShaderStages.Vertex));
+        ResourceLayoutDescription cboLayoutDescription = new(new ElementDescription("cbo", ResourceKind.ConstantBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
                                                                                              new ElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
         ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
                                                                                                  new ElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
-        _cboLayout = _device.Factory.CreateResourceLayout(in uboLayoutDescription);
+        _cboLayout = _device.Factory.CreateResourceLayout(in cboLayoutDescription);
         _cboSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_cboLayout, _cboBuffer));
 
         _textureMapLayout = _device.Factory.CreateResourceLayout(in textureMapDescription);
@@ -294,7 +294,7 @@ internal sealed unsafe class Program
     {
         SdlWindow window = (SdlWindow)sender!;
 
-        _ubo = new()
+        _cbo = new()
         {
             Projection = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, window.FramebufferSize.X / window.FramebufferSize.Y, 0.1f, 1000.0f),
             View = Matrix4x4.CreateLookAt(new Vector3(7.8f, 2.1f, 0.0f), Vector3.Zero, Vector3.UnitY),
@@ -479,9 +479,9 @@ internal sealed unsafe class Program
 
         if (node.Mesh != null)
         {
-            _ubo.Model = node.WorldTransform;
+            _cbo.Model = node.WorldTransform;
 
-            commandList.UpdateBuffer(_cboBuffer, ref _ubo);
+            commandList.UpdateBuffer(_cboBuffer, ref _cbo);
 
             foreach (Primitive primitive in node.Mesh.Primitives)
             {
