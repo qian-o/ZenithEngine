@@ -1,7 +1,7 @@
 ﻿namespace Graphics.Core.RayTracing;
 
 [Flags]
-public enum GeometryMask : byte
+public enum AccelStructGeometryMask : byte
 {
     /// <summary>
     /// No flags.

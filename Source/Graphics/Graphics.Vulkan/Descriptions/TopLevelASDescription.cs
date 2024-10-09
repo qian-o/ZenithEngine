@@ -5,20 +5,20 @@ namespace Graphics.Vulkan.Descriptions;
 
 public record struct TopLevelASDescription
 {
-    public TopLevelASDescription(BuildMask mask, Instance[] instances, uint offset)
+    public TopLevelASDescription(AccelStructBuildMask mask, AccelStructInstance[] instances, uint offset)
     {
         Mask = mask;
         Instances = instances;
         Offset = offset;
     }
 
-    public TopLevelASDescription(BuildMask mask, params Instance[] instances) : this(mask, instances, 0)
+    public TopLevelASDescription(AccelStructBuildMask mask, params AccelStructInstance[] instances) : this(mask, instances, 0)
     {
     }
 
-    public BuildMask Mask { get; set; }
+    public AccelStructBuildMask Mask { get; set; }
 
-    public Instance[] Instances { get; set; }
+    public AccelStructInstance[] Instances { get; set; }
 
     public uint Offset { get; set; }
 }

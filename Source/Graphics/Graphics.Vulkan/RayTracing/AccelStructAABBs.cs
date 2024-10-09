@@ -1,8 +1,8 @@
 ﻿namespace Graphics.Vulkan.RayTracing;
 
-public class AABBs : Geometry
+public class AccelStructAABBs : AccelStructGeometry
 {
-    public required DeviceBuffer Buffer { get; set; }
+    public required DeviceBuffer AABBs { get; set; }
 
     public ulong Count { get; set; }
 

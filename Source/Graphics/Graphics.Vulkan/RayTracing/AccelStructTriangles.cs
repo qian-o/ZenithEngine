@@ -3,7 +3,7 @@ using Graphics.Core;
 
 namespace Graphics.Vulkan.RayTracing;
 
-public class Triangles : Geometry
+public class AccelStructTriangles : AccelStructGeometry
 {
     public required DeviceBuffer VertexBuffer { get; set; }
 

@@ -286,7 +286,7 @@ internal sealed unsafe class MainView : View
     private readonly List<DeviceBuffer> _vertexBuffers;
     private readonly List<DeviceBuffer> _indexBuffers;
     private readonly List<GeometryNode> _geometryNodes;
-    private readonly List<Triangles> _triangles;
+    private readonly List<AccelStructTriangles> _triangles;
     private readonly List<Light> _lights;
 
     private readonly DeviceBuffer _cameraBuffer;
@@ -364,20 +364,20 @@ internal sealed unsafe class MainView : View
 
         _bottomLevel = device.Factory.CreateBottomLevelAS(in bottomLevelASDescription);
 
-        Instance instance = new()
+        AccelStructInstance instance = new()
         {
             Transform4x4 = Matrix4x4.Identity,
             InstanceID = 0,
             InstanceMask = 0xFF,
             InstanceContributionToHitGroupIndex = 0,
-            Mask = InstanceMask.None,
+            Mask = AccelStructInstanceMask.None,
             BottomLevel = _bottomLevel
         };
 
         TopLevelASDescription topLevelASDescription = new()
         {
             Instances = [instance],
-            Mask = BuildMask.PreferFastTrace
+            Mask = AccelStructBuildMask.PreferFastTrace
         };
 
         _topLevel = device.Factory.CreateTopLevelAS(in topLevelASDescription);
@@ -869,7 +869,7 @@ internal sealed unsafe class MainView : View
                 }
             }
 
-            Triangles triangles = new()
+            AccelStructTriangles triangles = new()
             {
                 VertexBuffer = vertexBuffer,
                 VertexFormat = PixelFormat.R32G32B32Float,

@@ -13,7 +13,7 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
 
         for (int i = 0; i < description.Instances.Length; i++)
         {
-            Instance instance = description.Instances[i];
+            AccelStructInstance instance = description.Instances[i];
 
             instances[i] = new()
             {

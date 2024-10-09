@@ -4,10 +4,10 @@ namespace Graphics.Vulkan.Descriptions;
 
 public record struct BottomLevelASDescription
 {
-    public BottomLevelASDescription(params Geometry[] geometries)
+    public BottomLevelASDescription(params AccelStructGeometry[] geometries)
     {
         Geometries = geometries;
     }
 
-    public Geometry[] Geometries { get; set; }
+    public AccelStructGeometry[] Geometries { get; set; }
 }

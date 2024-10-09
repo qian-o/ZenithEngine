@@ -16,9 +16,9 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
 
         for (int i = 0; i < description.Geometries.Length; i++)
         {
-            Geometry geometry = description.Geometries[i];
+            AccelStructGeometry geometry = description.Geometries[i];
 
-            if (geometry is Triangles triangles)
+            if (geometry is AccelStructTriangles triangles)
             {
                 TransformMatrixKHR transform = Util.GetTransformMatrix(triangles.Transform);
 
@@ -32,12 +32,12 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
 
         for (int i = 0; i < description.Geometries.Length; i++)
         {
-            Geometry geometry = description.Geometries[i];
+            AccelStructGeometry geometry = description.Geometries[i];
 
             AccelerationStructureGeometryKHR geometryKhr;
             AccelerationStructureBuildRangeInfoKHR buildRangeInfoKhr;
 
-            if (geometry is Triangles triangles)
+            if (geometry is AccelStructTriangles triangles)
             {
                 ulong vertexAddress = triangles.VertexBuffer.Address + triangles.VertexOffset;
                 ulong indexAddress = triangles.IndexBuffer != null ? triangles.IndexBuffer.Address + triangles.IndexOffset : 0;
@@ -81,7 +81,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                     TransformOffset = 0
                 };
             }
-            else if (geometry is AABBs aabbs)
+            else if (geometry is AccelStructAABBs aabbs)
             {
                 geometryKhr = new AccelerationStructureGeometryKHR
                 {
@@ -95,7 +95,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                             SType = StructureType.AccelerationStructureGeometryAabbsDataKhr,
                             Data = new DeviceOrHostAddressConstKHR
                             {
-                                DeviceAddress = aabbs.Buffer.Address
+                                DeviceAddress = aabbs.AABBs.Address
                             },
                             Stride = aabbs.Stride
                         }
