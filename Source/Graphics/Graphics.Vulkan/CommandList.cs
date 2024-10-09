@@ -439,6 +439,11 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
     public void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart)
     {
+        if (_currentPipeline is null || !_currentPipeline.IsGraphics)
+        {
+            throw new InvalidOperationException("No graphics pipeline set.");
+        }
+
         EnsureRenderPassActive();
 
         VkRes.Vk.CmdDrawIndexed(Handle, indexCount, instanceCount, indexStart, vertexOffset, instanceStart);
@@ -451,6 +456,11 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
     public void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ)
     {
+        if (_currentPipeline is null || !_currentPipeline.IsCompute)
+        {
+            throw new InvalidOperationException("No compute pipeline set.");
+        }
+
         EnsureRenderPassInactive();
 
         VkRes.Vk.CmdDispatch(Handle, groupCountX, groupCountY, groupCountZ);

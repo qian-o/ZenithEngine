@@ -126,7 +126,7 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
 
     internal DeviceMemory DeviceMemory { get; }
 
-    public ulong Address { get; }
+    internal ulong Address { get; }
 
     public BufferUsage Usage { get; }
 

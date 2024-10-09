@@ -18,13 +18,18 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
 
         for (uint i = 0; i < description.BoundResources.Length; i++)
         {
-            ulong offset = VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice,
-                                                                                         description.Layout.Handle,
-                                                                                         i);
+            IBindableResource? bindableResource = description.BoundResources[i];
 
-            WriteDescriptorBuffer(description.Layout.DescriptorTypes[i],
-                                  description.BoundResources[i],
-                                  descriptor + offset);
+            if (bindableResource is not null)
+            {
+                ulong offset = VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice,
+                                                                                             description.Layout.Handle,
+                                                                                             i);
+
+                WriteDescriptorBuffer(description.Layout.DescriptorTypes[i],
+                                      bindableResource,
+                                      descriptor + offset);
+            }
         }
 
         buffer.Unmap();
@@ -39,7 +44,12 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
 
     public void UpdateSet(IBindableResource bindableResource, uint index)
     {
-        if (Layout.IsLastBindless)
+        if (index >= Layout.DescriptorTypes.Length)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        if (Layout.IsLastBindless && index >= Layout.DescriptorTypes.Length - 1)
         {
             throw new InvalidOperationException("Resource layout is bindless.");
         }
