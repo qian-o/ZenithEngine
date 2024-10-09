@@ -9,6 +9,7 @@ using Graphics.Vulkan.Helpers;
 using Graphics.Vulkan.ImGui;
 using Hexa.NET.ImGui;
 using Tests.Core;
+using Tests.Core.Helpers;
 
 namespace Tests.Compute;
 
@@ -135,7 +136,7 @@ internal sealed unsafe class MainView : View
         _camera.Up = _cameraController.Up;
         _camera.NearPlane = _cameraController.NearPlane;
         _camera.FarPlane = _cameraController.FarPlane;
-        _camera.Fov = _cameraController.FovRadians;
+        _camera.Fov = _cameraController.Fov.ToRadians();
 
         _device.UpdateBuffer(_buffer, in _camera);
     }
