@@ -368,7 +368,7 @@ internal sealed unsafe class MainView : View
             InstanceID = 0,
             InstanceMask = 0xFF,
             InstanceContributionToHitGroupIndex = 0,
-            Type = AccelStructInstanceType.None,
+            Options = AccelStructInstanceOptions.TriangleCullDisable,
             BottomLevel = _bottomLevel
         };
 

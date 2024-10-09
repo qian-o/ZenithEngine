@@ -1,16 +1,17 @@
 ﻿namespace Graphics.Core;
 
-public enum AccelStructGeometryType : byte
+[Flags]
+public enum AccelStructGeometryOptions : byte
 {
-    None,
+    None = 0,
 
     /// <summary>
     /// Geometry is opaque.
     /// </summary>
-    Opaque,
+    Opaque = 1 << 0,
 
     /// <summary>
     /// Geometry is no duplicate.
     /// </summary>
-    NoDuplicateAnyHitInvocation
+    NoDuplicateAnyHitInvocation = 1 << 1
 }

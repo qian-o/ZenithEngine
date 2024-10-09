@@ -46,7 +46,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                 geometryKhr = new AccelerationStructureGeometryKHR
                 {
                     SType = StructureType.AccelerationStructureGeometryKhr,
-                    Flags = Formats.GetGeometryFlags(triangles.Type),
+                    Flags = Formats.GetGeometryFlags(triangles.Options),
                     GeometryType = GeometryTypeKHR.TrianglesKhr,
                     Geometry = new AccelerationStructureGeometryDataKHR
                     {
@@ -86,7 +86,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                 geometryKhr = new AccelerationStructureGeometryKHR
                 {
                     SType = StructureType.AccelerationStructureGeometryKhr,
-                    Flags = Formats.GetGeometryFlags(aabbs.Type),
+                    Flags = Formats.GetGeometryFlags(aabbs.Options),
                     GeometryType = GeometryTypeKHR.AabbsKhr,
                     Geometry = new AccelerationStructureGeometryDataKHR
                     {

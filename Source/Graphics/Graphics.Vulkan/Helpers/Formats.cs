@@ -572,26 +572,48 @@ internal static class Formats
         };
     }
 
-    public static GeometryFlagsKHR GetGeometryFlags(AccelStructGeometryType type)
+    public static GeometryFlagsKHR GetGeometryFlags(AccelStructGeometryOptions options)
     {
-        return type switch
+        GeometryFlagsKHR geometryFlags = GeometryFlagsKHR.None;
+
+        if (options.HasFlag(AccelStructGeometryOptions.Opaque))
         {
-            AccelStructGeometryType.Opaque => GeometryFlagsKHR.OpaqueBitKhr,
-            AccelStructGeometryType.NoDuplicateAnyHitInvocation => GeometryFlagsKHR.NoDuplicateAnyHitInvocationBitKhr,
-            _ => GeometryFlagsKHR.None
-        };
+            geometryFlags |= GeometryFlagsKHR.OpaqueBitKhr;
+        }
+
+        if (options.HasFlag(AccelStructGeometryOptions.NoDuplicateAnyHitInvocation))
+        {
+            geometryFlags |= GeometryFlagsKHR.NoDuplicateAnyHitInvocationBitKhr;
+        }
+
+        return geometryFlags;
     }
 
-    public static GeometryInstanceFlagsKHR GetGeometryInstanceFlags(AccelStructInstanceType type)
+    public static GeometryInstanceFlagsKHR GetGeometryInstanceFlags(AccelStructInstanceOptions options)
     {
-        return type switch
+        GeometryInstanceFlagsKHR geometryInstanceFlags = GeometryInstanceFlagsKHR.None;
+
+        if (options.HasFlag(AccelStructInstanceOptions.TriangleCullDisable))
         {
-            AccelStructInstanceType.TriangleCullDisable => GeometryInstanceFlagsKHR.TriangleFacingCullDisableBitKhr,
-            AccelStructInstanceType.TriangleFrontCounterClockwise => GeometryInstanceFlagsKHR.TriangleFrontCounterclockwiseBitKhr,
-            AccelStructInstanceType.ForceOpaque => GeometryInstanceFlagsKHR.ForceOpaqueBitKhr,
-            AccelStructInstanceType.ForceNoOpaque => GeometryInstanceFlagsKHR.ForceNoOpaqueBitKhr,
-            _ => GeometryInstanceFlagsKHR.None
-        };
+            geometryInstanceFlags |= GeometryInstanceFlagsKHR.TriangleFacingCullDisableBitKhr;
+        }
+
+        if (options.HasFlag(AccelStructInstanceOptions.TriangleFrontCounterClockwise))
+        {
+            geometryInstanceFlags |= GeometryInstanceFlagsKHR.TriangleFrontCounterclockwiseBitKhr;
+        }
+
+        if (options.HasFlag(AccelStructInstanceOptions.ForceOpaque))
+        {
+            geometryInstanceFlags |= GeometryInstanceFlagsKHR.ForceOpaqueBitKhr;
+        }
+
+        if (options.HasFlag(AccelStructInstanceOptions.ForceNoOpaque))
+        {
+            geometryInstanceFlags |= GeometryInstanceFlagsKHR.ForceNoOpaqueBitKhr;
+        }
+
+        return geometryInstanceFlags;
     }
 
     public static BuildAccelerationStructureFlagsKHR GetBuildAccelerationStructureFlags(AccelStructBuildOptions options)

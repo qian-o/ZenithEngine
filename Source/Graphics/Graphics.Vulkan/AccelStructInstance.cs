@@ -35,9 +35,9 @@ public class AccelStructInstance
     public byte InstanceMask { get; set; }
 
     /// <summary>
-    /// The type of the instance.
+    /// The options for the instance.
     /// </summary>
-    public AccelStructInstanceType Type { get; set; }
+    public AccelStructInstanceOptions Options { get; set; }
 
     /// <summary>
     /// A 4x4 transform matrix in row major layout representing the instance-to-world
