@@ -26,7 +26,7 @@ internal sealed unsafe class MainView : View
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct UniformBufferObject
+    private struct ConstantBufferObject
     {
         public Matrix4x4 Model;
 
@@ -50,7 +50,7 @@ internal sealed unsafe class MainView : View
     private readonly TextureView _sdfTextureView;
     private readonly DeviceBuffer _vertexBuffer;
     private readonly DeviceBuffer _indexBuffer;
-    private readonly DeviceBuffer _uniformBuffer;
+    private readonly DeviceBuffer _constantBuffer;
     private readonly DeviceBuffer _normalBuffer;
     private readonly ResourceLayout _resourceLayout;
     private readonly ResourceSet _resourceSet;
@@ -111,17 +111,17 @@ internal sealed unsafe class MainView : View
         _indexBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Length, BufferUsage.IndexBuffer));
         device.UpdateBuffer(_indexBuffer, indices);
 
-        _uniformBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<UniformBufferObject>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
+        _constantBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<ConstantBufferObject>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
         _normalBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Properties>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
 
-        ElementDescription uboDescription = new("ubo", ResourceKind.ConstantBuffer, ShaderStages.Vertex);
+        ElementDescription cboDescription = new("cbo", ResourceKind.ConstantBuffer, ShaderStages.Vertex);
         ElementDescription normalDescription = new("properties", ResourceKind.ConstantBuffer, ShaderStages.Fragment);
         ElementDescription msdfDescription = new("msdf", ResourceKind.SampledImage, ShaderStages.Fragment);
         ElementDescription msdfSamplerDescription = new("msdfSampler", ResourceKind.Sampler, ShaderStages.Fragment);
 
-        _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(uboDescription, normalDescription, msdfDescription, msdfSamplerDescription));
+        _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(cboDescription, normalDescription, msdfDescription, msdfSamplerDescription));
 
-        _resourceSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _uniformBuffer, _normalBuffer, _sdfTextureView, _device.LinearSampler));
+        _resourceSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout, _constantBuffer, _normalBuffer, _sdfTextureView, _device.LinearSampler));
 
         string hlsl = File.ReadAllText("Assets/Shaders/SDF.hlsl");
         _shaders = device.Factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
@@ -191,7 +191,7 @@ internal sealed unsafe class MainView : View
                     Matrix4x4 translation = Matrix4x4.CreateTranslation(new Vector3(offset, 0.0f, 0.0f));
                     Matrix4x4 model = translation;
 
-                    UniformBufferObject ubo = new()
+                    ConstantBufferObject cbo = new()
                     {
                         Model = model * Matrix4x4.CreateTranslation(position),
                         View = Matrix4x4.CreateLookAt(new Vector3(0.0f, 0.0f, 2.0f), Vector3.Zero, Vector3.UnitY),
@@ -201,7 +201,7 @@ internal sealed unsafe class MainView : View
                     properties.PxRange = _layout.Atlas!.DistanceRange;
 
                     _commandList.UpdateBuffer(_vertexBuffer, vertices);
-                    _commandList.UpdateBuffer(_uniformBuffer, ref ubo);
+                    _commandList.UpdateBuffer(_constantBuffer, ref cbo);
                     _commandList.UpdateBuffer(_normalBuffer, ref properties);
 
                     _commandList.DrawIndexed(_indexBuffer.SizeInBytes / sizeof(uint), 1, 0, 0, 0);
@@ -251,7 +251,7 @@ internal sealed unsafe class MainView : View
         _sdfTextureView.Dispose();
         _vertexBuffer.Dispose();
         _indexBuffer.Dispose();
-        _uniformBuffer.Dispose();
+        _constantBuffer.Dispose();
         _normalBuffer.Dispose();
         _resourceLayout.Dispose();
         _resourceSet.Dispose();

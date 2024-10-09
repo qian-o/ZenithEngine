@@ -109,9 +109,9 @@ internal sealed unsafe class Program
 
     private static DeviceBuffer _vertexBuffer = null!;
     private static DeviceBuffer _indexBuffer = null!;
-    private static DeviceBuffer _uboBuffer = null!;
-    private static ResourceLayout _uboLayout = null!;
-    private static ResourceSet _uboSet = null!;
+    private static DeviceBuffer _cboBuffer = null!;
+    private static ResourceLayout _cboLayout = null!;
+    private static ResourceSet _cboSet = null!;
     private static ResourceLayout _textureMapLayout = null!;
     private static ResourceSet _textureMapSet = null!;
     private static ResourceLayout _textureSamplerLayout = null!;
@@ -229,7 +229,7 @@ internal sealed unsafe class Program
         _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Count, BufferUsage.IndexBuffer));
         _device.UpdateBuffer(_indexBuffer, [.. indices]);
 
-        _uboBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<UBO>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
+        _cboBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<UBO>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutDescription uboLayoutDescription = new(new ElementDescription("ubo", ResourceKind.ConstantBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
@@ -237,8 +237,8 @@ internal sealed unsafe class Program
         ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
                                                                                                  new ElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
-        _uboLayout = _device.Factory.CreateResourceLayout(in uboLayoutDescription);
-        _uboSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_uboLayout, _uboBuffer));
+        _cboLayout = _device.Factory.CreateResourceLayout(in uboLayoutDescription);
+        _cboSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_cboLayout, _cboBuffer));
 
         _textureMapLayout = _device.Factory.CreateResourceLayout(in textureMapDescription);
         _textureMapSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_textureMapLayout));
@@ -279,7 +279,7 @@ internal sealed unsafe class Program
                 DepthStencilState = DepthStencilStateDescription.DepthOnlyLessEqual,
                 RasterizerState = _materials[i].DoubleSided ? RasterizerStateDescription.CullNone : RasterizerStateDescription.Default,
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
-                ResourceLayouts = [_uboLayout, _textureMapLayout, _textureSamplerLayout],
+                ResourceLayouts = [_cboLayout, _textureMapLayout, _textureSamplerLayout],
                 Shaders = new GraphicsShaderDescription(_vertexLayoutDescriptions, _shaders, [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
                 Outputs = _device.MainSwapchain.OutputDescription
             };
@@ -344,10 +344,10 @@ internal sealed unsafe class Program
         _textureMapSet.Dispose();
         _textureMapLayout.Dispose();
 
-        _uboSet.Dispose();
-        _uboLayout.Dispose();
+        _cboSet.Dispose();
+        _cboLayout.Dispose();
 
-        _uboBuffer.Dispose();
+        _cboBuffer.Dispose();
         _indexBuffer.Dispose();
         _vertexBuffer.Dispose();
 
@@ -481,12 +481,12 @@ internal sealed unsafe class Program
         {
             _ubo.Model = node.WorldTransform;
 
-            commandList.UpdateBuffer(_uboBuffer, ref _ubo);
+            commandList.UpdateBuffer(_cboBuffer, ref _ubo);
 
             foreach (Primitive primitive in node.Mesh.Primitives)
             {
                 commandList.SetPipeline(_pipelines![primitive.MaterialIndex]);
-                commandList.SetResourceSet(0, _uboSet);
+                commandList.SetResourceSet(0, _cboSet);
                 commandList.SetResourceSet(1, _textureMapSet);
                 commandList.SetResourceSet(2, _textureSamplerSet);
                 commandList.DrawIndexed(primitive.IndexCount, 1, primitive.FirstIndex, 0, 0);

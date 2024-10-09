@@ -162,8 +162,8 @@ internal sealed unsafe class Program
     private static DeviceBuffer _indexBuffer = null!;
     private static DeviceBuffer _nodeTransformBuffer = null!;
     private static DeviceBuffer _frameBuffer = null!;
-    private static ResourceLayout _uboLayout = null!;
-    private static ResourceSet _uboSet = null!;
+    private static ResourceLayout _cboLayout = null!;
+    private static ResourceSet _cboSet = null!;
     private static ResourceLayout _textureMapLayout = null!;
     private static ResourceSet _textureMapSet = null!;
     private static ResourceLayout _textureSamplerLayout = null!;
@@ -325,15 +325,15 @@ internal sealed unsafe class Program
         _frameBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Frame>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
         _nodeTransformBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Matrix4x4>(_worldSpaceMats.Length, BufferUsage.StorageBuffer | BufferUsage.Dynamic));
 
-        ResourceLayoutDescription uboLayoutDescription = new(new ElementDescription("frame", ResourceKind.ConstantBuffer, ShaderStages.Vertex),
+        ResourceLayoutDescription cboLayoutDescription = new(new ElementDescription("frame", ResourceKind.ConstantBuffer, ShaderStages.Vertex),
                                                              new ElementDescription("nodeTransform", ResourceKind.StorageBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
                                                                                              new ElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
         ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
                                                                                                  new ElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
 
-        _uboLayout = _device.Factory.CreateResourceLayout(in uboLayoutDescription);
-        _uboSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_uboLayout, _frameBuffer, _nodeTransformBuffer));
+        _cboLayout = _device.Factory.CreateResourceLayout(in cboLayoutDescription);
+        _cboSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_cboLayout, _frameBuffer, _nodeTransformBuffer));
 
         _textureMapLayout = _device.Factory.CreateResourceLayout(in textureMapDescription);
         _textureMapSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_textureMapLayout));
@@ -376,7 +376,7 @@ internal sealed unsafe class Program
                 DepthStencilState = DepthStencilStateDescription.DepthOnlyLessEqual,
                 RasterizerState = _materials[i].DoubleSided ? RasterizerStateDescription.CullNone : RasterizerStateDescription.Default,
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
-                ResourceLayouts = [_uboLayout, _textureMapLayout, _textureSamplerLayout],
+                ResourceLayouts = [_cboLayout, _textureMapLayout, _textureSamplerLayout],
                 Shaders = new GraphicsShaderDescription(_vertexLayoutDescriptions, _shaders, [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
                 Outputs = _device.MainSwapchain.OutputDescription
             };
@@ -428,7 +428,7 @@ internal sealed unsafe class Program
                 foreach (Primitive primitive in node.Mesh.Primitives)
                 {
                     _commandList.SetPipeline(_pipelines![primitive.MaterialIndex]);
-                    _commandList.SetResourceSet(0, _uboSet);
+                    _commandList.SetResourceSet(0, _cboSet);
                     _commandList.SetResourceSet(1, _textureMapSet);
                     _commandList.SetResourceSet(2, _textureSamplerSet);
 
@@ -462,8 +462,8 @@ internal sealed unsafe class Program
         _textureMapSet.Dispose();
         _textureMapLayout.Dispose();
 
-        _uboSet.Dispose();
-        _uboLayout.Dispose();
+        _cboSet.Dispose();
+        _cboLayout.Dispose();
 
         _frameBuffer.Dispose();
         _nodeTransformBuffer.Dispose();

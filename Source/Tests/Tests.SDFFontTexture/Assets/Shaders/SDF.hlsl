@@ -1,4 +1,4 @@
-﻿struct UBO
+﻿struct CBO
 {
     float4x4 Model;
     float4x4 View;
@@ -22,7 +22,7 @@ struct VSOutput
     [[vk::location(0)]] float2 TexCoord : TEXCOORD;
 };
 
-ConstantBuffer<UBO> ubo : register(b0, space0);
+ConstantBuffer<CBO> cbo : register(b0, space0);
 ConstantBuffer<Properties> properties : register(b1, space0);
 Texture2D msdf : register(t2, space0);
 SamplerState msdfSampler : register(s3, space0);
@@ -31,7 +31,7 @@ VSOutput mainVS(VSInput input)
 {
     VSOutput output;
     
-    output.Position = mul(ubo.Projection, mul(ubo.View, mul(ubo.Model, float4(input.Position, 1.0))));
+    output.Position = mul(cbo.Projection, mul(cbo.View, mul(cbo.Model, float4(input.Position, 1.0))));
     output.TexCoord = input.TexCoord;
     
     return output;
