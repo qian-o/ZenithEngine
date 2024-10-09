@@ -50,6 +50,8 @@ struct Light
 {
     float3 position;
     
+    float radius;
+    
     float4 ambientColor;
     
     float4 diffuseColor;
@@ -345,7 +347,7 @@ float4 calculateSpecularCoefficient(in float3 hitPosition, in float3 incidentLig
     return pow(saturate(dot(reflectedLightRay, normalize(-WorldRayDirection()))), specularPower);
 }
 
-float4 calculatePhongLighting(in float4 albedo, in float3 normal, in float diffuseCoef, in float specularCoef, in float specularPower)
+float4 calculatePhongLighting(in uint randSeed, in float4 albedo, in float3 normal, in float diffuseCoef, in float specularCoef, in float specularPower)
 {
     float3 hitPosition = hitWorldPosition();
     
@@ -357,7 +359,7 @@ float4 calculatePhongLighting(in float4 albedo, in float3 normal, in float diffu
         
         Ray shadowRay;
         shadowRay.origin = hitPosition;
-        shadowRay.direction = normalize(light.position - hitPosition);
+        shadowRay.direction = getConeSample(randSeed, hitPosition, light.position, light.radius);
         shadowRay.min = 0.001;
         shadowRay.max = length(light.position - hitPosition);
         
@@ -483,7 +485,7 @@ void closestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     
     float4 albedo = textureArray[node.baseColorTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0) * float4(vertex.color, 1.0);
     
-    float4 color = calculatePhongLighting(albedo, vertex.normal, other.diffuseCoef, other.specularCoef, other.specularPower);
+    float4 color = calculatePhongLighting(randSeed, albedo, vertex.normal, other.diffuseCoef, other.specularCoef, other.specularPower);
     
     float roughness = textureArray[node.roughnessTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0).g;
     
@@ -567,7 +569,7 @@ void giChs(inout GIRayPayload payload, in BuiltInTriangleIntersectionAttributes 
     
     float4 albedo = textureArray[node.baseColorTextureIndex].SampleLevel(samplerArray[0], vertex.texCoord, 0) * float4(vertex.color, 1.0);
     
-    float4 color = calculatePhongLighting(albedo, vertex.normal, 0.9, 0.7, 50);
+    float4 color = calculatePhongLighting(payload.seed, albedo, vertex.normal, 0.9, 0.7, 50);
     
     float ambientOcclusion = 0.0f;
     for (int i = 0; i < other.numRays; i++)

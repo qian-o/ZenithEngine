@@ -99,6 +99,8 @@ internal sealed unsafe class MainView : View
     {
         public Vector3 Position;
 
+        public float Radius;
+
         public Vector4 AmbientColor;
 
         public Vector4 DiffuseColor;
@@ -336,9 +338,10 @@ internal sealed unsafe class MainView : View
         _lights.Add(new Light()
         {
             Position = new Vector3(-50.0f, 500.0f, 75.0f),
-            AmbientColor = new Vector4(0.1f, 0.1f, 0.1f, 1.0f),
-            DiffuseColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-            SpecularColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f)
+            Radius = 3.0f,
+            AmbientColor = new Vector4(0.2f, 0.15f, 0.1f, 1.0f),
+            DiffuseColor = new Vector4(1.0f, 0.9f, 0.7f, 1.0f),
+            SpecularColor = new Vector4(1.0f, 0.9f, 0.7f, 1.0f)
         });
 
         _cameraBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Camera>(1, BufferUsage.ConstantBuffer));
@@ -476,8 +479,8 @@ internal sealed unsafe class MainView : View
             PathTracerAccumulationFactor = 1.0f,
             PixelOffset = HaltonSequence[0],
             LightCount = _lights.Count,
-            NumRays = 4,
-            AORadius = 0.4f,
+            NumRays = 8,
+            AORadius = 1.0f,
             AORayMin = 0.01f,
             FrameCount = 0,
             NumBounces = 3,
@@ -507,6 +510,11 @@ internal sealed unsafe class MainView : View
                 ImGui.PushID(i);
 
                 if (ImGui.DragFloat3("Position", ref light.Position))
+                {
+                    _pathTracerSampleIndex = 0;
+                }
+
+                if (ImGui.DragFloat("Radius", ref light.Radius, 0.01f, 0.0f, 4.0f))
                 {
                     _pathTracerSampleIndex = 0;
                 }
