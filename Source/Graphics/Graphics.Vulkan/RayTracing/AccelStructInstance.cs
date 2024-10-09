@@ -35,8 +35,7 @@ public class AccelStructInstance
     public byte InstanceMask { get; set; }
 
     /// <summary>
-    /// Flags from Evergine.Common.Graphics.Raytracing.AccelerationStructureInstanceFlags
-    /// to apply to the instance.
+    /// The type of the instance.
     /// </summary>
     public AccelStructInstanceType Type { get; set; }
 
