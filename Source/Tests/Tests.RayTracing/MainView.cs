@@ -14,6 +14,7 @@ using SharpGLTF.Schema2;
 using SharpGLTF.Validation;
 using StbImageSharp;
 using Tests.Core;
+using Tests.Core.Helpers;
 using AlphaMode = SharpGLTF.Schema2.AlphaMode;
 using GLTFTexture = SharpGLTF.Schema2.Texture;
 using Texture = Graphics.Vulkan.Texture;
@@ -324,6 +325,8 @@ internal sealed unsafe class MainView : View
         _imGuiController = imGuiController;
         _viewController = new ViewController(this);
         _cameraController = new CameraController(_viewController);
+        _cameraController.Transform(Matrix4x4.CreateRotationY(90.0f.ToRadians()));
+        _cameraController.Transform(Matrix4x4.CreateTranslation(new Vector3(0.0f, 1.2f, 0.0f)));
 
         _textures = [];
         _textureViews = [];
@@ -337,7 +340,7 @@ internal sealed unsafe class MainView : View
 
         _lights.Add(new Light()
         {
-            Position = new Vector3(-50.0f, 500.0f, 75.0f),
+            Position = new Vector3(-100.0f, 100.0f, 0.0f),
             Radius = 3.0f,
             AmbientColor = new Vector4(0.2f, 0.15f, 0.1f, 1.0f),
             DiffuseColor = new Vector4(1.0f, 0.9f, 0.7f, 1.0f),
@@ -470,7 +473,7 @@ internal sealed unsafe class MainView : View
             Up = _cameraController.Up,
             NearPlane = _cameraController.NearPlane,
             FarPlane = _cameraController.FarPlane,
-            Fov = _cameraController.FovRadians
+            Fov = _cameraController.Fov.ToRadians()
         };
 
         _other = new Other()
@@ -565,7 +568,7 @@ internal sealed unsafe class MainView : View
         _camera.Up = _cameraController.Up;
         _camera.NearPlane = _cameraController.NearPlane;
         _camera.FarPlane = _cameraController.FarPlane;
-        _camera.Fov = _cameraController.FovRadians;
+        _camera.Fov = _cameraController.Fov.ToRadians();
 
         if (cameraHashCode != _camera.GetHashCode())
         {

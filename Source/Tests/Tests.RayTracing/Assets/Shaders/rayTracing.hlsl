@@ -360,8 +360,8 @@ float4 calculatePhongLighting(in uint randSeed, in float4 albedo, in float3 norm
         Ray shadowRay;
         shadowRay.origin = hitPosition;
         shadowRay.direction = getConeSample(randSeed, hitPosition, light.position, light.radius);
-        shadowRay.min = 0.001;
-        shadowRay.max = length(light.position - hitPosition);
+        shadowRay.min = camera.nearPlane;
+        shadowRay.max = camera.farPlane;
         
         bool isInShadow = traceShadowRay(shadowRay);
         

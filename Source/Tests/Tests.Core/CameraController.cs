@@ -28,7 +28,14 @@ public class CameraController
 
     public float Fov { get; set; } = 45.0f;
 
-    public float FovRadians => DegToRad(Fov);
+    public void Transform(Matrix4x4 matrix)
+    {
+        Position = Vector3.Transform(Position, matrix);
+        Forward = Vector3.TransformNormal(Forward, matrix);
+
+        Right = Vector3.Normalize(Vector3.Cross(Forward, Vector3.UnitY));
+        Up = Vector3.Normalize(Vector3.Cross(Right, Forward));
+    }
 
     public void Update(float deltaTime)
     {
