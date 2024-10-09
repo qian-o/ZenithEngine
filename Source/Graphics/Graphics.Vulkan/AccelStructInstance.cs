@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
-using Graphics.Core.RayTracing;
+using Graphics.Core;
 
-namespace Graphics.Vulkan.RayTracing;
+namespace Graphics.Vulkan;
 
 /// <summary>
 /// This data structure is used in GPU memory during acceleration structure build.

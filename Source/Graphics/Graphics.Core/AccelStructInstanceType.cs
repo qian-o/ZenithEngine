@@ -1,4 +1,4 @@
-﻿namespace Graphics.Core.RayTracing;
+﻿namespace Graphics.Core;
 
 public enum AccelStructInstanceType : byte
 {

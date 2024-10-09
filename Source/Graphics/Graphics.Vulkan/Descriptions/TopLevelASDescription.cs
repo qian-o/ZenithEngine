@@ -1,5 +1,4 @@
-﻿using Graphics.Core.RayTracing;
-using Graphics.Vulkan.RayTracing;
+﻿using Graphics.Core;
 
 namespace Graphics.Vulkan.Descriptions;
 

@@ -1,6 +1,4 @@
-﻿using Graphics.Vulkan.RayTracing;
-
-namespace Graphics.Vulkan.Descriptions;
+﻿namespace Graphics.Vulkan.Descriptions;
 
 public record struct BottomLevelASDescription
 {

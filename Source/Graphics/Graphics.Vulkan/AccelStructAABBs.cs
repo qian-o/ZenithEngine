@@ -1,4 +1,4 @@
-﻿namespace Graphics.Vulkan.RayTracing;
+﻿namespace Graphics.Vulkan;
 
 public class AccelStructAABBs : AccelStructGeometry
 {

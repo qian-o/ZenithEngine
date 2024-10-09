@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using Graphics.Core;
 
-namespace Graphics.Vulkan.RayTracing;
+namespace Graphics.Vulkan;
 
 public class AccelStructTriangles : AccelStructGeometry
 {

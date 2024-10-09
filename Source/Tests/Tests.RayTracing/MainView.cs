@@ -1,13 +1,11 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
 using Graphics.Core;
-using Graphics.Core.RayTracing;
 using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Graphics.Vulkan.ImGui;
-using Graphics.Vulkan.RayTracing;
 using Hexa.NET.ImGui;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;

@@ -3,7 +3,7 @@ using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 
-namespace Graphics.Vulkan.RayTracing;
+namespace Graphics.Vulkan;
 
 public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindableResource
 {

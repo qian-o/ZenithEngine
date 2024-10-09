@@ -1,6 +1,6 @@
-﻿using Graphics.Core.RayTracing;
+﻿using Graphics.Core;
 
-namespace Graphics.Vulkan.RayTracing;
+namespace Graphics.Vulkan;
 
 public abstract class AccelStructGeometry
 {

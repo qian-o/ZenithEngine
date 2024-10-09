@@ -1,5 +1,4 @@
 ﻿using Graphics.Core;
-using Graphics.Core.RayTracing;
 using Silk.NET.Vulkan;
 using BlendFactor = Graphics.Core.BlendFactor;
 using FrontFace = Graphics.Core.FrontFace;
