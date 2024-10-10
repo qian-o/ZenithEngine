@@ -340,7 +340,7 @@ internal sealed unsafe class MainView : View
         {
             Position = new Vector3(-100.0f, 100.0f, 0.0f),
             Radius = 3.0f,
-            AmbientColor = new Vector4(0.2f, 0.15f, 0.1f, 1.0f),
+            AmbientColor = new Vector4(0.1f, 0.1f, 0.1f, 1.0f),
             DiffuseColor = new Vector4(1.0f, 0.9f, 0.7f, 1.0f),
             SpecularColor = new Vector4(1.0f, 0.9f, 0.7f, 1.0f)
         });
