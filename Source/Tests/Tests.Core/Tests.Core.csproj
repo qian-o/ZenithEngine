@@ -15,8 +15,8 @@
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="OxyPlot.SkiaSharp" Version="2.2.0" />
-		<PackageReference Include="SharpGLTF.Core" Version="1.0.2" />
-		<PackageReference Include="SharpGLTF.Toolkit" Version="1.0.2" />
+		<PackageReference Include="SharpGLTF.Core" Version="1.0.3" />
+		<PackageReference Include="SharpGLTF.Toolkit" Version="1.0.3" />
 		<PackageReference Include="SkiaSharp.Skottie" Version="2.88.8" />
 		<PackageReference Include="StbImageSharp" Version="2.30.15" />
 	</ItemGroup>
