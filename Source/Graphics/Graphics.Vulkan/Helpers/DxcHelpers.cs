@@ -13,13 +13,18 @@ public static unsafe class DxcHelpers
         {
             byte[] includeBytes = includeResolver?.Invoke(filename) ?? [];
 
-            includeSource = DxcCompiler.Utils.CreateBlob((nint)includeBytes.AsPointer(), includeBytes.Length, Dxc.DXC_CP_UTF8);
+            includeSource = DxcCompiler.Utils.CreateBlob((nint)includeBytes.AsPointer(),
+                                                         (uint)includeBytes.Length,
+                                                         Dxc.DXC_CP_UTF8);
 
             return Result.Ok;
         }
     }
 
-    public static byte[] Compile(ShaderStages stage, string hlsl, string entryPoint, Func<string, byte[]>? includeResolver = null)
+    public static byte[] Compile(ShaderStages stage,
+                                 string hlsl,
+                                 string entryPoint,
+                                 Func<string, byte[]>? includeResolver = null)
     {
         using IncludeHandler includeHandler = new(includeResolver);
 
