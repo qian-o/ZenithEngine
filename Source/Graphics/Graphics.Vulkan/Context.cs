@@ -92,7 +92,22 @@ public unsafe class Context : DisposableObject
         VkPhysicalDevice[] physicalDevices = new VkPhysicalDevice[(int)physicalDeviceCount];
         _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices).ThrowCode("Failed to enumerate physical devices!");
 
-        return physicalDevices.Select(CreatePhysicalDevice).ToArray();
+        return physicalDevices.Select(Create).ToArray();
+
+        PhysicalDevice Create(VkPhysicalDevice vkPhysicalDevice)
+        {
+            lock (_physicalDeviceMap)
+            {
+                VulkanResources vulkanResources = new();
+                vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtilsExt, _surfaceExt);
+
+                PhysicalDevice physicalDevice = new(vulkanResources, vkPhysicalDevice);
+
+                _physicalDeviceMap.Add(physicalDevice, vulkanResources);
+
+                return physicalDevice;
+            }
+        }
     }
 
     public PhysicalDevice GetBestPhysicalDevice()
@@ -158,13 +173,27 @@ public unsafe class Context : DisposableObject
 
         _alloter.Clear();
 
-        GraphicsDevice graphicsDevice = CreateGraphicsDevice(physicalDevice,
-                                                             device,
-                                                             graphicsQueueFamilyIndex,
-                                                             computeQueueFamilyIndex,
-                                                             transferQueueFamilyIndex);
+        return Create(device);
 
-        return graphicsDevice;
+        GraphicsDevice Create(VkDevice vkDevice)
+        {
+            lock (_graphicsDeviceMap)
+            {
+                VulkanResources vulkanResources = new();
+                vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtilsExt, _surfaceExt);
+                vulkanResources.InitializePhysicalDevice(physicalDevice, GetDeviceExtensions());
+
+                GraphicsDevice graphicsDevice = new(vulkanResources,
+                                                    vkDevice,
+                                                    graphicsQueueFamilyIndex,
+                                                    computeQueueFamilyIndex,
+                                                    transferQueueFamilyIndex);
+
+                _graphicsDeviceMap.Add(graphicsDevice, vulkanResources);
+
+                return graphicsDevice;
+            }
+        }
     }
 
     protected override void Destroy()
@@ -278,45 +307,6 @@ public unsafe class Context : DisposableObject
         }
 
         return ext;
-    }
-
-    private PhysicalDevice CreatePhysicalDevice(VkPhysicalDevice vkPhysicalDevice)
-    {
-        lock (_physicalDeviceMap)
-        {
-            VulkanResources vulkanResources = new();
-            vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtilsExt, _surfaceExt);
-
-            PhysicalDevice physicalDevice = new(vulkanResources, vkPhysicalDevice);
-
-            _physicalDeviceMap.Add(physicalDevice, vulkanResources);
-
-            return physicalDevice;
-        }
-    }
-
-    private GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice,
-                                                VkDevice device,
-                                                uint graphicsQueueFamilyIndex,
-                                                uint computeQueueFamilyIndex,
-                                                uint transferQueueFamilyIndex)
-    {
-        lock (_graphicsDeviceMap)
-        {
-            VulkanResources vulkanResources = new();
-            vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtilsExt, _surfaceExt);
-            vulkanResources.InitializePhysicalDevice(physicalDevice, GetDeviceExtensions());
-
-            GraphicsDevice graphicsDevice = new(vulkanResources,
-                                                device,
-                                                graphicsQueueFamilyIndex,
-                                                computeQueueFamilyIndex,
-                                                transferQueueFamilyIndex);
-
-            _graphicsDeviceMap.Add(graphicsDevice, vulkanResources);
-
-            return graphicsDevice;
-        }
     }
 
     private uint DebugMessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
