@@ -15,11 +15,13 @@ public static unsafe class DxcHelpers
         {
             if (!cache.TryGetValue(filename, out IDxcBlob? blob))
             {
-                byte[] includeBytes = includeResolver?.Invoke(filename) ?? [];
+                byte[] includeBytes = includeResolver?.Invoke(filename) ?? [0];
 
                 blob = DxcCompiler.Utils.CreateBlob((nint)includeBytes.AsPointer(),
                                                     (uint)includeBytes.Length,
                                                     Dxc.DXC_CP_UTF8);
+
+                cache.Add(filename, blob);
             }
 
             includeSource = blob;
@@ -62,14 +64,22 @@ public static unsafe class DxcHelpers
         string shaderProfile = GetProfile(stage);
         bool isLib = shaderProfile.Contains("lib");
 
-        return
-        [
-            "-fvk-use-scalar-layout",
-            "-spirv",
-            "-T", shaderProfile,
-             isLib ? string.Empty : "-E", entryPoint,
-            $"-fspv-target-env=vulkan{Context.ApiVersion.Major}.{Context.ApiVersion.Minor}"
-         ];
+        List<string> arguments = [];
+
+        arguments.Add("-T");
+        arguments.Add(shaderProfile);
+
+        if (!isLib)
+        {
+            arguments.Add("-E");
+            arguments.Add(entryPoint);
+        }
+
+        arguments.Add("-spirv");
+        arguments.Add("-fvk-use-scalar-layout");
+        arguments.Add($"-fspv-target-env=vulkan{Context.ApiVersion.Major}.{Context.ApiVersion.Minor}");
+
+        return [.. arguments];
     }
 
     private static string GetProfile(ShaderStages stage)
