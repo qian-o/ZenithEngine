@@ -239,6 +239,11 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
             return capabilities.CurrentExtent;
         }
 
-        return capabilities.MinImageExtent;
+        return new Extent2D((uint)Util.Lerp(capabilities.MinImageExtent.Width,
+                                            capabilities.MaxImageExtent.Width,
+                                            0.5f),
+                            (uint)Util.Lerp(capabilities.MinImageExtent.Height,
+                                            capabilities.MaxImageExtent.Height,
+                                            0.5f));
     }
 }

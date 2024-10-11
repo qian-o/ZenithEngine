@@ -50,7 +50,7 @@ public unsafe class ImGuiController : DisposableObject
     #region Constructors
     public ImGuiController(SdlWindow window,
                            GraphicsDevice graphicsDevice,
-                           OutputDescription output,
+                           OutputDescription outputDescription,
                            ColorSpaceHandling colorSpaceHandling,
                            ImGuiFontConfig imGuiFontConfig,
                            ImGuiSizeConfig imGuiSizeConfig,
@@ -68,7 +68,7 @@ public unsafe class ImGuiController : DisposableObject
         _platforms = [];
         _platformsByHandle = [];
         _mouseCursors = [];
-        _imGuiRenderer = new ImGuiRenderer(graphicsDevice, output, colorSpaceHandling);
+        _imGuiRenderer = new ImGuiRenderer(graphicsDevice, outputDescription, colorSpaceHandling);
 
         _createWindow = CreateWindow;
         _destroyWindow = DestroyWindow;
@@ -92,11 +92,11 @@ public unsafe class ImGuiController : DisposableObject
 
     public ImGuiController(SdlWindow window,
                            GraphicsDevice graphicsDevice,
-                           OutputDescription output,
+                           OutputDescription outputDescription,
                            ImGuiFontConfig imGuiFontConfig,
                            ImGuiSizeConfig imGuiSizeConfig) : this(window,
                                                                    graphicsDevice,
-                                                                   output,
+                                                                   outputDescription,
                                                                    ColorSpaceHandling.Legacy,
                                                                    imGuiFontConfig,
                                                                    imGuiSizeConfig,
@@ -106,13 +106,13 @@ public unsafe class ImGuiController : DisposableObject
 
     public ImGuiController(SdlWindow window,
                            GraphicsDevice graphicsDevice,
-                           OutputDescription output) : this(window,
-                                                            graphicsDevice,
-                                                            output,
-                                                            ColorSpaceHandling.Legacy,
-                                                            ImGuiFontConfig.Default,
-                                                            ImGuiSizeConfig.Default,
-                                                            null)
+                           OutputDescription outputDescription) : this(window,
+                                                                       graphicsDevice,
+                                                                       outputDescription,
+                                                                       ColorSpaceHandling.Legacy,
+                                                                       ImGuiFontConfig.Default,
+                                                                       ImGuiSizeConfig.Default,
+                                                                       null)
     {
     }
     #endregion
