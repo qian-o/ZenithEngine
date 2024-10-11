@@ -1,18 +1,17 @@
+
 using Graphics.Vulkan;
-using Silk.NET.Windowing.Sdl.Android;
 
 namespace Tests.AndroidApp;
 
 [Activity(Label = "@string/app_name", MainLauncher = true)]
-public class MainActivity : SilkActivity
+public class MainActivity : Activity
 {
-    protected override void OnRun()
+    protected override void OnCreate(Bundle? savedInstanceState)
     {
+        base.OnCreate(savedInstanceState);
+
         using Context context = new();
 
-        foreach (PhysicalDevice physicalDevice in context.EnumeratePhysicalDevices())
-        {
-            Console.WriteLine(physicalDevice.Name);
-        }
+        using GraphicsDevice device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
     }
 }
