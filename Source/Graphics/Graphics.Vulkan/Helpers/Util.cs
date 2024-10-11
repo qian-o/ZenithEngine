@@ -34,7 +34,7 @@ internal static unsafe class Util
 
     public static T Lerp<T>(T start, T end, T value) where T : INumberBase<T>
     {
-        return start + (end - start) * value;
+        return start + ((end - start) * value);
     }
 
     public static TransformMatrixKHR GetTransformMatrix(Matrix4x4 transform)
