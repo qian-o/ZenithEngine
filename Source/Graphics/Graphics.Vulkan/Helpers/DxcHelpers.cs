@@ -57,22 +57,24 @@ public static unsafe class DxcHelpers
 
     private static string GetProfile(ShaderStages stage)
     {
-        return stage switch
+        DxcShaderStage dxcShaderStage = stage switch
         {
-            ShaderStages.Vertex => "vs_6_3",
-            ShaderStages.TessellationControl => "hs_6_3",
-            ShaderStages.TessellationEvaluation => "ds_6_3",
-            ShaderStages.Geometry => "gs_6_3",
-            ShaderStages.Fragment => "ps_6_3",
-            ShaderStages.Compute => "cs_6_3",
+            ShaderStages.Vertex => DxcShaderStage.Vertex,
+            ShaderStages.TessellationControl => DxcShaderStage.Hull,
+            ShaderStages.TessellationEvaluation => DxcShaderStage.Domain,
+            ShaderStages.Geometry => DxcShaderStage.Geometry,
+            ShaderStages.Fragment => DxcShaderStage.Pixel,
+            ShaderStages.Compute => DxcShaderStage.Compute,
             ShaderStages.RayGeneration or
-            ShaderStages.AnyHit or
-            ShaderStages.ClosestHit or
             ShaderStages.Miss or
+            ShaderStages.ClosestHit or
+            ShaderStages.AnyHit or
             ShaderStages.Intersection or
             ShaderStages.Callable or
-            ShaderStages.Library => "lib_6_3",
+            ShaderStages.Library => DxcShaderStage.Library,
             _ => throw new NotSupportedException("Unsupported shader stage.")
         };
+
+        return DxcCompiler.GetShaderProfile(dxcShaderStage, DxcShaderModel.Model6_4);
     }
 }
