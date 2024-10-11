@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
 using Graphics.Core.Helpers;
@@ -362,13 +361,17 @@ public unsafe class Context : DisposableObject
     {
         string[] extensions = [KhrSurface.ExtensionName];
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (OperatingSystem.IsWindows())
         {
             extensions = [.. extensions, KhrWin32Surface.ExtensionName];
         }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        else if (OperatingSystem.IsLinux())
         {
             extensions = [.. extensions, KhrXlibSurface.ExtensionName];
+        }
+        else if (OperatingSystem.IsAndroid())
+        {
+            extensions = [.. extensions, KhrAndroidSurface.ExtensionName];
         }
 
         if (Debugging)
