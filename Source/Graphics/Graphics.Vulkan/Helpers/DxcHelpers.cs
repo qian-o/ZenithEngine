@@ -9,15 +9,32 @@ public static unsafe class DxcHelpers
 {
     private sealed class IncludeHandler(Func<string, byte[]>? includeResolver) : CallbackBase, IDxcIncludeHandler
     {
+        private readonly Dictionary<string, IDxcBlob> cache = [];
+
         public Result LoadSource(string filename, out IDxcBlob includeSource)
         {
-            byte[] includeBytes = includeResolver?.Invoke(filename) ?? [];
+            if (!cache.TryGetValue(filename, out IDxcBlob? blob))
+            {
+                byte[] includeBytes = includeResolver?.Invoke(filename) ?? [];
 
-            includeSource = DxcCompiler.Utils.CreateBlob((nint)includeBytes.AsPointer(),
-                                                         (uint)includeBytes.Length,
-                                                         Dxc.DXC_CP_UTF8);
+                blob = DxcCompiler.Utils.CreateBlob((nint)includeBytes.AsPointer(),
+                                                    (uint)includeBytes.Length,
+                                                    Dxc.DXC_CP_UTF8);
+            }
+
+            includeSource = blob;
 
             return Result.Ok;
+        }
+
+        protected override void DisposeCore(bool disposing)
+        {
+            foreach (IDxcBlob blob in cache.Values)
+            {
+                blob.Dispose();
+            }
+
+            cache.Clear();
         }
     }
 
@@ -28,9 +45,9 @@ public static unsafe class DxcHelpers
     {
         using IncludeHandler includeHandler = new(includeResolver);
 
-        IDxcResult result = DxcCompiler.Compile(hlsl,
-                                                GetArguments(stage, entryPoint),
-                                                includeHandler);
+        using IDxcResult result = DxcCompiler.Compile(hlsl,
+                                                      GetArguments(stage, entryPoint),
+                                                      includeHandler);
 
         if (result.GetStatus() != Result.Ok)
         {
