@@ -2,7 +2,6 @@
 using Graphics.Core;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
-using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
@@ -23,7 +22,6 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
 
     internal GraphicsDevice(VulkanResources vkRes,
                             VkDevice device,
-                            IVkSurface windowSurface,
                             uint graphicsQueueFamilyIndex,
                             uint computeQueueFamilyIndex,
                             uint transferQueueFamilyIndex) : base(vkRes, ObjectType.Device)
@@ -49,7 +47,6 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         GraphicsCommandPool = new CommandPool(VkRes, graphicsQueueFamilyIndex);
         ComputeCommandPool = new CommandPool(VkRes, computeQueueFamilyIndex);
         Factory = new ResourceFactory(VkRes);
-        MainSwapchain = Factory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, GetBestDepthFormat()));
         PointSampler = Factory.CreateSampler(SamplerDescription.Point);
         LinearSampler = Factory.CreateSampler(SamplerDescription.Linear);
         Aniso4xSampler = Factory.CreateSampler(SamplerDescription.Aniso4x);
@@ -78,8 +75,6 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
     internal CommandPool ComputeCommandPool { get; }
 
     public ResourceFactory Factory { get; }
-
-    public Swapchain MainSwapchain { get; }
 
     public Sampler PointSampler { get; }
 
@@ -285,16 +280,6 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         SwapBuffersCore(swapchain, null, true);
     }
 
-    public void SwapBuffers()
-    {
-        if (MainSwapchain == null)
-        {
-            throw new InvalidOperationException("The swap chain is not initialized.");
-        }
-
-        SwapBuffers(MainSwapchain);
-    }
-
     public void SubmitCommandsAndSwapBuffers(CommandList commandList, Swapchain swapchain)
     {
         Semaphore stagingSemaphore = GetStagingSemaphore();
@@ -349,8 +334,6 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         Aniso4xSampler.Dispose();
         LinearSampler.Dispose();
         PointSampler.Dispose();
-
-        MainSwapchain.Dispose();
 
         ComputeCommandPool.Dispose();
         GraphicsCommandPool.Dispose();

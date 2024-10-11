@@ -80,7 +80,7 @@ public unsafe class ImGuiPlatform : DisposableObject
 
         if (Swapchain!.Width != _window.FramebufferSize.X || Swapchain!.Height != _window.FramebufferSize.Y)
         {
-            Swapchain.Resize((uint)_window.FramebufferSize.X, (uint)_window.FramebufferSize.Y);
+            Swapchain.Resize();
         }
     }
 
@@ -130,8 +130,6 @@ public unsafe class ImGuiPlatform : DisposableObject
             SwapchainDescription swapchainDescription = new()
             {
                 Target = _window.VkSurface!,
-                Width = (uint)_window.FramebufferSize.X,
-                Height = (uint)_window.FramebufferSize.Y,
                 DepthFormat = _graphicsDevice.GetBestDepthFormat()
             };
 
@@ -198,7 +196,7 @@ public unsafe class ImGuiPlatform : DisposableObject
     {
         Viewport->PlatformRequestResize = 1;
 
-        Swapchain?.Resize(e.Width, e.Height);
+        Swapchain?.Resize();
     }
 
     private void Closing(object? sender, ClosingEventArgs e)

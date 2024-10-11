@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
 using Graphics.Core;
+using Graphics.Vulkan.Descriptions;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
 using Hexa.NET.ImNodes;
@@ -49,6 +50,7 @@ public unsafe class ImGuiController : DisposableObject
     #region Constructors
     public ImGuiController(SdlWindow window,
                            GraphicsDevice graphicsDevice,
+                           OutputDescription output,
                            ColorSpaceHandling colorSpaceHandling,
                            ImGuiFontConfig imGuiFontConfig,
                            ImGuiSizeConfig imGuiSizeConfig,
@@ -66,7 +68,7 @@ public unsafe class ImGuiController : DisposableObject
         _platforms = [];
         _platformsByHandle = [];
         _mouseCursors = [];
-        _imGuiRenderer = new ImGuiRenderer(graphicsDevice, colorSpaceHandling);
+        _imGuiRenderer = new ImGuiRenderer(graphicsDevice, output, colorSpaceHandling);
 
         _createWindow = CreateWindow;
         _destroyWindow = DestroyWindow;
@@ -90,9 +92,11 @@ public unsafe class ImGuiController : DisposableObject
 
     public ImGuiController(SdlWindow window,
                            GraphicsDevice graphicsDevice,
+                           OutputDescription output,
                            ImGuiFontConfig imGuiFontConfig,
                            ImGuiSizeConfig imGuiSizeConfig) : this(window,
                                                                    graphicsDevice,
+                                                                   output,
                                                                    ColorSpaceHandling.Legacy,
                                                                    imGuiFontConfig,
                                                                    imGuiSizeConfig,
@@ -101,12 +105,14 @@ public unsafe class ImGuiController : DisposableObject
     }
 
     public ImGuiController(SdlWindow window,
-                           GraphicsDevice graphicsDevice) : this(window,
-                                                                 graphicsDevice,
-                                                                 ColorSpaceHandling.Legacy,
-                                                                 ImGuiFontConfig.Default,
-                                                                 ImGuiSizeConfig.Default,
-                                                                 null)
+                           GraphicsDevice graphicsDevice,
+                           OutputDescription output) : this(window,
+                                                            graphicsDevice,
+                                                            output,
+                                                            ColorSpaceHandling.Legacy,
+                                                            ImGuiFontConfig.Default,
+                                                            ImGuiSizeConfig.Default,
+                                                            null)
     {
     }
     #endregion

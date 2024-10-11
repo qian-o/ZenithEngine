@@ -4,7 +4,6 @@ using Graphics.Core;
 using Graphics.Core.Helpers;
 using Graphics.Vulkan.Helpers;
 using Silk.NET.Core;
-using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
@@ -103,7 +102,7 @@ public unsafe class Context : DisposableObject
         return physicalDevices.OrderByDescending(item => item.Score).First();
     }
 
-    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice, SdlWindow window)
+    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice)
     {
         float queuePriority = 1.0f;
 
@@ -161,12 +160,9 @@ public unsafe class Context : DisposableObject
 
         GraphicsDevice graphicsDevice = CreateGraphicsDevice(physicalDevice,
                                                              device,
-                                                             window.VkSurface!,
                                                              graphicsQueueFamilyIndex,
                                                              computeQueueFamilyIndex,
                                                              transferQueueFamilyIndex);
-
-        graphicsDevice.MainSwapchain.Resize((uint)window.FramebufferSize.X, (uint)window.FramebufferSize.Y);
 
         return graphicsDevice;
     }
@@ -301,7 +297,6 @@ public unsafe class Context : DisposableObject
 
     private GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice,
                                                 VkDevice device,
-                                                IVkSurface windowSurface,
                                                 uint graphicsQueueFamilyIndex,
                                                 uint computeQueueFamilyIndex,
                                                 uint transferQueueFamilyIndex)
@@ -314,7 +309,6 @@ public unsafe class Context : DisposableObject
 
             GraphicsDevice graphicsDevice = new(vulkanResources,
                                                 device,
-                                                windowSurface,
                                                 graphicsQueueFamilyIndex,
                                                 computeQueueFamilyIndex,
                                                 transferQueueFamilyIndex);

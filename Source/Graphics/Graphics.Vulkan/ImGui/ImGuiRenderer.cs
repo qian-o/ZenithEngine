@@ -64,6 +64,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ResourceFactory _factory;
+    private readonly OutputDescription _output;
 
     #region Resource Management
     private readonly object _lock = new();
@@ -82,10 +83,11 @@ float4 mainPS(VSOutput input) : SV_TARGET
     private Pipeline _pipeline = null!;
     private Texture _fontTexture = null!;
 
-    internal ImGuiRenderer(GraphicsDevice graphicsDevice, ColorSpaceHandling colorSpaceHandling)
+    internal ImGuiRenderer(GraphicsDevice graphicsDevice, OutputDescription output, ColorSpaceHandling colorSpaceHandling)
     {
         _graphicsDevice = graphicsDevice;
         _factory = graphicsDevice.Factory;
+        _output = output;
 
         CreateDeviceResources(colorSpaceHandling);
     }
@@ -373,7 +375,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
             Shaders = new GraphicsShaderDescription([vertexLayoutDescription],
                                                     shaders,
                                                     [new SpecializationConstant(0, colorSpaceHandling == ColorSpaceHandling.Legacy)]),
-            Outputs = _graphicsDevice.MainSwapchain.OutputDescription
+            Outputs = _output
         };
 
         _pipeline = _factory.CreateGraphicsPipeline(pipelineDescription);

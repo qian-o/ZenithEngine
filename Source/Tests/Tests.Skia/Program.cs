@@ -1,6 +1,7 @@
 ﻿using Graphics.Core;
 using Graphics.Core.Window;
 using Graphics.Vulkan;
+using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.ImGui;
 using Graphics.Vulkan.Skia;
 using Hexa.NET.ImGui;
@@ -27,9 +28,11 @@ internal sealed unsafe class Program
         window.MinimumSize = new(100, 100);
 
         using Context context = new();
-        using GraphicsDevice device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice(), window);
+        using GraphicsDevice device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
+        using Swapchain swapchain = device.Factory.CreateSwapchain(new SwapchainDescription(window.VkSurface!, device.GetBestDepthFormat()));
         using ImGuiController imGuiController = new(window,
                                                     device,
+                                                    swapchain.OutputDescription,
                                                     new ImGuiFontConfig("Assets/Fonts/msyh.ttf", 16, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()),
                                                     ImGuiSizeConfig.Default);
         using GRContext grContext = SkiaGraphics.CreateContext(device);
@@ -53,7 +56,7 @@ internal sealed unsafe class Program
 
             commandList.Begin();
             {
-                commandList.SetFramebuffer(device.MainSwapchain.Framebuffer);
+                commandList.SetFramebuffer(swapchain.Framebuffer);
                 commandList.ClearColorTarget(0, RgbaFloat.Black);
                 commandList.ClearDepthStencil(1.0f);
 
@@ -61,14 +64,14 @@ internal sealed unsafe class Program
             }
             commandList.End();
 
-            device.SubmitCommandsAndSwapBuffers(commandList, device.MainSwapchain);
+            device.SubmitCommandsAndSwapBuffers(commandList, swapchain);
 
             imGuiController.PlatformSwapBuffers();
         };
 
         window.Resize += (a, b) =>
         {
-            device.MainSwapchain.Resize(b.Width, b.Height);
+            swapchain.Resize();
 
             Resize(a, b);
         };
