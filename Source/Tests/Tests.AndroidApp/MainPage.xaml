@@ -27,7 +27,7 @@
                     Clicked="OnCounterClicked"
                     HorizontalOptions="Fill" />
 
-            <controls:SwapChainPanel HeightRequest="100" />
+            <controls:SwapChainPanel HeightRequest="200" />
         </VerticalStackLayout>
     </ScrollView>
 
