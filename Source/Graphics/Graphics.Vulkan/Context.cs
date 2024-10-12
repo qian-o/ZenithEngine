@@ -29,7 +29,7 @@ public unsafe class Context : DisposableObject
         ApiVersion = Vk.Version13;
 
 #if DEBUG
-        Debugging = true;
+        Debugging = false;
 #else
         Debugging = false;
 #endif
@@ -145,7 +145,7 @@ public unsafe class Context : DisposableObject
             };
         }
 
-        string[] extensions = GetDeviceExtensions();
+        string[] extensions = GetDeviceExtensions(physicalDevice);
 
         DeviceCreateInfo createInfo = new()
         {
@@ -160,11 +160,27 @@ public unsafe class Context : DisposableObject
                   .AddNext(out PhysicalDeviceVulkan13Features _)
                   .AddNext(out PhysicalDeviceScalarBlockLayoutFeatures _)
                   .AddNext(out PhysicalDeviceDescriptorIndexingFeatures _)
-                  .AddNext(out PhysicalDeviceBufferDeviceAddressFeatures _)
-                  .AddNext(out PhysicalDeviceDescriptorBufferFeaturesEXT _)
-                  .AddNext(out PhysicalDeviceRayTracingPipelineFeaturesKHR _)
-                  .AddNext(out PhysicalDeviceAccelerationStructureFeaturesKHR _)
-                  .AddNext(out PhysicalDeviceRayQueryFeaturesKHR _);
+                  .AddNext(out PhysicalDeviceBufferDeviceAddressFeatures _);
+
+        if (physicalDevice.DescriptorBufferSupported)
+        {
+            createInfo.AddNext(out PhysicalDeviceDescriptorBufferFeaturesEXT _);
+        }
+
+        if (physicalDevice.RayQuerySupported)
+        {
+            createInfo.AddNext(out PhysicalDeviceRayQueryFeaturesKHR _);
+        }
+
+        if (physicalDevice.RayTracingSupported)
+        {
+            createInfo.AddNext(out PhysicalDeviceRayTracingPipelineFeaturesKHR _);
+        }
+
+        if (physicalDevice.RayQuerySupported || physicalDevice.RayTracingSupported)
+        {
+            createInfo.AddNext(out PhysicalDeviceAccelerationStructureFeaturesKHR _);
+        }
 
         _vk.GetPhysicalDeviceFeatures2(physicalDevice.Handle, &features2);
 
@@ -181,7 +197,7 @@ public unsafe class Context : DisposableObject
             {
                 VulkanResources vulkanResources = new();
                 vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtilsExt, _surfaceExt);
-                vulkanResources.InitializePhysicalDevice(physicalDevice, GetDeviceExtensions());
+                vulkanResources.InitializePhysicalDevice(physicalDevice, GetDeviceExtensions(physicalDevice));
 
                 GraphicsDevice graphicsDevice = new(vulkanResources,
                                                     vkDevice,
@@ -366,16 +382,30 @@ public unsafe class Context : DisposableObject
         return extensions;
     }
 
-    private static string[] GetDeviceExtensions()
+    private static string[] GetDeviceExtensions(PhysicalDevice physicalDevice)
     {
-        return
-        [
-            KhrSwapchain.ExtensionName,
-            ExtDescriptorBuffer.ExtensionName,
-            KhrRayTracingPipeline.ExtensionName,
-            KhrAccelerationStructure.ExtensionName,
-            KhrDeferredHostOperations.ExtensionName,
-            "VK_KHR_ray_query"
-        ];
+        string[] extensions = [KhrSwapchain.ExtensionName];
+
+        if (physicalDevice.DescriptorBufferSupported)
+        {
+            extensions = [.. extensions, ExtDescriptorBuffer.ExtensionName];
+        }
+
+        if (physicalDevice.RayQuerySupported)
+        {
+            extensions = [.. extensions, "VK_KHR_ray_query"];
+        }
+
+        if (physicalDevice.RayTracingSupported)
+        {
+            extensions = [.. extensions, KhrRayTracingPipeline.ExtensionName];
+        }
+
+        if (physicalDevice.RayQuerySupported || physicalDevice.RayTracingSupported)
+        {
+            extensions = [.. extensions, KhrAccelerationStructure.ExtensionName, KhrDeferredHostOperations.ExtensionName];
+        }
+
+        return extensions;
     }
 }
