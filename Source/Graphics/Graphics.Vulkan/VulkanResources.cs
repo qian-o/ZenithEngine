@@ -59,6 +59,12 @@ public class VulkanResources : DisposableObject
     public QueueFamilyProperties[] QueueFamilyProperties => PhysicalDevice.QueueFamilyProperties;
 
     public ExtensionProperties[] ExtensionProperties => PhysicalDevice.ExtensionProperties;
+
+    public bool DescriptorBufferSupported => PhysicalDevice.DescriptorBufferSupported;
+
+    public bool RayQuerySupported => PhysicalDevice.RayQuerySupported;
+
+    public bool RayTracingSupported => PhysicalDevice.RayTracingSupported;
     #endregion
 
     #region Graphics Device Properties
@@ -72,13 +78,13 @@ public class VulkanResources : DisposableObject
 
     public KhrSwapchain KhrSwapchain => GraphicsDevice.KhrSwapchain;
 
-    public ExtDescriptorBuffer ExtDescriptorBuffer => GraphicsDevice.ExtDescriptorBuffer;
+    public ExtDescriptorBuffer ExtDescriptorBuffer => DescriptorBufferSupported ? GraphicsDevice.ExtDescriptorBuffer! : throw new NotSupportedException("Descriptor buffer extension is not supported.");
 
-    public KhrRayTracingPipeline KhrRayTracingPipeline => GraphicsDevice.KhrRayTracingPipeline;
+    public KhrRayTracingPipeline KhrRayTracingPipeline => RayTracingSupported ? GraphicsDevice.KhrRayTracingPipeline! : throw new NotSupportedException("Ray tracing extension is not supported.");
 
-    public KhrAccelerationStructure KhrAccelerationStructure => GraphicsDevice.KhrAccelerationStructure;
+    public KhrAccelerationStructure KhrAccelerationStructure => RayQuerySupported || RayTracingSupported ? GraphicsDevice.KhrAccelerationStructure! : throw new NotSupportedException("Ray query or ray tracing extension is not supported.");
 
-    public KhrDeferredHostOperations KhrDeferredHostOperations => GraphicsDevice.KhrDeferredHostOperations;
+    public KhrDeferredHostOperations KhrDeferredHostOperations => RayQuerySupported || RayTracingSupported ? GraphicsDevice.KhrDeferredHostOperations! : throw new NotSupportedException("Ray query or ray tracing extension is not supported.");
     #endregion
 
     public void InitializeContext(Vk vk,

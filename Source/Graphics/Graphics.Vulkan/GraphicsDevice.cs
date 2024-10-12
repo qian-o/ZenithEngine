@@ -37,10 +37,10 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         VkRes.InitializeGraphicsDevice(this);
 
         KhrSwapchain = CreateDeviceExtension<KhrSwapchain>(device);
-        ExtDescriptorBuffer = CreateDeviceExtension<ExtDescriptorBuffer>(device);
-        KhrRayTracingPipeline = CreateDeviceExtension<KhrRayTracingPipeline>(device);
-        KhrAccelerationStructure = CreateDeviceExtension<KhrAccelerationStructure>(device);
-        KhrDeferredHostOperations = CreateDeviceExtension<KhrDeferredHostOperations>(device);
+        ExtDescriptorBuffer = VkRes.DescriptorBufferSupported ? CreateDeviceExtension<ExtDescriptorBuffer>(device) : null;
+        KhrRayTracingPipeline = VkRes.RayTracingSupported ? CreateDeviceExtension<KhrRayTracingPipeline>(device) : null;
+        KhrAccelerationStructure = VkRes.RayQuerySupported || VkRes.RayTracingSupported ? CreateDeviceExtension<KhrAccelerationStructure>(device) : null;
+        KhrDeferredHostOperations = VkRes.RayQuerySupported || VkRes.RayTracingSupported ? CreateDeviceExtension<KhrDeferredHostOperations>(device) : null;
         GraphicsExecutor = new Executor(VkRes, graphicsQueueFamilyIndex);
         ComputeExecutor = new Executor(VkRes, computeQueueFamilyIndex);
         TransferExecutor = new Executor(VkRes, transferQueueFamilyIndex);
@@ -56,13 +56,13 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
 
     internal KhrSwapchain KhrSwapchain { get; }
 
-    internal ExtDescriptorBuffer ExtDescriptorBuffer { get; }
+    internal ExtDescriptorBuffer? ExtDescriptorBuffer { get; }
 
-    internal KhrRayTracingPipeline KhrRayTracingPipeline { get; }
+    internal KhrRayTracingPipeline? KhrRayTracingPipeline { get; }
 
-    internal KhrAccelerationStructure KhrAccelerationStructure { get; }
+    internal KhrAccelerationStructure? KhrAccelerationStructure { get; }
 
-    internal KhrDeferredHostOperations KhrDeferredHostOperations { get; }
+    internal KhrDeferredHostOperations? KhrDeferredHostOperations { get; }
 
     internal Executor GraphicsExecutor { get; }
 
@@ -338,10 +338,10 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         ComputeCommandPool.Dispose();
         GraphicsCommandPool.Dispose();
 
-        KhrDeferredHostOperations.Dispose();
-        KhrAccelerationStructure.Dispose();
-        KhrRayTracingPipeline.Dispose();
-        ExtDescriptorBuffer.Dispose();
+        KhrDeferredHostOperations?.Dispose();
+        KhrAccelerationStructure?.Dispose();
+        KhrRayTracingPipeline?.Dispose();
+        ExtDescriptorBuffer?.Dispose();
         KhrSwapchain.Dispose();
 
         VkRes.Vk.DestroyDevice(Handle, null);
