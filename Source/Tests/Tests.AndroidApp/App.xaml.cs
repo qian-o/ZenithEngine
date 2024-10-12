@@ -6,12 +6,12 @@ public partial class App : Application
 {
     public static Context Context { get; }
 
-    public static GraphicsDevice GraphicsDevice { get; }
+    public static GraphicsDevice Device { get; }
 
     static App()
     {
         Context = new Context();
-        GraphicsDevice = Context.CreateGraphicsDevice(Context.GetBestPhysicalDevice());
+        Device = Context.CreateGraphicsDevice(Context.GetBestPhysicalDevice());
     }
 
     public App()

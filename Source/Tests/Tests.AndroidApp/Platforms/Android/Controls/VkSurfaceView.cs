@@ -3,10 +3,25 @@ using Android.Graphics;
 using Android.Runtime;
 using Android.Views;
 using Java.Interop;
+using Silk.NET.Core.Contexts;
+using Silk.NET.Core.Native;
 using Tests.AndroidApp.Controls;
 using Tests.AndroidApp.Platforms.Android.Helpers;
 
 namespace Tests.AndroidApp.Platforms.Android.Controls;
+
+internal sealed unsafe class VkSurface(ANativeWindow* window) : IVkSurface
+{
+    public VkNonDispatchableHandle Create<T>(VkHandle instance, T* allocator) where T : unmanaged
+    {
+        throw new NotImplementedException();
+    }
+
+    public byte** GetRequiredExtensions(out uint count)
+    {
+        throw new NotImplementedException();
+    }
+}
 
 internal sealed unsafe class VkSurfaceView : SurfaceView, ISurfaceHolderCallback
 {
@@ -41,12 +56,16 @@ internal sealed unsafe class VkSurfaceView : SurfaceView, ISurfaceHolderCallback
         DestroySurface();
 
         _window = NativeActivity.ANativeWindowFromSurface(JniEnvironment.EnvironmentPointer, Holder!.Surface!.Handle);
+
+        _swapChainPanel.CreateSwapChainPanel(new VkSurface(_window));
     }
 
     private void DestroySurface()
     {
         if (_window != null)
         {
+            _swapChainPanel.DestroySwapChainPanel();
+
             NativeActivity.ANativeWindowRelease(_window);
 
             _window = null;
