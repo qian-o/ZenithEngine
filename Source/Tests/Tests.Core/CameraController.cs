@@ -41,32 +41,32 @@ public class CameraController
     {
         const float speed = 3.0f;
 
-        if (ImGui.IsKeyDown(ImGuiKey.W))
+        if (ImGuiP.IsKeyDown(ImGuiKey.W))
         {
             Position += Forward * deltaTime * speed;
         }
 
-        if (ImGui.IsKeyDown(ImGuiKey.S))
+        if (ImGuiP.IsKeyDown(ImGuiKey.S))
         {
             Position -= Forward * deltaTime * speed;
         }
 
-        if (ImGui.IsKeyDown(ImGuiKey.A))
+        if (ImGuiP.IsKeyDown(ImGuiKey.A))
         {
             Position -= Right * deltaTime * speed;
         }
 
-        if (ImGui.IsKeyDown(ImGuiKey.D))
+        if (ImGuiP.IsKeyDown(ImGuiKey.D))
         {
             Position += Right * deltaTime * speed;
         }
 
-        if (ImGui.IsKeyDown(ImGuiKey.Q))
+        if (ImGuiP.IsKeyDown(ImGuiKey.Q))
         {
             Position -= Up * deltaTime * speed;
         }
 
-        if (ImGui.IsKeyDown(ImGuiKey.E))
+        if (ImGuiP.IsKeyDown(ImGuiKey.E))
         {
             Position += Up * deltaTime * speed;
         }

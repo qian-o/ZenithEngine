@@ -267,22 +267,22 @@ public class PlotView : SkiaView, IPlotView
     {
         OxyModifierKeys modifierKeys = OxyModifierKeys.None;
 
-        if (ImGui.IsKeyDown(ImGuiKey.ModShift))
+        if (ImGuiP.IsKeyDown(ImGuiKey.ModShift))
         {
             modifierKeys |= OxyModifierKeys.Shift;
         }
 
-        if (ImGui.IsKeyDown(ImGuiKey.ModCtrl))
+        if (ImGuiP.IsKeyDown(ImGuiKey.ModCtrl))
         {
             modifierKeys |= OxyModifierKeys.Control;
         }
 
-        if (ImGui.IsKeyDown(ImGuiKey.ModAlt))
+        if (ImGuiP.IsKeyDown(ImGuiKey.ModAlt))
         {
             modifierKeys |= OxyModifierKeys.Alt;
         }
 
-        if (ImGui.IsKeyDown(ImGuiKey.ModSuper))
+        if (ImGuiP.IsKeyDown(ImGuiKey.ModSuper))
         {
             modifierKeys |= OxyModifierKeys.Windows;
         }

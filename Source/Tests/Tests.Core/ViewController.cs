@@ -41,39 +41,39 @@ public class ViewController(View view)
         Vector2 mousePosition = ImGui.GetMousePos() - view.Position;
         mousePosition /= view.DpiScale;
 
-        if (ImGui.IsMouseDown(ImGuiMouseButton.Left) && !isLeftMouseDown)
+        if (ImGuiP.IsMouseDown(ImGuiMouseButton.Left) && !isLeftMouseDown)
         {
             isLeftMouseDown = true;
 
             MouseDown?.Invoke(view, new ImGuiMouseButtonEventArgs(ImGuiMouseButton.Left, mousePosition));
         }
-        else if (!ImGui.IsMouseDown(ImGuiMouseButton.Left) && isLeftMouseDown)
+        else if (!ImGuiP.IsMouseDown(ImGuiMouseButton.Left) && isLeftMouseDown)
         {
             isLeftMouseDown = false;
 
             MouseUp?.Invoke(view, new ImGuiMouseButtonEventArgs(ImGuiMouseButton.Left, mousePosition));
         }
 
-        if (ImGui.IsMouseDown(ImGuiMouseButton.Right) && !isRightMouseDown)
+        if (ImGuiP.IsMouseDown(ImGuiMouseButton.Right) && !isRightMouseDown)
         {
             isRightMouseDown = true;
 
             MouseDown?.Invoke(view, new ImGuiMouseButtonEventArgs(ImGuiMouseButton.Right, mousePosition));
         }
-        else if (!ImGui.IsMouseDown(ImGuiMouseButton.Right) && isRightMouseDown)
+        else if (!ImGuiP.IsMouseDown(ImGuiMouseButton.Right) && isRightMouseDown)
         {
             isRightMouseDown = false;
 
             MouseUp?.Invoke(view, new ImGuiMouseButtonEventArgs(ImGuiMouseButton.Right, mousePosition));
         }
 
-        if (ImGui.IsMouseDown(ImGuiMouseButton.Middle) && !isMiddleMouseDown)
+        if (ImGuiP.IsMouseDown(ImGuiMouseButton.Middle) && !isMiddleMouseDown)
         {
             isMiddleMouseDown = true;
 
             MouseDown?.Invoke(view, new ImGuiMouseButtonEventArgs(ImGuiMouseButton.Middle, mousePosition));
         }
-        else if (!ImGui.IsMouseDown(ImGuiMouseButton.Middle) && isMiddleMouseDown)
+        else if (!ImGuiP.IsMouseDown(ImGuiMouseButton.Middle) && isMiddleMouseDown)
         {
             isMiddleMouseDown = false;
 

@@ -499,7 +499,7 @@ public unsafe class ImGuiController : DisposableObject
             _currentDpiScale = vp->DpiScale;
         }
 
-        DearImGui.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
+        DearImGuiP.SetCurrentFont(_dpiScaleFonts[vp->DpiScale]);
     }
 
     private void SetImeData(ImGuiContext* ctx, ImGuiViewport* viewport, ImGuiPlatformImeData* data)
