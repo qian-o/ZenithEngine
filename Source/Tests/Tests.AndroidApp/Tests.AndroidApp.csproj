@@ -60,7 +60,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<MauiAsset Include="Assets\**" LogicalName="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
 		<MauiAsset Include="..\Tests.Core\Assets\**" LogicalName="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
+
+	<Target Name="CompileShader" BeforeTargets="PreBuildEvent">
+		<Exec Command="call Scripts\CompileShader.bat" />
+	</Target>
 
 </Project>

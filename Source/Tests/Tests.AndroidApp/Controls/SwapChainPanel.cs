@@ -36,11 +36,15 @@ internal sealed class SwapChainPanel : View, ISwapChainPanel
         string assetPath = "Assets/Models/Sponza/glTF";
         ModelRoot root = ModelRoot.Load("Sponza.gltf", ReadContext.Create(FileReader));
 
+        assetPath = "Assets/Shaders";
+        Shader vs = Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Vertex, [.. FileReader("GLTF.hlsl.spv")], "mainVS"));
+        Shader fs = Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Fragment, [.. FileReader("GLTF.hlsl.spv")], "mainFS"));
+
         ArraySegment<byte> FileReader(string assetName)
         {
-            Stream stream = FileSystem.OpenAppPackageFileAsync(Path.Combine(assetPath, assetName)).Result;
+            using Stream stream = FileSystem.OpenAppPackageFileAsync(Path.Combine(assetPath, assetName)).Result;
 
-            MemoryStream memoryStream = new();
+            using MemoryStream memoryStream = new();
             stream.CopyTo(memoryStream);
 
             return new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
