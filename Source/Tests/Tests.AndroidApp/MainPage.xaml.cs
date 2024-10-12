@@ -1,12 +1,18 @@
-﻿namespace Tests.AndroidApp;
+﻿using Graphics.Vulkan;
+
+namespace Tests.AndroidApp;
 
 public partial class MainPage : ContentPage
 {
-    private int count = 0;
+    private int count;
 
     public MainPage()
     {
         InitializeComponent();
+
+        using Context context = new();
+
+        using GraphicsDevice device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
     }
 
     private void OnCounterClicked(object sender, EventArgs e)

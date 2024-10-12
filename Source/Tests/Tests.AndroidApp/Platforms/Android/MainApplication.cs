@@ -6,7 +6,7 @@ namespace Tests.AndroidApp;
 #pragma warning restore IDE0130
 
 [Application]
-public class MainApplication(IntPtr handle, JniHandleOwnership ownership) : MauiApplication(handle, ownership)
+public class MainApplication(nint handle, JniHandleOwnership ownership) : MauiApplication(handle, ownership)
 {
     protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 }
