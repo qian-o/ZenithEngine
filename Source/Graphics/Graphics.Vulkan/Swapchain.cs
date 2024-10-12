@@ -44,30 +44,30 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
         DestroySwapchain();
 
         SurfaceCapabilitiesKHR surfaceCapabilities;
-        VkRes.KhrSurface.GetPhysicalDeviceSurfaceCapabilities(VkRes.VkPhysicalDevice,
+        VkRes.Surface.GetPhysicalDeviceSurfaceCapabilities(VkRes.VkPhysicalDevice,
                                                               Target,
                                                               &surfaceCapabilities).ThrowCode();
 
         uint surfaceFormatCount;
-        VkRes.KhrSurface.GetPhysicalDeviceSurfaceFormats(VkRes.VkPhysicalDevice,
+        VkRes.Surface.GetPhysicalDeviceSurfaceFormats(VkRes.VkPhysicalDevice,
                                                          Target,
                                                          &surfaceFormatCount,
                                                          null).ThrowCode();
 
         SurfaceFormatKHR[] surfaceFormats = new SurfaceFormatKHR[surfaceFormatCount];
-        VkRes.KhrSurface.GetPhysicalDeviceSurfaceFormats(VkRes.VkPhysicalDevice,
+        VkRes.Surface.GetPhysicalDeviceSurfaceFormats(VkRes.VkPhysicalDevice,
                                                          Target,
                                                          &surfaceFormatCount,
                                                          surfaceFormats.AsPointer()).ThrowCode();
 
         uint presentModeCount;
-        VkRes.KhrSurface.GetPhysicalDeviceSurfacePresentModes(VkRes.VkPhysicalDevice,
+        VkRes.Surface.GetPhysicalDeviceSurfacePresentModes(VkRes.VkPhysicalDevice,
                                                               Target,
                                                               &presentModeCount,
                                                               null).ThrowCode();
 
         PresentModeKHR[] presentModes = new PresentModeKHR[presentModeCount];
-        VkRes.KhrSurface.GetPhysicalDeviceSurfacePresentModes(VkRes.VkPhysicalDevice,
+        VkRes.Surface.GetPhysicalDeviceSurfacePresentModes(VkRes.VkPhysicalDevice,
                                                               Target,
                                                               &presentModeCount,
                                                               presentModes.AsPointer()).ThrowCode();
@@ -188,7 +188,7 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
             DestroySwapchain();
         }
 
-        VkRes.KhrSurface.DestroySurface(VkRes.Instance, Target, null);
+        VkRes.Surface.DestroySurface(VkRes.Instance, Target, null);
     }
 
     private void DestroySwapchain()

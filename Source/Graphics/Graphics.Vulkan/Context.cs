@@ -18,8 +18,8 @@ public unsafe class Context : DisposableObject
     private readonly Alloter _alloter;
     private readonly Vk _vk;
     private readonly VkInstance _instance;
-    private readonly ExtDebugUtils? _debugUtilsExt;
-    private readonly KhrSurface _surfaceExt;
+    private readonly ExtDebugUtils? _debugUtils;
+    private readonly KhrSurface _surface;
     private readonly DebugUtilsMessengerEXT? _debugUtilsMessenger;
     private readonly Dictionary<PhysicalDevice, VulkanResources> _physicalDeviceMap;
     private readonly Dictionary<GraphicsDevice, VulkanResources> _graphicsDeviceMap;
@@ -29,7 +29,7 @@ public unsafe class Context : DisposableObject
         ApiVersion = Vk.Version13;
 
 #if DEBUG
-        Debugging = true;
+        Debugging = false;
 #else
         Debugging = false;
 #endif
@@ -44,8 +44,8 @@ public unsafe class Context : DisposableObject
         _instance = CreateInstance();
 
         // Load instance extensions
-        _debugUtilsExt = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
-        _surfaceExt = CreateInstanceExtension<KhrSurface>();
+        _debugUtils = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
+        _surface = CreateInstanceExtension<KhrSurface>();
 
         // Debug message callback
         if (Debugging)
@@ -65,8 +65,8 @@ public unsafe class Context : DisposableObject
             };
 
             DebugUtilsMessengerEXT debugUtilsMessenger;
-            _debugUtilsExt!.CreateDebugUtilsMessenger(_instance, &createInfo, null, &debugUtilsMessenger)
-                           .ThrowCode("Failed to create debug messenger!");
+            _debugUtils!.CreateDebugUtilsMessenger(_instance, &createInfo, null, &debugUtilsMessenger)
+                        .ThrowCode("Failed to create debug messenger!");
 
             _debugUtilsMessenger = debugUtilsMessenger;
         }
@@ -99,7 +99,7 @@ public unsafe class Context : DisposableObject
             lock (_physicalDeviceMap)
             {
                 VulkanResources vulkanResources = new();
-                vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtilsExt, _surfaceExt);
+                vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtils, _surface);
 
                 PhysicalDevice physicalDevice = new(vulkanResources, vkPhysicalDevice);
 
@@ -196,7 +196,7 @@ public unsafe class Context : DisposableObject
             lock (_graphicsDeviceMap)
             {
                 VulkanResources vulkanResources = new();
-                vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtilsExt, _surfaceExt);
+                vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtils, _surface);
                 vulkanResources.InitializePhysicalDevice(physicalDevice, GetDeviceExtensions(physicalDevice));
 
                 GraphicsDevice graphicsDevice = new(vulkanResources,
@@ -226,10 +226,10 @@ public unsafe class Context : DisposableObject
         _physicalDeviceMap.Clear();
         _graphicsDeviceMap.Clear();
 
-        _debugUtilsExt?.DestroyDebugUtilsMessenger(_instance, _debugUtilsMessenger!.Value, null);
-        _debugUtilsExt?.Dispose();
+        _debugUtils?.DestroyDebugUtilsMessenger(_instance, _debugUtilsMessenger!.Value, null);
+        _debugUtils?.Dispose();
 
-        _surfaceExt.Dispose();
+        _surface.Dispose();
 
         _vk.DestroyInstance(_instance, null);
         _vk.Dispose();

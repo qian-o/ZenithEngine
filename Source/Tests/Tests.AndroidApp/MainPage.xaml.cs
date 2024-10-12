@@ -1,6 +1,4 @@
-﻿using Graphics.Vulkan;
-
-namespace Tests.AndroidApp;
+﻿namespace Tests.AndroidApp;
 
 public partial class MainPage : ContentPage
 {
@@ -9,10 +7,6 @@ public partial class MainPage : ContentPage
     public MainPage()
     {
         InitializeComponent();
-
-        using Context context = new();
-
-        using GraphicsDevice device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
     }
 
     private void OnCounterClicked(object sender, EventArgs e)

@@ -37,7 +37,7 @@ public abstract unsafe class VulkanObject<THandle>(VulkanResources vkRes, params
                 PObjectName = VkRes.Alloter.Allocate($"{Name} ({objectTypes[i]})")
             };
 
-            VkRes.ExtDebugUtils?.SetDebugUtilsObjectName(VkRes.VkDevice, &nameInfo).ThrowCode();
+            VkRes.DebugUtils?.SetDebugUtilsObjectName(VkRes.VkDevice, &nameInfo).ThrowCode();
         }
 
         VkRes.Alloter.Clear();

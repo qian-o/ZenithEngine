@@ -16,8 +16,8 @@ public class VulkanResources : DisposableObject
     private Vk? _vk;
     private VkInstance? _instance;
     private string[]? _instanceExtensions;
-    private ExtDebugUtils? _extDebugUtils;
-    private KhrSurface? _khrSurface;
+    private ExtDebugUtils? _debugUtils;
+    private KhrSurface? _surface;
 
     public bool IsInitializedContext { get; private set; }
 
@@ -27,9 +27,9 @@ public class VulkanResources : DisposableObject
 
     public string[] InstanceExtensions => TryGetContextProperty(ref _instanceExtensions)!;
 
-    public ExtDebugUtils? ExtDebugUtils => TryGetContextProperty(ref _extDebugUtils);
+    public ExtDebugUtils? DebugUtils => TryGetContextProperty(ref _debugUtils);
 
-    public KhrSurface KhrSurface => TryGetContextProperty(ref _khrSurface)!;
+    public KhrSurface Surface => TryGetContextProperty(ref _surface)!;
     #endregion
 
     #region Physical Device Properties
@@ -90,14 +90,14 @@ public class VulkanResources : DisposableObject
     public void InitializeContext(Vk vk,
                                   VkInstance instance,
                                   string[] instanceExtensions,
-                                  ExtDebugUtils? extDebugUtils,
-                                  KhrSurface khrSurface)
+                                  ExtDebugUtils? debugUtils,
+                                  KhrSurface surface)
     {
         _vk = vk;
         _instance = instance;
         _instanceExtensions = instanceExtensions;
-        _extDebugUtils = extDebugUtils;
-        _khrSurface = khrSurface;
+        _debugUtils = debugUtils;
+        _surface = surface;
 
         IsInitializedContext = true;
     }
