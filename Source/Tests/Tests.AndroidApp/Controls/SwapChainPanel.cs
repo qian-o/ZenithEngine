@@ -1,6 +1,7 @@
 ﻿using Graphics.Core;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
+using SharpGLTF.Schema2;
 using Silk.NET.Core.Contexts;
 
 namespace Tests.AndroidApp.Controls;
@@ -31,6 +32,19 @@ internal sealed class SwapChainPanel : View, ISwapChainPanel
     public SwapChainPanel()
     {
         _commandList = Device.Factory.CreateGraphicsCommandList();
+
+        string assetPath = "Assets/Models/Sponza/glTF";
+        ModelRoot root = ModelRoot.Load("Sponza.gltf", ReadContext.Create(FileReader));
+
+        ArraySegment<byte> FileReader(string assetName)
+        {
+            Stream stream = FileSystem.OpenAppPackageFileAsync(Path.Combine(assetPath, assetName)).Result;
+
+            MemoryStream memoryStream = new();
+            stream.CopyTo(memoryStream);
+
+            return new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
+        }
     }
 
     public Context Context => App.Context;

@@ -59,4 +59,8 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<MauiAsset Include="..\Tests.Core\Assets\**" LogicalName="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
 </Project>
