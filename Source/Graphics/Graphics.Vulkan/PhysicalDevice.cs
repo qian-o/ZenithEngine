@@ -13,7 +13,7 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
         {
             SType = StructureType.PhysicalDeviceProperties2
         };
-        
+
         properties2.AddNext(out PhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties)
                    .AddNext(out PhysicalDeviceDescriptorBufferPropertiesEXT descriptorBufferProperties)
                    .AddNext(out PhysicalDeviceRayTracingPipelinePropertiesKHR rayTracingPipelineProperties);
