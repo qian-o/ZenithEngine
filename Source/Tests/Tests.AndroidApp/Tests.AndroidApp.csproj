@@ -64,6 +64,12 @@
 		<MauiAsset Include="..\Tests.Core\Assets\**" LogicalName="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<AndroidNativeLibrary Include="Platforms\Android\lib\arm64-v8a\libVkLayer_khronos_validation.so" />
+		<AndroidNativeLibrary Include="Platforms\Android\lib\armeabi-v7a\libVkLayer_khronos_validation.so" />
+		<AndroidNativeLibrary Include="Platforms\Android\lib\x86_64\libVkLayer_khronos_validation.so" />
+	</ItemGroup>
+
 	<Target Name="CompileShader" BeforeTargets="PreBuildEvent">
 		<Exec Command="call Scripts\CompileShader.bat" />
 	</Target>

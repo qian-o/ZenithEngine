@@ -29,7 +29,7 @@ public unsafe class Context : DisposableObject
         ApiVersion = Vk.Version13;
 
 #if DEBUG
-        Debugging = false;
+        Debugging = true;
 #else
         Debugging = false;
 #endif
