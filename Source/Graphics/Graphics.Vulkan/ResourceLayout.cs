@@ -74,9 +74,13 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
         {
             SType = StructureType.DescriptorSetLayoutCreateInfo,
             BindingCount = (uint)bindings.Length,
-            PBindings = bindings.AsPointer(),
-            Flags = DescriptorSetLayoutCreateFlags.DescriptorBufferBitExt
+            PBindings = bindings.AsPointer()
         };
+
+        if (VkRes.DescriptorBufferSupported)
+        {
+            createInfo.Flags |= DescriptorSetLayoutCreateFlags.DescriptorBufferBitExt;
+        }
 
         if (description.IsLastBindless)
         {
@@ -95,9 +99,16 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
         VkRes.Vk.CreateDescriptorSetLayout(VkRes.VkDevice, &createInfo, null, &descriptorSetLayout).ThrowCode();
 
         ulong sizeInBytes;
-        VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutSize(VkRes.VkDevice, descriptorSetLayout, &sizeInBytes);
+        if (VkRes.DescriptorBufferSupported)
+        {
+            VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutSize(VkRes.VkDevice, descriptorSetLayout, &sizeInBytes);
 
-        sizeInBytes = Util.AlignedSize(sizeInBytes, VkRes.DescriptorBufferProperties.DescriptorBufferOffsetAlignment);
+            sizeInBytes = Util.AlignedSize(sizeInBytes, VkRes.DescriptorBufferProperties.DescriptorBufferOffsetAlignment);
+        }
+        else
+        {
+            sizeInBytes = 0;
+        }
 
         Handle = descriptorSetLayout;
         DescriptorTypes = descriptorTypes;

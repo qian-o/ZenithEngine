@@ -4,41 +4,47 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
+public unsafe class ResourceSet : VulkanObject<ulong>
 {
+    private DeviceBuffer? descriptorBuffer;
+
     internal ResourceSet(VulkanResources vkRes, ref readonly ResourceSetDescription description) : base(vkRes)
     {
-        const BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferDstBit
-                                                  | BufferUsageFlags.ResourceDescriptorBufferBitExt
-                                                  | BufferUsageFlags.SamplerDescriptorBufferBitExt;
-
-        DeviceBuffer buffer = new(VkRes, bufferUsageFlags, description.Layout.SizeInBytes, true);
-
-        byte* descriptor = (byte*)buffer.Map(description.Layout.SizeInBytes);
-
-        for (uint i = 0; i < description.BoundResources.Length; i++)
+        if (VkRes.DescriptorBufferSupported)
         {
-            IBindableResource? bindableResource = description.BoundResources[i];
+            const BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferDstBit
+                                                      | BufferUsageFlags.ResourceDescriptorBufferBitExt
+                                                      | BufferUsageFlags.SamplerDescriptorBufferBitExt;
 
-            if (bindableResource is not null)
+            descriptorBuffer = new(VkRes, bufferUsageFlags, description.Layout.SizeInBytes, true);
+
+            byte* descriptor = (byte*)descriptorBuffer.Map(description.Layout.SizeInBytes);
+
+            for (uint i = 0; i < description.BoundResources.Length; i++)
             {
-                ulong offset = VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice,
-                                                                                             description.Layout.Handle,
-                                                                                             i);
+                IBindableResource? bindableResource = description.BoundResources[i];
 
-                WriteDescriptorBuffer(description.Layout.DescriptorTypes[i],
-                                      bindableResource,
-                                      descriptor + offset);
+                if (bindableResource is not null)
+                {
+                    ulong offset = VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice,
+                                                                                                 description.Layout.Handle,
+                                                                                                 i);
+
+                    WriteDescriptorBuffer(description.Layout.DescriptorTypes[i],
+                                          bindableResource,
+                                          descriptor + offset);
+                }
             }
+
+            descriptorBuffer.Unmap();
+
+            Handle = descriptorBuffer.Address;
         }
 
-        buffer.Unmap();
-
-        Handle = buffer;
         Layout = description.Layout;
     }
 
-    internal override DeviceBuffer Handle { get; }
+    internal override ulong Handle { get; }
 
     internal ResourceLayout Layout { get; }
 
@@ -54,14 +60,17 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
             throw new InvalidOperationException("Resource layout is bindless.");
         }
 
-        DescriptorType type = Layout.DescriptorTypes[index];
+        if (VkRes.DescriptorBufferSupported)
+        {
+            DescriptorType type = Layout.DescriptorTypes[index];
 
-        byte* descriptor = (byte*)Handle.Map(Layout.SizeInBytes);
-        descriptor += VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice, Layout.Handle, index);
+            byte* descriptor = (byte*)descriptorBuffer!.Map(Layout.SizeInBytes);
+            descriptor += VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice, Layout.Handle, index);
 
-        WriteDescriptorBuffer(type, bindableResource, descriptor);
+            WriteDescriptorBuffer(type, bindableResource, descriptor);
 
-        Handle.Unmap();
+            descriptorBuffer.Unmap();
+        }
     }
 
     public void UpdateBindless(IBindableResource[] boundResources)
@@ -71,18 +80,21 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
             throw new InvalidOperationException("Resource layout is not bindless.");
         }
 
-        DescriptorType type = Layout.DescriptorTypes[^1];
-        uint lastIdx = (uint)Layout.DescriptorTypes.Length - 1;
-
-        byte* descriptor = (byte*)Handle.Map(Layout.SizeInBytes);
-        descriptor += VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice, Layout.Handle, lastIdx);
-
-        for (uint i = 0; i < boundResources.Length; i++)
+        if (VkRes.DescriptorBufferSupported)
         {
-            descriptor += WriteDescriptorBuffer(type, boundResources[i], descriptor);
-        }
+            DescriptorType type = Layout.DescriptorTypes[^1];
+            uint lastIdx = (uint)Layout.DescriptorTypes.Length - 1;
 
-        Handle.Unmap();
+            byte* descriptor = (byte*)descriptorBuffer!.Map(Layout.SizeInBytes);
+            descriptor += VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice, Layout.Handle, lastIdx);
+
+            for (uint i = 0; i < boundResources.Length; i++)
+            {
+                descriptor += WriteDescriptorBuffer(type, boundResources[i], descriptor);
+            }
+
+            descriptorBuffer.Unmap();
+        }
     }
 
     internal override ulong[] GetHandles()
@@ -92,7 +104,7 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
 
     protected override void Destroy()
     {
-        Handle.Dispose();
+        descriptorBuffer?.Dispose();
     }
 
     private nuint WriteDescriptorBuffer(DescriptorType type, IBindableResource bindableResource, byte* buffer)

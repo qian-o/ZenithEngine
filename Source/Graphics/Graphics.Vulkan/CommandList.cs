@@ -420,7 +420,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         DescriptorBufferBindingInfoEXT bindingInfoEXT = new()
         {
             SType = StructureType.DescriptorBufferBindingInfoExt,
-            Address = resourceSet.Handle.Address,
+            Address = resourceSet.Handle,
             Usage = BufferUsageFlags.ResourceDescriptorBufferBitExt | BufferUsageFlags.SamplerDescriptorBufferBitExt
         };
 
