@@ -1,5 +1,4 @@
 ﻿using Graphics.Core;
-using Graphics.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
@@ -37,9 +36,7 @@ public abstract unsafe class VulkanObject<THandle>(VulkanResources vkRes, params
                 PObjectName = VkRes.Alloter.Allocate($"{Name} ({objectTypes[i]})")
             };
 
-            VkRes.DebugUtils?.SetDebugUtilsObjectName(VkRes.VkDevice, &nameInfo).ThrowCode();
+            VkRes.VkDebug?.SetObjectName(VkRes.VkDevice, in nameInfo);
         }
-
-        VkRes.Alloter.Clear();
     }
 }

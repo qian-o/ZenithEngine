@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using System.Text;
-using Graphics.Core;
+﻿using Graphics.Core;
 using Graphics.Core.Helpers;
 using Graphics.Vulkan.Helpers;
 using Silk.NET.Core;
@@ -18,9 +16,8 @@ public unsafe class Context : DisposableObject
     private readonly Alloter _alloter;
     private readonly Vk _vk;
     private readonly VkInstance _instance;
-    private readonly ExtDebugUtils? _debugUtils;
     private readonly KhrSurface _surface;
-    private readonly DebugUtilsMessengerEXT? _debugUtilsMessenger;
+    private readonly VulkanDebug? _vkDebug;
     private readonly Dictionary<PhysicalDevice, VulkanResources> _physicalDeviceMap;
     private readonly Dictionary<GraphicsDevice, VulkanResources> _graphicsDeviceMap;
 
@@ -40,36 +37,12 @@ public unsafe class Context : DisposableObject
         _alloter = new();
         _vk = Vk.GetApi();
 
-        // Create instance
         _instance = CreateInstance();
 
-        // Load instance extensions
-        _debugUtils = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
         _surface = CreateInstanceExtension<KhrSurface>();
 
-        // Debug message callback
-        if (Debugging)
-        {
-            DebugUtilsMessengerCreateInfoEXT createInfo = new()
-            {
-                SType = StructureType.DebugUtilsMessengerCreateInfoExt,
-                MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt
-                                  | DebugUtilsMessageSeverityFlagsEXT.InfoBitExt
-                                  | DebugUtilsMessageSeverityFlagsEXT.WarningBitExt
-                                  | DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
-                MessageType = DebugUtilsMessageTypeFlagsEXT.GeneralBitExt
-                              | DebugUtilsMessageTypeFlagsEXT.ValidationBitExt
-                              | DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt
-                              | DebugUtilsMessageTypeFlagsEXT.DeviceAddressBindingBitExt,
-                PfnUserCallback = (PfnDebugUtilsMessengerCallbackEXT)DebugMessageCallback
-            };
-
-            DebugUtilsMessengerEXT debugUtilsMessenger;
-            _debugUtils!.CreateDebugUtilsMessenger(_instance, &createInfo, null, &debugUtilsMessenger)
-                        .ThrowCode("Failed to create debug messenger!");
-
-            _debugUtilsMessenger = debugUtilsMessenger;
-        }
+        _vkDebug = Debugging ? new(_vk) : null;
+        _vkDebug?.SetDebugMessageCallback(_instance);
 
         _physicalDeviceMap = [];
         _graphicsDeviceMap = [];
@@ -99,7 +72,7 @@ public unsafe class Context : DisposableObject
             lock (_physicalDeviceMap)
             {
                 VulkanResources vulkanResources = new();
-                vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtils, _surface);
+                vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _surface, _vkDebug);
 
                 PhysicalDevice physicalDevice = new(vulkanResources, vkPhysicalDevice);
 
@@ -196,7 +169,7 @@ public unsafe class Context : DisposableObject
             lock (_graphicsDeviceMap)
             {
                 VulkanResources vulkanResources = new();
-                vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtils, _surface);
+                vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _surface, _vkDebug);
                 vulkanResources.InitializePhysicalDevice(physicalDevice, GetDeviceExtensions(physicalDevice));
 
                 GraphicsDevice graphicsDevice = new(vulkanResources,
@@ -226,8 +199,7 @@ public unsafe class Context : DisposableObject
         _physicalDeviceMap.Clear();
         _graphicsDeviceMap.Clear();
 
-        _debugUtils?.DestroyDebugUtilsMessenger(_instance, _debugUtilsMessenger!.Value, null);
-        _debugUtils?.Dispose();
+        _vkDebug?.Dispose();
 
         _surface.Dispose();
 
@@ -346,38 +318,6 @@ public unsafe class Context : DisposableObject
         return ext;
     }
 
-    private uint DebugMessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
-                                      DebugUtilsMessageTypeFlagsEXT messageTypes,
-                                      DebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                      void* pUserData)
-    {
-        string message = Alloter.GetString(pCallbackData->PMessage);
-        string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        StringBuilder stringBuilder = new();
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{messageSeverity}] [{messageTypes}]");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Alloter.GetString(pCallbackData->PMessageIdName)}");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Number: {pCallbackData->MessageIdNumber}");
-        foreach (string str in strings)
-        {
-            stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");
-        }
-
-        Console.ForegroundColor = messageSeverity switch
-        {
-            DebugUtilsMessageSeverityFlagsEXT.InfoBitExt => ConsoleColor.Blue,
-            DebugUtilsMessageSeverityFlagsEXT.WarningBitExt => ConsoleColor.Yellow,
-            DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt => ConsoleColor.Red,
-            _ => Console.ForegroundColor
-        };
-
-        Console.WriteLine(stringBuilder);
-
-        Console.ResetColor();
-
-        return Vk.False;
-    }
-
     private static string[] GetInstanceExtensions()
     {
         string[] extensions = [KhrSurface.ExtensionName];
@@ -397,7 +337,7 @@ public unsafe class Context : DisposableObject
 
         if (Debugging)
         {
-            extensions = [.. extensions, ExtDebugUtils.ExtensionName];
+            extensions = [.. extensions, VulkanDebug.ExtensionName];
         }
 
         return extensions;
