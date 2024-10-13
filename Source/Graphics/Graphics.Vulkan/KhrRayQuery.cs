@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Vulkan;
 
-internal class KhrRayQuery
+internal sealed class KhrRayQuery
 {
     public const string ExtensionName = "VK_KHR_ray_query";
 }

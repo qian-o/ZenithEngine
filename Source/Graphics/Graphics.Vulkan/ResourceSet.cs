@@ -6,7 +6,7 @@ namespace Graphics.Vulkan;
 
 public unsafe class ResourceSet : VulkanObject<ulong>
 {
-    private DeviceBuffer? descriptorBuffer;
+    private readonly DeviceBuffer? descriptorBuffer;
 
     internal ResourceSet(VulkanResources vkRes, ref readonly ResourceSetDescription description) : base(vkRes)
     {
