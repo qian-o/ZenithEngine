@@ -249,17 +249,38 @@ public unsafe class Context : DisposableObject
         LayerProperties[] availableLayers = new LayerProperties[(int)layerCount];
         _vk.EnumerateInstanceLayerProperties(&layerCount, availableLayers);
 
+        uint extensionCount = 0;
+        _vk.EnumerateInstanceExtensionProperties(string.Empty, &extensionCount, null);
+
+        ExtensionProperties[] availableExtensions = new ExtensionProperties[(int)extensionCount];
+        _vk.EnumerateInstanceExtensionProperties(string.Empty, &extensionCount, availableExtensions);
+
+        bool layerFound = false;
+        bool extensionFound = false;
+
         for (int i = 0; i < layerCount; i++)
         {
             LayerProperties layer = availableLayers[i];
 
             if (Alloter.GetString(layer.LayerName) == ValidationLayerName)
             {
-                return true;
+                layerFound = true;
+                break;
             }
         }
 
-        return false;
+        for (int i = 0; i < extensionCount; i++)
+        {
+            ExtensionProperties extension = availableExtensions[i];
+
+            if (Alloter.GetString(extension.ExtensionName) == ExtDebugUtils.ExtensionName)
+            {
+                extensionFound = true;
+                break;
+            }
+        }
+
+        return layerFound && extensionFound;
     }
 
     /// <summary>
