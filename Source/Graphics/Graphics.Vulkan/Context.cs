@@ -332,7 +332,7 @@ public unsafe class Context : DisposableObject
 
         if (physicalDevice.RayQuerySupported)
         {
-            extensions = [.. extensions, "VK_KHR_ray_query"];
+            extensions = [.. extensions, KhrRayQuery.ExtensionName];
         }
 
         if (physicalDevice.RayTracingSupported)

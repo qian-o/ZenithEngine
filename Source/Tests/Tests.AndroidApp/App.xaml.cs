@@ -4,9 +4,12 @@ namespace Tests.AndroidApp;
 
 public partial class App : Application
 {
-    public static Context Context { get; private set; }
+    private static Context? _context;
+    private static GraphicsDevice? _device;
 
-    public static GraphicsDevice Device { get; private set; }
+    public static Context Context => _context ?? throw new InvalidOperationException("Context is not initialized.");
+
+    public static GraphicsDevice Device => _device ?? throw new InvalidOperationException("Graphics device is not initialized.");
 
     public App()
     {
@@ -17,7 +20,7 @@ public partial class App : Application
 
     protected override void OnStart()
     {
-        Context = new Context();
-        Device = Context.CreateGraphicsDevice(Context.GetBestPhysicalDevice());
+        _context = new Context();
+        _device = _context.CreateGraphicsDevice(_context.GetBestPhysicalDevice());
     }
 }
