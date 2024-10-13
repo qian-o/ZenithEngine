@@ -5,7 +5,7 @@ using Android.Runtime;
 namespace Tests.AndroidApp;
 #pragma warning restore IDE0130
 
-[Application(Debuggable = true)]
+[Application]
 public class MainApplication(nint handle, JniHandleOwnership ownership) : MauiApplication(handle, ownership)
 {
     protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();

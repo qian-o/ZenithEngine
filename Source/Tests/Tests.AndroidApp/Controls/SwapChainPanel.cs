@@ -25,11 +25,15 @@ internal interface ISwapChainPanel
 
 internal sealed class SwapChainPanel : View, ISwapChainPanel
 {
-    private readonly CommandList _commandList;
-
+    private CommandList? _commandList;
     private Swapchain? _swapchain;
 
     public SwapChainPanel()
+    {
+        Loaded += SwapChainPanel_Loaded;
+    }
+
+    private void SwapChainPanel_Loaded(object? sender, EventArgs e)
     {
         _commandList = Device.Factory.CreateGraphicsCommandList();
 
@@ -74,7 +78,7 @@ internal sealed class SwapChainPanel : View, ISwapChainPanel
 
     void ISwapChainPanel.Render()
     {
-        if (_swapchain == null)
+        if (_commandList == null || _swapchain == null)
         {
             return;
         }

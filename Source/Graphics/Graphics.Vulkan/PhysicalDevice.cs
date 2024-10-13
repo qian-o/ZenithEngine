@@ -9,19 +9,44 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
 {
     internal PhysicalDevice(VulkanResources vkRes, VkPhysicalDevice physicalDevice) : base(vkRes, ObjectType.PhysicalDevice)
     {
+        uint extensionPropertyCount = 0;
+        VkRes.Vk.EnumerateDeviceExtensionProperties(physicalDevice, (string)null!, &extensionPropertyCount, null);
+
+        ExtensionProperties[] extensionProperties = new ExtensionProperties[(int)extensionPropertyCount];
+        VkRes.Vk.EnumerateDeviceExtensionProperties(physicalDevice, (string)null!, &extensionPropertyCount, extensionProperties);
+
+        bool descriptorBufferSupported = SupportsExtension(extensionProperties, ExtDescriptorBuffer.ExtensionName);
+        bool rayQuerySupported = SupportsExtension(extensionProperties, "VK_KHR_ray_query");
+        bool rayTracingSupported = SupportsExtension(extensionProperties, KhrRayTracingPipeline.ExtensionName);
+
+        PhysicalDeviceFeatures features;
+        VkRes.Vk.GetPhysicalDeviceFeatures(physicalDevice, &features);
+
         PhysicalDeviceProperties2 properties2 = new()
         {
             SType = StructureType.PhysicalDeviceProperties2
         };
 
-        properties2.AddNext(out PhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties)
-                   .AddNext(out PhysicalDeviceDescriptorBufferPropertiesEXT descriptorBufferProperties)
-                   .AddNext(out PhysicalDeviceRayTracingPipelinePropertiesKHR rayTracingPipelineProperties);
+        properties2.AddNext(out PhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties);
+
+        PhysicalDeviceDescriptorBufferPropertiesEXT descriptorBufferProperties = new();
+        if (descriptorBufferSupported)
+        {
+            properties2.AddNext(out descriptorBufferProperties);
+        }
+
+        PhysicalDeviceRayTracingPipelinePropertiesKHR rayTracingPipelineProperties = new();
+        if (rayTracingSupported)
+        {
+            properties2.AddNext(out rayTracingPipelineProperties);
+        }
 
         VkRes.Vk.GetPhysicalDeviceProperties2(physicalDevice, &properties2);
 
-        PhysicalDeviceFeatures features;
-        VkRes.Vk.GetPhysicalDeviceFeatures(physicalDevice, &features);
+        properties2.PNext = null;
+        descriptorIndexingProperties.PNext = null;
+        descriptorBufferProperties.PNext = null;
+        rayTracingPipelineProperties.PNext = null;
 
         PhysicalDeviceMemoryProperties memoryProperties;
         VkRes.Vk.GetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
@@ -32,32 +57,32 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
         QueueFamilyProperties[] queueFamilyProperties = new QueueFamilyProperties[(int)queueFamilyPropertyCount];
         VkRes.Vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties);
 
-        uint extensionPropertyCount = 0;
-        VkRes.Vk.EnumerateDeviceExtensionProperties(physicalDevice, string.Empty, &extensionPropertyCount, null);
-
-        ExtensionProperties[] extensionProperties = new ExtensionProperties[(int)extensionPropertyCount];
-        VkRes.Vk.EnumerateDeviceExtensionProperties(physicalDevice, string.Empty, &extensionPropertyCount, extensionProperties);
-
-        // Prevent invalid stack memory access.
-        properties2.PNext = null;
-
         Handle = physicalDevice;
         Name = Alloter.GetString(properties2.Properties.DeviceName);
+        Features = features;
+        ExtensionProperties = extensionProperties;
+        DescriptorBufferSupported = descriptorBufferSupported;
+        RayQuerySupported = rayQuerySupported;
+        RayTracingSupported = rayTracingSupported;
         Properties2 = properties2;
         DescriptorIndexingProperties = descriptorIndexingProperties;
         DescriptorBufferProperties = descriptorBufferProperties;
         RayTracingPipelineProperties = rayTracingPipelineProperties;
-        Features = features;
         MemoryProperties = memoryProperties;
         QueueFamilyProperties = queueFamilyProperties;
-        ExtensionProperties = extensionProperties;
-        DescriptorBufferSupported = SupportsExtension(ExtDescriptorBuffer.ExtensionName);
-        RayQuerySupported = SupportsExtension("VK_KHR_ray_query");
-        RayTracingSupported = SupportsExtension(KhrRayTracingPipeline.ExtensionName);
-        Score = CalculateScore();
     }
 
     internal override VkPhysicalDevice Handle { get; }
+
+    internal PhysicalDeviceFeatures Features { get; }
+
+    internal ExtensionProperties[] ExtensionProperties { get; }
+
+    internal bool DescriptorBufferSupported { get; }
+
+    internal bool RayQuerySupported { get; }
+
+    internal bool RayTracingSupported { get; }
 
     internal PhysicalDeviceProperties2 Properties2 { get; }
 
@@ -67,19 +92,9 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
 
     internal PhysicalDeviceRayTracingPipelinePropertiesKHR RayTracingPipelineProperties { get; }
 
-    internal PhysicalDeviceFeatures Features { get; }
-
     internal PhysicalDeviceMemoryProperties MemoryProperties { get; }
 
     internal QueueFamilyProperties[] QueueFamilyProperties { get; }
-
-    internal ExtensionProperties[] ExtensionProperties { get; }
-
-    internal bool DescriptorBufferSupported { get; }
-
-    internal bool RayQuerySupported { get; }
-
-    internal bool RayTracingSupported { get; }
 
     public uint Score { get; }
 
@@ -130,42 +145,9 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
         throw new InvalidOperationException("Failed to find supported format!");
     }
 
-    internal bool SupportsExtension(string extensionName)
-    {
-        foreach (ExtensionProperties extensionProperty in ExtensionProperties)
-        {
-            if (Alloter.GetString(extensionProperty.ExtensionName) == extensionName)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     internal uint CalculateScore()
     {
         uint score = 0;
-
-        if (Properties2.Properties.DeviceType is PhysicalDeviceType.IntegratedGpu)
-        {
-            score += 1000;
-        }
-
-        if (Properties2.Properties.DeviceType is PhysicalDeviceType.DiscreteGpu)
-        {
-            score += 2000;
-        }
-
-        if (Properties2.Properties.DeviceType is PhysicalDeviceType.VirtualGpu)
-        {
-            score += 1500;
-        }
-
-        if (Properties2.Properties.DeviceType is PhysicalDeviceType.Cpu)
-        {
-            score += 500;
-        }
 
         if (Features.GeometryShader)
         {
@@ -262,6 +244,26 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
             score += 1000;
         }
 
+        if (Properties2.Properties.DeviceType is PhysicalDeviceType.IntegratedGpu)
+        {
+            score += 1000;
+        }
+
+        if (Properties2.Properties.DeviceType is PhysicalDeviceType.DiscreteGpu)
+        {
+            score += 2000;
+        }
+
+        if (Properties2.Properties.DeviceType is PhysicalDeviceType.VirtualGpu)
+        {
+            score += 1500;
+        }
+
+        if (Properties2.Properties.DeviceType is PhysicalDeviceType.Cpu)
+        {
+            score += 500;
+        }
+
         return score;
     }
 
@@ -272,5 +274,18 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
 
     protected override void Destroy()
     {
+    }
+
+    private static bool SupportsExtension(ExtensionProperties[] extensionProperties, string extensionName)
+    {
+        foreach (ExtensionProperties extensionProperty in extensionProperties)
+        {
+            if (Alloter.GetString(extensionProperty.ExtensionName) == extensionName)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -44,19 +44,7 @@ public class VulkanResources : DisposableObject
 
     public VkPhysicalDevice VkPhysicalDevice => PhysicalDevice.Handle;
 
-    public PhysicalDeviceProperties2 Properties2 => PhysicalDevice.Properties2;
-
-    public PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties => PhysicalDevice.DescriptorIndexingProperties;
-
-    public PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties => PhysicalDevice.DescriptorBufferProperties;
-
-    public PhysicalDeviceRayTracingPipelinePropertiesKHR RayTracingPipelineProperties => PhysicalDevice.RayTracingPipelineProperties;
-
     public PhysicalDeviceFeatures Features => PhysicalDevice.Features;
-
-    public PhysicalDeviceMemoryProperties MemoryProperties => PhysicalDevice.MemoryProperties;
-
-    public QueueFamilyProperties[] QueueFamilyProperties => PhysicalDevice.QueueFamilyProperties;
 
     public ExtensionProperties[] ExtensionProperties => PhysicalDevice.ExtensionProperties;
 
@@ -65,6 +53,18 @@ public class VulkanResources : DisposableObject
     public bool RayQuerySupported => PhysicalDevice.RayQuerySupported;
 
     public bool RayTracingSupported => PhysicalDevice.RayTracingSupported;
+
+    public PhysicalDeviceProperties2 Properties2 => PhysicalDevice.Properties2;
+
+    public PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties => PhysicalDevice.DescriptorIndexingProperties;
+
+    public PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties => PhysicalDevice.DescriptorBufferProperties;
+
+    public PhysicalDeviceRayTracingPipelinePropertiesKHR RayTracingPipelineProperties => PhysicalDevice.RayTracingPipelineProperties;
+
+    public PhysicalDeviceMemoryProperties MemoryProperties => PhysicalDevice.MemoryProperties;
+
+    public QueueFamilyProperties[] QueueFamilyProperties => PhysicalDevice.QueueFamilyProperties;
     #endregion
 
     #region Graphics Device Properties

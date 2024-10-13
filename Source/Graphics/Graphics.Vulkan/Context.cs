@@ -250,10 +250,10 @@ public unsafe class Context : DisposableObject
         _vk.EnumerateInstanceLayerProperties(&layerCount, availableLayers);
 
         uint extensionCount = 0;
-        _vk.EnumerateInstanceExtensionProperties(string.Empty, &extensionCount, null);
+        _vk.EnumerateInstanceExtensionProperties((string)null!, &extensionCount, null);
 
         ExtensionProperties[] availableExtensions = new ExtensionProperties[(int)extensionCount];
-        _vk.EnumerateInstanceExtensionProperties(string.Empty, &extensionCount, availableExtensions);
+        _vk.EnumerateInstanceExtensionProperties((string)null!, &extensionCount, availableExtensions);
 
         bool layerFound = false;
         bool extensionFound = false;
