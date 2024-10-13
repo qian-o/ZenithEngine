@@ -1,4 +1,6 @@
-﻿using Graphics.Core;
+﻿using System.Globalization;
+using System.Text;
+using Graphics.Core;
 using Graphics.Core.Helpers;
 using Graphics.Vulkan.Helpers;
 using Silk.NET.Core.Native;
@@ -150,6 +152,27 @@ public unsafe class VulkanDebug(Vk vk) : DisposableObject
                                       DebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                       void* pUserData)
     {
+        string message = Alloter.GetString(pCallbackData->PMessage);
+        string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        StringBuilder stringBuilder = new();
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{messageSeverity}] [{messageTypes}]");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Alloter.GetString(pCallbackData->PMessageIdName)}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Number: {pCallbackData->MessageIdNumber}");
+        foreach (string str in strings)
+        {
+            stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");
+        }
+
+        PrintMessage(stringBuilder.ToString(), messageSeverity switch
+        {
+            DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt => ConsoleColor.DarkGray,
+            DebugUtilsMessageSeverityFlagsEXT.InfoBitExt => ConsoleColor.Blue,
+            DebugUtilsMessageSeverityFlagsEXT.WarningBitExt => ConsoleColor.Yellow,
+            DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt => ConsoleColor.Red,
+            _ => Console.ForegroundColor
+        });
+
         return Vk.False;
     }
 
@@ -163,6 +186,44 @@ public unsafe class VulkanDebug(Vk vk) : DisposableObject
                                       byte* pMessage,
                                       void* pUserData)
     {
+        string message = Alloter.GetString(pMessage);
+        string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        StringBuilder stringBuilder = new();
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{(DebugReportFlagsEXT)flags}] [{objectType}]");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Location: {location}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Message Code: {messageCode}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Layer Prefix: {Alloter.GetString(pLayerPrefix)}");
+        foreach (string str in strings)
+        {
+            stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");
+        }
+
+        PrintMessage(stringBuilder.ToString(), flags switch
+        {
+            (uint)DebugReportFlagsEXT.InformationBitExt => ConsoleColor.Blue,
+            (uint)DebugReportFlagsEXT.WarningBitExt => ConsoleColor.Yellow,
+            (uint)DebugReportFlagsEXT.PerformanceWarningBitExt => ConsoleColor.DarkYellow,
+            (uint)DebugReportFlagsEXT.ErrorBitExt => ConsoleColor.Red,
+            (uint)DebugReportFlagsEXT.DebugBitExt => ConsoleColor.DarkGray,
+            _ => Console.ForegroundColor
+        });
+
         return Vk.False;
+    }
+
+    private static void PrintMessage(string message, ConsoleColor color)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Console.ForegroundColor = color;
+        }
+
+        Console.WriteLine(message);
+
+        if (OperatingSystem.IsWindows())
+        {
+            Console.ResetColor();
+        }
     }
 }
