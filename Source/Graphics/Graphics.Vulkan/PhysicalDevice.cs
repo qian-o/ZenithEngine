@@ -1,4 +1,5 @@
 ﻿using Graphics.Core.Helpers;
+using Silk.NET.Core;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
@@ -58,6 +59,7 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
         VkRes.Vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties);
 
         Handle = physicalDevice;
+        ApiVersion = (Version32)properties2.Properties.ApiVersion;
         Name = Alloter.GetString(properties2.Properties.DeviceName);
         Features = features;
         ExtensionProperties = extensionProperties;
@@ -73,6 +75,8 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
     }
 
     internal override VkPhysicalDevice Handle { get; }
+
+    internal Version32 ApiVersion { get; }
 
     internal PhysicalDeviceFeatures Features { get; }
 
@@ -243,6 +247,8 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
         {
             score += 1000;
         }
+
+        score += Properties2.Properties.ApiVersion;
 
         if (Properties2.Properties.DeviceType is PhysicalDeviceType.IntegratedGpu)
         {

@@ -41,8 +41,8 @@ internal sealed class SwapChainPanel : View, ISwapChainPanel
         ModelRoot root = ModelRoot.Load("Sponza.gltf", ReadContext.Create(FileReader));
 
         assetPath = "Assets/Shaders";
-        Shader vs = Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Vertex, [.. FileReader("GLTF.hlsl.spv")], "mainVS"));
-        Shader fs = Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Fragment, [.. FileReader("GLTF.hlsl.spv")], "mainFS"));
+        Shader vs = Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Vertex, [.. FileReader("GLTF.vs.hlsl.spv")], "main"));
+        Shader fs = Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Fragment, [.. FileReader("GLTF.ps.hlsl.spv")], "main"));
 
         ArraySegment<byte> FileReader(string assetName)
         {

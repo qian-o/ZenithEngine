@@ -89,7 +89,7 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
             ImageArrayLayers = 1,
             ImageUsage = ImageUsageFlags.ColorAttachmentBit,
             PreTransform = SurfaceTransformFlagsKHR.IdentityBitKhr,
-            CompositeAlpha = CompositeAlphaFlagsKHR.OpaqueBitKhr,
+            CompositeAlpha = surfaceCapabilities.SupportedCompositeAlpha,
             PresentMode = ChooseSwapPresentMode(presentModes),
             ImageSharingMode = SharingMode.Exclusive,
             Clipped = Vk.True,
