@@ -2,23 +2,25 @@
 using System.Text;
 using Graphics.Core;
 using Graphics.Core.Helpers;
-using Graphics.Vulkan.Helpers;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 
 namespace Graphics.Vulkan;
 
-public unsafe class VulkanDebug(Vk vk) : DisposableObject
+public unsafe class VulkanDebug : DisposableObject
 {
     private static readonly bool _debugUtils;
     private static readonly bool _debugReport;
+    private static readonly bool _setObjectName;
 
-    private VkInstance? _instance;
-    private ExtDebugUtils? _debugUtilsExt;
-    private ExtDebugReport? _debugReportExt;
-    private DebugUtilsMessengerEXT? _debugUtilsMessenger;
-    private DebugReportCallbackEXT? _debugReportCallback;
+    private readonly Vk _vk;
+    private readonly VkInstance _instance;
+    private readonly ExtDebugUtils? _debugUtilsExt;
+    private readonly ExtDebugReport? _debugReportExt;
+    private readonly ExtDebugMarker? _debugMarkerExt;
+    private readonly DebugUtilsMessengerEXT? _debugUtilsMessenger;
+    private readonly DebugReportCallbackEXT? _debugReportCallback;
 
     static VulkanDebug()
     {
@@ -32,33 +34,41 @@ public unsafe class VulkanDebug(Vk vk) : DisposableObject
 
         bool debugUtils = false;
         bool debugReport = false;
+        bool setObjectName = false;
 
         foreach (ExtensionProperties extension in availableExtensions)
         {
-            if (Alloter.GetString(extension.ExtensionName) == ExtDebugUtils.ExtensionName)
+            string name = Alloter.GetString(extension.ExtensionName);
+
+            if (name == ExtDebugUtils.ExtensionName)
             {
                 debugUtils = true;
+                setObjectName = true;
+
                 break;
             }
-            else if (Alloter.GetString(extension.ExtensionName) == ExtDebugReport.ExtensionName)
+            else if (name == ExtDebugReport.ExtensionName)
             {
                 debugReport = true;
-                break;
+            }
+            else if (name == ExtDebugMarker.ExtensionName)
+            {
+                setObjectName = true;
             }
         }
 
+        debugReport = debugReport && !debugUtils;
+
         _debugUtils = debugUtils;
         _debugReport = debugReport;
+        _setObjectName = setObjectName;
 
         vk.Dispose();
     }
 
-    public static string ExtensionName => _debugUtils ? ExtDebugUtils.ExtensionName : _debugReport ? ExtDebugReport.ExtensionName : string.Empty;
-
-    public void SetDebugMessageCallback(VkInstance instance)
+    public VulkanDebug(Vk vk, VkInstance instance)
     {
-        Destroy();
-
+        _vk = vk;
         _instance = instance;
 
         if (_debugUtils)
@@ -106,6 +116,11 @@ public unsafe class VulkanDebug(Vk vk) : DisposableObject
             _debugReportCallback = debugReportCallback;
         }
 
+        if (!_debugUtils && _setObjectName)
+        {
+            _debugMarkerExt = CreateInstanceExtension<ExtDebugMarker>();
+        }
+
         T CreateInstanceExtension<T>() where T : NativeExtension<Vk>
         {
             if (!vk.TryGetInstanceExtension(instance, out T ext))
@@ -117,11 +132,53 @@ public unsafe class VulkanDebug(Vk vk) : DisposableObject
         }
     }
 
-    public void SetObjectName(VkDevice device, ref readonly DebugUtilsObjectNameInfoEXT nameInfo)
+    public static string ExtensionName => _debugUtils ? ExtDebugUtils.ExtensionName : _debugReport ? ExtDebugReport.ExtensionName : string.Empty;
+
+    public void SetObjectName<THandle>(VulkanObject<THandle> vkObject, ObjectType[] objectTypes)
     {
-        fixed (DebugUtilsObjectNameInfoEXT* pNameInfo = &nameInfo)
+        if (!_setObjectName)
         {
-            _debugUtilsExt?.SetDebugUtilsObjectName(device, pNameInfo).ThrowCode();
+            return;
+        }
+
+        ulong[] handles = vkObject.GetHandles();
+        string[] objNames = new string[Math.Min(handles.Length, objectTypes.Length)];
+
+        for (int i = 0; i < objNames.Length; i++)
+        {
+            objNames[i] = $"{vkObject.Name} ({objectTypes[i]})";
+        }
+
+        if (_debugUtilsExt != null)
+        {
+            for (int i = 0; i < objNames.Length; i++)
+            {
+                DebugUtilsObjectNameInfoEXT nameInfo = new()
+                {
+                    SType = StructureType.DebugUtilsObjectNameInfoExt,
+                    ObjectType = objectTypes[i],
+                    ObjectHandle = handles[i],
+                    PObjectName = vkObject.VkRes.Alloter.Allocate(objNames[i])
+                };
+
+                _debugUtilsExt.SetDebugUtilsObjectName(vkObject.VkRes.VkDevice, &nameInfo);
+            }
+        }
+
+        if (_debugMarkerExt != null)
+        {
+            for (int i = 0; i < objNames.Length; i++)
+            {
+                DebugMarkerObjectNameInfoEXT nameInfo = new()
+                {
+                    SType = StructureType.DebugMarkerObjectNameInfoExt,
+                    ObjectType = (DebugReportObjectTypeEXT)objectTypes[i],
+                    Object = handles[i],
+                    PObjectName = vkObject.VkRes.Alloter.Allocate(objNames[i])
+                };
+
+                _debugMarkerExt.DebugMarkerSetObjectName(vkObject.VkRes.VkDevice, &nameInfo);
+            }
         }
     }
 
@@ -129,22 +186,17 @@ public unsafe class VulkanDebug(Vk vk) : DisposableObject
     {
         if (_debugUtilsMessenger.HasValue)
         {
-            _debugUtilsExt!.DestroyDebugUtilsMessenger(_instance!.Value, _debugUtilsMessenger.Value, null);
+            _debugUtilsExt!.DestroyDebugUtilsMessenger(_instance, _debugUtilsMessenger.Value, null);
         }
 
         if (_debugReportCallback.HasValue)
         {
-            _debugReportExt!.DestroyDebugReportCallback(_instance!.Value, _debugReportCallback.Value, null);
+            _debugReportExt!.DestroyDebugReportCallback(_instance, _debugReportCallback.Value, null);
         }
 
         _debugUtilsExt?.Dispose();
         _debugReportExt?.Dispose();
-
-        _instance = null;
-        _debugUtilsExt = null;
-        _debugReportExt = null;
-        _debugUtilsMessenger = null;
-        _debugReportCallback = null;
+        _debugMarkerExt?.Dispose();
     }
 
     private uint DebugMessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,

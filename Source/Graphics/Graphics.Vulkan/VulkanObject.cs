@@ -22,21 +22,6 @@ public abstract unsafe class VulkanObject<THandle>(VulkanResources vkRes, params
             return;
         }
 
-        ulong[] handles = GetHandles();
-
-        int length = Math.Min(handles.Length, objectTypes.Length);
-
-        for (int i = 0; i < length; i++)
-        {
-            DebugUtilsObjectNameInfoEXT nameInfo = new()
-            {
-                SType = StructureType.DebugUtilsObjectNameInfoExt,
-                ObjectType = objectTypes[i],
-                ObjectHandle = handles[i],
-                PObjectName = VkRes.Alloter.Allocate($"{Name} ({objectTypes[i]})")
-            };
-
-            VkRes.VkDebug?.SetObjectName(VkRes.VkDevice, in nameInfo);
-        }
+        VkRes.VkDebug?.SetObjectName(this, objectTypes);
     }
 }

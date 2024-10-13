@@ -41,8 +41,7 @@ public unsafe class Context : DisposableObject
 
         _surface = CreateInstanceExtension<KhrSurface>();
 
-        _vkDebug = Debugging ? new(_vk) : null;
-        _vkDebug?.SetDebugMessageCallback(_instance);
+        _vkDebug = Debugging ? new(_vk, _instance) : null;
 
         _physicalDeviceMap = [];
         _graphicsDeviceMap = [];
