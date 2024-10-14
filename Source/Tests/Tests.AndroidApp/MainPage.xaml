@@ -29,7 +29,6 @@
 
             <controls:SwapChainPanel x:Name="Renderer"
                                      HeightRequest="200"
-                                     MaxFps="120"
                                      Loaded="SwapChainPanelLoaded"
                                      Update="SwapChainPanelUpdate"
                                      Render="SwapChainPanelRender" />
