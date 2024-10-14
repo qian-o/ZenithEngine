@@ -1,7 +1,6 @@
-﻿using Graphics.Core;
+﻿using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
-using SharpGLTF.Schema2;
 using Silk.NET.Core.Contexts;
 
 namespace Tests.AndroidApp.Controls;
@@ -16,53 +15,33 @@ internal interface ISwapChainPanel
 
     void DestroySwapChainPanel();
 
-    void Update();
+    void Update(float deltaTime, float totalTime);
 
-    void Render();
+    void Render(float deltaTime, float totalTime);
 
     void Resize(uint width, uint height);
 }
 
 internal sealed class SwapChainPanel : View, ISwapChainPanel
 {
-    private CommandList? _commandList;
+    public event EventHandler<UpdateEventArgs>? Update;
+
+    public event EventHandler<RenderEventArgs>? Render;
+
+    public event EventHandler<ResizeEventArgs>? Resize;
+
     private Swapchain? _swapchain;
 
-    public SwapChainPanel()
-    {
-        Loaded += SwapChainPanel_Loaded;
-    }
-
-    private void SwapChainPanel_Loaded(object? sender, EventArgs e)
-    {
-        _commandList = Device.Factory.CreateGraphicsCommandList();
-
-        string assetPath = "Assets/Models/Sponza/glTF";
-        ModelRoot root = ModelRoot.Load("Sponza.gltf", ReadContext.Create(FileReader));
-
-        assetPath = "Assets/Shaders";
-        Shader vs = Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Vertex, [.. FileReader("GLTF.vs.hlsl.spv")], "main"));
-        Shader fs = Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Fragment, [.. FileReader("GLTF.ps.hlsl.spv")], "main"));
-
-        ArraySegment<byte> FileReader(string assetName)
-        {
-            using Stream stream = FileSystem.OpenAppPackageFileAsync(Path.Combine(assetPath, assetName)).Result;
-
-            using MemoryStream memoryStream = new();
-            stream.CopyTo(memoryStream);
-
-            return new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
-        }
-    }
-
-    public Context Context => App.Context;
-
-    public GraphicsDevice Device => App.Device;
+    public Swapchain Swapchain => _swapchain ?? throw new InvalidOperationException("Swapchain is not created.");
 
     #region ISwapChainPanel
+    Context ISwapChainPanel.Context => App.Context;
+
+    GraphicsDevice ISwapChainPanel.Device => App.Device;
+
     void ISwapChainPanel.CreateSwapChainPanel(IVkSurface surface)
     {
-        _swapchain = Device.Factory.CreateSwapchain(new SwapchainDescription(surface, Device.GetBestDepthFormat()));
+        _swapchain = App.Device.Factory.CreateSwapchain(new SwapchainDescription(surface, App.Device.GetBestDepthFormat()));
     }
 
     void ISwapChainPanel.DestroySwapChainPanel()
@@ -72,31 +51,26 @@ internal sealed class SwapChainPanel : View, ISwapChainPanel
         _swapchain = null;
     }
 
-    void ISwapChainPanel.Update()
+    void ISwapChainPanel.Update(float deltaTime, float totalTime)
     {
+        Update?.Invoke(this, new UpdateEventArgs(deltaTime, totalTime));
     }
 
-    void ISwapChainPanel.Render()
+    void ISwapChainPanel.Render(float deltaTime, float totalTime)
     {
-        if (_commandList == null || _swapchain == null)
+        if (_swapchain is null)
         {
             return;
         }
 
-        _commandList.Begin();
-
-        _commandList.SetFramebuffer(_swapchain.Framebuffer);
-        _commandList.ClearColorTarget(0, RgbaFloat.Red);
-        _commandList.ClearDepthStencil(1.0f);
-
-        _commandList.End();
-
-        Device.SubmitCommandsAndSwapBuffers(_commandList, _swapchain);
+        Render?.Invoke(this, new RenderEventArgs(deltaTime, totalTime));
     }
 
     void ISwapChainPanel.Resize(uint width, uint height)
     {
         _swapchain?.Resize();
+
+        Resize?.Invoke(this, new ResizeEventArgs(width, height));
     }
     #endregion
 }

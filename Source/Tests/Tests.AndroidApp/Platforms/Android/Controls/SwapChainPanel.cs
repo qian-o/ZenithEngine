@@ -1,9 +1,9 @@
-﻿using Android.Content;
+﻿using System.Diagnostics;
+using Android.Content;
 using Android.Runtime;
 using Android.Views;
 using Graphics.Core.Helpers;
 using Java.Interop;
-using Microsoft.Maui.Animations;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
@@ -62,12 +62,74 @@ internal sealed unsafe class VkSurface(ANativeWindow* window) : IVkSurface, IDis
     }
 }
 
+internal sealed class Timer : IDisposable
+{
+    private readonly Stopwatch _stopwatch = new();
+    private readonly float _frequency = 1.0f / Stopwatch.Frequency;
+
+    public float DeltaTime { get; private set; }
+
+    public float TotalTime { get; private set; }
+
+    public void Start()
+    {
+        _stopwatch.Start();
+    }
+
+    public void Stop()
+    {
+        _stopwatch.Stop();
+    }
+
+    public void Update()
+    {
+        long elapsedTicks = _stopwatch.ElapsedTicks;
+
+        DeltaTime = elapsedTicks * _frequency;
+        TotalTime += DeltaTime;
+
+        _stopwatch.Restart();
+    }
+
+    public void Dispose()
+    {
+        _stopwatch.Stop();
+        _stopwatch.Reset();
+    }
+}
+
+internal sealed class FrameCallback(Choreographer choreographer, ISwapChainPanel swapChainPanel) : Java.Lang.Object, Choreographer.IFrameCallback
+{
+    private readonly Timer timer = new();
+
+    public void DoFrame(long frameTimeNanos)
+    {
+        timer.Update();
+
+        swapChainPanel.Update(timer.DeltaTime, timer.TotalTime);
+
+        timer.Update();
+
+        swapChainPanel.Render(timer.DeltaTime, timer.TotalTime);
+
+        choreographer.PostFrameCallback(this);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        timer.Dispose();
+    }
+}
+
 internal sealed unsafe class SwapChainPanel : SurfaceView, ISurfaceHolderCallback
 {
     private readonly ISwapChainPanel _swapChainPanel;
 
     private ANativeWindow* _window;
-    private Ticker? _ticker;
+    private Choreographer? _choreographer;
+    private FrameCallback? _frameCallback;
 
     public SwapChainPanel(Context context, ISwapChainPanel swapChainPanel) : base(context)
     {
@@ -106,16 +168,8 @@ internal sealed unsafe class SwapChainPanel : SurfaceView, ISurfaceHolderCallbac
 
         _swapChainPanel.CreateSwapChainPanel(new VkSurface(_window));
 
-        _ticker = new Ticker();
-        _ticker.Fire += () =>
-        {
-            lock (_swapChainPanel)
-            {
-                _swapChainPanel.Update();
-                _swapChainPanel.Render();
-            }
-        };
-        _ticker.Start();
+        _choreographer = Choreographer.Instance;
+        _choreographer!.PostFrameCallback(_frameCallback = new FrameCallback(_choreographer, _swapChainPanel));
     }
 
     private void DestroySurface()
@@ -129,11 +183,11 @@ internal sealed unsafe class SwapChainPanel : SurfaceView, ISurfaceHolderCallbac
             _window = null;
         }
 
-        if (_ticker != null)
-        {
-            _ticker.Stop();
+        _choreographer?.RemoveFrameCallback(_frameCallback);
+        _choreographer?.Dispose();
+        _frameCallback?.Dispose();
 
-            _ticker = null;
-        }
+        _choreographer = null;
+        _frameCallback = null;
     }
 }

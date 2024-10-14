@@ -27,7 +27,12 @@
                     Clicked="OnCounterClicked"
                     HorizontalOptions="Fill" />
 
-            <controls:SwapChainPanel HeightRequest="200" />
+            <controls:SwapChainPanel x:Name="Renderer"
+                                     HeightRequest="200"
+                                     MaxFps="120"
+                                     Loaded="SwapChainPanelLoaded"
+                                     Update="SwapChainPanelUpdate"
+                                     Render="SwapChainPanelRender" />
         </VerticalStackLayout>
     </ScrollView>
 
