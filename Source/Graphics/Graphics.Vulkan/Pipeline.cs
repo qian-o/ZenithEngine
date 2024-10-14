@@ -397,6 +397,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         RenderPass = createInfo.RenderPass;
         ShaderTable = null;
         PipelineBindPoint = PipelineBindPoint.Graphics;
+        ResourceSetCount = (uint)description.ResourceLayouts.Length;
     }
 
     internal Pipeline(VulkanResources vkRes, ref readonly ComputePipelineDescription description) : base(vkRes, ObjectType.Pipeline)
@@ -489,6 +490,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         RenderPass = default;
         ShaderTable = null;
         PipelineBindPoint = PipelineBindPoint.Compute;
+        ResourceSetCount = (uint)description.ResourceLayouts.Length;
     }
 
     internal Pipeline(VulkanResources vkRes, ref readonly RaytracingPipelineDescription description) : base(vkRes, ObjectType.Pipeline)
@@ -618,6 +620,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         RenderPass = default;
         ShaderTable = new ShaderTable(VkRes, this, in description);
         PipelineBindPoint = PipelineBindPoint.RayTracingKhr;
+        ResourceSetCount = (uint)description.ResourceLayouts.Length;
     }
 
     internal override VkPipeline Handle { get; }
@@ -629,6 +632,8 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
     internal ShaderTable? ShaderTable { get; }
 
     internal PipelineBindPoint PipelineBindPoint { get; }
+
+    internal uint ResourceSetCount { get; set; }
 
     public bool IsGraphics => PipelineBindPoint == PipelineBindPoint.Graphics;
 
