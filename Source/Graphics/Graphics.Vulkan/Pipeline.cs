@@ -13,9 +13,13 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
     {
         GraphicsPipelineCreateInfo createInfo = new()
         {
-            SType = StructureType.GraphicsPipelineCreateInfo,
-            Flags = PipelineCreateFlags.CreateDescriptorBufferBitExt
+            SType = StructureType.GraphicsPipelineCreateInfo
         };
+
+        if (VkRes.DescriptorBufferSupported)
+        {
+            createInfo.Flags |= PipelineCreateFlags.CreateDescriptorBufferBitExt;
+        }
 
         // blend state
         {
@@ -399,9 +403,13 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
     {
         ComputePipelineCreateInfo createInfo = new()
         {
-            SType = StructureType.ComputePipelineCreateInfo,
-            Flags = PipelineCreateFlags.CreateDescriptorBufferBitExt
+            SType = StructureType.ComputePipelineCreateInfo
         };
+
+        if (VkRes.DescriptorBufferSupported)
+        {
+            createInfo.Flags |= PipelineCreateFlags.CreateDescriptorBufferBitExt;
+        }
 
         // shader stage
         {
@@ -488,9 +496,13 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         RayTracingPipelineCreateInfoKHR createInfo = new()
         {
             SType = StructureType.RayTracingPipelineCreateInfoKhr,
-            MaxPipelineRayRecursionDepth = description.MaxTraceRecursionDepth,
-            Flags = PipelineCreateFlags.CreateDescriptorBufferBitExt
+            MaxPipelineRayRecursionDepth = description.MaxTraceRecursionDepth
         };
+
+        if (VkRes.DescriptorBufferSupported)
+        {
+            createInfo.Flags |= PipelineCreateFlags.CreateDescriptorBufferBitExt;
+        }
 
         // shader stage
         {

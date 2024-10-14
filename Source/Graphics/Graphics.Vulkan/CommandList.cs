@@ -417,24 +417,40 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
             throw new InvalidOperationException("No pipeline set.");
         }
 
-        DescriptorBufferBindingInfoEXT bindingInfoEXT = new()
+        if (VkRes.DescriptorBufferSupported)
         {
-            SType = StructureType.DescriptorBufferBindingInfoExt,
-            Address = resourceSet.Handle,
-            Usage = BufferUsageFlags.ResourceDescriptorBufferBitExt | BufferUsageFlags.SamplerDescriptorBufferBitExt
-        };
+            DescriptorBufferBindingInfoEXT bindingInfoEXT = new()
+            {
+                SType = StructureType.DescriptorBufferBindingInfoExt,
+                Address = resourceSet.Handle,
+                Usage = BufferUsageFlags.ResourceDescriptorBufferBitExt | BufferUsageFlags.SamplerDescriptorBufferBitExt
+            };
 
-        VkRes.ExtDescriptorBuffer.CmdBindDescriptorBuffers(Handle, 1, &bindingInfoEXT);
+            VkRes.ExtDescriptorBuffer.CmdBindDescriptorBuffers(Handle, 1, &bindingInfoEXT);
 
-        uint bufferIndices = 0;
-        ulong offsets = 0;
-        VkRes.ExtDescriptorBuffer.CmdSetDescriptorBufferOffsets(Handle,
-                                                                _currentPipeline.PipelineBindPoint,
-                                                                _currentPipeline.Layout,
-                                                                slot,
-                                                                1,
-                                                                &bufferIndices,
-                                                                &offsets);
+            uint bufferIndices = 0;
+            ulong offsets = 0;
+            VkRes.ExtDescriptorBuffer.CmdSetDescriptorBufferOffsets(Handle,
+                                                                    _currentPipeline.PipelineBindPoint,
+                                                                    _currentPipeline.Layout,
+                                                                    slot,
+                                                                    1,
+                                                                    &bufferIndices,
+                                                                    &offsets);
+        }
+        else
+        {
+            VkDescriptorSet descriptorSet = new(resourceSet.Handle);
+
+            VkRes.Vk.CmdBindDescriptorSets(Handle,
+                                           _currentPipeline.PipelineBindPoint,
+                                           _currentPipeline.Layout,
+                                           slot,
+                                           1,
+                                           &descriptorSet,
+                                           0,
+                                           null);
+        }
     }
 
     public void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart)

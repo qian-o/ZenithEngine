@@ -11,6 +11,7 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
     {
         DescriptorSetLayoutBinding[] bindings = new DescriptorSetLayoutBinding[description.Elements.Length];
         DescriptorType[] descriptorTypes = new DescriptorType[description.Elements.Length];
+        uint maxDescriptorCount = 0;
 
         for (uint i = 0; i < description.Elements.Length; i++)
         {
@@ -65,7 +66,7 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
                 throw new NotSupportedException("The descriptor type is not supported for bindless resource layout.");
             }
 
-            binding.DescriptorCount = Math.Min(binding.DescriptorCount, description.MaxDescriptorCount);
+            binding.DescriptorCount = maxDescriptorCount = Math.Min(binding.DescriptorCount, description.MaxDescriptorCount);
 
             bindings[^1] = binding;
         }
@@ -114,6 +115,7 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
         DescriptorTypes = descriptorTypes;
         SizeInBytes = (uint)sizeInBytes;
         IsLastBindless = description.IsLastBindless;
+        MaxDescriptorCount = maxDescriptorCount;
     }
 
     internal override VkDescriptorSetLayout Handle { get; }
@@ -123,6 +125,8 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
     internal uint SizeInBytes { get; }
 
     internal bool IsLastBindless { get; }
+
+    internal uint MaxDescriptorCount { get; }
 
     internal override ulong[] GetHandles()
     {
