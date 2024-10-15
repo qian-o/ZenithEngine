@@ -636,7 +636,7 @@ internal sealed unsafe class MainView : View
                                                                                     e.Height,
                                                                                     1,
                                                                                     PixelFormat.R8G8B8A8UNorm,
-                                                                                    TextureUsage.Storage | TextureUsage.Sampled));
+                                                                                    TextureUsage.Sampled | TextureUsage.Storage));
 
         _outputTextureView = _device.Factory.CreateTextureView(_outputTexture);
 
