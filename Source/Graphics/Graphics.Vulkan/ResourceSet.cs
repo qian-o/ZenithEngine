@@ -139,7 +139,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
         if (boundResources.Length > Layout.MaxDescriptorCount)
         {
-            throw new ArgumentOutOfRangeException(nameof(boundResources));
+            throw new InvalidDataException("Resource count exceeds the maximum descriptor count.");
         }
 
         bindlessResources = boundResources;
