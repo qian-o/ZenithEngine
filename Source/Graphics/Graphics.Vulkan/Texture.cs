@@ -297,17 +297,24 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
 
     internal void TransitionToBestLayout(CommandBuffer commandBuffer)
     {
-        ImageLayout newLayout = ImageLayout.General;
+        ImageLayout newLayout = ImageLayout.Undefined;
 
         if (Usage.HasFlag(TextureUsage.Sampled))
         {
             newLayout = ImageLayout.ShaderReadOnlyOptimal;
         }
-        else if (Usage.HasFlag(TextureUsage.RenderTarget))
+
+        if (Usage.HasFlag(TextureUsage.Storage))
+        {
+            newLayout = ImageLayout.General;
+        }
+
+        if (Usage.HasFlag(TextureUsage.RenderTarget))
         {
             newLayout = ImageLayout.ColorAttachmentOptimal;
         }
-        else if (Usage.HasFlag(TextureUsage.DepthStencil))
+
+        if (Usage.HasFlag(TextureUsage.DepthStencil))
         {
             newLayout = ImageLayout.DepthStencilAttachmentOptimal;
         }

@@ -13,6 +13,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
     private readonly IBindableResource[]? useResources;
 
+    private readonly List<Texture> sampledTextures = [];
     private readonly List<Texture> storageTextures = [];
 
     private IBindableResource[]? bindlessResources;
@@ -110,6 +111,8 @@ public unsafe class ResourceSet : VulkanObject<ulong>
     internal override ulong Handle { get; }
 
     internal ResourceLayout Layout { get; }
+
+    internal IReadOnlyList<Texture> SampledTextures => sampledTextures;
 
     internal IReadOnlyList<Texture> StorageTextures => storageTextures;
 
@@ -273,7 +276,11 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
                 buffer += descriptorSize;
 
-                if (!isSampled)
+                if (isSampled)
+                {
+                    sampledTextures.Add(textureView.Target);
+                }
+                else
                 {
                     storageTextures.Add(textureView.Target);
                 }
@@ -373,7 +380,11 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                     ImageLayout = isSampled ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.General
                 };
 
-                if (!isSampled)
+                if (isSampled)
+                {
+                    sampledTextures.Add(textureView.Target);
+                }
+                else
                 {
                     storageTextures.Add(textureView.Target);
                 }

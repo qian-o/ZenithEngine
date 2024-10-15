@@ -464,9 +464,15 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
             throw new InvalidOperationException("No graphics pipeline set.");
         }
 
+        TransitionStorageTexturesToShaderRead();
+
         EnsureRenderPassActive();
 
         VkRes.Vk.CmdDrawIndexed(Handle, indexCount, instanceCount, indexStart, vertexOffset, instanceStart);
+
+        EnsureRenderPassInactive();
+
+        TransitionStorageTexturesToBest();
     }
 
     public void DrawIndexed(uint indexCount)
@@ -481,9 +487,9 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
             throw new InvalidOperationException("No compute pipeline set.");
         }
 
-        EnsureRenderPassInactive();
-
         TransitionStorageTexturesToGeneral();
+
+        EnsureRenderPassInactive();
 
         VkRes.Vk.CmdDispatch(Handle, groupCountX, groupCountY, groupCountZ);
 
@@ -497,9 +503,9 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
             throw new InvalidOperationException("No raytracing pipeline set.");
         }
 
-        EnsureRenderPassInactive();
-
         TransitionStorageTexturesToGeneral();
+
+        EnsureRenderPassInactive();
 
         ShaderTable shaderTable = _currentPipeline.ShaderTable!;
 
@@ -828,6 +834,28 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         }
     }
 
+    private void TransitionStorageTexturesToShaderRead()
+    {
+        if (_currentResourceSets != null)
+        {
+            foreach (ResourceSet resourceSet in _currentResourceSets)
+            {
+                if (resourceSet != null)
+                {
+                    foreach (Texture texture in resourceSet.SampledTextures)
+                    {
+                        texture.TransitionLayout(Handle, ImageLayout.ShaderReadOnlyOptimal);
+                    }
+
+                    foreach (Texture texture in resourceSet.StorageTextures)
+                    {
+                        texture.TransitionLayout(Handle, ImageLayout.ShaderReadOnlyOptimal);
+                    }
+                }
+            }
+        }
+    }
+
     private void TransitionStorageTexturesToBest()
     {
         if (_currentResourceSets != null)
@@ -836,6 +864,11 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
             {
                 if (resourceSet != null)
                 {
+                    foreach (Texture texture in resourceSet.SampledTextures)
+                    {
+                        texture.TransitionToBestLayout(Handle);
+                    }
+
                     foreach (Texture texture in resourceSet.StorageTextures)
                     {
                         texture.TransitionToBestLayout(Handle);
