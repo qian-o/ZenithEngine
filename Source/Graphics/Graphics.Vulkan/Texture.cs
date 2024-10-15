@@ -339,6 +339,8 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
 
             DeviceMemory!.Dispose();
         }
+
+        base.Destroy();
     }
 
     private static bool HasStencilComponent(PixelFormat format)

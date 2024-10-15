@@ -28,5 +28,7 @@ public unsafe class Semaphore : VulkanObject<VkSemaphore>
     protected override void Destroy()
     {
         VkRes.Vk.DestroySemaphore(VkRes.VkDevice, Handle, null);
+
+        base.Destroy();
     }
 }

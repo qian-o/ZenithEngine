@@ -280,10 +280,6 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
         return [(ulong)Handle.Handle];
     }
 
-    protected override void Destroy()
-    {
-    }
-
     private static bool SupportsExtension(ExtensionProperties[] extensionProperties, string extensionName)
     {
         foreach (ExtensionProperties extensionProperty in extensionProperties)

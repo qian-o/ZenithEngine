@@ -1,5 +1,4 @@
 ﻿using Graphics.Core;
-using Graphics.Core.Helpers;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
@@ -8,10 +7,6 @@ namespace Graphics.Vulkan;
 
 public class VulkanResources : DisposableObject
 {
-    #region Global Properties
-    public Alloter Alloter { get; } = new();
-    #endregion
-
     #region Context Properties
     private Vk? _vk;
     private VkInstance? _instance;
@@ -119,7 +114,6 @@ public class VulkanResources : DisposableObject
 
     protected override void Destroy()
     {
-        Alloter.Dispose();
     }
 
     private T TryGetContextProperty<T>(ref T field)

@@ -45,6 +45,8 @@ public unsafe class Context : DisposableObject
 
         _physicalDeviceMap = [];
         _graphicsDeviceMap = [];
+
+        _alloter.Clear();
     }
 
     public static Version32 ApiVersion { get; }
@@ -159,8 +161,6 @@ public unsafe class Context : DisposableObject
         VkDevice device;
         _vk.CreateDevice(physicalDevice.Handle, &createInfo, null, &device).ThrowCode("Failed to create device.");
 
-        _alloter.Clear();
-
         return Create(device);
 
         GraphicsDevice Create(VkDevice vkDevice)
@@ -274,8 +274,6 @@ public unsafe class Context : DisposableObject
 
         VkInstance instance;
         _vk.CreateInstance(&createInfo, null, &instance).ThrowCode("Failed to create instance!");
-
-        _alloter.Clear();
 
         return instance;
     }

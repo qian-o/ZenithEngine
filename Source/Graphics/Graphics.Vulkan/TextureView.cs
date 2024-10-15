@@ -66,5 +66,7 @@ public unsafe class TextureView : VulkanObject<ImageView>, IBindableResource
     protected override void Destroy()
     {
         VkRes.Vk.DestroyImageView(VkRes.VkDevice, Handle, null);
+
+        base.Destroy();
     }
 }

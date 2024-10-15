@@ -80,5 +80,7 @@ public unsafe class StagingCommandPool : VulkanObject<VkCommandPool>
         Fence.Dispose();
 
         VkRes.Vk.DestroyCommandPool(VkRes.VkDevice, Handle, null);
+
+        base.Destroy();
     }
 }

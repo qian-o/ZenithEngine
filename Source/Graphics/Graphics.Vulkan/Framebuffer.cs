@@ -291,5 +291,7 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
 
         VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPassLoad, null);
         VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPassClear, null);
+
+        base.Destroy();
     }
 }

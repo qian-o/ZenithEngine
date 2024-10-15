@@ -74,5 +74,7 @@ internal sealed unsafe class ShaderTable : VulkanObject<ulong>
         RaygenShaderHandleBuffer.Dispose();
         MissShaderHandleBuffer.Dispose();
         HitGroupHandleBuffer.Dispose();
+
+        base.Destroy();
     }
 }

@@ -723,6 +723,8 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         _availableStagingBuffers.Clear();
 
         CommandPool.FreeCommandBuffer(Handle);
+
+        base.Destroy();
     }
 
     private void BeginRenderPass()

@@ -38,5 +38,7 @@ public unsafe class Fence : VulkanObject<VkFence>
     protected override void Destroy()
     {
         VkRes.Vk.DestroyFence(VkRes.VkDevice, Handle, null);
+
+        base.Destroy();
     }
 }

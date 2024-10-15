@@ -150,5 +150,7 @@ public unsafe class TopLevelAS : VulkanObject<AccelerationStructureKHR>, IBindab
         VkRes.KhrAccelerationStructure.DestroyAccelerationStructure(VkRes.VkDevice, Handle, null);
 
         DeviceBuffer.Dispose();
+
+        base.Destroy();
     }
 }

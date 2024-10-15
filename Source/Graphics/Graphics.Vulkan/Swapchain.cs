@@ -189,6 +189,8 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
         }
 
         VkRes.Surface.DestroySurface(VkRes.Instance, Target, null);
+
+        base.Destroy();
     }
 
     private void DestroySwapchain()

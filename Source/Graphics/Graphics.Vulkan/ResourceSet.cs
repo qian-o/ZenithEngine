@@ -81,7 +81,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                 allocateInfo.AddNext(out DescriptorSetVariableDescriptorCountAllocateInfo variableDescriptorCountAllocateInfo);
 
                 variableDescriptorCountAllocateInfo.DescriptorSetCount = (uint)variableDesciptorCounts.Length;
-                variableDescriptorCountAllocateInfo.PDescriptorCounts = VkRes.Alloter.Allocate(variableDesciptorCounts);
+                variableDescriptorCountAllocateInfo.PDescriptorCounts = Alloter.Allocate(variableDesciptorCounts);
             }
 
             VkRes.Vk.AllocateDescriptorSets(VkRes.VkDevice, &allocateInfo, out descriptorSet).ThrowCode();
@@ -158,6 +158,8 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
             VkRes.Vk.DestroyDescriptorPool(VkRes.VkDevice, descriptorPool, null);
         }
+
+        base.Destroy();
     }
 
     private void Refresh()
@@ -352,7 +354,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                 };
             }
 
-            writeDescriptorSet.PBufferInfo = VkRes.Alloter.Allocate(bufferInfos);
+            writeDescriptorSet.PBufferInfo = Alloter.Allocate(bufferInfos);
         }
         else if (IsDescriptorImage(type))
         {
@@ -376,7 +378,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                 }
             }
 
-            writeDescriptorSet.PImageInfo = VkRes.Alloter.Allocate(imageInfos);
+            writeDescriptorSet.PImageInfo = Alloter.Allocate(imageInfos);
         }
         else if (IsDescriptorSampler(type))
         {
@@ -392,7 +394,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                 };
             }
 
-            writeDescriptorSet.PImageInfo = VkRes.Alloter.Allocate(imageInfos);
+            writeDescriptorSet.PImageInfo = Alloter.Allocate(imageInfos);
         }
         else if (IsDescriptorAccelerationStructure(type))
         {
@@ -411,9 +413,9 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                 accelerationStructures[i] = topLevelAS.Handle;
             }
 
-            writeDescriptorSetAccelerationStructure.PAccelerationStructures = VkRes.Alloter.Allocate(accelerationStructures);
+            writeDescriptorSetAccelerationStructure.PAccelerationStructures = Alloter.Allocate(accelerationStructures);
 
-            writeDescriptorSet.PNext = VkRes.Alloter.Allocate(writeDescriptorSetAccelerationStructure);
+            writeDescriptorSet.PNext = Alloter.Allocate(writeDescriptorSetAccelerationStructure);
         }
         else
         {

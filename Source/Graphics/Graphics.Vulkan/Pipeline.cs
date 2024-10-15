@@ -657,5 +657,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         }
 
         ShaderTable?.Dispose();
+
+        base.Destroy();
     }
 }

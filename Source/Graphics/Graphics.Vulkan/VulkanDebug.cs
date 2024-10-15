@@ -158,7 +158,7 @@ public unsafe class VulkanDebug : DisposableObject
                     SType = StructureType.DebugUtilsObjectNameInfoExt,
                     ObjectType = objectTypes[i],
                     ObjectHandle = handles[i],
-                    PObjectName = vkObject.VkRes.Alloter.Allocate(objNames[i])
+                    PObjectName = vkObject.Alloter.Allocate(objNames[i])
                 };
 
                 _debugUtilsExt.SetDebugUtilsObjectName(vkObject.VkRes.VkDevice, &nameInfo);
@@ -174,7 +174,7 @@ public unsafe class VulkanDebug : DisposableObject
                     SType = StructureType.DebugMarkerObjectNameInfoExt,
                     ObjectType = (DebugReportObjectTypeEXT)objectTypes[i],
                     Object = handles[i],
-                    PObjectName = vkObject.VkRes.Alloter.Allocate(objNames[i])
+                    PObjectName = vkObject.Alloter.Allocate(objNames[i])
                 };
 
                 _debugMarkerExt.DebugMarkerSetObjectName(vkObject.VkRes.VkDevice, &nameInfo);

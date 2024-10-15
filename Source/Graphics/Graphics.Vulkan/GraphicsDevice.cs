@@ -345,6 +345,8 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         KhrSwapchain.Dispose();
 
         VkRes.Vk.DestroyDevice(Handle, null);
+
+        base.Destroy();
     }
 
     private T CreateDeviceExtension<T>(VkDevice device) where T : NativeExtension<Vk>
