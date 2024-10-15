@@ -19,6 +19,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
     private bool _isRecording;
     private Framebuffer? _currentFramebuffer;
     private Pipeline? _currentPipeline;
+    private ResourceSet[]? _currentResourceSets;
     private bool _isInRenderPass;
 
     internal CommandList(VulkanResources vkRes, Executor executor, CommandPool commandPool) : base(vkRes, ObjectType.CommandBuffer)
@@ -408,6 +409,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         VkRes.Vk.CmdBindPipeline(Handle, pipeline.PipelineBindPoint, pipeline.Handle);
 
         _currentPipeline = pipeline;
+        _currentResourceSets = new ResourceSet[pipeline.ResourceSetCount];
     }
 
     public void SetResourceSet(uint slot, ResourceSet resourceSet)
@@ -451,6 +453,8 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
                                            0,
                                            null);
         }
+
+        _currentResourceSets![slot] = resourceSet;
     }
 
     public void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart)
@@ -479,7 +483,11 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
         EnsureRenderPassInactive();
 
+        TransitionStorageTexturesToGeneral();
+
         VkRes.Vk.CmdDispatch(Handle, groupCountX, groupCountY, groupCountZ);
+
+        TransitionStorageTexturesToBest();
     }
 
     public void DispatchRays(uint width, uint height, uint depth)
@@ -490,6 +498,8 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         }
 
         EnsureRenderPassInactive();
+
+        TransitionStorageTexturesToGeneral();
 
         ShaderTable shaderTable = _currentPipeline.ShaderTable!;
 
@@ -524,6 +534,8 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
                                                  width,
                                                  height,
                                                  depth);
+
+        TransitionStorageTexturesToBest();
     }
 
     public void ResolveTexture(Texture source, Texture destination)
@@ -794,6 +806,40 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
                                         null);
 
             _isInRenderPass = false;
+        }
+    }
+
+    private void TransitionStorageTexturesToGeneral()
+    {
+        if (_currentResourceSets != null)
+        {
+            foreach (ResourceSet resourceSet in _currentResourceSets)
+            {
+                if (resourceSet != null)
+                {
+                    foreach (Texture texture in resourceSet.StorageTextures)
+                    {
+                        texture.TransitionLayout(Handle, ImageLayout.General);
+                    }
+                }
+            }
+        }
+    }
+
+    private void TransitionStorageTexturesToBest()
+    {
+        if (_currentResourceSets != null)
+        {
+            foreach (ResourceSet resourceSet in _currentResourceSets)
+            {
+                if (resourceSet != null)
+                {
+                    foreach (Texture texture in resourceSet.StorageTextures)
+                    {
+                        texture.TransitionToBestLayout(Handle);
+                    }
+                }
+            }
         }
     }
 

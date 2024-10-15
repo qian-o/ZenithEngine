@@ -192,6 +192,11 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
                             barrier.SrcAccessMask = AccessFlags.ShaderReadBit;
                             srcStageFlags = PipelineStageFlags.FragmentShaderBit;
                         }
+                        else if (oldLayout == ImageLayout.General)
+                        {
+                            barrier.SrcAccessMask = AccessFlags.ShaderReadBit | AccessFlags.ShaderWriteBit;
+                            srcStageFlags = PipelineStageFlags.ComputeShaderBit | PipelineStageFlags.RayTracingShaderBitKhr;
+                        }
                         else if (oldLayout == ImageLayout.ColorAttachmentOptimal)
                         {
                             barrier.SrcAccessMask = AccessFlags.ColorAttachmentWriteBit;
@@ -237,6 +242,11 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
                             barrier.DstAccessMask = AccessFlags.ShaderReadBit;
                             dstStageFlags = PipelineStageFlags.FragmentShaderBit;
                         }
+                        else if (newLayout == ImageLayout.General)
+                        {
+                            barrier.DstAccessMask = AccessFlags.ShaderReadBit | AccessFlags.ShaderWriteBit;
+                            dstStageFlags = PipelineStageFlags.ComputeShaderBit | PipelineStageFlags.RayTracingShaderBitKhr;
+                        }
                         else if (newLayout == ImageLayout.ColorAttachmentOptimal)
                         {
                             barrier.DstAccessMask = AccessFlags.ColorAttachmentWriteBit;
@@ -277,6 +287,11 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
 
     internal void TransitionLayout(CommandBuffer commandBuffer, ImageLayout newLayout)
     {
+        if (ImageLayouts.All(item => item == newLayout))
+        {
+            return;
+        }
+
         TransitionLayout(commandBuffer, 0, MipLevels, 0, ArrayLayers, newLayout);
     }
 

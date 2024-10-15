@@ -103,7 +103,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
             }
         }
 
-        RefreshResourceSets();
+        Refresh();
     }
 
     internal override ulong Handle { get; }
@@ -126,7 +126,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
         useResources![index] = bindableResource;
 
-        RefreshResourceSets();
+        Refresh();
     }
 
     public void UpdateBindless(IBindableResource[] boundResources)
@@ -138,7 +138,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
         bindlessResources = boundResources;
 
-        RefreshResourceSets();
+        Refresh();
     }
 
     internal override ulong[] GetHandles()
@@ -160,7 +160,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
         }
     }
 
-    private void RefreshResourceSets()
+    private void Refresh()
     {
         if (useResources!.Any(item => item is null) || (Layout.IsLastBindless && bindlessResources is null))
         {
