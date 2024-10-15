@@ -50,30 +50,6 @@ public unsafe class Alloter : DisposableObject
         }
     }
 
-    public T* Allocate<T>(T value) where T : unmanaged
-    {
-        T* ptr = Allocate<T>();
-
-        *ptr = value;
-
-        return ptr;
-    }
-
-    public T* Allocate<T>(T[] values) where T : unmanaged
-    {
-        lock (_locker)
-        {
-            T* ptr = Allocate<T>(values.Length);
-
-            for (int i = 0; i < values.Length; i++)
-            {
-                ptr[i] = values[i];
-            }
-
-            return ptr;
-        }
-    }
-
     public void Clear()
     {
         lock (_locker)

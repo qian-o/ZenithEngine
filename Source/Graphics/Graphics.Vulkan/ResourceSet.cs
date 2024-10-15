@@ -76,12 +76,13 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
             if (Layout.IsLastBindless)
             {
-                uint[] variableDesciptorCounts = [Layout.MaxDescriptorCount];
+                uint* variableCounts = Alloter.Allocate<uint>(1);
+                variableCounts[0] = Layout.MaxDescriptorCount;
 
                 allocateInfo.AddNext(out DescriptorSetVariableDescriptorCountAllocateInfo variableDescriptorCountAllocateInfo);
 
-                variableDescriptorCountAllocateInfo.DescriptorSetCount = (uint)variableDesciptorCounts.Length;
-                variableDescriptorCountAllocateInfo.PDescriptorCounts = Alloter.Allocate(variableDesciptorCounts);
+                variableDescriptorCountAllocateInfo.DescriptorSetCount = 1;
+                variableDescriptorCountAllocateInfo.PDescriptorCounts = variableCounts;
             }
 
             VkRes.Vk.AllocateDescriptorSets(VkRes.VkDevice, &allocateInfo, out descriptorSet).ThrowCode();
@@ -340,7 +341,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
         if (IsDescriptorBuffer(type))
         {
-            DescriptorBufferInfo[] bufferInfos = new DescriptorBufferInfo[bindableResources.Length];
+            DescriptorBufferInfo* bufferInfos = Alloter.Allocate<DescriptorBufferInfo>(bindableResources.Length);
 
             for (int i = 0; i < bindableResources.Length; i++)
             {
@@ -354,13 +355,13 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                 };
             }
 
-            writeDescriptorSet.PBufferInfo = Alloter.Allocate(bufferInfos);
+            writeDescriptorSet.PBufferInfo = bufferInfos;
         }
         else if (IsDescriptorImage(type))
         {
             bool isSampled = type == DescriptorType.SampledImage;
 
-            DescriptorImageInfo[] imageInfos = new DescriptorImageInfo[bindableResources.Length];
+            DescriptorImageInfo* imageInfos = Alloter.Allocate<DescriptorImageInfo>(bindableResources.Length);
 
             for (int i = 0; i < bindableResources.Length; i++)
             {
@@ -378,11 +379,11 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                 }
             }
 
-            writeDescriptorSet.PImageInfo = Alloter.Allocate(imageInfos);
+            writeDescriptorSet.PImageInfo = imageInfos;
         }
         else if (IsDescriptorSampler(type))
         {
-            DescriptorImageInfo[] imageInfos = new DescriptorImageInfo[bindableResources.Length];
+            DescriptorImageInfo* imageInfos = Alloter.Allocate<DescriptorImageInfo>(bindableResources.Length);
 
             for (int i = 0; i < bindableResources.Length; i++)
             {
@@ -394,17 +395,15 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                 };
             }
 
-            writeDescriptorSet.PImageInfo = Alloter.Allocate(imageInfos);
+            writeDescriptorSet.PImageInfo = imageInfos;
         }
         else if (IsDescriptorAccelerationStructure(type))
         {
-            WriteDescriptorSetAccelerationStructureKHR writeDescriptorSetAccelerationStructure = new()
-            {
-                SType = StructureType.WriteDescriptorSetAccelerationStructureKhr,
-                AccelerationStructureCount = (uint)bindableResources.Length
-            };
+            WriteDescriptorSetAccelerationStructureKHR* writeDescriptorSetAS = Alloter.Allocate<WriteDescriptorSetAccelerationStructureKHR>();
+            writeDescriptorSetAS->SType = StructureType.WriteDescriptorSetAccelerationStructureKhr;
+            writeDescriptorSetAS->AccelerationStructureCount = (uint)bindableResources.Length;
 
-            AccelerationStructureKHR[] accelerationStructures = new AccelerationStructureKHR[bindableResources.Length];
+            AccelerationStructureKHR* accelerationStructures = Alloter.Allocate<AccelerationStructureKHR>(bindableResources.Length);
 
             for (int i = 0; i < bindableResources.Length; i++)
             {
@@ -413,9 +412,9 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                 accelerationStructures[i] = topLevelAS.Handle;
             }
 
-            writeDescriptorSetAccelerationStructure.PAccelerationStructures = Alloter.Allocate(accelerationStructures);
+            writeDescriptorSetAS->PAccelerationStructures = accelerationStructures;
 
-            writeDescriptorSet.PNext = Alloter.Allocate(writeDescriptorSetAccelerationStructure);
+            writeDescriptorSet.PNext = writeDescriptorSetAS;
         }
         else
         {

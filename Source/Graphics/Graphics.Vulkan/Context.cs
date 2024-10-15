@@ -99,21 +99,21 @@ public unsafe class Context : DisposableObject
         uint computeQueueFamilyIndex = physicalDevice.GetQueueFamilyIndex(QueueFlags.ComputeBit);
         uint transferQueueFamilyIndex = physicalDevice.GetQueueFamilyIndex(QueueFlags.TransferBit);
 
-        HashSet<uint> uniqueQueueFamilyIndices =
+        HashSet<uint> queueFamilyIndices =
         [
             graphicsQueueFamilyIndex,
             computeQueueFamilyIndex,
             transferQueueFamilyIndex
         ];
 
-        DeviceQueueCreateInfo[] createInfos = new DeviceQueueCreateInfo[uniqueQueueFamilyIndices.Count];
+        DeviceQueueCreateInfo* createInfos = _alloter.Allocate<DeviceQueueCreateInfo>(queueFamilyIndices.Count);
 
-        for (int i = 0; i < createInfos.Length; i++)
+        for (int i = 0; i < queueFamilyIndices.Count; i++)
         {
             createInfos[i] = new DeviceQueueCreateInfo
             {
                 SType = StructureType.DeviceQueueCreateInfo,
-                QueueFamilyIndex = uniqueQueueFamilyIndices.ElementAt(i),
+                QueueFamilyIndex = queueFamilyIndices.ElementAt(i),
                 QueueCount = 1,
                 PQueuePriorities = &queuePriority
             };
@@ -124,8 +124,8 @@ public unsafe class Context : DisposableObject
         DeviceCreateInfo createInfo = new()
         {
             SType = StructureType.DeviceCreateInfo,
-            QueueCreateInfoCount = (uint)createInfos.Length,
-            PQueueCreateInfos = _alloter.Allocate(createInfos),
+            QueueCreateInfoCount = (uint)queueFamilyIndices.Count,
+            PQueueCreateInfos = createInfos,
             EnabledExtensionCount = (uint)extensions.Length,
             PpEnabledExtensionNames = _alloter.Allocate(extensions)
         };
