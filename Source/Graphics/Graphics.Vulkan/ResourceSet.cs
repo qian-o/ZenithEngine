@@ -410,9 +410,11 @@ public unsafe class ResourceSet : VulkanObject<ulong>
         }
         else if (IsDescriptorAccelerationStructure(type))
         {
-            WriteDescriptorSetAccelerationStructureKHR* writeDescriptorSetAS = Alloter.Allocate<WriteDescriptorSetAccelerationStructureKHR>();
-            writeDescriptorSetAS->SType = StructureType.WriteDescriptorSetAccelerationStructureKhr;
-            writeDescriptorSetAS->AccelerationStructureCount = (uint)bindableResources.Length;
+            WriteDescriptorSetAccelerationStructureKHR writeDescriptorSetAS = new()
+            {
+                SType = StructureType.WriteDescriptorSetAccelerationStructureKhr,
+                AccelerationStructureCount = (uint)bindableResources.Length
+            };
 
             AccelerationStructureKHR* accelerationStructures = Alloter.Allocate<AccelerationStructureKHR>(bindableResources.Length);
 
@@ -423,9 +425,9 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                 accelerationStructures[i] = topLevelAS.Handle;
             }
 
-            writeDescriptorSetAS->PAccelerationStructures = accelerationStructures;
+            writeDescriptorSetAS.PAccelerationStructures = accelerationStructures;
 
-            writeDescriptorSet.PNext = writeDescriptorSetAS;
+            writeDescriptorSet.PNext = Alloter.Allocate(writeDescriptorSetAS);
         }
         else
         {

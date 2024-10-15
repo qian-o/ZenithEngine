@@ -50,6 +50,23 @@ public unsafe class Alloter : DisposableObject
         }
     }
 
+    public T* Allocate<T>(params T[] values) where T : unmanaged
+    {
+        lock (_locker)
+        {
+            T* ptr = (T*)NativeMemory.Alloc((uint)(sizeof(T) * values.Length));
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                ptr[i] = values[i];
+            }
+
+            _allocated.Add((nint)ptr);
+
+            return ptr;
+        }
+    }
+
     public void Clear()
     {
         lock (_locker)
