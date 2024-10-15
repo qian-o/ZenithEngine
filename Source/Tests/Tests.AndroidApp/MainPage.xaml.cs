@@ -262,7 +262,7 @@ public partial class MainPage : ContentPage
 
         _textureSamplerLayout = App.Device.Factory.CreateResourceLayout(in textureSamplerDescription);
         _textureSamplerSet = App.Device.Factory.CreateResourceSet(new ResourceSetDescription(_textureSamplerLayout));
-        _textureSamplerSet.UpdateBindless([App.Device.Aniso4xSampler, App.Device.LinearSampler]);
+        _textureSamplerSet.UpdateBindless(App.Device.Aniso4xSampler, App.Device.LinearSampler);
 
         _shaders = [vs, fs];
 

@@ -344,7 +344,7 @@ internal sealed unsafe class Program
 
         _textureSamplerLayout = _device.Factory.CreateResourceLayout(in textureSamplerDescription);
         _textureSamplerSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_textureSamplerLayout));
-        _textureSamplerSet.UpdateBindless([_device.Aniso4xSampler, _device.LinearSampler]);
+        _textureSamplerSet.UpdateBindless(_device.Aniso4xSampler, _device.LinearSampler);
 
         VertexElementDescription positionDescription = new("Position", VertexElementFormat.Float3);
         VertexElementDescription normalDescription = new("Normal", VertexElementFormat.Float3);

@@ -130,19 +130,19 @@ public unsafe class ResourceSet : VulkanObject<ulong>
         Refresh();
     }
 
-    public void UpdateBindless(IBindableResource[] boundResources)
+    public void UpdateBindless(params IBindableResource[] bindableResources)
     {
         if (!Layout.IsLastBindless)
         {
             throw new InvalidOperationException("Resource layout is not bindless.");
         }
 
-        if (boundResources.Length > Layout.MaxDescriptorCount)
+        if (bindableResources.Length > Layout.MaxDescriptorCount)
         {
             throw new InvalidDataException("Resource count exceeds the maximum descriptor count.");
         }
 
-        bindlessResources = boundResources;
+        bindlessResources = bindableResources;
 
         Refresh();
     }
