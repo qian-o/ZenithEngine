@@ -137,6 +137,11 @@ public unsafe class ResourceSet : VulkanObject<ulong>
             throw new InvalidOperationException("Resource layout is not bindless.");
         }
 
+        if (boundResources.Length > Layout.MaxDescriptorCount)
+        {
+            throw new ArgumentOutOfRangeException(nameof(boundResources));
+        }
+
         bindlessResources = boundResources;
 
         Refresh();

@@ -65,6 +65,13 @@ public partial class MainPage : ContentPage
     private sealed class Mesh
     {
         public List<Primitive> Primitives { get; } = [];
+
+        public Dictionary<int, Primitive[]> GroupByMaterial { get; private set; } = [];
+
+        public void GroupPrimitivesByMaterial()
+        {
+            GroupByMaterial = Primitives.GroupBy(primitive => primitive.MaterialIndex).ToDictionary(group => group.Key, group => group.ToArray());
+        }
     }
 
     private sealed class Node
@@ -100,6 +107,7 @@ public partial class MainPage : ContentPage
     }
     #endregion
 
+    private readonly Queue<Action<CommandList>> tasks = [];
     private readonly List<Texture> _textures = [];
     private readonly List<TextureView> _textureViews = [];
     private readonly List<Material> _materials = [];
@@ -120,6 +128,7 @@ public partial class MainPage : ContentPage
     private CommandList _commandList = null!;
 
     private CBO _cbo;
+    private bool _updateBindless;
 
     public MainPage()
     {
@@ -147,42 +156,39 @@ public partial class MainPage : ContentPage
         }
         #endregion
 
-        using CommandList commandList = App.Device.Factory.CreateGraphicsCommandList();
-
-        commandList.Begin();
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
         {
-            using MemoryStream stream = new(gltfTexture.PrimaryImage.Content.Content.Span.ToArray());
-
-            if (ImageInfo.FromStream(stream) is not ImageInfo imageInfo)
+            tasks.Enqueue((commandList) =>
             {
-                continue;
-            }
+                using MemoryStream stream = new(gltfTexture.PrimaryImage.Content.Content.Span.ToArray());
 
-            int width = imageInfo.Width;
-            int height = imageInfo.Height;
+                if (ImageInfo.FromStream(stream) is not ImageInfo imageInfo)
+                {
+                    return;
+                }
 
-            ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
+                int width = imageInfo.Width;
+                int height = imageInfo.Height;
 
-            uint mipLevels = Math.Max(1, (uint)MathF.Log2(Math.Max(width, height))) + 1;
+                ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
 
-            TextureDescription description = TextureDescription.Texture2D((uint)width, (uint)height, mipLevels, PixelFormat.R8G8B8A8UNorm, TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
+                uint mipLevels = Math.Max(1, (uint)MathF.Log2(Math.Max(width, height))) + 1;
 
-            Texture texture = App.Device.Factory.CreateTexture(in description);
-            texture.Name = gltfTexture.Name;
+                TextureDescription description = TextureDescription.Texture2D((uint)width, (uint)height, mipLevels, PixelFormat.R8G8B8A8UNorm, TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
 
-            TextureView textureView = App.Device.Factory.CreateTextureView(texture);
-            textureView.Name = gltfTexture.Name;
+                Texture texture = App.Device.Factory.CreateTexture(in description);
+                texture.Name = gltfTexture.Name;
 
-            commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
-            commandList.GenerateMipmaps(texture);
+                TextureView textureView = App.Device.Factory.CreateTextureView(texture);
+                textureView.Name = gltfTexture.Name;
 
-            _textures.Add(texture);
-            _textureViews.Add(textureView);
+                commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
+                commandList.GenerateMipmaps(texture);
+
+                _textures.Add(texture);
+                _textureViews.Add(textureView);
+            });
         }
-        commandList.End();
-
-        App.Device.SubmitCommands(commandList);
 
         foreach (GLTFMaterial gltfMaterial in root.LogicalMaterials)
         {
@@ -230,7 +236,7 @@ public partial class MainPage : ContentPage
         _cboBuffer = App.Device.Factory.CreateBuffer(BufferDescription.Buffer<CBO>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutDescription cboLayoutDescription = new(new ElementDescription("cbo", ResourceKind.ConstantBuffer, ShaderStages.Vertex));
-        ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
+        ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)root.LogicalTextures.Count,
                                                                                              new ElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
         ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
                                                                                                  new ElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
@@ -240,7 +246,6 @@ public partial class MainPage : ContentPage
 
         _textureMapLayout = App.Device.Factory.CreateResourceLayout(in textureMapDescription);
         _textureMapSet = App.Device.Factory.CreateResourceSet(new ResourceSetDescription(_textureMapLayout));
-        _textureMapSet.UpdateBindless([.. _textureViews]);
 
         _textureSamplerLayout = App.Device.Factory.CreateResourceLayout(in textureSamplerDescription);
         _textureSamplerSet = App.Device.Factory.CreateResourceSet(new ResourceSetDescription(_textureSamplerLayout));
@@ -296,11 +301,27 @@ public partial class MainPage : ContentPage
             LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(e.TotalTime))),
             ViewPos = new Vector4(new Vector3(7.8f, 2.1f, 0.0f), 1.0f)
         };
+
+        if (_updateBindless)
+        {
+            _textureMapSet.UpdateBindless([.. _textureViews]);
+        }
     }
 
     private void Renderer_Render(object sender, RenderEventArgs e)
     {
         _commandList.Begin();
+
+        if (tasks.TryDequeue(out Action<CommandList>? task))
+        {
+            task(_commandList);
+
+            _updateBindless = true;
+        }
+        else
+        {
+            _updateBindless = false;
+        }
 
         _commandList.SetFramebuffer(Renderer.Swapchain.Framebuffer);
         _commandList.ClearColorTarget(0, RgbaFloat.Black);
@@ -419,6 +440,8 @@ public partial class MainPage : ContentPage
                 node.Mesh ??= new();
                 node.Mesh.Primitives.Add(new Primitive(firsetIndex, (uint)indexCount, primitive.Material.LogicalIndex));
             }
+
+            node.Mesh!.GroupPrimitivesByMaterial();
         }
 
         if (parent != null)
@@ -445,13 +468,17 @@ public partial class MainPage : ContentPage
 
             commandList.UpdateBuffer(_cboBuffer, ref _cbo);
 
-            foreach (Primitive primitive in node.Mesh.Primitives)
+            foreach (KeyValuePair<int, Primitive[]> pair in node.Mesh.GroupByMaterial)
             {
-                commandList.SetPipeline(_pipelines![primitive.MaterialIndex]);
+                commandList.SetPipeline(_pipelines![pair.Key]);
                 commandList.SetResourceSet(0, _cboSet);
                 commandList.SetResourceSet(1, _textureMapSet);
                 commandList.SetResourceSet(2, _textureSamplerSet);
-                commandList.DrawIndexed(primitive.IndexCount, 1, primitive.FirstIndex, 0, 0);
+
+                foreach (Primitive primitive in pair.Value)
+                {
+                    commandList.DrawIndexed(primitive.IndexCount, 1, primitive.FirstIndex, 0, 0);
+                }
             }
         }
 
