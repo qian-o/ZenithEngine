@@ -175,8 +175,6 @@ public unsafe class ResourceSet : VulkanObject<ulong>
             return;
         }
 
-        Alloter.Clear();
-
         storageTextures.Clear();
 
         if (VkRes.DescriptorBufferSupported)
@@ -219,6 +217,8 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                                           0,
                                           null);
         }
+
+        Alloter.Clear();
     }
 
     private void WriteDescriptorBuffer(byte* buffer, DescriptorType type, params IBindableResource[] bindableResources)
