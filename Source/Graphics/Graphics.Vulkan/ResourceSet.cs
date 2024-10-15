@@ -13,7 +13,6 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
     private readonly IBindableResource[]? useResources;
 
-    private readonly List<Texture> sampledTextures = [];
     private readonly List<Texture> storageTextures = [];
 
     private IBindableResource[]? bindlessResources;
@@ -111,8 +110,6 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
     internal ResourceLayout Layout { get; }
 
-    internal IReadOnlyList<Texture> SampledTextures => sampledTextures;
-
     internal IReadOnlyList<Texture> StorageTextures => storageTextures;
 
     public void UpdateSet(IBindableResource bindableResource, uint index)
@@ -170,7 +167,6 @@ public unsafe class ResourceSet : VulkanObject<ulong>
             return;
         }
 
-        sampledTextures.Clear();
         storageTextures.Clear();
 
         if (VkRes.DescriptorBufferSupported)
@@ -217,10 +213,11 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
     private void WriteDescriptorBuffer(byte* buffer, DescriptorType type, params IBindableResource[] bindableResources)
     {
-        nuint descriptorSize;
         if (IsDescriptorBuffer(type))
         {
             bool isUniform = type is DescriptorType.UniformBuffer or DescriptorType.UniformBufferDynamic;
+
+            nuint descriptorSize = isUniform ? VkRes.DescriptorBufferProperties.UniformBufferDescriptorSize : VkRes.DescriptorBufferProperties.StorageBufferDescriptorSize;
 
             for (int i = 0; i < bindableResources.Length; i++)
             {
@@ -236,13 +233,11 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
                 if (isUniform)
                 {
-                    descriptorSize = VkRes.DescriptorBufferProperties.UniformBufferDescriptorSize;
-                    GetDescriptor(new DescriptorDataEXT() { PUniformBuffer = &addressInfo });
+                    GetDescriptor(descriptorSize, new DescriptorDataEXT() { PUniformBuffer = &addressInfo });
                 }
                 else
                 {
-                    descriptorSize = VkRes.DescriptorBufferProperties.StorageBufferDescriptorSize;
-                    GetDescriptor(new DescriptorDataEXT() { PStorageBuffer = &addressInfo });
+                    GetDescriptor(descriptorSize, new DescriptorDataEXT() { PStorageBuffer = &addressInfo });
                 }
 
                 buffer += descriptorSize;
@@ -251,6 +246,8 @@ public unsafe class ResourceSet : VulkanObject<ulong>
         else if (IsDescriptorImage(type))
         {
             bool isSampled = type == DescriptorType.SampledImage;
+
+            nuint descriptorSize = isSampled ? VkRes.DescriptorBufferProperties.SampledImageDescriptorSize : VkRes.DescriptorBufferProperties.StorageImageDescriptorSize;
 
             for (int i = 0; i < bindableResources.Length; i++)
             {
@@ -264,22 +261,16 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
                 if (isSampled)
                 {
-                    descriptorSize = VkRes.DescriptorBufferProperties.SampledImageDescriptorSize;
-                    GetDescriptor(new DescriptorDataEXT() { PSampledImage = &imageInfo });
+                    GetDescriptor(descriptorSize, new DescriptorDataEXT() { PSampledImage = &imageInfo });
                 }
                 else
                 {
-                    descriptorSize = VkRes.DescriptorBufferProperties.StorageImageDescriptorSize;
-                    GetDescriptor(new DescriptorDataEXT() { PStorageImage = &imageInfo });
+                    GetDescriptor(descriptorSize, new DescriptorDataEXT() { PStorageImage = &imageInfo });
                 }
 
                 buffer += descriptorSize;
 
-                if (isSampled)
-                {
-                    sampledTextures.Add(textureView.Target);
-                }
-                else
+                if (!isSampled)
                 {
                     storageTextures.Add(textureView.Target);
                 }
@@ -287,26 +278,28 @@ public unsafe class ResourceSet : VulkanObject<ulong>
         }
         else if (IsDescriptorSampler(type))
         {
+            nuint descriptorSize = VkRes.DescriptorBufferProperties.SamplerDescriptorSize;
+
             for (int i = 0; i < bindableResources.Length; i++)
             {
                 Sampler sampler = (Sampler)bindableResources[i];
 
                 VkSampler vkSampler = sampler.Handle;
 
-                descriptorSize = VkRes.DescriptorBufferProperties.SamplerDescriptorSize;
-                GetDescriptor(new DescriptorDataEXT() { PSampler = &vkSampler });
+                GetDescriptor(descriptorSize, new DescriptorDataEXT() { PSampler = &vkSampler });
 
                 buffer += descriptorSize;
             }
         }
         else if (IsDescriptorAccelerationStructure(type))
         {
+            nuint descriptorSize = VkRes.DescriptorBufferProperties.AccelerationStructureDescriptorSize;
+
             for (int i = 0; i < bindableResources.Length; i++)
             {
                 TopLevelAS topLevelAS = (TopLevelAS)bindableResources[i];
 
-                descriptorSize = VkRes.DescriptorBufferProperties.AccelerationStructureDescriptorSize;
-                GetDescriptor(new DescriptorDataEXT() { AccelerationStructure = topLevelAS.Address });
+                GetDescriptor(descriptorSize, new DescriptorDataEXT() { AccelerationStructure = topLevelAS.Address });
 
                 buffer += descriptorSize;
             }
@@ -316,7 +309,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
             throw new NotSupportedException();
         }
 
-        void GetDescriptor(DescriptorDataEXT descriptorData)
+        void GetDescriptor(nuint descriptorSize, DescriptorDataEXT descriptorData)
         {
             DescriptorGetInfoEXT getInfo = new()
             {
@@ -377,11 +370,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                     ImageLayout = isSampled ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.General
                 };
 
-                if (isSampled)
-                {
-                    sampledTextures.Add(textureView.Target);
-                }
-                else
+                if (!isSampled)
                 {
                     storageTextures.Add(textureView.Target);
                 }
