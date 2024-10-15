@@ -128,7 +128,6 @@ public partial class MainPage : ContentPage
     private CommandList _commandList = null!;
 
     private CBO _cbo;
-    private bool _updateBindless;
 
     public MainPage()
     {
@@ -158,37 +157,50 @@ public partial class MainPage : ContentPage
 
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
         {
-            tasks.Enqueue((commandList) =>
+            using Stream stream = gltfTexture.PrimaryImage.Content.Open();
+
+            if (ImageInfo.FromStream(stream) is not ImageInfo imageInfo)
             {
-                using MemoryStream stream = new(gltfTexture.PrimaryImage.Content.Content.Span.ToArray());
+                return;
+            }
 
-                if (ImageInfo.FromStream(stream) is not ImageInfo imageInfo)
-                {
-                    return;
-                }
+            int width = imageInfo.Width;
+            int height = imageInfo.Height;
 
-                int width = imageInfo.Width;
-                int height = imageInfo.Height;
+            uint mipLevels = Math.Max(1, (uint)MathF.Log2(Math.Max(width, height))) + 1;
+
+            TextureDescription description = TextureDescription.Texture2D((uint)width, (uint)height, mipLevels, PixelFormat.R8G8B8A8UNorm, TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
+
+            Texture texture = App.Device.Factory.CreateTexture(in description);
+            texture.Name = gltfTexture.Name;
+
+            TextureView textureView = App.Device.Factory.CreateTextureView(texture);
+            textureView.Name = gltfTexture.Name;
+
+            _textures.Add(texture);
+            _textureViews.Add(textureView);
+        }
+
+        Task.Run(() =>
+        {
+            Parallel.For(0, _textures.Count, i =>
+            {
+                using Stream stream = root.LogicalTextures[i].PrimaryImage.Content.Open();
 
                 ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
 
-                uint mipLevels = Math.Max(1, (uint)MathF.Log2(Math.Max(width, height))) + 1;
+                lock (tasks)
+                {
+                    tasks.Enqueue((commandList) =>
+                    {
+                        commandList.UpdateTexture(_textures[i], image.Data, 0, 0, 0, (uint)image.Width, (uint)image.Height, 1, 0, 0);
+                        commandList.GenerateMipmaps(_textures[i]);
+                    });
+                }
 
-                TextureDescription description = TextureDescription.Texture2D((uint)width, (uint)height, mipLevels, PixelFormat.R8G8B8A8UNorm, TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
-
-                Texture texture = App.Device.Factory.CreateTexture(in description);
-                texture.Name = gltfTexture.Name;
-
-                TextureView textureView = App.Device.Factory.CreateTextureView(texture);
-                textureView.Name = gltfTexture.Name;
-
-                commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
-                commandList.GenerateMipmaps(texture);
-
-                _textures.Add(texture);
-                _textureViews.Add(textureView);
+                root.LogicalTextures[i].ClearImages();
             });
-        }
+        });
 
         foreach (GLTFMaterial gltfMaterial in root.LogicalMaterials)
         {
@@ -246,6 +258,7 @@ public partial class MainPage : ContentPage
 
         _textureMapLayout = App.Device.Factory.CreateResourceLayout(in textureMapDescription);
         _textureMapSet = App.Device.Factory.CreateResourceSet(new ResourceSetDescription(_textureMapLayout));
+        _textureMapSet.UpdateBindless([.. _textureViews]);
 
         _textureSamplerLayout = App.Device.Factory.CreateResourceLayout(in textureSamplerDescription);
         _textureSamplerSet = App.Device.Factory.CreateResourceSet(new ResourceSetDescription(_textureSamplerLayout));
@@ -301,11 +314,6 @@ public partial class MainPage : ContentPage
             LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(e.TotalTime))),
             ViewPos = new Vector4(new Vector3(7.8f, 2.1f, 0.0f), 1.0f)
         };
-
-        if (_updateBindless)
-        {
-            _textureMapSet.UpdateBindless([.. _textureViews]);
-        }
     }
 
     private void Renderer_Render(object sender, RenderEventArgs e)
@@ -315,12 +323,6 @@ public partial class MainPage : ContentPage
         if (tasks.TryDequeue(out Action<CommandList>? task))
         {
             task(_commandList);
-
-            _updateBindless = true;
-        }
-        else
-        {
-            _updateBindless = false;
         }
 
         _commandList.SetFramebuffer(Renderer.Swapchain.Framebuffer);
