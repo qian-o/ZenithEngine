@@ -5,7 +5,8 @@ namespace Graphics.Core.Helpers;
 public unsafe class Alloter : DisposableObject
 {
     private readonly object _locker = new();
-    private readonly List<nint> _allocated = [];
+    private readonly List<nint> _marshal = [];
+    private readonly List<nint> _nativeMemory = [];
 
     public byte* Allocate(string value)
     {
@@ -13,7 +14,7 @@ public unsafe class Alloter : DisposableObject
         {
             nint ptr = Marshal.StringToHGlobalAnsi(value);
 
-            _allocated.Add(ptr);
+            _marshal.Add(ptr);
 
             return (byte*)ptr;
         }
@@ -30,7 +31,7 @@ public unsafe class Alloter : DisposableObject
                 ptr[i] = Allocate(values[i]);
             }
 
-            _allocated.Add((nint)ptr);
+            _nativeMemory.Add((nint)ptr);
 
             return ptr;
         }
@@ -44,7 +45,7 @@ public unsafe class Alloter : DisposableObject
         {
             T* ptr = (T*)NativeMemory.Alloc((uint)(sizeof(T) * length));
 
-            _allocated.Add((nint)ptr);
+            _nativeMemory.Add((nint)ptr);
 
             return ptr;
         }
@@ -61,7 +62,7 @@ public unsafe class Alloter : DisposableObject
                 ptr[i] = values[i];
             }
 
-            _allocated.Add((nint)ptr);
+            _nativeMemory.Add((nint)ptr);
 
             return ptr;
         }
@@ -71,12 +72,18 @@ public unsafe class Alloter : DisposableObject
     {
         lock (_locker)
         {
-            foreach (nint ptr in _allocated)
+            foreach (nint ptr in _marshal)
             {
                 Marshal.FreeHGlobal(ptr);
             }
 
-            _allocated.Clear();
+            foreach (nint ptr in _nativeMemory)
+            {
+                NativeMemory.Free((void*)ptr);
+            }
+
+            _marshal.Clear();
+            _nativeMemory.Clear();
         }
     }
 

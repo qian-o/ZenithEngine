@@ -175,6 +175,8 @@ public unsafe class ResourceSet : VulkanObject<ulong>
             return;
         }
 
+        Alloter.Clear();
+
         storageTextures.Clear();
 
         if (VkRes.DescriptorBufferSupported)
