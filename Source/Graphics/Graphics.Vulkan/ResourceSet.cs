@@ -77,13 +77,10 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
             if (Layout.IsLastBindless)
             {
-                uint* variableCounts = Alloter.Allocate<uint>(1);
-                variableCounts[0] = Layout.MaxDescriptorCount;
-
                 allocateInfo.AddNext(out DescriptorSetVariableDescriptorCountAllocateInfo variableDescriptorCountAllocateInfo);
 
                 variableDescriptorCountAllocateInfo.DescriptorSetCount = 1;
-                variableDescriptorCountAllocateInfo.PDescriptorCounts = variableCounts;
+                variableDescriptorCountAllocateInfo.PDescriptorCounts = Alloter.Allocate(Layout.MaxDescriptorCount);
             }
 
             VkRes.Vk.AllocateDescriptorSets(VkRes.VkDevice, &allocateInfo, out descriptorSet).ThrowCode();
