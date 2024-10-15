@@ -21,17 +21,12 @@
                    SemanticProperties.HeadingLevel="Level2"
                    SemanticProperties.Description="Welcome to dot net Multi platform App U I" />
 
-            <Button x:Name="CounterBtn"
-                    Text="Click me"
-                    SemanticProperties.Hint="Counts the number of times you click"
-                    Clicked="OnCounterClicked"
-                    HorizontalOptions="Fill" />
-
             <controls:SwapChainPanel x:Name="Renderer"
                                      HeightRequest="200"
-                                     Loaded="SwapChainPanelLoaded"
-                                     Update="SwapChainPanelUpdate"
-                                     Render="SwapChainPanelRender" />
+                                     Initialized="Renderer_Initialized"
+                                     Update="Renderer_Update"
+                                     Render="Renderer_Render"
+                                     Disposed="Renderer_Disposed"/>
         </VerticalStackLayout>
     </ScrollView>
 

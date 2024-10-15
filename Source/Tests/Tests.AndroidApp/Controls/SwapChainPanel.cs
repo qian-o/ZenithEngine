@@ -24,15 +24,26 @@ internal interface ISwapChainPanel
 
 internal sealed class SwapChainPanel : View, ISwapChainPanel
 {
+    private bool _initialized;
+
+    public event EventHandler? Initialized;
+
     public event EventHandler<UpdateEventArgs>? Update;
 
     public event EventHandler<RenderEventArgs>? Render;
 
     public event EventHandler<ResizeEventArgs>? Resize;
 
+    public event EventHandler? Disposed;
+
     private Swapchain? _swapchain;
 
     public Swapchain Swapchain => _swapchain ?? throw new InvalidOperationException("Swapchain is not created.");
+
+    ~SwapChainPanel()
+    {
+        Disposed?.Invoke(this, EventArgs.Empty);
+    }
 
     #region ISwapChainPanel
     Context ISwapChainPanel.Context => App.Context;
@@ -42,6 +53,13 @@ internal sealed class SwapChainPanel : View, ISwapChainPanel
     void ISwapChainPanel.CreateSwapChainPanel(IVkSurface surface)
     {
         _swapchain = App.Device.Factory.CreateSwapchain(new SwapchainDescription(surface, App.Device.GetBestDepthFormat()));
+
+        if (!_initialized)
+        {
+            _initialized = true;
+
+            Initialized?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     void ISwapChainPanel.DestroySwapChainPanel()
