@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Graphics.Core;
 using Graphics.Core.Window;
@@ -13,9 +13,9 @@ using GLTFTexture = SharpGLTF.Schema2.Texture;
 using Texture = Graphics.Vulkan.Texture;
 using TextureView = Graphics.Vulkan.TextureView;
 
-namespace Tests.AndroidApp;
+namespace Tests.AndroidApp.Views;
 
-public partial class MainPage : ContentPage
+public partial class GLTFScenePage : ContentPage
 {
     #region Structs
     [StructLayout(LayoutKind.Sequential)]
@@ -113,6 +113,7 @@ public partial class MainPage : ContentPage
     private readonly List<Material> _materials = [];
     private readonly List<Node> _nodes = [];
 
+    private CommandList _commandList = null!;
     private DeviceBuffer _vertexBuffer = null!;
     private DeviceBuffer _indexBuffer = null!;
     private DeviceBuffer _cboBuffer = null!;
@@ -122,21 +123,19 @@ public partial class MainPage : ContentPage
     private ResourceSet _textureMapSet = null!;
     private ResourceLayout _textureSamplerLayout = null!;
     private ResourceSet _textureSamplerSet = null!;
-    private Shader[] _shaders = null!;
-    private VertexLayoutDescription[] _vertexLayoutDescriptions = null!;
     private Pipeline[] _pipelines = null!;
-    private CommandList _commandList = null!;
 
     private CBO _cbo;
 
-    public MainPage()
+    public GLTFScenePage()
     {
         InitializeComponent();
     }
 
     private void Renderer_Initialized(object sender, EventArgs e)
     {
-        #region Load Assets
+        _commandList = App.Device.Factory.CreateGraphicsCommandList();
+
         string assetPath = "Assets/Models/Sponza/glTF";
         ModelRoot root = ModelRoot.Load("Sponza.gltf", ReadContext.Create(FileReader));
 
@@ -153,7 +152,6 @@ public partial class MainPage : ContentPage
 
             return new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
         }
-        #endregion
 
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
         {
@@ -180,27 +178,6 @@ public partial class MainPage : ContentPage
             _textures.Add(texture);
             _textureViews.Add(textureView);
         }
-
-        Task.Run(() =>
-        {
-            Parallel.For(0, _textures.Count, i =>
-            {
-                using Stream stream = root.LogicalTextures[i].PrimaryImage.Content.Open();
-
-                ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
-
-                lock (tasks)
-                {
-                    tasks.Enqueue((commandList) =>
-                    {
-                        commandList.UpdateTexture(_textures[i], image.Data, 0, 0, 0, (uint)image.Width, (uint)image.Height, 1, 0, 0);
-                        commandList.GenerateMipmaps(_textures[i]);
-                    });
-                }
-
-                root.LogicalTextures[i].ClearImages();
-            });
-        });
 
         foreach (GLTFMaterial gltfMaterial in root.LogicalMaterials)
         {
@@ -264,8 +241,6 @@ public partial class MainPage : ContentPage
         _textureSamplerSet = App.Device.Factory.CreateResourceSet(new ResourceSetDescription(_textureSamplerLayout));
         _textureSamplerSet.UpdateBindless(App.Device.Aniso4xSampler, App.Device.LinearSampler);
 
-        _shaders = [vs, fs];
-
         VertexElementDescription positionDescription = new("Position", VertexElementFormat.Float3);
         VertexElementDescription normalDescription = new("Normal", VertexElementFormat.Float3);
         VertexElementDescription texCoordDescription = new("TexCoord", VertexElementFormat.Float2);
@@ -274,13 +249,13 @@ public partial class MainPage : ContentPage
         VertexElementDescription colorMapIndexDescription = new("ColorMapIndex", VertexElementFormat.Int1);
         VertexElementDescription normalMapIndexDescription = new("NormalMapIndex", VertexElementFormat.Int1);
 
-        _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription,
-                                                                 normalDescription,
-                                                                 texCoordDescription,
-                                                                 colorDescription,
-                                                                 tangentDescription,
-                                                                 colorMapIndexDescription,
-                                                                 normalMapIndexDescription)];
+        VertexLayoutDescription[] vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription,
+                                                                                          normalDescription,
+                                                                                          texCoordDescription,
+                                                                                          colorDescription,
+                                                                                          tangentDescription,
+                                                                                          colorMapIndexDescription,
+                                                                                          normalMapIndexDescription)];
 
         _pipelines = new Pipeline[_materials.Count];
         for (int i = 0; i < _materials.Count; i++)
@@ -295,14 +270,33 @@ public partial class MainPage : ContentPage
                 RasterizerState = _materials[i].DoubleSided ? RasterizerStateDescription.CullNone : RasterizerStateDescription.Default,
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
                 ResourceLayouts = [_cboLayout, _textureMapLayout, _textureSamplerLayout],
-                Shaders = new GraphicsShaderDescription(_vertexLayoutDescriptions, _shaders, [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
+                Shaders = new GraphicsShaderDescription(vertexLayoutDescriptions, [vs, fs], [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
                 Outputs = Renderer.Swapchain.OutputDescription
             };
 
             _pipelines[i] = App.Device.Factory.CreateGraphicsPipeline(ref pipelineDescription);
         }
 
-        _commandList = App.Device.Factory.CreateGraphicsCommandList();
+        Task.Run(() =>
+        {
+            Parallel.For(0, _textures.Count, i =>
+            {
+                using Stream stream = root.LogicalTextures[i].PrimaryImage.Content.Open();
+
+                ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
+
+                lock (tasks)
+                {
+                    tasks.Enqueue((commandList) =>
+                    {
+                        commandList.UpdateTexture(_textures[i], image.Data, 0, 0, 0, (uint)image.Width, (uint)image.Height, 1, 0, 0);
+                        commandList.GenerateMipmaps(_textures[i]);
+                    });
+                }
+
+                root.LogicalTextures[i].ClearImages();
+            });
+        });
     }
 
     private void Renderer_Update(object sender, UpdateEventArgs e)
@@ -344,7 +338,22 @@ public partial class MainPage : ContentPage
 
     private void Renderer_Disposed(object sender, EventArgs e)
     {
+        foreach (Pipeline pipeline in _pipelines)
+        {
+            pipeline.Dispose();
+        }
 
+        _textureSamplerSet.Dispose();
+        _textureSamplerLayout.Dispose();
+        _textureMapSet.Dispose();
+        _textureMapLayout.Dispose();
+        _cboSet.Dispose();
+        _cboLayout.Dispose();
+        _cboBuffer.Dispose();
+        _indexBuffer.Dispose();
+        _vertexBuffer.Dispose();
+
+        _commandList.Dispose();
     }
 
     private void LoadNode(GLTFNode gltfNode, Node? parent, List<Vertex> vertices, List<uint> indices)
@@ -490,4 +499,3 @@ public partial class MainPage : ContentPage
         }
     }
 }
-

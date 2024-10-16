@@ -43,6 +43,8 @@ internal sealed class SwapChainPanel : View, ISwapChainPanel
     ~SwapChainPanel()
     {
         Disposed?.Invoke(this, EventArgs.Empty);
+
+        _swapchain?.Dispose();
     }
 
     #region ISwapChainPanel
