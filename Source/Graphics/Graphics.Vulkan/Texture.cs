@@ -303,18 +303,15 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
         {
             newLayout = ImageLayout.ShaderReadOnlyOptimal;
         }
-
-        if (Usage.HasFlag(TextureUsage.Storage))
+        else if (Usage.HasFlag(TextureUsage.Storage))
         {
             newLayout = ImageLayout.General;
         }
-
-        if (Usage.HasFlag(TextureUsage.RenderTarget))
+        else if (Usage.HasFlag(TextureUsage.RenderTarget))
         {
             newLayout = ImageLayout.ColorAttachmentOptimal;
         }
-
-        if (Usage.HasFlag(TextureUsage.DepthStencil))
+        else if (Usage.HasFlag(TextureUsage.DepthStencil))
         {
             newLayout = ImageLayout.DepthStencilAttachmentOptimal;
         }
