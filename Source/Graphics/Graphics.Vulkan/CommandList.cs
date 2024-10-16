@@ -595,9 +595,11 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         destination.TransitionToBestLayout(Handle);
     }
 
-    public void CopyToTexture(Texture source, Texture destination)
+    public void CopyTexture(Texture source, Texture destination)
     {
-        if (source.Width != destination.Width ||
+        if (source.Format != destination.Format ||
+            source.SampleCount != destination.SampleCount ||
+            source.Width != destination.Width ||
             source.Height != destination.Height ||
             source.Depth != destination.Depth ||
             source.ArrayLayers != destination.ArrayLayers ||

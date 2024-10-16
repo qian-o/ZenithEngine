@@ -56,7 +56,7 @@ public class FramebufferObject : DisposableObject
     {
         if (SampleCount == TextureSampleCount.Count1)
         {
-            commandList.CopyToTexture(ColorTexture, PresentTexture);
+            commandList.CopyTexture(ColorTexture, PresentTexture);
         }
         else
         {

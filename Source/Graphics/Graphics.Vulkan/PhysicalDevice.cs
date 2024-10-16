@@ -20,8 +20,6 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
         bool rayQuerySupported = SupportsExtension(extensionProperties, KhrRayQuery.ExtensionName);
         bool rayTracingSupported = SupportsExtension(extensionProperties, KhrRayTracingPipeline.ExtensionName);
 
-        descriptorBufferSupported = false;
-
         PhysicalDeviceFeatures features;
         VkRes.Vk.GetPhysicalDeviceFeatures(physicalDevice, &features);
 
