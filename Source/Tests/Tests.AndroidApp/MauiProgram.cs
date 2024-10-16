@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CommunityToolkit.Maui;
+using Microsoft.Extensions.Logging;
 using Tests.AndroidApp.Controls;
 using Tests.AndroidApp.Handlers;
 
@@ -10,6 +11,7 @@ public static class MauiProgram
     {
         MauiAppBuilder builder = MauiApp.CreateBuilder()
                                         .UseMauiApp<App>()
+                                        .UseMauiCommunityToolkit()
                                         .ConfigureFonts(fonts =>
                                         {
                                             fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

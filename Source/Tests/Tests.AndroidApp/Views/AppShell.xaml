@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Shell x:Class="Tests.AndroidApp.AppShell"
+<Shell x:Class="Tests.AndroidApp.Views.AppShell"
        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:local="clr-namespace:Tests.AndroidApp.Views"
-       Shell.NavBarIsVisible="False"
-       Title="Tests.AndroidApp">
+       Shell.FlyoutBehavior="Flyout"
+       Shell.NavBarIsVisible="False">
     <Shell.FlyoutHeader>
-        <Grid HeightRequest="200">
-            <Image Margin="2"
+        <Grid HeightRequest="100">
+            <Image Margin="10"
                    Source="vulkan_logo.svg" />
         </Grid>
     </Shell.FlyoutHeader>
@@ -15,9 +15,5 @@
     <ShellContent Title="Home"
                   ContentTemplate="{DataTemplate local:MainPage}"
                   Route="MainPage" />
-
-    <ShellContent Title="GLTF Scene"
-                  ContentTemplate="{DataTemplate local:GLTFScenePage}"
-                  Route="GLTFScene" />
 
 </Shell>

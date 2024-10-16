@@ -1,8 +1,9 @@
-﻿using Tests.AndroidApp.ViewModels;
+﻿using Tests.AndroidApp.Controls;
+using Tests.AndroidApp.ViewModels;
 
 namespace Tests.AndroidApp.Views;
 
-public partial class MainPage : ContentPage
+public partial class MainPage : ShellPage
 {
     public MainPage()
     {

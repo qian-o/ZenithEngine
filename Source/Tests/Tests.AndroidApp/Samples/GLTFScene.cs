@@ -1,7 +1,6 @@
-using System.Numerics;
+﻿using System.Numerics;
 using System.Runtime.InteropServices;
 using Graphics.Core;
-using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using SharpGLTF.Materials;
@@ -13,9 +12,9 @@ using GLTFTexture = SharpGLTF.Schema2.Texture;
 using Texture = Graphics.Vulkan.Texture;
 using TextureView = Graphics.Vulkan.TextureView;
 
-namespace Tests.AndroidApp.Views;
+namespace Tests.AndroidApp.Samples;
 
-public partial class GLTFScenePage : ContentPage
+internal sealed class GLTFScene : ISample
 {
     #region Structs
     [StructLayout(LayoutKind.Sequential)]
@@ -127,12 +126,7 @@ public partial class GLTFScenePage : ContentPage
 
     private CBO _cbo;
 
-    public GLTFScenePage()
-    {
-        InitializeComponent();
-    }
-
-    private void Renderer_Initialized(object sender, EventArgs e)
+    public void Load(Swapchain swapchain)
     {
         _commandList = App.Device.Factory.CreateGraphicsCommandList();
 
@@ -271,7 +265,7 @@ public partial class GLTFScenePage : ContentPage
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
                 ResourceLayouts = [_cboLayout, _textureMapLayout, _textureSamplerLayout],
                 Shaders = new GraphicsShaderDescription(vertexLayoutDescriptions, [vs, fs], [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
-                Outputs = Renderer.Swapchain.OutputDescription
+                Outputs = swapchain.OutputDescription
             };
 
             _pipelines[i] = App.Device.Factory.CreateGraphicsPipeline(ref pipelineDescription);
@@ -299,18 +293,18 @@ public partial class GLTFScenePage : ContentPage
         });
     }
 
-    private void Renderer_Update(object sender, UpdateEventArgs e)
+    public void Update(Swapchain swapchain, float width, float height, float deltaTime, float totalTime)
     {
         _cbo = new()
         {
-            Projection = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, (float)(Renderer.Width / Renderer.Height), 0.1f, 1000.0f),
+            Projection = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, width / height, 0.1f, 1000.0f),
             View = Matrix4x4.CreateLookAt(new Vector3(7.8f, 2.1f, 0.0f), Vector3.Zero, Vector3.UnitY),
-            LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(e.TotalTime))),
+            LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(totalTime))),
             ViewPos = new Vector4(new Vector3(7.8f, 2.1f, 0.0f), 1.0f)
         };
     }
 
-    private void Renderer_Render(object sender, RenderEventArgs e)
+    public void Render(Swapchain swapchain, float deltaTime, float totalTime)
     {
         _commandList.Begin();
 
@@ -319,7 +313,7 @@ public partial class GLTFScenePage : ContentPage
             task(_commandList);
         }
 
-        _commandList.SetFramebuffer(Renderer.Swapchain.Framebuffer);
+        _commandList.SetFramebuffer(swapchain.Framebuffer);
         _commandList.ClearColorTarget(0, RgbaFloat.Black);
         _commandList.ClearDepthStencil(1.0f);
 
@@ -333,27 +327,11 @@ public partial class GLTFScenePage : ContentPage
 
         _commandList.End();
 
-        App.Device.SubmitCommandsAndSwapBuffers(_commandList, Renderer.Swapchain);
+        App.Device.SubmitCommandsAndSwapBuffers(_commandList, swapchain);
     }
 
-    private void Renderer_Disposed(object sender, EventArgs e)
+    public void Unload()
     {
-        foreach (Pipeline pipeline in _pipelines)
-        {
-            pipeline.Dispose();
-        }
-
-        _textureSamplerSet.Dispose();
-        _textureSamplerLayout.Dispose();
-        _textureMapSet.Dispose();
-        _textureMapLayout.Dispose();
-        _cboSet.Dispose();
-        _cboLayout.Dispose();
-        _cboBuffer.Dispose();
-        _indexBuffer.Dispose();
-        _vertexBuffer.Dispose();
-
-        _commandList.Dispose();
     }
 
     private void LoadNode(GLTFNode gltfNode, Node? parent, List<Vertex> vertices, List<uint> indices)

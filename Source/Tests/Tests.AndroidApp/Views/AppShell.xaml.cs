@@ -1,4 +1,4 @@
-﻿namespace Tests.AndroidApp;
+﻿namespace Tests.AndroidApp.Views;
 
 public partial class AppShell : Shell
 {

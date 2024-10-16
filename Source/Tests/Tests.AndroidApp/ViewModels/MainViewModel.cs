@@ -8,9 +8,5 @@ public partial class MainViewModel : ObservableRecipient
     [RelayCommand]
     private static void ShowShell()
     {
-        if (Application.Current!.MainPage is AppShell appShell)
-        {
-            appShell.FlyoutIsPresented = true;
-        }
     }
 }
