@@ -21,6 +21,9 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
     private Pipeline? _currentPipeline;
     private ResourceSet[]? _currentResourceSets;
     private bool _isInRenderPass;
+    private bool _isTexturesToGeneral;
+    private bool _isTexturesToShaderRead;
+    private bool _isTexturesToBest;
 
     internal CommandList(VulkanResources vkRes, Executor executor, CommandPool commandPool) : base(vkRes, ObjectType.CommandBuffer)
     {
@@ -410,6 +413,9 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
         _currentPipeline = pipeline;
         _currentResourceSets = new ResourceSet[pipeline.ResourceSetCount];
+        _isTexturesToGeneral = false;
+        _isTexturesToShaderRead = false;
+        _isTexturesToBest = false;
     }
 
     public void SetResourceSet(uint slot, ResourceSet resourceSet)
@@ -455,6 +461,9 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         }
 
         _currentResourceSets![slot] = resourceSet;
+        _isTexturesToGeneral = false;
+        _isTexturesToShaderRead = false;
+        _isTexturesToBest = false;
     }
 
     public void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart)
@@ -819,7 +828,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
     private void TransitionStorageTexturesToGeneral()
     {
-        if (_currentResourceSets != null)
+        if (_currentResourceSets != null && !_isTexturesToGeneral)
         {
             foreach (ResourceSet resourceSet in _currentResourceSets)
             {
@@ -831,12 +840,16 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
                     }
                 }
             }
+
+            _isTexturesToGeneral = true;
+            _isTexturesToShaderRead = false;
+            _isTexturesToBest = false;
         }
     }
 
     private void TransitionStorageTexturesToShaderRead()
     {
-        if (_currentResourceSets != null)
+        if (_currentResourceSets != null && !_isTexturesToShaderRead)
         {
             foreach (ResourceSet resourceSet in _currentResourceSets)
             {
@@ -853,12 +866,16 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
                     }
                 }
             }
+
+            _isTexturesToGeneral = false;
+            _isTexturesToShaderRead = true;
+            _isTexturesToBest = false;
         }
     }
 
     private void TransitionStorageTexturesToBest()
     {
-        if (_currentResourceSets != null)
+        if (_currentResourceSets != null && !_isTexturesToBest)
         {
             foreach (ResourceSet resourceSet in _currentResourceSets)
             {
@@ -875,6 +892,10 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
                     }
                 }
             }
+
+            _isTexturesToGeneral = false;
+            _isTexturesToShaderRead = false;
+            _isTexturesToBest = true;
         }
     }
 
