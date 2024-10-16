@@ -135,6 +135,8 @@ internal sealed unsafe class SwapChainPanel : SurfaceView, ISurfaceHolderCallbac
     {
         _swapChainPanel = swapChainPanel;
 
+        SetWillNotDraw(false);
+
         Holder?.AddCallback(this);
     }
 

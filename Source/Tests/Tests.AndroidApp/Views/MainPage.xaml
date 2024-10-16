@@ -7,6 +7,9 @@
                    x:DataType="vm:MainViewModel">
 
     <Grid>
+        <Label HorizontalOptions="Center"
+               VerticalOptions="Center"
+               Text="{Binding Title}" />
     </Grid>
 
 </control:ShellPage>

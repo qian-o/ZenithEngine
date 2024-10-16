@@ -6,6 +6,7 @@ using Graphics.Vulkan.Descriptions;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
 using StbImageSharp;
+using Tests.AndroidApp.Helpers;
 using GLTFMaterial = SharpGLTF.Schema2.Material;
 using GLTFNode = SharpGLTF.Schema2.Node;
 using GLTFTexture = SharpGLTF.Schema2.Texture;
@@ -14,7 +15,7 @@ using TextureView = Graphics.Vulkan.TextureView;
 
 namespace Tests.AndroidApp.Samples;
 
-internal sealed class GLTFScene : ISample
+public sealed class GLTFScene : BaseSample
 {
     #region Structs
     [StructLayout(LayoutKind.Sequential)]
@@ -112,7 +113,6 @@ internal sealed class GLTFScene : ISample
     private readonly List<Material> _materials = [];
     private readonly List<Node> _nodes = [];
 
-    private CommandList _commandList = null!;
     private DeviceBuffer _vertexBuffer = null!;
     private DeviceBuffer _indexBuffer = null!;
     private DeviceBuffer _cboBuffer = null!;
@@ -126,26 +126,12 @@ internal sealed class GLTFScene : ISample
 
     private CBO _cbo;
 
-    public void Load(Swapchain swapchain)
+    public override void Load(Swapchain swapchain)
     {
-        _commandList = App.Device.Factory.CreateGraphicsCommandList();
+        ModelRoot root = ModelRoot.Load("Sponza.gltf", ReadContext.Create(new FileReader("Assets/Models/Sponza/glTF").ReadFile));
 
-        string assetPath = "Assets/Models/Sponza/glTF";
-        ModelRoot root = ModelRoot.Load("Sponza.gltf", ReadContext.Create(FileReader));
-
-        assetPath = "Assets/Shaders";
-        using Shader vs = App.Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Vertex, [.. FileReader("GLTF.vs.hlsl.spv")], "main"));
-        using Shader fs = App.Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Fragment, [.. FileReader("GLTF.ps.hlsl.spv")], "main"));
-
-        ArraySegment<byte> FileReader(string assetName)
-        {
-            using Stream stream = FileSystem.OpenAppPackageFileAsync(Path.Combine(assetPath, assetName)).Result;
-
-            using MemoryStream memoryStream = new();
-            stream.CopyTo(memoryStream);
-
-            return new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
-        }
+        using Shader vs = App.Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Vertex, [.. new FileReader("Assets/Shaders").ReadFile("GLTF.vs.hlsl.spv")], "main"));
+        using Shader fs = App.Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Fragment, [.. new FileReader("Assets/Shaders").ReadFile("GLTF.ps.hlsl.spv")], "main"));
 
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
         {
@@ -271,30 +257,13 @@ internal sealed class GLTFScene : ISample
             _pipelines[i] = App.Device.Factory.CreateGraphicsPipeline(ref pipelineDescription);
         }
 
-        Task.Run(() =>
-        {
-            Parallel.For(0, _textures.Count, i =>
-            {
-                using Stream stream = root.LogicalTextures[i].PrimaryImage.Content.Open();
-
-                ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
-
-                lock (tasks)
-                {
-                    tasks.Enqueue((commandList) =>
-                    {
-                        commandList.UpdateTexture(_textures[i], image.Data, 0, 0, 0, (uint)image.Width, (uint)image.Height, 1, 0, 0);
-                        commandList.GenerateMipmaps(_textures[i]);
-                    });
-                }
-
-                root.LogicalTextures[i].ClearImages();
-            });
-        });
+        AddBackgroundTask(LoadTextures, root, _textures);
     }
 
-    public void Update(Swapchain swapchain, float width, float height, float deltaTime, float totalTime)
+    public override void Update(Swapchain swapchain, float width, float height, float deltaTime, float totalTime)
     {
+        base.Update(swapchain, width, height, deltaTime, totalTime);
+
         _cbo = new()
         {
             Projection = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, width / height, 0.1f, 1000.0f),
@@ -304,33 +273,29 @@ internal sealed class GLTFScene : ISample
         };
     }
 
-    public void Render(Swapchain swapchain, float deltaTime, float totalTime)
+    public override void Render(CommandList commandList, Swapchain swapchain, float deltaTime, float totalTime)
     {
-        _commandList.Begin();
+        base.Render(commandList, swapchain, deltaTime, totalTime);
 
         if (tasks.TryDequeue(out Action<CommandList>? task))
         {
-            task(_commandList);
+            task(commandList);
         }
 
-        _commandList.SetFramebuffer(swapchain.Framebuffer);
-        _commandList.ClearColorTarget(0, RgbaFloat.Black);
-        _commandList.ClearDepthStencil(1.0f);
+        commandList.SetFramebuffer(swapchain.Framebuffer);
+        commandList.ClearColorTarget(0, RgbaFloat.Black);
+        commandList.ClearDepthStencil(1.0f);
 
-        _commandList.SetVertexBuffer(0, _vertexBuffer);
-        _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U32);
+        commandList.SetVertexBuffer(0, _vertexBuffer);
+        commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U32);
 
         foreach (Node node in _nodes)
         {
-            DrawNode(_commandList, node);
+            DrawNode(commandList, node);
         }
-
-        _commandList.End();
-
-        App.Device.SubmitCommandsAndSwapBuffers(_commandList, swapchain);
     }
 
-    public void Unload()
+    public override void Unload()
     {
     }
 
@@ -475,5 +440,31 @@ internal sealed class GLTFScene : ISample
         {
             DrawNode(commandList, children);
         }
+    }
+
+    private void LoadTextures(object[] args)
+    {
+        ModelRoot root = (ModelRoot)args[0];
+        List<Texture> textures = (List<Texture>)args[1];
+
+        Parallel.For(0, textures.Count, i =>
+        {
+            using Stream stream = root.LogicalTextures[i].PrimaryImage.Content.Open();
+
+            ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
+
+            root.LogicalTextures[i].ClearImages();
+
+            AddRenderTask(WriteTexture, textures[i], image);
+        });
+    }
+
+    private void WriteTexture(CommandList commandList, object[] args)
+    {
+        Texture texture = (Texture)args[0];
+        ImageResult image = (ImageResult)args[1];
+
+        commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)image.Width, (uint)image.Height, 1, 0, 0);
+        commandList.GenerateMipmaps(texture);
     }
 }

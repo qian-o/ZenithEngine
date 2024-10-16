@@ -16,8 +16,9 @@ public abstract class ShellPage : ContentPage
                 HeightRequest = 30,
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Start,
-                Margin = new Thickness(10),
-                CornerRadius = 4
+                Margin = new Thickness(15),
+                CornerRadius = 4,
+                Padding = new Thickness(2, 0)
             };
 
             IconTintColorBehavior iconTintColorBehavior = new();
