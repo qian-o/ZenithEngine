@@ -71,6 +71,11 @@ internal sealed class SwapChainPanel : View, ISwapChainPanel
 
     void ISwapChainPanel.Update(float deltaTime, float totalTime)
     {
+        if (_swapchain is null)
+        {
+            return;
+        }
+
         Update?.Invoke(this, new UpdateEventArgs(deltaTime, totalTime));
     }
 
