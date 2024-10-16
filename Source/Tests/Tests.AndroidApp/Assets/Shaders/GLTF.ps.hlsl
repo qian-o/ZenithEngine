@@ -20,10 +20,5 @@ float4 main(VSOutput input) : SV_TARGET
     float3 diffuse = max(dot(N, L), ambientStrength).rrr;
     float3 specular = pow(max(dot(R, V), 0.0), 32.0);
     
-    if (length(color) == 0)
-    {
-        return float4(N, 1);
-    }
-    
-    return float4(color.rgb * diffuse + specular, color.a);
+    return float4((color.rgb + ambientStrength) * diffuse + specular, color.a);
 }
