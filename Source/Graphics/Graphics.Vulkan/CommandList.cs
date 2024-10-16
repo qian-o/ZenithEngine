@@ -595,6 +595,64 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         destination.TransitionToBestLayout(Handle);
     }
 
+    public void CopyToTexture(Texture source, Texture destination)
+    {
+        if (source.Width != destination.Width ||
+            source.Height != destination.Height ||
+            source.Depth != destination.Depth ||
+            source.ArrayLayers != destination.ArrayLayers ||
+            source.MipLevels != destination.MipLevels)
+        {
+            throw new InvalidOperationException("Source and destination textures must have the same dimensions.");
+        }
+
+        EnsureRenderPassInactive();
+
+        source.TransitionLayout(Handle, ImageLayout.TransferSrcOptimal);
+        destination.TransitionLayout(Handle, ImageLayout.TransferDstOptimal);
+
+        ImageAspectFlags aspectMask = source.Usage.HasFlag(TextureUsage.DepthStencil)
+            ? ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit
+            : ImageAspectFlags.ColorBit;
+
+        ImageCopy copy = new()
+        {
+            Extent = new Extent3D
+            {
+                Width = source.Width,
+                Height = source.Height,
+                Depth = source.Depth
+            },
+            SrcSubresource = new ImageSubresourceLayers
+            {
+                AspectMask = aspectMask,
+                MipLevel = 0,
+                BaseArrayLayer = 0,
+                LayerCount = 1
+            },
+            SrcOffset = new Offset3D(),
+            DstSubresource = new ImageSubresourceLayers
+            {
+                AspectMask = aspectMask,
+                MipLevel = 0,
+                BaseArrayLayer = 0,
+                LayerCount = 1
+            },
+            DstOffset = new Offset3D()
+        };
+
+        VkRes.Vk.CmdCopyImage(Handle,
+                              source.Handle,
+                              ImageLayout.TransferSrcOptimal,
+                              destination.Handle,
+                              ImageLayout.TransferDstOptimal,
+                              1,
+                              &copy);
+
+        source.TransitionToBestLayout(Handle);
+        destination.TransitionToBestLayout(Handle);
+    }
+
     public void GenerateMipmaps(Texture texture)
     {
         if (!texture.Usage.HasFlag(TextureUsage.GenerateMipmaps))
