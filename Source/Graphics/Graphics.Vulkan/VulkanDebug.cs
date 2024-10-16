@@ -14,6 +14,7 @@ public unsafe class VulkanDebug : DisposableObject
     private static readonly bool _debugReport;
     private static readonly bool _setObjectName;
 
+    private readonly Alloter _alloter = new();
     private readonly Vk _vk;
     private readonly VkInstance _instance;
     private readonly ExtDebugUtils? _debugUtilsExt;
@@ -158,7 +159,7 @@ public unsafe class VulkanDebug : DisposableObject
                     SType = StructureType.DebugUtilsObjectNameInfoExt,
                     ObjectType = objectTypes[i],
                     ObjectHandle = handles[i],
-                    PObjectName = vkObject.Alloter.Allocate(objNames[i])
+                    PObjectName = _alloter.Allocate(objNames[i])
                 };
 
                 _debugUtilsExt.SetDebugUtilsObjectName(vkObject.VkRes.VkDevice, &nameInfo);
@@ -174,7 +175,7 @@ public unsafe class VulkanDebug : DisposableObject
                     SType = StructureType.DebugMarkerObjectNameInfoExt,
                     ObjectType = (DebugReportObjectTypeEXT)objectTypes[i],
                     Object = handles[i],
-                    PObjectName = vkObject.Alloter.Allocate(objNames[i])
+                    PObjectName = _alloter.Allocate(objNames[i])
                 };
 
                 _debugMarkerExt.DebugMarkerSetObjectName(vkObject.VkRes.VkDevice, &nameInfo);
@@ -197,6 +198,8 @@ public unsafe class VulkanDebug : DisposableObject
         _debugUtilsExt?.Dispose();
         _debugReportExt?.Dispose();
         _debugMarkerExt?.Dispose();
+
+        _alloter.Dispose();
     }
 
     private uint DebugMessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
