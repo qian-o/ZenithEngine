@@ -205,12 +205,10 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
         return [Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         VkRes.KhrAccelerationStructure.DestroyAccelerationStructure(VkRes.VkDevice, Handle, null);
 
         DeviceBuffer.Dispose();
-
-        base.Destroy();
     }
 }

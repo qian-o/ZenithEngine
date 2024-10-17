@@ -75,12 +75,10 @@ public unsafe class StagingCommandPool : VulkanObject<VkCommandPool>
         return [Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         Fence.Dispose();
 
         VkRes.Vk.DestroyCommandPool(VkRes.VkDevice, Handle, null);
-
-        base.Destroy();
     }
 }

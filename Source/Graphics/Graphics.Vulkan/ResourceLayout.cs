@@ -133,10 +133,8 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
         return [Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         VkRes.Vk.DestroyDescriptorSetLayout(VkRes.VkDevice, Handle, null);
-
-        base.Destroy();
     }
 }

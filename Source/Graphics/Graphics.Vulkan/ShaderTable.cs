@@ -69,12 +69,10 @@ internal sealed unsafe class ShaderTable : VulkanObject<ulong>
         ];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         RaygenShaderHandleBuffer.Dispose();
         MissShaderHandleBuffer.Dispose();
         HitGroupHandleBuffer.Dispose();
-
-        base.Destroy();
     }
 }

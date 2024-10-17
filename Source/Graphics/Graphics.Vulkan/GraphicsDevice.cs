@@ -304,7 +304,7 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         return [(ulong)Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         foreach (Fence fence in _availableStagingFences)
         {
@@ -345,8 +345,6 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         KhrSwapchain.Dispose();
 
         VkRes.Vk.DestroyDevice(Handle, null);
-
-        base.Destroy();
     }
 
     private T CreateDeviceExtension<T>(VkDevice device) where T : NativeExtension<Vk>

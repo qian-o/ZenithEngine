@@ -152,7 +152,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
         return [];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         if (VkRes.DescriptorBufferSupported)
         {
@@ -164,8 +164,6 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
             VkRes.Vk.DestroyDescriptorPool(VkRes.VkDevice, descriptorPool, null);
         }
-
-        base.Destroy();
     }
 
     private void Refresh()

@@ -646,7 +646,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         return [Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         VkRes.Vk.DestroyPipeline(VkRes.VkDevice, Handle, null);
         VkRes.Vk.DestroyPipelineLayout(VkRes.VkDevice, Layout, null);
@@ -657,7 +657,5 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         }
 
         ShaderTable?.Dispose();
-
-        base.Destroy();
     }
 }

@@ -21,4 +21,8 @@ public unsafe class Executor : VulkanObject<VkQueue>
     {
         return [(ulong)Handle.Handle];
     }
+
+    internal override void DestroyObject()
+    {
+    }
 }

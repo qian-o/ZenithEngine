@@ -334,8 +334,8 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
     {
         return [Handle.Handle];
     }
-
-    protected override void Destroy()
+    
+    internal override void DestroyObject()
     {
         if (!IsSwapchainImage)
         {
@@ -343,8 +343,6 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
 
             DeviceMemory!.Dispose();
         }
-
-        base.Destroy();
     }
 
     private static bool HasStencilComponent(PixelFormat format)

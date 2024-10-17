@@ -43,10 +43,8 @@ public unsafe class Sampler : VulkanObject<VkSampler>, IBindableResource
         return [Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         VkRes.Vk.DestroySampler(VkRes.VkDevice, Handle, null);
-
-        base.Destroy();
     }
 }

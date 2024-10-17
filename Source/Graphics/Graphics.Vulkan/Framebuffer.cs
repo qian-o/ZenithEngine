@@ -8,7 +8,6 @@ namespace Graphics.Vulkan;
 
 public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
 {
-
     internal Framebuffer(VulkanResources vkRes,
                          ref readonly FramebufferDescription description,
                          bool isPresented) : base(vkRes, ObjectType.Framebuffer)
@@ -278,7 +277,7 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
         return [Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         VkRes.Vk.DestroyFramebuffer(VkRes.VkDevice, Handle, null);
 
@@ -291,7 +290,5 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
 
         VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPassLoad, null);
         VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPassClear, null);
-
-        base.Destroy();
     }
 }

@@ -36,10 +36,8 @@ public unsafe class DeviceMemory : VulkanObject<VkDeviceMemory>
         return [Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         VkRes.Vk.FreeMemory(VkRes.VkDevice, Handle, null);
-
-        base.Destroy();
     }
 }

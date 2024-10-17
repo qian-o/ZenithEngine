@@ -49,10 +49,8 @@ public unsafe class Shader : VulkanObject<VkShaderModule>
         return [Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         VkRes.Vk.DestroyShaderModule(VkRes.VkDevice, Handle, null);
-
-        base.Destroy();
     }
 }

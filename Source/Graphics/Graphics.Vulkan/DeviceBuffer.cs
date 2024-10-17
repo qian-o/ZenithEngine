@@ -160,12 +160,10 @@ public unsafe class DeviceBuffer : VulkanObject<VkBuffer>, IBindableResource
         return [Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         VkRes.Vk.DestroyBuffer(VkRes.VkDevice, Handle, null);
 
         DeviceMemory.Dispose();
-
-        base.Destroy();
     }
 }

@@ -179,7 +179,7 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
         return [Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         if (_swapchain != null)
         {
@@ -189,8 +189,6 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
         }
 
         VkRes.Surface.DestroySurface(VkRes.Instance, Target, null);
-
-        base.Destroy();
     }
 
     private void DestroySwapchain()

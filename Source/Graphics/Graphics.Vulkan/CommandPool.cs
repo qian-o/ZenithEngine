@@ -48,10 +48,8 @@ public unsafe class CommandPool : VulkanObject<VkCommandPool>
         return [Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         VkRes.Vk.DestroyCommandPool(VkRes.VkDevice, Handle, null);
-
-        base.Destroy();
     }
 }

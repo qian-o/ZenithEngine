@@ -775,7 +775,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         return [(ulong)Handle.Handle];
     }
 
-    protected override void Destroy()
+    internal override void DestroyObject()
     {
         ReturnUsedStagingResources();
 
@@ -787,8 +787,6 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         _availableStagingBuffers.Clear();
 
         CommandPool.FreeCommandBuffer(Handle);
-
-        base.Destroy();
     }
 
     private void BeginRenderPass()

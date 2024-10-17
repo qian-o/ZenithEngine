@@ -18,9 +18,13 @@ public abstract unsafe class VulkanObject<THandle>(VulkanResources vkRes, params
 
     internal abstract ulong[] GetHandles();
 
-    protected override void Destroy()
+    internal abstract void DestroyObject();
+
+    protected sealed override void Destroy()
     {
         Alloter.Dispose();
+
+        DestroyObject();
     }
 
     private void UpdateResourceName()
