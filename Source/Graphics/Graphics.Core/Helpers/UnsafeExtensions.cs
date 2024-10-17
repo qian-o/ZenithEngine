@@ -10,7 +10,7 @@ public static unsafe class UnsafeExtensions
         }
     }
 
-    public static T* AsPointer<T>(this T[] array, ulong startIndex = 0) where T : unmanaged
+    public static T* AsPointer<T>(this T[] array, int startIndex = 0) where T : unmanaged
     {
         fixed (T* ptr = &array[startIndex])
         {

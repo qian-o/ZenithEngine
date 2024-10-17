@@ -19,6 +19,9 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
     private bool _isRecording;
     private Framebuffer? _currentFramebuffer;
     private Pipeline? _currentPipeline;
+    private ResourceSet[]? _currentResourceSets;
+    private bool _texturesTransitionedGeneral;
+    private bool _texturesTransitionedShaderRead;
     private bool _isInRenderPass;
 
     internal CommandList(VulkanResources vkRes, Executor executor, CommandPool commandPool) : base(vkRes, ObjectType.CommandBuffer)
@@ -408,6 +411,9 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         VkRes.Vk.CmdBindPipeline(Handle, pipeline.PipelineBindPoint, pipeline.Handle);
 
         _currentPipeline = pipeline;
+        _currentResourceSets = new ResourceSet[pipeline.ResourceSetCount];
+        _texturesTransitionedGeneral = false;
+        _texturesTransitionedShaderRead = false;
     }
 
     public void SetResourceSet(uint slot, ResourceSet resourceSet)
@@ -417,24 +423,44 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
             throw new InvalidOperationException("No pipeline set.");
         }
 
-        DescriptorBufferBindingInfoEXT bindingInfoEXT = new()
+        if (VkRes.DescriptorBufferSupported)
         {
-            SType = StructureType.DescriptorBufferBindingInfoExt,
-            Address = resourceSet.Handle.Address,
-            Usage = BufferUsageFlags.ResourceDescriptorBufferBitExt | BufferUsageFlags.SamplerDescriptorBufferBitExt
-        };
+            DescriptorBufferBindingInfoEXT bindingInfoEXT = new()
+            {
+                SType = StructureType.DescriptorBufferBindingInfoExt,
+                Address = resourceSet.Handle,
+                Usage = BufferUsageFlags.ResourceDescriptorBufferBitExt | BufferUsageFlags.SamplerDescriptorBufferBitExt
+            };
 
-        VkRes.ExtDescriptorBuffer.CmdBindDescriptorBuffers(Handle, 1, &bindingInfoEXT);
+            VkRes.ExtDescriptorBuffer.CmdBindDescriptorBuffers(Handle, 1, &bindingInfoEXT);
 
-        uint bufferIndices = 0;
-        ulong offsets = 0;
-        VkRes.ExtDescriptorBuffer.CmdSetDescriptorBufferOffsets(Handle,
-                                                                _currentPipeline.PipelineBindPoint,
-                                                                _currentPipeline.Layout,
-                                                                slot,
-                                                                1,
-                                                                &bufferIndices,
-                                                                &offsets);
+            uint bufferIndices = 0;
+            ulong offsets = 0;
+            VkRes.ExtDescriptorBuffer.CmdSetDescriptorBufferOffsets(Handle,
+                                                                    _currentPipeline.PipelineBindPoint,
+                                                                    _currentPipeline.Layout,
+                                                                    slot,
+                                                                    1,
+                                                                    &bufferIndices,
+                                                                    &offsets);
+        }
+        else
+        {
+            VkDescriptorSet descriptorSet = new(resourceSet.Handle);
+
+            VkRes.Vk.CmdBindDescriptorSets(Handle,
+                                           _currentPipeline.PipelineBindPoint,
+                                           _currentPipeline.Layout,
+                                           slot,
+                                           1,
+                                           &descriptorSet,
+                                           0,
+                                           null);
+        }
+
+        _currentResourceSets![slot] = resourceSet;
+        _texturesTransitionedGeneral = false;
+        _texturesTransitionedShaderRead = false;
     }
 
     public void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart)
@@ -443,6 +469,8 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         {
             throw new InvalidOperationException("No graphics pipeline set.");
         }
+
+        EnsureTexturesInShaderReadLayout();
 
         EnsureRenderPassActive();
 
@@ -461,6 +489,8 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
             throw new InvalidOperationException("No compute pipeline set.");
         }
 
+        EnsureTexturesInGeneralLayout();
+
         EnsureRenderPassInactive();
 
         VkRes.Vk.CmdDispatch(Handle, groupCountX, groupCountY, groupCountZ);
@@ -472,6 +502,8 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         {
             throw new InvalidOperationException("No raytracing pipeline set.");
         }
+
+        EnsureTexturesInGeneralLayout();
 
         EnsureRenderPassInactive();
 
@@ -564,6 +596,66 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
                                  ImageLayout.TransferDstOptimal,
                                  1,
                                  &resolve);
+
+        source.TransitionToBestLayout(Handle);
+        destination.TransitionToBestLayout(Handle);
+    }
+
+    public void CopyTexture(Texture source, Texture destination)
+    {
+        if (source.Format != destination.Format ||
+            source.SampleCount != destination.SampleCount ||
+            source.Width != destination.Width ||
+            source.Height != destination.Height ||
+            source.Depth != destination.Depth ||
+            source.ArrayLayers != destination.ArrayLayers ||
+            source.MipLevels != destination.MipLevels)
+        {
+            throw new InvalidOperationException("Source and destination textures must have the same dimensions.");
+        }
+
+        EnsureRenderPassInactive();
+
+        source.TransitionLayout(Handle, ImageLayout.TransferSrcOptimal);
+        destination.TransitionLayout(Handle, ImageLayout.TransferDstOptimal);
+
+        ImageAspectFlags aspectMask = source.Usage.HasFlag(TextureUsage.DepthStencil)
+            ? ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit
+            : ImageAspectFlags.ColorBit;
+
+        ImageCopy copy = new()
+        {
+            Extent = new Extent3D
+            {
+                Width = source.Width,
+                Height = source.Height,
+                Depth = source.Depth
+            },
+            SrcSubresource = new ImageSubresourceLayers
+            {
+                AspectMask = aspectMask,
+                MipLevel = 0,
+                BaseArrayLayer = 0,
+                LayerCount = 1
+            },
+            SrcOffset = new Offset3D(),
+            DstSubresource = new ImageSubresourceLayers
+            {
+                AspectMask = aspectMask,
+                MipLevel = 0,
+                BaseArrayLayer = 0,
+                LayerCount = 1
+            },
+            DstOffset = new Offset3D()
+        };
+
+        VkRes.Vk.CmdCopyImage(Handle,
+                              source.Handle,
+                              ImageLayout.TransferSrcOptimal,
+                              destination.Handle,
+                              ImageLayout.TransferDstOptimal,
+                              1,
+                              &copy);
 
         source.TransitionToBestLayout(Handle);
         destination.TransitionToBestLayout(Handle);
@@ -695,6 +787,8 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         _availableStagingBuffers.Clear();
 
         CommandPool.FreeCommandBuffer(Handle);
+
+        base.Destroy();
     }
 
     private void BeginRenderPass()
@@ -778,6 +872,55 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
                                         null);
 
             _isInRenderPass = false;
+        }
+    }
+
+    private void EnsureTexturesInGeneralLayout()
+    {
+        if (_currentResourceSets != null && !_texturesTransitionedGeneral)
+        {
+            EnsureRenderPassInactive();
+
+            foreach (ResourceSet resourceSet in _currentResourceSets)
+            {
+                if (resourceSet != null)
+                {
+                    foreach (Texture texture in resourceSet.StorageTextures)
+                    {
+                        texture.TransitionLayout(Handle, ImageLayout.General);
+                    }
+                }
+            }
+
+            _texturesTransitionedGeneral = true;
+            _texturesTransitionedShaderRead = false;
+        }
+    }
+
+    private void EnsureTexturesInShaderReadLayout()
+    {
+        if (_currentResourceSets != null && !_texturesTransitionedShaderRead)
+        {
+            EnsureRenderPassInactive();
+
+            foreach (ResourceSet resourceSet in _currentResourceSets)
+            {
+                if (resourceSet != null)
+                {
+                    foreach (Texture texture in resourceSet.SampledTextures)
+                    {
+                        texture.TransitionLayout(Handle, ImageLayout.ShaderReadOnlyOptimal);
+                    }
+
+                    foreach (Texture texture in resourceSet.StorageTextures)
+                    {
+                        texture.TransitionLayout(Handle, ImageLayout.ShaderReadOnlyOptimal);
+                    }
+                }
+            }
+
+            _texturesTransitionedGeneral = false;
+            _texturesTransitionedShaderRead = true;
         }
     }
 

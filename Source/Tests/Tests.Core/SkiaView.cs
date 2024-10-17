@@ -2,7 +2,6 @@
 using Graphics.Core;
 using Graphics.Core.Window;
 using Graphics.Vulkan;
-using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.ImGui;
 using Graphics.Vulkan.Skia;
 using Hexa.NET.ImGui;
@@ -15,7 +14,9 @@ public abstract class SkiaView(string title,
                                ImGuiController imGuiController,
                                GRContext grContext) : View(title)
 {
-    private Texture? _texture;
+    private readonly CommandList _commandList = device.Factory.CreateGraphicsCommandList();
+
+    private FramebufferObject? _framebufferObject;
     private SKSurface? _surface;
 
     protected override void OnRender(RenderEventArgs e)
@@ -36,10 +37,17 @@ public abstract class SkiaView(string title,
             canvas.ResetMatrix();
         }
 
-        if (_texture != null)
+        if (_framebufferObject != null)
         {
-            ImGui.Image(imGuiController.GetBinding(device.Factory, _texture),
-                        new Vector2(_texture.Width, _texture.Height));
+            _commandList.Begin();
+
+            _framebufferObject.Present(_commandList);
+
+            _commandList.End();
+
+            device.SubmitCommands(_commandList);
+
+            ImGui.Image(imGuiController.GetBinding(device.Factory, _framebufferObject.PresentTexture), new Vector2(_framebufferObject.Width, _framebufferObject.Height));
         }
     }
 
@@ -47,20 +55,16 @@ public abstract class SkiaView(string title,
     {
         _surface?.Dispose();
 
-        if (_texture != null)
+        if (_framebufferObject != null)
         {
-            imGuiController.RemoveBinding(imGuiController.GetBinding(device.Factory, _texture));
+            imGuiController.RemoveBinding(imGuiController.GetBinding(device.Factory, _framebufferObject.PresentTexture));
 
-            _texture.Dispose();
+            _framebufferObject.Dispose();
         }
 
-        _texture = device.Factory.CreateTexture(TextureDescription.Texture2D(Width,
-                                                                             Height,
-                                                                             1,
-                                                                             PixelFormat.R8G8B8A8UNorm,
-                                                                             TextureUsage.Sampled | TextureUsage.RenderTarget));
+        _framebufferObject = new FramebufferObject(device, (int)e.Width, (int)e.Height, TextureSampleCount.Count1);
 
-        _surface = SkiaGraphics.CreateSurface(grContext, _texture);
+        _surface = SkiaGraphics.CreateSurface(grContext, _framebufferObject.ColorTexture);
     }
 
     protected abstract void OnRenderSurface(SKCanvas canvas, RenderEventArgs e);
@@ -68,6 +72,8 @@ public abstract class SkiaView(string title,
     protected override void Destroy()
     {
         _surface?.Dispose();
-        _texture?.Dispose();
+        _framebufferObject?.Dispose();
+
+        _commandList.Dispose();
     }
 }

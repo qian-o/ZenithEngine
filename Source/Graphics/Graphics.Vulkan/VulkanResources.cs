@@ -1,5 +1,4 @@
 ﻿using Graphics.Core;
-using Graphics.Core.Helpers;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
@@ -8,16 +7,12 @@ namespace Graphics.Vulkan;
 
 public class VulkanResources : DisposableObject
 {
-    #region Global Properties
-    public Alloter Alloter { get; } = new();
-    #endregion
-
     #region Context Properties
     private Vk? _vk;
     private VkInstance? _instance;
     private string[]? _instanceExtensions;
-    private ExtDebugUtils? _extDebugUtils;
-    private KhrSurface? _khrSurface;
+    private KhrSurface? _surface;
+    private VulkanDebug? _vkDebug;
 
     public bool IsInitializedContext { get; private set; }
 
@@ -27,9 +22,9 @@ public class VulkanResources : DisposableObject
 
     public string[] InstanceExtensions => TryGetContextProperty(ref _instanceExtensions)!;
 
-    public ExtDebugUtils? ExtDebugUtils => TryGetContextProperty(ref _extDebugUtils);
+    public KhrSurface Surface => TryGetContextProperty(ref _surface)!;
 
-    public KhrSurface KhrSurface => TryGetContextProperty(ref _khrSurface)!;
+    public VulkanDebug? VkDebug => TryGetContextProperty(ref _vkDebug);
     #endregion
 
     #region Physical Device Properties
@@ -44,21 +39,27 @@ public class VulkanResources : DisposableObject
 
     public VkPhysicalDevice VkPhysicalDevice => PhysicalDevice.Handle;
 
-    public PhysicalDeviceProperties2 Properties2 => PhysicalDevice.Properties2;
+    public PhysicalDeviceFeatures Features => PhysicalDevice.Features;
 
-    public PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties => PhysicalDevice.DescriptorBufferProperties;
+    public ExtensionProperties[] ExtensionProperties => PhysicalDevice.ExtensionProperties;
+
+    public bool DescriptorBufferSupported => PhysicalDevice.DescriptorBufferSupported;
+
+    public bool RayQuerySupported => PhysicalDevice.RayQuerySupported;
+
+    public bool RayTracingSupported => PhysicalDevice.RayTracingSupported;
+
+    public PhysicalDeviceProperties2 Properties2 => PhysicalDevice.Properties2;
 
     public PhysicalDeviceDescriptorIndexingProperties DescriptorIndexingProperties => PhysicalDevice.DescriptorIndexingProperties;
 
-    public PhysicalDeviceRayTracingPipelinePropertiesKHR RayTracingPipelineProperties => PhysicalDevice.RayTracingPipelineProperties;
+    public PhysicalDeviceDescriptorBufferPropertiesEXT DescriptorBufferProperties => PhysicalDevice.DescriptorBufferProperties;
 
-    public PhysicalDeviceFeatures Features => PhysicalDevice.Features;
+    public PhysicalDeviceRayTracingPipelinePropertiesKHR RayTracingPipelineProperties => PhysicalDevice.RayTracingPipelineProperties;
 
     public PhysicalDeviceMemoryProperties MemoryProperties => PhysicalDevice.MemoryProperties;
 
     public QueueFamilyProperties[] QueueFamilyProperties => PhysicalDevice.QueueFamilyProperties;
-
-    public ExtensionProperties[] ExtensionProperties => PhysicalDevice.ExtensionProperties;
     #endregion
 
     #region Graphics Device Properties
@@ -72,26 +73,26 @@ public class VulkanResources : DisposableObject
 
     public KhrSwapchain KhrSwapchain => GraphicsDevice.KhrSwapchain;
 
-    public ExtDescriptorBuffer ExtDescriptorBuffer => GraphicsDevice.ExtDescriptorBuffer;
+    public ExtDescriptorBuffer ExtDescriptorBuffer => DescriptorBufferSupported ? GraphicsDevice.ExtDescriptorBuffer! : throw new NotSupportedException("Descriptor buffer extension is not supported.");
 
-    public KhrRayTracingPipeline KhrRayTracingPipeline => GraphicsDevice.KhrRayTracingPipeline;
+    public KhrRayTracingPipeline KhrRayTracingPipeline => RayTracingSupported ? GraphicsDevice.KhrRayTracingPipeline! : throw new NotSupportedException("Ray tracing extension is not supported.");
 
-    public KhrAccelerationStructure KhrAccelerationStructure => GraphicsDevice.KhrAccelerationStructure;
+    public KhrAccelerationStructure KhrAccelerationStructure => RayQuerySupported || RayTracingSupported ? GraphicsDevice.KhrAccelerationStructure! : throw new NotSupportedException("Ray query or ray tracing extension is not supported.");
 
-    public KhrDeferredHostOperations KhrDeferredHostOperations => GraphicsDevice.KhrDeferredHostOperations;
+    public KhrDeferredHostOperations KhrDeferredHostOperations => RayQuerySupported || RayTracingSupported ? GraphicsDevice.KhrDeferredHostOperations! : throw new NotSupportedException("Ray query or ray tracing extension is not supported.");
     #endregion
 
     public void InitializeContext(Vk vk,
                                   VkInstance instance,
                                   string[] instanceExtensions,
-                                  ExtDebugUtils? extDebugUtils,
-                                  KhrSurface khrSurface)
+                                  KhrSurface surface,
+                                  VulkanDebug? vkDebug)
     {
         _vk = vk;
         _instance = instance;
         _instanceExtensions = instanceExtensions;
-        _extDebugUtils = extDebugUtils;
-        _khrSurface = khrSurface;
+        _surface = surface;
+        _vkDebug = vkDebug;
 
         IsInitializedContext = true;
     }
@@ -113,7 +114,6 @@ public class VulkanResources : DisposableObject
 
     protected override void Destroy()
     {
-        Alloter.Dispose();
     }
 
     private T TryGetContextProperty<T>(ref T field)

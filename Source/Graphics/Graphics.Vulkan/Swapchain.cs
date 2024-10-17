@@ -18,7 +18,7 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
         DepthFormat = description.DepthFormat;
         ImageAvailableFence = new Fence(vkRes);
 
-        Resize(description.Width, description.Height);
+        Resize();
     }
 
     internal override SwapchainKHR Handle => _swapchain ?? throw new InvalidOperationException("Swapchain is not initialized");
@@ -39,40 +39,35 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
 
     public OutputDescription OutputDescription => Framebuffer.OutputDescription;
 
-    public void Resize(uint width, uint height)
+    public void Resize()
     {
-        if (width == 0 || height == 0)
-        {
-            return;
-        }
-
         DestroySwapchain();
 
         SurfaceCapabilitiesKHR surfaceCapabilities;
-        VkRes.KhrSurface.GetPhysicalDeviceSurfaceCapabilities(VkRes.VkPhysicalDevice,
+        VkRes.Surface.GetPhysicalDeviceSurfaceCapabilities(VkRes.VkPhysicalDevice,
                                                               Target,
                                                               &surfaceCapabilities).ThrowCode();
 
         uint surfaceFormatCount;
-        VkRes.KhrSurface.GetPhysicalDeviceSurfaceFormats(VkRes.VkPhysicalDevice,
+        VkRes.Surface.GetPhysicalDeviceSurfaceFormats(VkRes.VkPhysicalDevice,
                                                          Target,
                                                          &surfaceFormatCount,
                                                          null).ThrowCode();
 
         SurfaceFormatKHR[] surfaceFormats = new SurfaceFormatKHR[surfaceFormatCount];
-        VkRes.KhrSurface.GetPhysicalDeviceSurfaceFormats(VkRes.VkPhysicalDevice,
+        VkRes.Surface.GetPhysicalDeviceSurfaceFormats(VkRes.VkPhysicalDevice,
                                                          Target,
                                                          &surfaceFormatCount,
                                                          surfaceFormats.AsPointer()).ThrowCode();
 
         uint presentModeCount;
-        VkRes.KhrSurface.GetPhysicalDeviceSurfacePresentModes(VkRes.VkPhysicalDevice,
+        VkRes.Surface.GetPhysicalDeviceSurfacePresentModes(VkRes.VkPhysicalDevice,
                                                               Target,
                                                               &presentModeCount,
                                                               null).ThrowCode();
 
         PresentModeKHR[] presentModes = new PresentModeKHR[presentModeCount];
-        VkRes.KhrSurface.GetPhysicalDeviceSurfacePresentModes(VkRes.VkPhysicalDevice,
+        VkRes.Surface.GetPhysicalDeviceSurfacePresentModes(VkRes.VkPhysicalDevice,
                                                               Target,
                                                               &presentModeCount,
                                                               presentModes.AsPointer()).ThrowCode();
@@ -90,11 +85,11 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
             MinImageCount = desiredNumberOfSwapchainImages,
             ImageFormat = ChooseSwapSurfaceFormat(surfaceFormats).Format,
             ImageColorSpace = ChooseSwapSurfaceFormat(surfaceFormats).ColorSpace,
-            ImageExtent = ChooseSwapExtent(surfaceCapabilities, width, height),
+            ImageExtent = ChooseSwapExtent(surfaceCapabilities),
             ImageArrayLayers = 1,
             ImageUsage = ImageUsageFlags.ColorAttachmentBit,
             PreTransform = SurfaceTransformFlagsKHR.IdentityBitKhr,
-            CompositeAlpha = CompositeAlphaFlagsKHR.OpaqueBitKhr,
+            CompositeAlpha = surfaceCapabilities.SupportedCompositeAlpha,
             PresentMode = ChooseSwapPresentMode(presentModes),
             ImageSharingMode = SharingMode.Exclusive,
             Clipped = Vk.True,
@@ -116,8 +111,8 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
         Texture? depthBuffer = null;
         if (DepthFormat != null)
         {
-            TextureDescription depthBufferDescription = new(width,
-                                                            height,
+            TextureDescription depthBufferDescription = new(createInfo.ImageExtent.Width,
+                                                            createInfo.ImageExtent.Height,
                                                             1,
                                                             1,
                                                             DepthFormat.Value,
@@ -134,8 +129,8 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
             Texture colorBuffer = new(VkRes,
                                       images[i],
                                       createInfo.ImageFormat,
-                                      width,
-                                      height);
+                                      createInfo.ImageExtent.Width,
+                                      createInfo.ImageExtent.Height);
 
             FramebufferDescription framebufferDescription = new(depthBuffer, colorBuffer);
 
@@ -145,8 +140,8 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
         _swapchain = swapchain;
         _depthBuffer = depthBuffer;
         _framebuffers = framebuffers;
-        Width = width;
-        Height = height;
+        Width = createInfo.ImageExtent.Width;
+        Height = createInfo.ImageExtent.Height;
 
         AcquireNextImage();
     }
@@ -193,7 +188,9 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
             DestroySwapchain();
         }
 
-        VkRes.KhrSurface.DestroySurface(VkRes.Instance, Target, null);
+        VkRes.Surface.DestroySurface(VkRes.Instance, Target, null);
+
+        base.Destroy();
     }
 
     private void DestroySwapchain()
@@ -237,14 +234,18 @@ public unsafe class Swapchain : VulkanObject<SwapchainKHR>
         return PresentModeKHR.FifoKhr;
     }
 
-    private static Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities, uint width, uint height)
+    private static Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities)
     {
         if (capabilities.CurrentExtent.Width != uint.MaxValue)
         {
             return capabilities.CurrentExtent;
         }
 
-        return new Extent2D(Math.Max(capabilities.MinImageExtent.Width, Math.Min(capabilities.MaxImageExtent.Width, width)),
-                            Math.Max(capabilities.MinImageExtent.Height, Math.Min(capabilities.MaxImageExtent.Height, height)));
+        return new Extent2D((uint)Util.Lerp(capabilities.MinImageExtent.Width,
+                                            capabilities.MaxImageExtent.Width,
+                                            0.5f),
+                            (uint)Util.Lerp(capabilities.MinImageExtent.Height,
+                                            capabilities.MaxImageExtent.Height,
+                                            0.5f));
     }
 }

@@ -101,6 +101,7 @@ internal sealed unsafe class Program
     #endregion
 
     private static GraphicsDevice _device = null!;
+    private static Swapchain _swapchain = null!;
 
     private static readonly List<Texture> _textures = [];
     private static readonly List<TextureView> _textureViews = [];
@@ -130,14 +131,16 @@ internal sealed unsafe class Program
         window.MinimumSize = new(100, 100);
 
         using Context context = new();
-        using GraphicsDevice device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice(), window);
+        using GraphicsDevice device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
+        using Swapchain swapchain = device.Factory.CreateSwapchain(new SwapchainDescription(window.VkSurface!, device.GetBestDepthFormat()));
 
         _device = device;
+        _swapchain = swapchain;
 
         window.Load += Window_Load;
         window.Update += Window_Update;
         window.Render += Window_Render;
-        window.Resize += (_, e) => _device.MainSwapchain.Resize(e.Width, e.Height);
+        window.Resize += (_, e) => swapchain.Resize();
         window.Closing += Window_Closing;
 
         window.Run();
@@ -246,7 +249,7 @@ internal sealed unsafe class Program
 
         _textureSamplerLayout = _device.Factory.CreateResourceLayout(in textureSamplerDescription);
         _textureSamplerSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_textureSamplerLayout));
-        _textureSamplerSet.UpdateBindless([_device.Aniso4xSampler, _device.LinearSampler]);
+        _textureSamplerSet.UpdateBindless(_device.Aniso4xSampler, _device.LinearSampler);
 
         VertexElementDescription positionDescription = new("Position", VertexElementFormat.Float3);
         VertexElementDescription normalDescription = new("Normal", VertexElementFormat.Float3);
@@ -281,7 +284,7 @@ internal sealed unsafe class Program
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
                 ResourceLayouts = [_cboLayout, _textureMapLayout, _textureSamplerLayout],
                 Shaders = new GraphicsShaderDescription(_vertexLayoutDescriptions, _shaders, [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
-                Outputs = _device.MainSwapchain.OutputDescription
+                Outputs = _swapchain.OutputDescription
             };
 
             _pipelines[i] = _device.Factory.CreateGraphicsPipeline(ref pipelineDescription);
@@ -307,7 +310,7 @@ internal sealed unsafe class Program
     {
         _commandList.Begin();
 
-        _commandList.SetFramebuffer(_device.MainSwapchain.Framebuffer);
+        _commandList.SetFramebuffer(_swapchain.Framebuffer);
         _commandList.ClearColorTarget(0, RgbaFloat.Black);
         _commandList.ClearDepthStencil(1.0f);
 
@@ -321,7 +324,7 @@ internal sealed unsafe class Program
 
         _commandList.End();
 
-        _device.SubmitCommandsAndSwapBuffers(_commandList, _device.MainSwapchain);
+        _device.SubmitCommandsAndSwapBuffers(_commandList, _swapchain);
     }
 
     private static void Window_Closing(object? sender, ClosingEventArgs e)

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<control:ShellPage x:Class="Tests.AndroidApp.Views.MainPage"
+                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:control="clr-namespace:Tests.AndroidApp.Controls"
+                   xmlns:vm="clr-namespace:Tests.AndroidApp.ViewModels"
+                   x:DataType="vm:MainViewModel">
+
+    <Grid>
+        <Label HorizontalOptions="Center"
+               VerticalOptions="Center"
+               Text="{Binding Title}" />
+    </Grid>
+
+</control:ShellPage>

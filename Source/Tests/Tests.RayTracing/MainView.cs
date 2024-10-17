@@ -402,7 +402,7 @@ internal sealed unsafe class MainView : View
 
         _resourceLayout4 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless(2, new ElementDescription("samplerArray", ResourceKind.Sampler, ShaderStages.ClosestHit | ShaderStages.AnyHit)));
         _resourceSet4 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout4));
-        _resourceSet4.UpdateBindless([device.Aniso4xSampler, device.LinearSampler]);
+        _resourceSet4.UpdateBindless(device.Aniso4xSampler, device.LinearSampler);
 
         byte[] shaderBytes = DxcHelpers.Compile(ShaderStages.Library,
                                                 File.ReadAllText("Assets/Shaders/rayTracing.hlsl"),
@@ -636,7 +636,7 @@ internal sealed unsafe class MainView : View
                                                                                     e.Height,
                                                                                     1,
                                                                                     PixelFormat.R8G8B8A8UNorm,
-                                                                                    TextureUsage.Storage | TextureUsage.Sampled));
+                                                                                    TextureUsage.Sampled | TextureUsage.Storage));
 
         _outputTextureView = _device.Factory.CreateTextureView(_outputTexture);
 

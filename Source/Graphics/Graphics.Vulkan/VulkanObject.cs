@@ -1,5 +1,5 @@
 ﻿using Graphics.Core;
-using Graphics.Vulkan.Helpers;
+using Graphics.Core.Helpers;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
@@ -12,9 +12,16 @@ public abstract unsafe class VulkanObject<THandle>(VulkanResources vkRes, params
 
     internal VulkanResources VkRes { get; } = vkRes;
 
+    internal Alloter Alloter { get; } = new();
+
     public string Name { get => name; set { name = value; UpdateResourceName(); } }
 
     internal abstract ulong[] GetHandles();
+
+    protected override void Destroy()
+    {
+        Alloter.Dispose();
+    }
 
     private void UpdateResourceName()
     {
@@ -23,23 +30,6 @@ public abstract unsafe class VulkanObject<THandle>(VulkanResources vkRes, params
             return;
         }
 
-        ulong[] handles = GetHandles();
-
-        int length = Math.Min(handles.Length, objectTypes.Length);
-
-        for (int i = 0; i < length; i++)
-        {
-            DebugUtilsObjectNameInfoEXT nameInfo = new()
-            {
-                SType = StructureType.DebugUtilsObjectNameInfoExt,
-                ObjectType = objectTypes[i],
-                ObjectHandle = handles[i],
-                PObjectName = VkRes.Alloter.Allocate($"{Name} ({objectTypes[i]})")
-            };
-
-            VkRes.ExtDebugUtils?.SetDebugUtilsObjectName(VkRes.VkDevice, &nameInfo).ThrowCode();
-        }
-
-        VkRes.Alloter.Clear();
+        VkRes.VkDebug?.SetObjectName(this, objectTypes);
     }
 }

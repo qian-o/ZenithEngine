@@ -210,5 +210,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
         VkRes.KhrAccelerationStructure.DestroyAccelerationStructure(VkRes.VkDevice, Handle, null);
 
         DeviceBuffer.Dispose();
+
+        base.Destroy();
     }
 }

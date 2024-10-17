@@ -2,7 +2,6 @@
 using Graphics.Core;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
-using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
@@ -23,7 +22,6 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
 
     internal GraphicsDevice(VulkanResources vkRes,
                             VkDevice device,
-                            IVkSurface windowSurface,
                             uint graphicsQueueFamilyIndex,
                             uint computeQueueFamilyIndex,
                             uint transferQueueFamilyIndex) : base(vkRes, ObjectType.Device)
@@ -39,17 +37,16 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         VkRes.InitializeGraphicsDevice(this);
 
         KhrSwapchain = CreateDeviceExtension<KhrSwapchain>(device);
-        ExtDescriptorBuffer = CreateDeviceExtension<ExtDescriptorBuffer>(device);
-        KhrRayTracingPipeline = CreateDeviceExtension<KhrRayTracingPipeline>(device);
-        KhrAccelerationStructure = CreateDeviceExtension<KhrAccelerationStructure>(device);
-        KhrDeferredHostOperations = CreateDeviceExtension<KhrDeferredHostOperations>(device);
+        ExtDescriptorBuffer = VkRes.DescriptorBufferSupported ? CreateDeviceExtension<ExtDescriptorBuffer>(device) : null;
+        KhrRayTracingPipeline = VkRes.RayTracingSupported ? CreateDeviceExtension<KhrRayTracingPipeline>(device) : null;
+        KhrAccelerationStructure = VkRes.RayQuerySupported || VkRes.RayTracingSupported ? CreateDeviceExtension<KhrAccelerationStructure>(device) : null;
+        KhrDeferredHostOperations = VkRes.RayQuerySupported || VkRes.RayTracingSupported ? CreateDeviceExtension<KhrDeferredHostOperations>(device) : null;
         GraphicsExecutor = new Executor(VkRes, graphicsQueueFamilyIndex);
         ComputeExecutor = new Executor(VkRes, computeQueueFamilyIndex);
         TransferExecutor = new Executor(VkRes, transferQueueFamilyIndex);
         GraphicsCommandPool = new CommandPool(VkRes, graphicsQueueFamilyIndex);
         ComputeCommandPool = new CommandPool(VkRes, computeQueueFamilyIndex);
         Factory = new ResourceFactory(VkRes);
-        MainSwapchain = Factory.CreateSwapchain(new SwapchainDescription(windowSurface, 0, 0, GetBestDepthFormat()));
         PointSampler = Factory.CreateSampler(SamplerDescription.Point);
         LinearSampler = Factory.CreateSampler(SamplerDescription.Linear);
         Aniso4xSampler = Factory.CreateSampler(SamplerDescription.Aniso4x);
@@ -59,13 +56,13 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
 
     internal KhrSwapchain KhrSwapchain { get; }
 
-    internal ExtDescriptorBuffer ExtDescriptorBuffer { get; }
+    internal ExtDescriptorBuffer? ExtDescriptorBuffer { get; }
 
-    internal KhrRayTracingPipeline KhrRayTracingPipeline { get; }
+    internal KhrRayTracingPipeline? KhrRayTracingPipeline { get; }
 
-    internal KhrAccelerationStructure KhrAccelerationStructure { get; }
+    internal KhrAccelerationStructure? KhrAccelerationStructure { get; }
 
-    internal KhrDeferredHostOperations KhrDeferredHostOperations { get; }
+    internal KhrDeferredHostOperations? KhrDeferredHostOperations { get; }
 
     internal Executor GraphicsExecutor { get; }
 
@@ -78,8 +75,6 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
     internal CommandPool ComputeCommandPool { get; }
 
     public ResourceFactory Factory { get; }
-
-    public Swapchain MainSwapchain { get; }
 
     public Sampler PointSampler { get; }
 
@@ -285,16 +280,6 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         SwapBuffersCore(swapchain, null, true);
     }
 
-    public void SwapBuffers()
-    {
-        if (MainSwapchain == null)
-        {
-            throw new InvalidOperationException("The swap chain is not initialized.");
-        }
-
-        SwapBuffers(MainSwapchain);
-    }
-
     public void SubmitCommandsAndSwapBuffers(CommandList commandList, Swapchain swapchain)
     {
         Semaphore stagingSemaphore = GetStagingSemaphore();
@@ -350,18 +335,18 @@ public unsafe class GraphicsDevice : VulkanObject<VkDevice>
         LinearSampler.Dispose();
         PointSampler.Dispose();
 
-        MainSwapchain.Dispose();
-
         ComputeCommandPool.Dispose();
         GraphicsCommandPool.Dispose();
 
-        KhrDeferredHostOperations.Dispose();
-        KhrAccelerationStructure.Dispose();
-        KhrRayTracingPipeline.Dispose();
-        ExtDescriptorBuffer.Dispose();
+        KhrDeferredHostOperations?.Dispose();
+        KhrAccelerationStructure?.Dispose();
+        KhrRayTracingPipeline?.Dispose();
+        ExtDescriptorBuffer?.Dispose();
         KhrSwapchain.Dispose();
 
         VkRes.Vk.DestroyDevice(Handle, null);
+
+        base.Destroy();
     }
 
     private T CreateDeviceExtension<T>(VkDevice device) where T : NativeExtension<Vk>

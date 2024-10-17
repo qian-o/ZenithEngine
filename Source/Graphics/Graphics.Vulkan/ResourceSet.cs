@@ -1,20 +1,96 @@
-﻿using Graphics.Vulkan.Descriptions;
+﻿using Graphics.Core.Helpers;
+using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Vulkan;
 
-public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
+public unsafe class ResourceSet : VulkanObject<ulong>
 {
+    private readonly DeviceBuffer? descriptorBuffer;
+    private readonly VkDescriptorPool descriptorPool;
+    private readonly VkDescriptorSet descriptorSet;
+
+    private readonly IBindableResource[]? useResources;
+
+    private readonly List<Texture> sampledTextures = [];
+    private readonly List<Texture> storageTextures = [];
+
+    private IBindableResource[]? bindlessResources;
+
     internal ResourceSet(VulkanResources vkRes, ref readonly ResourceSetDescription description) : base(vkRes)
     {
-        const BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferDstBit
-                                                  | BufferUsageFlags.ResourceDescriptorBufferBitExt
-                                                  | BufferUsageFlags.SamplerDescriptorBufferBitExt;
+        Layout = description.Layout;
 
-        DeviceBuffer buffer = new(VkRes, bufferUsageFlags, description.Layout.SizeInBytes, true);
+        if (VkRes.DescriptorBufferSupported)
+        {
+            const BufferUsageFlags bufferUsageFlags = BufferUsageFlags.TransferDstBit
+                                                      | BufferUsageFlags.ResourceDescriptorBufferBitExt
+                                                      | BufferUsageFlags.SamplerDescriptorBufferBitExt;
 
-        byte* descriptor = (byte*)buffer.Map(description.Layout.SizeInBytes);
+            descriptorBuffer = new(VkRes, bufferUsageFlags, Layout.SizeInBytes, true);
+
+            Handle = descriptorBuffer.Address;
+        }
+        else
+        {
+            DescriptorPoolSize[] poolSizes = new DescriptorPoolSize[Layout.DescriptorTypes.Length];
+
+            for (uint i = 0; i < Layout.DescriptorTypes.Length; i++)
+            {
+                DescriptorType type = Layout.DescriptorTypes[i];
+
+                DescriptorPoolSize poolSize = new()
+                {
+                    Type = type,
+                    DescriptorCount = 1
+                };
+
+                poolSizes[i] = poolSize;
+            }
+
+            if (Layout.IsLastBindless)
+            {
+                poolSizes[^1].DescriptorCount = Layout.MaxDescriptorCount;
+            }
+
+            DescriptorPoolCreateInfo poolCreateInfo = new()
+            {
+                SType = StructureType.DescriptorPoolCreateInfo,
+                MaxSets = 1,
+                PoolSizeCount = (uint)poolSizes.Length,
+                PPoolSizes = poolSizes.AsPointer(),
+                Flags = DescriptorPoolCreateFlags.FreeDescriptorSetBit
+            };
+
+            VkRes.Vk.CreateDescriptorPool(VkRes.VkDevice, &poolCreateInfo, null, out descriptorPool).ThrowCode();
+
+            VkDescriptorSetLayout descriptorSetLayout = Layout.Handle;
+
+            DescriptorSetAllocateInfo allocateInfo = new()
+            {
+                SType = StructureType.DescriptorSetAllocateInfo,
+                DescriptorPool = descriptorPool,
+                DescriptorSetCount = 1,
+                PSetLayouts = &descriptorSetLayout,
+            };
+
+            if (Layout.IsLastBindless)
+            {
+                allocateInfo.AddNext(out DescriptorSetVariableDescriptorCountAllocateInfo variableDescriptorCountAllocateInfo);
+
+                variableDescriptorCountAllocateInfo.DescriptorSetCount = 1;
+                variableDescriptorCountAllocateInfo.PDescriptorCounts = Alloter.Allocate(Layout.MaxDescriptorCount);
+            }
+
+            VkRes.Vk.AllocateDescriptorSets(VkRes.VkDevice, &allocateInfo, out descriptorSet).ThrowCode();
+
+            Handle = descriptorSet.Handle;
+        }
+
+        int resourceCount = Layout.IsLastBindless ? Layout.DescriptorTypes.Length - 1 : Layout.DescriptorTypes.Length;
+
+        useResources = new IBindableResource[resourceCount];
 
         for (uint i = 0; i < description.BoundResources.Length; i++)
         {
@@ -22,25 +98,20 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
 
             if (bindableResource is not null)
             {
-                ulong offset = VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice,
-                                                                                             description.Layout.Handle,
-                                                                                             i);
-
-                WriteDescriptorBuffer(description.Layout.DescriptorTypes[i],
-                                      bindableResource,
-                                      descriptor + offset);
+                useResources[i] = bindableResource;
             }
         }
 
-        buffer.Unmap();
-
-        Handle = buffer;
-        Layout = description.Layout;
+        Refresh();
     }
 
-    internal override DeviceBuffer Handle { get; }
+    internal override ulong Handle { get; }
 
     internal ResourceLayout Layout { get; }
+
+    internal IReadOnlyList<Texture> SampledTextures => sampledTextures;
+
+    internal IReadOnlyList<Texture> StorageTextures => storageTextures;
 
     public void UpdateSet(IBindableResource bindableResource, uint index)
     {
@@ -54,35 +125,26 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
             throw new InvalidOperationException("Resource layout is bindless.");
         }
 
-        DescriptorType type = Layout.DescriptorTypes[index];
+        useResources![index] = bindableResource;
 
-        byte* descriptor = (byte*)Handle.Map(Layout.SizeInBytes);
-        descriptor += VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice, Layout.Handle, index);
-
-        WriteDescriptorBuffer(type, bindableResource, descriptor);
-
-        Handle.Unmap();
+        Refresh();
     }
 
-    public void UpdateBindless(IBindableResource[] boundResources)
+    public void UpdateBindless(params IBindableResource[] bindableResources)
     {
         if (!Layout.IsLastBindless)
         {
             throw new InvalidOperationException("Resource layout is not bindless.");
         }
 
-        DescriptorType type = Layout.DescriptorTypes[^1];
-        uint lastIdx = (uint)Layout.DescriptorTypes.Length - 1;
-
-        byte* descriptor = (byte*)Handle.Map(Layout.SizeInBytes);
-        descriptor += VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice, Layout.Handle, lastIdx);
-
-        for (uint i = 0; i < boundResources.Length; i++)
+        if (bindableResources.Length > Layout.MaxDescriptorCount)
         {
-            descriptor += WriteDescriptorBuffer(type, boundResources[i], descriptor);
+            throw new InvalidDataException("Resource count exceeds the maximum descriptor count.");
         }
 
-        Handle.Unmap();
+        bindlessResources = bindableResources;
+
+        Refresh();
     }
 
     internal override ulong[] GetHandles()
@@ -92,90 +154,176 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
 
     protected override void Destroy()
     {
-        Handle.Dispose();
+        if (VkRes.DescriptorBufferSupported)
+        {
+            descriptorBuffer?.Dispose();
+        }
+        else
+        {
+            VkRes.Vk.FreeDescriptorSets(VkRes.VkDevice, descriptorPool, 1, in descriptorSet);
+
+            VkRes.Vk.DestroyDescriptorPool(VkRes.VkDevice, descriptorPool, null);
+        }
+
+        base.Destroy();
     }
 
-    private nuint WriteDescriptorBuffer(DescriptorType type, IBindableResource bindableResource, byte* buffer)
+    private void Refresh()
     {
-        nuint descriptorSize;
-        if (type is DescriptorType.UniformBuffer
-            or DescriptorType.UniformBufferDynamic
-            or DescriptorType.StorageBuffer
-            or DescriptorType.StorageBufferDynamic)
+        if (useResources!.Any(item => item is null) || (Layout.IsLastBindless && bindlessResources is null))
+        {
+            return;
+        }
+
+        sampledTextures.Clear();
+        storageTextures.Clear();
+        Alloter.Clear();
+
+        if (VkRes.DescriptorBufferSupported)
+        {
+            byte* descriptor = (byte*)descriptorBuffer!.Map(Layout.SizeInBytes);
+
+            for (int i = 0; i < useResources!.Length; i++)
+            {
+                ulong offset = VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice, Layout.Handle, (uint)i);
+
+                WriteDescriptorBuffer(descriptor + offset, Layout.DescriptorTypes[i], useResources[i]);
+            }
+
+            if (bindlessResources != null)
+            {
+                ulong offset = VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutBindingOffset(VkRes.VkDevice, Layout.Handle, (uint)Layout.DescriptorTypes.Length - 1);
+
+                WriteDescriptorBuffer(descriptor + offset, Layout.DescriptorTypes[^1], bindlessResources);
+            }
+
+            descriptorBuffer.Unmap();
+        }
+        else
+        {
+            WriteDescriptorSet[] writeDescriptorSets = new WriteDescriptorSet[Layout.DescriptorTypes.Length];
+
+            for (int i = 0; i < useResources!.Length; i++)
+            {
+                writeDescriptorSets[i] = GetWriteDescriptorSet(i, Layout.DescriptorTypes[i], useResources[i]);
+            }
+
+            if (bindlessResources != null)
+            {
+                writeDescriptorSets[^1] = GetWriteDescriptorSet(Layout.DescriptorTypes.Length - 1, Layout.DescriptorTypes[^1], bindlessResources);
+            }
+
+            VkRes.Vk.UpdateDescriptorSets(VkRes.VkDevice,
+                                          (uint)writeDescriptorSets.Length,
+                                          writeDescriptorSets.AsPointer(),
+                                          0,
+                                          null);
+        }
+    }
+
+    private void WriteDescriptorBuffer(byte* buffer, DescriptorType type, params IBindableResource[] bindableResources)
+    {
+        if (IsDescriptorBuffer(type))
         {
             bool isUniform = type is DescriptorType.UniformBuffer or DescriptorType.UniformBufferDynamic;
 
-            DeviceBufferRange range = Util.GetBufferRange(bindableResource, 0);
+            nuint descriptorSize = isUniform ? VkRes.DescriptorBufferProperties.UniformBufferDescriptorSize : VkRes.DescriptorBufferProperties.StorageBufferDescriptorSize;
 
-            DescriptorAddressInfoEXT addressInfo = new()
+            for (int i = 0; i < bindableResources.Length; i++)
             {
-                SType = StructureType.DescriptorAddressInfoExt,
-                Address = range.Buffer.Address + range.Offset,
-                Range = range.SizeInBytes,
-                Format = Format.Undefined
-            };
+                DeviceBufferRange range = Util.GetBufferRange(bindableResources[i], 0);
 
-            if (isUniform)
-            {
-                descriptorSize = VkRes.DescriptorBufferProperties.UniformBufferDescriptorSize;
-                GetDescriptor(new DescriptorDataEXT() { PUniformBuffer = &addressInfo });
+                DescriptorAddressInfoEXT addressInfo = new()
+                {
+                    SType = StructureType.DescriptorAddressInfoExt,
+                    Address = range.Buffer.Address + range.Offset,
+                    Range = range.SizeInBytes,
+                    Format = Format.Undefined
+                };
+
+                if (isUniform)
+                {
+                    GetDescriptor(descriptorSize, new DescriptorDataEXT() { PUniformBuffer = &addressInfo });
+                }
+                else
+                {
+                    GetDescriptor(descriptorSize, new DescriptorDataEXT() { PStorageBuffer = &addressInfo });
+                }
+
+                buffer += descriptorSize;
             }
-            else
+        }
+        else if (IsDescriptorImage(type))
+        {
+            bool isSampled = type == DescriptorType.SampledImage;
+
+            nuint descriptorSize = isSampled ? VkRes.DescriptorBufferProperties.SampledImageDescriptorSize : VkRes.DescriptorBufferProperties.StorageImageDescriptorSize;
+
+            for (int i = 0; i < bindableResources.Length; i++)
             {
-                descriptorSize = VkRes.DescriptorBufferProperties.StorageBufferDescriptorSize;
-                GetDescriptor(new DescriptorDataEXT() { PStorageBuffer = &addressInfo });
+                TextureView textureView = (TextureView)bindableResources[i];
+
+                DescriptorImageInfo imageInfo = new()
+                {
+                    ImageView = textureView.Handle,
+                    ImageLayout = isSampled ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.General
+                };
+
+                if (isSampled)
+                {
+                    GetDescriptor(descriptorSize, new DescriptorDataEXT() { PSampledImage = &imageInfo });
+                }
+                else
+                {
+                    GetDescriptor(descriptorSize, new DescriptorDataEXT() { PStorageImage = &imageInfo });
+                }
+
+                buffer += descriptorSize;
+
+                if (isSampled)
+                {
+                    sampledTextures.Add(textureView.Target);
+                }
+                else
+                {
+                    storageTextures.Add(textureView.Target);
+                }
             }
         }
-        else if (type == DescriptorType.SampledImage)
+        else if (IsDescriptorSampler(type))
         {
-            TextureView textureView = (TextureView)bindableResource;
+            nuint descriptorSize = VkRes.DescriptorBufferProperties.SamplerDescriptorSize;
 
-            DescriptorImageInfo imageInfo = new()
+            for (int i = 0; i < bindableResources.Length; i++)
             {
-                ImageView = textureView.Handle,
-                ImageLayout = ImageLayout.ShaderReadOnlyOptimal
-            };
+                Sampler sampler = (Sampler)bindableResources[i];
 
-            descriptorSize = VkRes.DescriptorBufferProperties.SampledImageDescriptorSize;
-            GetDescriptor(new DescriptorDataEXT() { PSampledImage = &imageInfo });
+                VkSampler vkSampler = sampler.Handle;
+
+                GetDescriptor(descriptorSize, new DescriptorDataEXT() { PSampler = &vkSampler });
+
+                buffer += descriptorSize;
+            }
         }
-        else if (type == DescriptorType.StorageImage)
+        else if (IsDescriptorAccelerationStructure(type))
         {
-            TextureView textureView = (TextureView)bindableResource;
+            nuint descriptorSize = VkRes.DescriptorBufferProperties.AccelerationStructureDescriptorSize;
 
-            DescriptorImageInfo imageInfo = new()
+            for (int i = 0; i < bindableResources.Length; i++)
             {
-                ImageView = textureView.Handle,
-                ImageLayout = ImageLayout.General
-            };
+                TopLevelAS topLevelAS = (TopLevelAS)bindableResources[i];
 
-            descriptorSize = VkRes.DescriptorBufferProperties.StorageImageDescriptorSize;
-            GetDescriptor(new DescriptorDataEXT() { PStorageImage = &imageInfo });
-        }
-        else if (type == DescriptorType.Sampler)
-        {
-            Sampler sampler = (Sampler)bindableResource;
+                GetDescriptor(descriptorSize, new DescriptorDataEXT() { AccelerationStructure = topLevelAS.Address });
 
-            VkSampler vkSampler = sampler.Handle;
-
-            descriptorSize = VkRes.DescriptorBufferProperties.SamplerDescriptorSize;
-            GetDescriptor(new DescriptorDataEXT() { PSampler = &vkSampler });
-        }
-        else if (type == DescriptorType.AccelerationStructureKhr)
-        {
-            TopLevelAS topLevelAS = (TopLevelAS)bindableResource;
-
-            descriptorSize = VkRes.DescriptorBufferProperties.AccelerationStructureDescriptorSize;
-            GetDescriptor(new DescriptorDataEXT() { AccelerationStructure = topLevelAS.Address });
+                buffer += descriptorSize;
+            }
         }
         else
         {
             throw new NotSupportedException();
         }
 
-        return descriptorSize;
-
-        void GetDescriptor(DescriptorDataEXT descriptorData)
+        void GetDescriptor(nuint descriptorSize, DescriptorDataEXT descriptorData)
         {
             DescriptorGetInfoEXT getInfo = new()
             {
@@ -189,5 +337,131 @@ public unsafe class ResourceSet : VulkanObject<DeviceBuffer>
                                                     descriptorSize,
                                                     buffer);
         }
+    }
+
+    private WriteDescriptorSet GetWriteDescriptorSet(int binding, DescriptorType type, params IBindableResource[] bindableResources)
+    {
+        WriteDescriptorSet writeDescriptorSet = new()
+        {
+            SType = StructureType.WriteDescriptorSet,
+            DstSet = descriptorSet,
+            DstBinding = (uint)binding,
+            DescriptorCount = (uint)bindableResources.Length,
+            DescriptorType = type
+        };
+
+        if (IsDescriptorBuffer(type))
+        {
+            DescriptorBufferInfo* bufferInfos = Alloter.Allocate<DescriptorBufferInfo>(bindableResources.Length);
+
+            for (int i = 0; i < bindableResources.Length; i++)
+            {
+                DeviceBufferRange range = Util.GetBufferRange(bindableResources[i], 0);
+
+                bufferInfos[i] = new()
+                {
+                    Buffer = range.Buffer.Handle,
+                    Offset = range.Offset,
+                    Range = range.SizeInBytes
+                };
+            }
+
+            writeDescriptorSet.PBufferInfo = bufferInfos;
+        }
+        else if (IsDescriptorImage(type))
+        {
+            bool isSampled = type == DescriptorType.SampledImage;
+
+            DescriptorImageInfo* imageInfos = Alloter.Allocate<DescriptorImageInfo>(bindableResources.Length);
+
+            for (int i = 0; i < bindableResources.Length; i++)
+            {
+                TextureView textureView = (TextureView)bindableResources[i];
+
+                imageInfos[i] = new()
+                {
+                    ImageView = textureView.Handle,
+                    ImageLayout = isSampled ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.General
+                };
+
+                if (isSampled)
+                {
+                    sampledTextures.Add(textureView.Target);
+                }
+                else
+                {
+                    storageTextures.Add(textureView.Target);
+                }
+            }
+
+            writeDescriptorSet.PImageInfo = imageInfos;
+        }
+        else if (IsDescriptorSampler(type))
+        {
+            DescriptorImageInfo* imageInfos = Alloter.Allocate<DescriptorImageInfo>(bindableResources.Length);
+
+            for (int i = 0; i < bindableResources.Length; i++)
+            {
+                Sampler sampler = (Sampler)bindableResources[i];
+
+                imageInfos[i] = new()
+                {
+                    Sampler = sampler.Handle
+                };
+            }
+
+            writeDescriptorSet.PImageInfo = imageInfos;
+        }
+        else if (IsDescriptorAccelerationStructure(type))
+        {
+            WriteDescriptorSetAccelerationStructureKHR writeDescriptorSetAS = new()
+            {
+                SType = StructureType.WriteDescriptorSetAccelerationStructureKhr,
+                AccelerationStructureCount = (uint)bindableResources.Length
+            };
+
+            AccelerationStructureKHR* accelerationStructures = Alloter.Allocate<AccelerationStructureKHR>(bindableResources.Length);
+
+            for (int i = 0; i < bindableResources.Length; i++)
+            {
+                TopLevelAS topLevelAS = (TopLevelAS)bindableResources[i];
+
+                accelerationStructures[i] = topLevelAS.Handle;
+            }
+
+            writeDescriptorSetAS.PAccelerationStructures = accelerationStructures;
+
+            writeDescriptorSet.PNext = Alloter.Allocate(writeDescriptorSetAS);
+        }
+        else
+        {
+            throw new NotSupportedException();
+        }
+
+        return writeDescriptorSet;
+    }
+
+    private static bool IsDescriptorBuffer(DescriptorType type)
+    {
+        return type is DescriptorType.UniformBuffer
+               or DescriptorType.UniformBufferDynamic
+               or DescriptorType.StorageBuffer
+               or DescriptorType.StorageBufferDynamic;
+    }
+
+    private static bool IsDescriptorImage(DescriptorType type)
+    {
+        return type is DescriptorType.SampledImage
+               or DescriptorType.StorageImage;
+    }
+
+    private static bool IsDescriptorSampler(DescriptorType type)
+    {
+        return type == DescriptorType.Sampler;
+    }
+
+    private static bool IsDescriptorAccelerationStructure(DescriptorType type)
+    {
+        return type == DescriptorType.AccelerationStructureKhr;
     }
 }

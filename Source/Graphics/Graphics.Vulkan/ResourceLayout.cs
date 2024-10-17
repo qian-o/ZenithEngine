@@ -11,6 +11,7 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
     {
         DescriptorSetLayoutBinding[] bindings = new DescriptorSetLayoutBinding[description.Elements.Length];
         DescriptorType[] descriptorTypes = new DescriptorType[description.Elements.Length];
+        uint maxDescriptorCount = 0;
 
         for (uint i = 0; i < description.Elements.Length; i++)
         {
@@ -65,7 +66,7 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
                 throw new NotSupportedException("The descriptor type is not supported for bindless resource layout.");
             }
 
-            binding.DescriptorCount = Math.Min(binding.DescriptorCount, description.MaxDescriptorCount);
+            binding.DescriptorCount = maxDescriptorCount = Math.Min(binding.DescriptorCount, description.MaxDescriptorCount);
 
             bindings[^1] = binding;
         }
@@ -74,9 +75,13 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
         {
             SType = StructureType.DescriptorSetLayoutCreateInfo,
             BindingCount = (uint)bindings.Length,
-            PBindings = bindings.AsPointer(),
-            Flags = DescriptorSetLayoutCreateFlags.DescriptorBufferBitExt
+            PBindings = bindings.AsPointer()
         };
+
+        if (VkRes.DescriptorBufferSupported)
+        {
+            createInfo.Flags |= DescriptorSetLayoutCreateFlags.DescriptorBufferBitExt;
+        }
 
         if (description.IsLastBindless)
         {
@@ -95,14 +100,22 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
         VkRes.Vk.CreateDescriptorSetLayout(VkRes.VkDevice, &createInfo, null, &descriptorSetLayout).ThrowCode();
 
         ulong sizeInBytes;
-        VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutSize(VkRes.VkDevice, descriptorSetLayout, &sizeInBytes);
+        if (VkRes.DescriptorBufferSupported)
+        {
+            VkRes.ExtDescriptorBuffer.GetDescriptorSetLayoutSize(VkRes.VkDevice, descriptorSetLayout, &sizeInBytes);
 
-        sizeInBytes = Util.AlignedSize(sizeInBytes, VkRes.DescriptorBufferProperties.DescriptorBufferOffsetAlignment);
+            sizeInBytes = Util.AlignedSize(sizeInBytes, VkRes.DescriptorBufferProperties.DescriptorBufferOffsetAlignment);
+        }
+        else
+        {
+            sizeInBytes = 0;
+        }
 
         Handle = descriptorSetLayout;
         DescriptorTypes = descriptorTypes;
         SizeInBytes = (uint)sizeInBytes;
         IsLastBindless = description.IsLastBindless;
+        MaxDescriptorCount = maxDescriptorCount;
     }
 
     internal override VkDescriptorSetLayout Handle { get; }
@@ -113,6 +126,8 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
 
     internal bool IsLastBindless { get; }
 
+    internal uint MaxDescriptorCount { get; }
+
     internal override ulong[] GetHandles()
     {
         return [Handle.Handle];
@@ -121,5 +136,7 @@ public unsafe class ResourceLayout : VulkanObject<VkDescriptorSetLayout>
     protected override void Destroy()
     {
         VkRes.Vk.DestroyDescriptorSetLayout(VkRes.VkDevice, Handle, null);
+
+        base.Destroy();
     }
 }

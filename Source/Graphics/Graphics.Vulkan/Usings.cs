@@ -1,7 +1,10 @@
 ﻿global using DearImGui = Hexa.NET.ImGui.ImGui;
+global using DearImGuiP = Hexa.NET.ImGui.ImGuiP;
 global using VkBlendFactor = Silk.NET.Vulkan.BlendFactor;
 global using VkBuffer = Silk.NET.Vulkan.Buffer;
 global using VkCommandPool = Silk.NET.Vulkan.CommandPool;
+global using VkDescriptorPool = Silk.NET.Vulkan.DescriptorPool;
+global using VkDescriptorSet = Silk.NET.Vulkan.DescriptorSet;
 global using VkDescriptorSetLayout = Silk.NET.Vulkan.DescriptorSetLayout;
 global using VkDevice = Silk.NET.Vulkan.Device;
 global using VkDeviceMemory = Silk.NET.Vulkan.DeviceMemory;

@@ -51,9 +51,12 @@ public unsafe class TextureView : VulkanObject<ImageView>, IBindableResource
         VkRes.Vk.CreateImageView(VkRes.VkDevice, &createInfo, null, &imageView).ThrowCode();
 
         Handle = imageView;
+        Target = description.Target;
     }
 
     internal override VkImageView Handle { get; }
+
+    internal Texture Target { get; }
 
     internal override ulong[] GetHandles()
     {
@@ -63,5 +66,7 @@ public unsafe class TextureView : VulkanObject<ImageView>, IBindableResource
     protected override void Destroy()
     {
         VkRes.Vk.DestroyImageView(VkRes.VkDevice, Handle, null);
+
+        base.Destroy();
     }
 }

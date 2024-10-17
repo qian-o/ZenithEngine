@@ -51,5 +51,7 @@ public unsafe class CommandPool : VulkanObject<VkCommandPool>
     protected override void Destroy()
     {
         VkRes.Vk.DestroyCommandPool(VkRes.VkDevice, Handle, null);
+
+        base.Destroy();
     }
 }

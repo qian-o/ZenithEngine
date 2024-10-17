@@ -1,11 +1,7 @@
-﻿using System.Globalization;
-using System.Runtime.InteropServices;
-using System.Text;
-using Graphics.Core;
+﻿using Graphics.Core;
 using Graphics.Core.Helpers;
 using Graphics.Vulkan.Helpers;
 using Silk.NET.Core;
-using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
@@ -20,9 +16,8 @@ public unsafe class Context : DisposableObject
     private readonly Alloter _alloter;
     private readonly Vk _vk;
     private readonly VkInstance _instance;
-    private readonly ExtDebugUtils? _debugUtilsExt;
-    private readonly KhrSurface _surfaceExt;
-    private readonly DebugUtilsMessengerEXT? _debugUtilsMessenger;
+    private readonly KhrSurface _surface;
+    private readonly VulkanDebug? _vkDebug;
     private readonly Dictionary<PhysicalDevice, VulkanResources> _physicalDeviceMap;
     private readonly Dictionary<GraphicsDevice, VulkanResources> _graphicsDeviceMap;
 
@@ -42,39 +37,16 @@ public unsafe class Context : DisposableObject
         _alloter = new();
         _vk = Vk.GetApi();
 
-        // Create instance
         _instance = CreateInstance();
 
-        // Load instance extensions
-        _debugUtilsExt = Debugging ? CreateInstanceExtension<ExtDebugUtils>() : null;
-        _surfaceExt = CreateInstanceExtension<KhrSurface>();
+        _surface = CreateInstanceExtension<KhrSurface>();
 
-        // Debug message callback
-        if (Debugging)
-        {
-            DebugUtilsMessengerCreateInfoEXT createInfo = new()
-            {
-                SType = StructureType.DebugUtilsMessengerCreateInfoExt,
-                MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt
-                                  | DebugUtilsMessageSeverityFlagsEXT.InfoBitExt
-                                  | DebugUtilsMessageSeverityFlagsEXT.WarningBitExt
-                                  | DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
-                MessageType = DebugUtilsMessageTypeFlagsEXT.GeneralBitExt
-                              | DebugUtilsMessageTypeFlagsEXT.ValidationBitExt
-                              | DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt
-                              | DebugUtilsMessageTypeFlagsEXT.DeviceAddressBindingBitExt,
-                PfnUserCallback = (PfnDebugUtilsMessengerCallbackEXT)DebugMessageCallback
-            };
-
-            DebugUtilsMessengerEXT debugUtilsMessenger;
-            _debugUtilsExt!.CreateDebugUtilsMessenger(_instance, &createInfo, null, &debugUtilsMessenger)
-                           .ThrowCode("Failed to create debug messenger!");
-
-            _debugUtilsMessenger = debugUtilsMessenger;
-        }
+        _vkDebug = Debugging ? new(_vk, _instance) : null;
 
         _physicalDeviceMap = [];
         _graphicsDeviceMap = [];
+
+        _alloter.Clear();
     }
 
     public static Version32 ApiVersion { get; }
@@ -94,7 +66,22 @@ public unsafe class Context : DisposableObject
         VkPhysicalDevice[] physicalDevices = new VkPhysicalDevice[(int)physicalDeviceCount];
         _vk.EnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices).ThrowCode("Failed to enumerate physical devices!");
 
-        return physicalDevices.Select(CreatePhysicalDevice).ToArray();
+        return physicalDevices.Select(Create).ToArray();
+
+        PhysicalDevice Create(VkPhysicalDevice vkPhysicalDevice)
+        {
+            lock (_physicalDeviceMap)
+            {
+                VulkanResources vulkanResources = new();
+                vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _surface, _vkDebug);
+
+                PhysicalDevice physicalDevice = new(vulkanResources, vkPhysicalDevice);
+
+                _physicalDeviceMap.Add(physicalDevice, vulkanResources);
+
+                return physicalDevice;
+            }
+        }
     }
 
     public PhysicalDevice GetBestPhysicalDevice()
@@ -104,7 +91,7 @@ public unsafe class Context : DisposableObject
         return physicalDevices.OrderByDescending(item => item.Score).First();
     }
 
-    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice, SdlWindow window)
+    public GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice)
     {
         float queuePriority = 1.0f;
 
@@ -112,33 +99,33 @@ public unsafe class Context : DisposableObject
         uint computeQueueFamilyIndex = physicalDevice.GetQueueFamilyIndex(QueueFlags.ComputeBit);
         uint transferQueueFamilyIndex = physicalDevice.GetQueueFamilyIndex(QueueFlags.TransferBit);
 
-        HashSet<uint> uniqueQueueFamilyIndices =
+        HashSet<uint> queueFamilyIndices =
         [
             graphicsQueueFamilyIndex,
             computeQueueFamilyIndex,
             transferQueueFamilyIndex
         ];
 
-        DeviceQueueCreateInfo[] createInfos = new DeviceQueueCreateInfo[uniqueQueueFamilyIndices.Count];
+        DeviceQueueCreateInfo* createInfos = _alloter.Allocate<DeviceQueueCreateInfo>(queueFamilyIndices.Count);
 
-        for (int i = 0; i < createInfos.Length; i++)
+        for (int i = 0; i < queueFamilyIndices.Count; i++)
         {
             createInfos[i] = new DeviceQueueCreateInfo
             {
                 SType = StructureType.DeviceQueueCreateInfo,
-                QueueFamilyIndex = uniqueQueueFamilyIndices.ElementAt(i),
+                QueueFamilyIndex = queueFamilyIndices.ElementAt(i),
                 QueueCount = 1,
                 PQueuePriorities = &queuePriority
             };
         }
 
-        string[] extensions = GetDeviceExtensions();
+        string[] extensions = GetDeviceExtensions(physicalDevice);
 
         DeviceCreateInfo createInfo = new()
         {
             SType = StructureType.DeviceCreateInfo,
-            QueueCreateInfoCount = (uint)createInfos.Length,
-            PQueueCreateInfos = _alloter.Allocate(createInfos),
+            QueueCreateInfoCount = (uint)queueFamilyIndices.Count,
+            PQueueCreateInfos = createInfos,
             EnabledExtensionCount = (uint)extensions.Length,
             PpEnabledExtensionNames = _alloter.Allocate(extensions)
         };
@@ -147,29 +134,54 @@ public unsafe class Context : DisposableObject
                   .AddNext(out PhysicalDeviceVulkan13Features _)
                   .AddNext(out PhysicalDeviceScalarBlockLayoutFeatures _)
                   .AddNext(out PhysicalDeviceDescriptorIndexingFeatures _)
-                  .AddNext(out PhysicalDeviceBufferDeviceAddressFeatures _)
-                  .AddNext(out PhysicalDeviceDescriptorBufferFeaturesEXT _)
-                  .AddNext(out PhysicalDeviceRayTracingPipelineFeaturesKHR _)
-                  .AddNext(out PhysicalDeviceAccelerationStructureFeaturesKHR _)
-                  .AddNext(out PhysicalDeviceRayQueryFeaturesKHR _);
+                  .AddNext(out PhysicalDeviceBufferDeviceAddressFeatures _);
+
+        if (physicalDevice.DescriptorBufferSupported)
+        {
+            createInfo.AddNext(out PhysicalDeviceDescriptorBufferFeaturesEXT _);
+        }
+
+        if (physicalDevice.RayQuerySupported)
+        {
+            createInfo.AddNext(out PhysicalDeviceRayQueryFeaturesKHR _);
+        }
+
+        if (physicalDevice.RayTracingSupported)
+        {
+            createInfo.AddNext(out PhysicalDeviceRayTracingPipelineFeaturesKHR _);
+        }
+
+        if (physicalDevice.RayQuerySupported || physicalDevice.RayTracingSupported)
+        {
+            createInfo.AddNext(out PhysicalDeviceAccelerationStructureFeaturesKHR _);
+        }
 
         _vk.GetPhysicalDeviceFeatures2(physicalDevice.Handle, &features2);
 
         VkDevice device;
         _vk.CreateDevice(physicalDevice.Handle, &createInfo, null, &device).ThrowCode("Failed to create device.");
 
-        _alloter.Clear();
+        return Create(device);
 
-        GraphicsDevice graphicsDevice = CreateGraphicsDevice(physicalDevice,
-                                                             device,
-                                                             window.VkSurface!,
-                                                             graphicsQueueFamilyIndex,
-                                                             computeQueueFamilyIndex,
-                                                             transferQueueFamilyIndex);
+        GraphicsDevice Create(VkDevice vkDevice)
+        {
+            lock (_graphicsDeviceMap)
+            {
+                VulkanResources vulkanResources = new();
+                vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _surface, _vkDebug);
+                vulkanResources.InitializePhysicalDevice(physicalDevice, GetDeviceExtensions(physicalDevice));
 
-        graphicsDevice.MainSwapchain.Resize((uint)window.FramebufferSize.X, (uint)window.FramebufferSize.Y);
+                GraphicsDevice graphicsDevice = new(vulkanResources,
+                                                    vkDevice,
+                                                    graphicsQueueFamilyIndex,
+                                                    computeQueueFamilyIndex,
+                                                    transferQueueFamilyIndex);
 
-        return graphicsDevice;
+                _graphicsDeviceMap.Add(graphicsDevice, vulkanResources);
+
+                return graphicsDevice;
+            }
+        }
     }
 
     protected override void Destroy()
@@ -186,10 +198,9 @@ public unsafe class Context : DisposableObject
         _physicalDeviceMap.Clear();
         _graphicsDeviceMap.Clear();
 
-        _debugUtilsExt?.DestroyDebugUtilsMessenger(_instance, _debugUtilsMessenger!.Value, null);
-        _debugUtilsExt?.Dispose();
+        _vkDebug?.Dispose();
 
-        _surfaceExt.Dispose();
+        _surface.Dispose();
 
         _vk.DestroyInstance(_instance, null);
         _vk.Dispose();
@@ -264,8 +275,6 @@ public unsafe class Context : DisposableObject
         VkInstance instance;
         _vk.CreateInstance(&createInfo, null, &instance).ThrowCode("Failed to create instance!");
 
-        _alloter.Clear();
-
         return instance;
     }
 
@@ -285,110 +294,55 @@ public unsafe class Context : DisposableObject
         return ext;
     }
 
-    private PhysicalDevice CreatePhysicalDevice(VkPhysicalDevice vkPhysicalDevice)
-    {
-        lock (_physicalDeviceMap)
-        {
-            VulkanResources vulkanResources = new();
-            vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtilsExt, _surfaceExt);
-
-            PhysicalDevice physicalDevice = new(vulkanResources, vkPhysicalDevice);
-
-            _physicalDeviceMap.Add(physicalDevice, vulkanResources);
-
-            return physicalDevice;
-        }
-    }
-
-    private GraphicsDevice CreateGraphicsDevice(PhysicalDevice physicalDevice,
-                                                VkDevice device,
-                                                IVkSurface windowSurface,
-                                                uint graphicsQueueFamilyIndex,
-                                                uint computeQueueFamilyIndex,
-                                                uint transferQueueFamilyIndex)
-    {
-        lock (_graphicsDeviceMap)
-        {
-            VulkanResources vulkanResources = new();
-            vulkanResources.InitializeContext(_vk, _instance, GetInstanceExtensions(), _debugUtilsExt, _surfaceExt);
-            vulkanResources.InitializePhysicalDevice(physicalDevice, GetDeviceExtensions());
-
-            GraphicsDevice graphicsDevice = new(vulkanResources,
-                                                device,
-                                                windowSurface,
-                                                graphicsQueueFamilyIndex,
-                                                computeQueueFamilyIndex,
-                                                transferQueueFamilyIndex);
-
-            _graphicsDeviceMap.Add(graphicsDevice, vulkanResources);
-
-            return graphicsDevice;
-        }
-    }
-
-    private uint DebugMessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
-                                      DebugUtilsMessageTypeFlagsEXT messageTypes,
-                                      DebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                      void* pUserData)
-    {
-        string message = Alloter.GetString(pCallbackData->PMessage);
-        string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        StringBuilder stringBuilder = new();
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{messageSeverity}] [{messageTypes}]");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Alloter.GetString(pCallbackData->PMessageIdName)}");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Number: {pCallbackData->MessageIdNumber}");
-        foreach (string str in strings)
-        {
-            stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");
-        }
-
-        Console.ForegroundColor = messageSeverity switch
-        {
-            DebugUtilsMessageSeverityFlagsEXT.InfoBitExt => ConsoleColor.Blue,
-            DebugUtilsMessageSeverityFlagsEXT.WarningBitExt => ConsoleColor.Yellow,
-            DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt => ConsoleColor.Red,
-            _ => Console.ForegroundColor
-        };
-
-        Console.WriteLine(stringBuilder);
-
-        Console.ResetColor();
-
-        return Vk.False;
-    }
-
     private static string[] GetInstanceExtensions()
     {
         string[] extensions = [KhrSurface.ExtensionName];
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (OperatingSystem.IsWindows())
         {
             extensions = [.. extensions, KhrWin32Surface.ExtensionName];
         }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        else if (OperatingSystem.IsLinux())
         {
             extensions = [.. extensions, KhrXlibSurface.ExtensionName];
+        }
+        else if (OperatingSystem.IsAndroid())
+        {
+            extensions = [.. extensions, KhrAndroidSurface.ExtensionName];
         }
 
         if (Debugging)
         {
-            extensions = [.. extensions, ExtDebugUtils.ExtensionName];
+            extensions = [.. extensions, VulkanDebug.ExtensionName];
         }
 
         return extensions;
     }
 
-    private static string[] GetDeviceExtensions()
+    private static string[] GetDeviceExtensions(PhysicalDevice physicalDevice)
     {
-        return
-        [
-            KhrSwapchain.ExtensionName,
-            ExtDescriptorBuffer.ExtensionName,
-            KhrRayTracingPipeline.ExtensionName,
-            KhrAccelerationStructure.ExtensionName,
-            KhrDeferredHostOperations.ExtensionName,
-            "VK_KHR_ray_query"
-        ];
+        string[] extensions = [KhrSwapchain.ExtensionName];
+
+        if (physicalDevice.DescriptorBufferSupported)
+        {
+            extensions = [.. extensions, ExtDescriptorBuffer.ExtensionName];
+        }
+
+        if (physicalDevice.RayQuerySupported)
+        {
+            extensions = [.. extensions, KhrRayQuery.ExtensionName];
+        }
+
+        if (physicalDevice.RayTracingSupported)
+        {
+            extensions = [.. extensions, KhrRayTracingPipeline.ExtensionName];
+        }
+
+        if (physicalDevice.RayQuerySupported || physicalDevice.RayTracingSupported)
+        {
+            extensions = [.. extensions, KhrAccelerationStructure.ExtensionName, KhrDeferredHostOperations.ExtensionName];
+        }
+
+        return extensions;
     }
 }

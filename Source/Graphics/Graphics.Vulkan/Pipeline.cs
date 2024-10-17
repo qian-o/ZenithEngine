@@ -13,9 +13,13 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
     {
         GraphicsPipelineCreateInfo createInfo = new()
         {
-            SType = StructureType.GraphicsPipelineCreateInfo,
-            Flags = PipelineCreateFlags.CreateDescriptorBufferBitExt
+            SType = StructureType.GraphicsPipelineCreateInfo
         };
+
+        if (VkRes.DescriptorBufferSupported)
+        {
+            createInfo.Flags |= PipelineCreateFlags.CreateDescriptorBufferBitExt;
+        }
 
         // blend state
         {
@@ -393,15 +397,20 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         RenderPass = createInfo.RenderPass;
         ShaderTable = null;
         PipelineBindPoint = PipelineBindPoint.Graphics;
+        ResourceSetCount = (uint)description.ResourceLayouts.Length;
     }
 
     internal Pipeline(VulkanResources vkRes, ref readonly ComputePipelineDescription description) : base(vkRes, ObjectType.Pipeline)
     {
         ComputePipelineCreateInfo createInfo = new()
         {
-            SType = StructureType.ComputePipelineCreateInfo,
-            Flags = PipelineCreateFlags.CreateDescriptorBufferBitExt
+            SType = StructureType.ComputePipelineCreateInfo
         };
+
+        if (VkRes.DescriptorBufferSupported)
+        {
+            createInfo.Flags |= PipelineCreateFlags.CreateDescriptorBufferBitExt;
+        }
 
         // shader stage
         {
@@ -481,6 +490,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         RenderPass = default;
         ShaderTable = null;
         PipelineBindPoint = PipelineBindPoint.Compute;
+        ResourceSetCount = (uint)description.ResourceLayouts.Length;
     }
 
     internal Pipeline(VulkanResources vkRes, ref readonly RaytracingPipelineDescription description) : base(vkRes, ObjectType.Pipeline)
@@ -488,9 +498,13 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         RayTracingPipelineCreateInfoKHR createInfo = new()
         {
             SType = StructureType.RayTracingPipelineCreateInfoKhr,
-            MaxPipelineRayRecursionDepth = description.MaxTraceRecursionDepth,
-            Flags = PipelineCreateFlags.CreateDescriptorBufferBitExt
+            MaxPipelineRayRecursionDepth = description.MaxTraceRecursionDepth
         };
+
+        if (VkRes.DescriptorBufferSupported)
+        {
+            createInfo.Flags |= PipelineCreateFlags.CreateDescriptorBufferBitExt;
+        }
 
         // shader stage
         {
@@ -606,6 +620,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         RenderPass = default;
         ShaderTable = new ShaderTable(VkRes, this, in description);
         PipelineBindPoint = PipelineBindPoint.RayTracingKhr;
+        ResourceSetCount = (uint)description.ResourceLayouts.Length;
     }
 
     internal override VkPipeline Handle { get; }
@@ -617,6 +632,8 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
     internal ShaderTable? ShaderTable { get; }
 
     internal PipelineBindPoint PipelineBindPoint { get; }
+
+    internal uint ResourceSetCount { get; set; }
 
     public bool IsGraphics => PipelineBindPoint == PipelineBindPoint.Graphics;
 
@@ -640,5 +657,7 @@ public unsafe class Pipeline : VulkanObject<VkPipeline>
         }
 
         ShaderTable?.Dispose();
+
+        base.Destroy();
     }
 }
