@@ -20,6 +20,8 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
     private Framebuffer? _currentFramebuffer;
     private Pipeline? _currentPipeline;
     private ResourceSet[]? _currentResourceSets;
+    private bool _texturesTransitionedGeneral;
+    private bool _texturesTransitionedShaderRead;
     private bool _isInRenderPass;
 
     internal CommandList(VulkanResources vkRes, Executor executor, CommandPool commandPool) : base(vkRes, ObjectType.CommandBuffer)
@@ -410,6 +412,8 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
         _currentPipeline = pipeline;
         _currentResourceSets = new ResourceSet[pipeline.ResourceSetCount];
+        _texturesTransitionedGeneral = false;
+        _texturesTransitionedShaderRead = false;
     }
 
     public void SetResourceSet(uint slot, ResourceSet resourceSet)
@@ -455,6 +459,8 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         }
 
         _currentResourceSets![slot] = resourceSet;
+        _texturesTransitionedGeneral = false;
+        _texturesTransitionedShaderRead = false;
     }
 
     public void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart)
@@ -871,7 +877,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
     private void TransitionTexturesToGeneral()
     {
-        if (_currentResourceSets != null)
+        if (_currentResourceSets != null && !_texturesTransitionedGeneral)
         {
             EnsureRenderPassInactive();
 
@@ -885,12 +891,15 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
                     }
                 }
             }
+
+            _texturesTransitionedGeneral = true;
+            _texturesTransitionedShaderRead = false;
         }
     }
 
     private void TransitionTexturesToShaderRead()
     {
-        if (_currentResourceSets != null)
+        if (_currentResourceSets != null && !_texturesTransitionedShaderRead)
         {
             EnsureRenderPassInactive();
 
@@ -909,6 +918,9 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
                     }
                 }
             }
+
+            _texturesTransitionedGeneral = false;
+            _texturesTransitionedShaderRead = true;
         }
     }
 

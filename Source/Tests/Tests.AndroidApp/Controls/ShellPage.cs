@@ -18,7 +18,8 @@ public abstract class ShellPage : ContentPage
                 VerticalOptions = LayoutOptions.Start,
                 Margin = new Thickness(15),
                 CornerRadius = 4,
-                Padding = new Thickness(2, 0)
+                Padding = new Thickness(2, 0),
+                Opacity = 0.6
             };
 
             IconTintColorBehavior iconTintColorBehavior = new();
