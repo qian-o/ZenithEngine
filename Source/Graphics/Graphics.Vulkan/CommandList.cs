@@ -470,7 +470,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
             throw new InvalidOperationException("No graphics pipeline set.");
         }
 
-        TransitionTexturesToShaderRead();
+        EnsureTexturesInShaderReadLayout();
 
         EnsureRenderPassActive();
 
@@ -489,7 +489,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
             throw new InvalidOperationException("No compute pipeline set.");
         }
 
-        TransitionTexturesToGeneral();
+        EnsureTexturesInGeneralLayout();
 
         EnsureRenderPassInactive();
 
@@ -503,7 +503,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
             throw new InvalidOperationException("No raytracing pipeline set.");
         }
 
-        TransitionTexturesToGeneral();
+        EnsureTexturesInGeneralLayout();
 
         EnsureRenderPassInactive();
 
@@ -875,7 +875,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         }
     }
 
-    private void TransitionTexturesToGeneral()
+    private void EnsureTexturesInGeneralLayout()
     {
         if (_currentResourceSets != null && !_texturesTransitionedGeneral)
         {
@@ -897,7 +897,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         }
     }
 
-    private void TransitionTexturesToShaderRead()
+    private void EnsureTexturesInShaderReadLayout()
     {
         if (_currentResourceSets != null && !_texturesTransitionedShaderRead)
         {
