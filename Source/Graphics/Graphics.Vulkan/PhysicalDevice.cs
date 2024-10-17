@@ -277,7 +277,7 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
     {
         return [(ulong)Handle.Handle];
     }
-    
+
     internal override void DestroyObject()
     {
     }

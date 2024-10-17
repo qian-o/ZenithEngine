@@ -334,7 +334,7 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
     {
         return [Handle.Handle];
     }
-    
+
     internal override void DestroyObject()
     {
         if (!IsSwapchainImage)
