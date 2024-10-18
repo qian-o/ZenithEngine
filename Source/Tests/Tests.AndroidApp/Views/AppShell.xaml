@@ -24,7 +24,7 @@
     <ShellContent Title="GLTF Scene"
                   Route="GLTFScenePage">
         <ShellContent.Content>
-            <local:SamplePage Sample="{StaticResource GLTFScene}" />
+            <local:SamplePage />
         </ShellContent.Content>
     </ShellContent>
 

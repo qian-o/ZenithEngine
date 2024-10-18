@@ -2,8 +2,13 @@
 <ContentView x:Class="Tests.AndroidApp.Controls.CameraController"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:control="clr-namespace:Tests.AndroidApp.Controls"
              BackgroundColor="Transparent">
     <Grid>
-        
+        <control:Joystick WidthRequest="140"
+                          HeightRequest="140"
+                          HorizontalOptions="Start"
+                          VerticalOptions="End"
+                          Margin="80,0,0,40" />
     </Grid>
 </ContentView>

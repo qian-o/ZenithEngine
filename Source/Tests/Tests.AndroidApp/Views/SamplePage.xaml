@@ -11,5 +11,7 @@
                                 Update="Renderer_Update"
                                 Render="Renderer_Render"
                                 Disposed="Renderer_Disposed" />
+
+        <control:CameraController />
     </Grid>
 </control:ShellPage>
