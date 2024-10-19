@@ -6,6 +6,7 @@ using Graphics.Vulkan.Descriptions;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
 using StbImageSharp;
+using Tests.AndroidApp.Controls;
 using Tests.AndroidApp.Helpers;
 using GLTFMaterial = SharpGLTF.Schema2.Material;
 using GLTFNode = SharpGLTF.Schema2.Node;
@@ -260,17 +261,20 @@ public sealed class GLTFScene : BaseSample
         AddBackgroundTask(LoadTextures, root, _textures);
     }
 
-    public override void Update(Swapchain swapchain, float width, float height, float deltaTime, float totalTime)
+    public override void Update(Swapchain swapchain, float width, float height, CameraController camera, float deltaTime, float totalTime)
     {
-        base.Update(swapchain, width, height, deltaTime, totalTime);
+        base.Update(swapchain, width, height, camera, deltaTime, totalTime);
 
-        _cbo = new()
+        camera.Dispatcher.Dispatch(() =>
         {
-            Projection = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, width / height, 0.1f, 1000.0f),
-            View = Matrix4x4.CreateLookAt(new Vector3(7.8f, 2.1f, 0.0f), Vector3.Zero, Vector3.UnitY),
-            LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(totalTime))),
-            ViewPos = new Vector4(new Vector3(7.8f, 2.1f, 0.0f), 1.0f)
-        };
+            _cbo = new()
+            {
+                Projection = camera.GetProjection(width, height),
+                View = camera.GetView(),
+                LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(totalTime))),
+                ViewPos = new Vector4(camera.Position, 1.0f)
+            };
+        });
     }
 
     public override void Render(CommandList commandList, Swapchain swapchain, float deltaTime, float totalTime)

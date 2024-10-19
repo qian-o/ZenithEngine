@@ -36,7 +36,7 @@ public partial class SamplePage : ShellPage
 
     private void Renderer_Update(object sender, UpdateEventArgs e)
     {
-        Sample?.Update(Renderer.Swapchain, (float)Renderer.Width, (float)Renderer.Height, e.DeltaTime, e.TotalTime);
+        Sample?.Update(Renderer.Swapchain, (float)Renderer.Width, (float)Renderer.Height, Camera, e.DeltaTime, e.TotalTime);
     }
 
     private void Renderer_Render(object sender, RenderEventArgs e)

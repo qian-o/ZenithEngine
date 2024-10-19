@@ -12,6 +12,6 @@
                                 Render="Renderer_Render"
                                 Disposed="Renderer_Disposed" />
 
-        <control:CameraController />
+        <control:CameraController x:Name="Camera" />
     </Grid>
 </control:ShellPage>

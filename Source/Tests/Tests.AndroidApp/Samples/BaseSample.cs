@@ -1,4 +1,5 @@
 ﻿using Graphics.Vulkan;
+using Tests.AndroidApp.Controls;
 
 namespace Tests.AndroidApp.Samples;
 
@@ -15,12 +16,14 @@ public abstract class BaseSample : ISample
     {
     }
 
-    public virtual void Update(Swapchain swapchain, float width, float height, float deltaTime, float totalTime)
+    public virtual void Update(Swapchain swapchain, float width, float height, CameraController camera, float deltaTime, float totalTime)
     {
         if (updateTasks.TryDequeue(out Action<object[]>? task) && updateObjects.TryDequeue(out object[]? args))
         {
             task(args);
         }
+
+        camera.Update();
     }
 
     public virtual void Render(CommandList commandList, Swapchain swapchain, float deltaTime, float totalTime)
