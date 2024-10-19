@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Behaviors;
+﻿using System.Numerics;
+using CommunityToolkit.Maui.Behaviors;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
@@ -8,6 +9,7 @@ namespace Tests.AndroidApp.Controls;
 public class Joystick : SKCanvasView
 {
     private bool _enabled;
+    private float _radians;
 
     public Joystick()
     {
@@ -18,7 +20,23 @@ public class Joystick : SKCanvasView
 
         Touch += (a, b) =>
         {
+            float width = (float)Width;
+            float height = (float)Height;
+
             _enabled = b.ActionType is SKTouchAction.Pressed or SKTouchAction.Moved;
+
+            Vector2 center = new(width / 2, height / 2);
+            Vector2 up = Vector2.Normalize(new Vector2(0, -center.Y));
+            Vector2 handle = Vector2.Normalize(new(b.Location.X + center.X - width, b.Location.Y + center.Y - height));
+
+            float dot = Vector2.Dot(up, handle);
+
+            _radians = MathF.Acos(dot);
+
+            if (handle.X < 0)
+            {
+                _radians = MathF.PI * 2 - _radians;
+            }
 
             InvalidateSurface();
         };
@@ -36,11 +54,23 @@ public class Joystick : SKCanvasView
 
         canvas.Clear();
 
+        if (_enabled)
+        {
+            ApplyHandlePosition(canvas, width, height, _radians);
+        }
+
         DrawOutline(canvas, width, height, 2, SKColors.White);
 
         DrawInnerCircle(canvas, width, height, 12, new SKColor(102, 204, 255), SKColors.White);
 
         DrawHandle(canvas, width, height, 24, SKColors.White, _enabled);
+    }
+
+    private static void ApplyHandlePosition(SKCanvas canvas, float width, float height, float radians)
+    {
+        SKMatrix matrix = SKMatrix.Concat(canvas.TotalMatrix, SKMatrix.CreateRotation(radians, width / 2, height / 2));
+
+        canvas.SetMatrix(matrix);
     }
 
     private static void DrawOutline(SKCanvas canvas,
