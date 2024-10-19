@@ -4,13 +4,13 @@ namespace Tests.AndroidApp.Controls;
 
 public partial class CameraController : ContentView
 {
-    public readonly static BindableProperty PositionProperty = BindableProperty.Create(nameof(Position), typeof(Vector3), typeof(CameraController), Vector3.Zero);
-    public readonly static BindableProperty ForwardProperty = BindableProperty.Create(nameof(Forward), typeof(Vector3), typeof(CameraController), Vector3.UnitZ);
-    public readonly static BindableProperty RightProperty = BindableProperty.Create(nameof(Right), typeof(Vector3), typeof(CameraController), Vector3.UnitX);
-    public readonly static BindableProperty UpProperty = BindableProperty.Create(nameof(Up), typeof(Vector3), typeof(CameraController), Vector3.UnitY);
-    public readonly static BindableProperty NearPlaneProperty = BindableProperty.Create(nameof(NearPlane), typeof(float), typeof(CameraController), 0.1f);
-    public readonly static BindableProperty FarPlaneProperty = BindableProperty.Create(nameof(FarPlane), typeof(float), typeof(CameraController), 1000f);
-    public readonly static BindableProperty FovProperty = BindableProperty.Create(nameof(Fov), typeof(float), typeof(CameraController), 45.0f);
+    public static readonly BindableProperty PositionProperty = BindableProperty.Create(nameof(Position), typeof(Vector3), typeof(CameraController), Vector3.Zero);
+    public static readonly BindableProperty ForwardProperty = BindableProperty.Create(nameof(Forward), typeof(Vector3), typeof(CameraController), Vector3.UnitZ);
+    public static readonly BindableProperty RightProperty = BindableProperty.Create(nameof(Right), typeof(Vector3), typeof(CameraController), Vector3.UnitX);
+    public static readonly BindableProperty UpProperty = BindableProperty.Create(nameof(Up), typeof(Vector3), typeof(CameraController), Vector3.UnitY);
+    public static readonly BindableProperty NearPlaneProperty = BindableProperty.Create(nameof(NearPlane), typeof(float), typeof(CameraController), 0.1f);
+    public static readonly BindableProperty FarPlaneProperty = BindableProperty.Create(nameof(FarPlane), typeof(float), typeof(CameraController), 1000f);
+    public static readonly BindableProperty FovProperty = BindableProperty.Create(nameof(Fov), typeof(float), typeof(CameraController), 45.0f);
 
     private Vector2? lastPanPosition;
 
@@ -79,7 +79,7 @@ public partial class CameraController : ContentView
 
             float newPitch = MathF.Asin(Forward.Y) + pitch;
 
-            float clipRadians = MathF.PI / 2 - 0.01f;
+            float clipRadians = (MathF.PI / 2) - 0.01f;
             if (newPitch > clipRadians)
             {
                 newPitch = clipRadians;
@@ -109,7 +109,7 @@ public partial class CameraController : ContentView
     {
         if (Joystick.Enabled)
         {
-            var direction = new Vector3(Joystick.Direction.X, 0, Joystick.Direction.Y);
+            Vector3 direction = new(Joystick.Direction.X, 0, Joystick.Direction.Y);
 
             Forward = Vector3.Normalize(Vector3.Transform(Forward, Matrix4x4.CreateFromAxisAngle(Up, -Joystick.Direction.X * 0.01f)));
             Right = Vector3.Normalize(Vector3.Cross(Forward, Up));

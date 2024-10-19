@@ -34,7 +34,7 @@ public class Joystick : SKCanvasView
 
                 if (handle.X < 0)
                 {
-                    Radians = MathF.PI * 2 - Radians;
+                    Radians = (MathF.PI * 2) - Radians;
                 }
 
                 Direction = new Vector2(handle.X, -handle.Y);
