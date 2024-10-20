@@ -2,6 +2,7 @@ using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Tests.AndroidApp.Controls;
 using Tests.AndroidApp.Samples;
+using Tests.AndroidApp.ViewModels;
 
 namespace Tests.AndroidApp.Views;
 
@@ -14,6 +15,8 @@ public partial class SamplePage : ShellPage
     public SamplePage()
     {
         InitializeComponent();
+
+        BindingContext = new SampleViewModel();
 
         _commandList = App.Device.Factory.CreateGraphicsCommandList();
     }
