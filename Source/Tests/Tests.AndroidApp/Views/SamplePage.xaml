@@ -13,5 +13,10 @@
                                 Disposed="Renderer_Disposed" />
 
         <control:CameraController x:Name="Camera" />
+
+        <control:MenuButton Source="settings.svg"
+                            HorizontalOptions="End"
+                            VerticalOptions="Start"
+                            Margin="15" />
     </Grid>
 </control:ShellPage>
