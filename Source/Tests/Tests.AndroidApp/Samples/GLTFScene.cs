@@ -265,16 +265,13 @@ public sealed class GLTFScene : BaseSample
     {
         base.Update(swapchain, width, height, camera, deltaTime, totalTime);
 
-        camera.Dispatcher.Dispatch(() =>
+        _cbo = new()
         {
-            _cbo = new()
-            {
-                Projection = camera.GetProjection(width, height),
-                View = camera.GetView(),
-                LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(totalTime))),
-                ViewPos = new Vector4(camera.Position, 1.0f)
-            };
-        });
+            Projection = camera.GetProjection(width, height),
+            View = camera.GetView(),
+            LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(totalTime))),
+            ViewPos = new Vector4(camera.Position, 1.0f)
+        };
     }
 
     public override void Render(CommandList commandList, Swapchain swapchain, float deltaTime, float totalTime)
