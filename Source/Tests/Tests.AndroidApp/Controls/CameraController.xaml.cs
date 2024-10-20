@@ -109,14 +109,7 @@ public partial class CameraController : ContentView
     {
         if (Joystick.Enabled)
         {
-            Vector3 direction = new(Joystick.Direction.X, 0, Joystick.Direction.Y);
-
-            Forward = Vector3.Normalize(Vector3.Transform(Forward, Matrix4x4.CreateFromAxisAngle(Up, -Joystick.Direction.X * 0.01f)));
-            Right = Vector3.Normalize(Vector3.Cross(Forward, Up));
-
-            Position += Forward * direction.Z * 0.1f;
-
-            Up = Vector3.Normalize(Vector3.Cross(Right, Forward));
+            Position += Vector3.Normalize(Vector3.Transform(Forward, Matrix4x4.CreateFromAxisAngle(Up, -Joystick.Radians))) * 0.1f;
         }
     }
 
