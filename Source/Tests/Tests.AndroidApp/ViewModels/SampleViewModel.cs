@@ -5,12 +5,8 @@ namespace Tests.AndroidApp.ViewModels;
 
 public partial class SampleViewModel : ObservableRecipient
 {
-    [ObservableProperty]
-    private bool isSettingsVisible;
-
     [RelayCommand]
-    private void ShowSettings()
+    private static void ShowSettings()
     {
-        IsSettingsVisible = true;
     }
 }

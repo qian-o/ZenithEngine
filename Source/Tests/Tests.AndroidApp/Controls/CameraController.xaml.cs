@@ -107,7 +107,7 @@ public partial class CameraController : ContentView
 
     public void Update()
     {
-        if (Joystick.Enabled)
+        if (Joystick.IsMoving)
         {
             Position += Vector3.Normalize(Vector3.Transform(Forward, Matrix4x4.CreateFromAxisAngle(Up, -Joystick.Radians))) * 0.1f;
         }

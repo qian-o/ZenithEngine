@@ -20,9 +20,9 @@ public class Joystick : SKCanvasView
             float width = (float)Width;
             float height = (float)Height;
 
-            Enabled = b.ActionType is SKTouchAction.Pressed or SKTouchAction.Moved;
+            IsMoving = b.ActionType is SKTouchAction.Pressed or SKTouchAction.Moved;
 
-            if (Enabled)
+            if (IsMoving)
             {
                 Vector2 center = new(width / 2, height / 2);
                 Vector2 up = Vector2.Normalize(new Vector2(0, -center.Y));
@@ -44,7 +44,7 @@ public class Joystick : SKCanvasView
         Behaviors.Add(new TouchBehavior());
     }
 
-    public bool Enabled { get; private set; }
+    public bool IsMoving { get; private set; }
 
     public float Radians { get; private set; }
 
@@ -58,7 +58,7 @@ public class Joystick : SKCanvasView
 
         canvas.Clear();
 
-        if (Enabled)
+        if (IsMoving)
         {
             SKMatrix matrix = SKMatrix.Concat(canvas.TotalMatrix, SKMatrix.CreateRotation(Radians, width / 2, height / 2));
 
@@ -69,7 +69,7 @@ public class Joystick : SKCanvasView
 
         DrawInnerCircle(canvas, width, height, 12, new SKColor(102, 204, 255), SKColors.White);
 
-        DrawHandle(canvas, width, height, 24, SKColors.White, Enabled);
+        DrawHandle(canvas, width, height, 24, SKColors.White, IsMoving);
     }
 
     private static void DrawOutline(SKCanvas canvas,
@@ -148,13 +148,13 @@ public class Joystick : SKCanvasView
                                    float height,
                                    float radius,
                                    SKColor color,
-                                   bool enabled,
+                                   bool isMoving,
                                    float alpha = 0.8f)
     {
         float centerX = width / 2;
         float centerY = height / 2;
 
-        if (enabled)
+        if (isMoving)
         {
             canvas.DrawCircle(centerX, radius + 6, radius, new SKPaint
             {

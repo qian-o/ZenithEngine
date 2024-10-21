@@ -19,9 +19,5 @@
                             VerticalOptions="Start"
                             Margin="15"
                             Command="{Binding ShowSettingsCommand}" />
-
-        <Border IsVisible="{Binding IsSettingsVisible}">
-
-        </Border>
     </Grid>
 </control:ShellPage>

@@ -18,21 +18,21 @@
             <HorizontalStackLayout>
                 <Label WidthRequest="140"
                        FontAttributes="Bold"
-                       Text="Device Name :" />
+                       Text="Device Name" />
                 <Label Text="{Binding DeviceName}" />
             </HorizontalStackLayout>
 
             <HorizontalStackLayout>
                 <Label WidthRequest="140"
                        FontAttributes="Bold"
-                       Text="Api Version :" />
+                       Text="Api Version" />
                 <Label Text="{Binding ApiVersion}" />
             </HorizontalStackLayout>
 
             <HorizontalStackLayout>
                 <Label WidthRequest="140"
                        FontAttributes="Bold"
-                       Text="Ray Query :" />
+                       Text="Ray Query" />
                 <Label Text="{Binding RayQuerySupported}">
                     <Label.Triggers>
                         <DataTrigger TargetType="Label"
@@ -55,7 +55,7 @@
             <HorizontalStackLayout>
                 <Label WidthRequest="140"
                        FontAttributes="Bold"
-                       Text="Ray Tracing :" />
+                       Text="Ray Tracing" />
                 <Label Text="{Binding RayTracingSupported}">
                     <Label.Triggers>
                         <DataTrigger TargetType="Label"
