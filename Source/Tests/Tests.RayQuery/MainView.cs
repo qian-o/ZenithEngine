@@ -67,9 +67,11 @@ internal sealed unsafe class MainView : View
     private readonly List<GeometryNode> _nodes;
     private readonly List<AccelStructTriangles> _triangles;
 
-    private static DeviceBuffer _vertexBuffer = null!;
-    private static DeviceBuffer _indexBuffer = null!;
-    private static DeviceBuffer _nodeBuffer = null!;
+    private readonly DeviceBuffer _vertexBuffer;
+    private readonly DeviceBuffer _indexBuffer;
+    private readonly DeviceBuffer _nodeBuffer;
+    private readonly BottomLevelAS _bottomLevel;
+    private readonly TopLevelAS _topLevel;
 
     public MainView(GraphicsDevice device, ImGuiController imGuiController) : base("Ray Query")
     {
@@ -96,6 +98,37 @@ internal sealed unsafe class MainView : View
 
         _nodeBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<GeometryNode>(_nodes.Count, BufferUsage.StorageBuffer));
         _device.UpdateBuffer(_nodeBuffer, [.. _nodes]);
+
+        for (int i = 0; i < _triangles.Count; i++)
+        {
+            _triangles[i].VertexBuffer = _vertexBuffer;
+            _triangles[i].IndexBuffer = _indexBuffer;
+        }
+
+        BottomLevelASDescription bottomLevelASDescription = new()
+        {
+            Geometries = [.. _triangles]
+        };
+
+        _bottomLevel = device.Factory.CreateBottomLevelAS(in bottomLevelASDescription);
+
+        AccelStructInstance instance = new()
+        {
+            Transform4x4 = Matrix4x4.Identity,
+            InstanceID = 0,
+            InstanceMask = 0xFF,
+            InstanceContributionToHitGroupIndex = 0,
+            Options = AccelStructInstanceOptions.TriangleCullDisable,
+            BottomLevel = _bottomLevel
+        };
+
+        TopLevelASDescription topLevelASDescription = new()
+        {
+            Instances = [instance],
+            Options = AccelStructBuildOptions.PreferFastTrace
+        };
+
+        _topLevel = device.Factory.CreateTopLevelAS(in topLevelASDescription);
     }
 
     protected override void OnUpdate(UpdateEventArgs e)
@@ -295,10 +328,10 @@ internal sealed unsafe class MainView : View
                 VertexFormat = PixelFormat.R32G32B32Float,
                 VertexStride = (uint)sizeof(Vertex),
                 VertexCount = (uint)vertices.Count,
-                VertexOffset = 0,
+                VertexOffset = (uint)(sizeof(Vertex) * vertexOffset),
                 IndexFormat = IndexFormat.U32,
                 IndexCount = (uint)indices.Count,
-                IndexOffset = 0,
+                IndexOffset = sizeof(uint) * indexOffset,
                 Transform = node.WorldMatrix
             };
 
