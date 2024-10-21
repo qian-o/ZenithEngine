@@ -10,6 +10,39 @@
         <Label HorizontalOptions="Center"
                VerticalOptions="Center"
                Text="{Binding Title}" />
+
+        <StackLayout HorizontalOptions="End"
+                     VerticalOptions="End"
+                     Margin="0,0,15,15"
+                     Spacing="4">
+            <HorizontalStackLayout>
+                <Label WidthRequest="140"
+                       FontAttributes="Bold"
+                       Text="Device Name :" />
+                <Label Text="{Binding DeviceName}" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout>
+                <Label WidthRequest="140"
+                       FontAttributes="Bold"
+                       Text="Api Version :" />
+                <Label Text="{Binding ApiVersion}" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout>
+                <Label WidthRequest="140"
+                       FontAttributes="Bold"
+                       Text="Ray Query :" />
+                <Label Text="{Binding RayQuerySupported}" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout>
+                <Label WidthRequest="140"
+                       FontAttributes="Bold"
+                       Text="Ray Tracing :" />
+                <Label Text="{Binding RayTracingSupported}" />
+            </HorizontalStackLayout>
+        </StackLayout>
     </Grid>
 
 </control:ShellPage>

@@ -76,7 +76,7 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
 
     internal override VkPhysicalDevice Handle { get; }
 
-    internal Version32 ApiVersion { get; }
+    public Version32 ApiVersion { get; }
 
     internal PhysicalDeviceFeatures Features { get; }
 
@@ -84,9 +84,9 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
 
     internal bool DescriptorBufferSupported { get; }
 
-    internal bool RayQuerySupported { get; }
+    public bool RayQuerySupported { get; }
 
-    internal bool RayTracingSupported { get; }
+    public bool RayTracingSupported { get; }
 
     internal PhysicalDeviceProperties2 Properties2 { get; }
 
