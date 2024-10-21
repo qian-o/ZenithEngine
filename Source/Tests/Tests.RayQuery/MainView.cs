@@ -294,6 +294,42 @@ internal sealed unsafe class MainView : View
 
     protected override void Destroy()
     {
+        _pipeline?.Dispose();
+        _framebufferObject?.Dispose();
+
+        _commandList.Dispose();
+
+        foreach (Shader shader in _shaders)
+        {
+            shader.Dispose();
+        }
+
+        _resourceSet2.Dispose();
+        _resourceLayout2.Dispose();
+
+        _resourceSet1.Dispose();
+        _resourceLayout1.Dispose();
+
+        _resourceSet0.Dispose();
+        _resourceLayout0.Dispose();
+
+        _topLevel.Dispose();
+        _bottomLevel.Dispose();
+
+        _cameraBuffer.Dispose();
+        _nodeBuffer.Dispose();
+        _indexBuffer.Dispose();
+        _vertexBuffer.Dispose();
+
+        foreach (TextureView textureView in _textureViews)
+        {
+            textureView.Dispose();
+        }
+
+        foreach (Texture texture in _textures)
+        {
+            texture.Dispose();
+        }
     }
 
     private void LoadGLTF(string path)

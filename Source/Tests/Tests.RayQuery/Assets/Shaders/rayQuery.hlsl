@@ -85,5 +85,5 @@ float4 mainPS(VSOutput input) : SV_TARGET
     
     float4 baseColor = textureArray[node.baseColorTextureIndex].Sample(samplerArray[0], input.TexCoord);
     
-    return float4(input.Normal, 1);
+    return baseColor;
 }
