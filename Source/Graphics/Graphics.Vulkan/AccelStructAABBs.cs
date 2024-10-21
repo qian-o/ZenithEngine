@@ -2,7 +2,7 @@
 
 public class AccelStructAABBs : AccelStructGeometry
 {
-    public required DeviceBuffer AABBs { get; set; }
+    public DeviceBuffer? AABBs { get; set; }
 
     public ulong Count { get; set; }
 

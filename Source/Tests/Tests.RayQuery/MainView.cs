@@ -5,11 +5,13 @@ using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.ImGui;
+using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
 using SharpGLTF.Validation;
 using StbImageSharp;
 using Tests.Core;
 using Tests.Core.Helpers;
+using AlphaMode = SharpGLTF.Schema2.AlphaMode;
 using GLTFTexture = SharpGLTF.Schema2.Texture;
 using Texture = Graphics.Vulkan.Texture;
 
@@ -63,6 +65,7 @@ internal sealed unsafe class MainView : View
     private readonly List<Vertex> _vertices;
     private readonly List<uint> _indices;
     private readonly List<GeometryNode> _nodes;
+    private readonly List<AccelStructTriangles> _triangles;
 
     private static DeviceBuffer _vertexBuffer = null!;
     private static DeviceBuffer _indexBuffer = null!;
@@ -81,13 +84,14 @@ internal sealed unsafe class MainView : View
         _vertices = [];
         _indices = [];
         _nodes = [];
+        _triangles = [];
 
         LoadGLTF("Assets/Models/Sponza/glTF/Sponza.gltf");
 
-        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(_vertices.Count, BufferUsage.VertexBuffer));
+        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(_vertices.Count, BufferUsage.VertexBuffer | BufferUsage.AccelerationStructure));
         _device.UpdateBuffer(_vertexBuffer, [.. _vertices]);
 
-        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(_indices.Count, BufferUsage.IndexBuffer));
+        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(_indices.Count, BufferUsage.IndexBuffer | BufferUsage.AccelerationStructure));
         _device.UpdateBuffer(_indexBuffer, [.. _indices]);
 
         _nodeBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<GeometryNode>(_nodes.Count, BufferUsage.StorageBuffer));
@@ -161,5 +165,147 @@ internal sealed unsafe class MainView : View
         _device.SubmitCommands(commandList);
         #endregion
 
+        #region Load Meshes
+        foreach (Node node in root.LogicalNodes)
+        {
+            LoadNode(node);
+        }
+        #endregion
+    }
+
+    private void LoadNode(Node node)
+    {
+        foreach (Node children in node.VisualChildren)
+        {
+            LoadNode(children);
+        }
+
+        if (node.Mesh == null)
+        {
+            return;
+        }
+
+        foreach (MeshPrimitive primitive in node.Mesh.Primitives)
+        {
+            List<Vertex> vertices = [];
+            List<uint> indices = [];
+
+            uint vertexCount = 0;
+
+            IList<Vector3>? positionBuffer = null;
+            IList<Vector3>? normalBuffer = null;
+            IList<Vector2>? texCoordBuffer = null;
+            IList<Vector3>? colorBuffer = null;
+            IList<Vector4>? tangentBuffer = null;
+
+            if (primitive.VertexAccessors.TryGetValue("POSITION", out Accessor? positionAccessor))
+            {
+                vertexCount = (uint)positionAccessor.Count;
+
+                positionBuffer = positionAccessor.AsVector3Array();
+            }
+
+            if (primitive.VertexAccessors.TryGetValue("NORMAL", out Accessor? normalAccessor))
+            {
+                normalBuffer = normalAccessor.AsVector3Array();
+            }
+
+            if (primitive.VertexAccessors.TryGetValue("TEXCOORD_0", out Accessor? texCoordAccessor))
+            {
+                texCoordBuffer = texCoordAccessor.AsVector2Array();
+            }
+
+            if (primitive.VertexAccessors.TryGetValue("COLOR_0", out Accessor? colorAccessor))
+            {
+                colorBuffer = colorAccessor.AsVector3Array();
+            }
+
+            if (primitive.VertexAccessors.TryGetValue("TANGENT", out Accessor? tangentAccessor))
+            {
+                tangentBuffer = tangentAccessor.AsVector4Array();
+            }
+
+            if (vertexCount == 0)
+            {
+                continue;
+            }
+
+            for (uint i = 0; i < vertexCount; i++)
+            {
+                Vector3 position = positionBuffer != null ? positionBuffer[(int)i] : Vector3.Zero;
+                Vector3 normal = normalBuffer != null ? normalBuffer[(int)i] : Vector3.Zero;
+                Vector2 texCoord = texCoordBuffer != null ? texCoordBuffer[(int)i] : Vector2.Zero;
+                Vector3 color = colorBuffer != null ? colorBuffer[(int)i] : Vector3.One;
+                Vector4 tangent = tangentBuffer != null ? tangentBuffer[(int)i] : Vector4.Zero;
+
+                vertices.Add(new Vertex()
+                {
+                    Position = position,
+                    Normal = normal,
+                    TexCoord = texCoord,
+                    Color = color,
+                    Tangent = tangent,
+                    NodeIndex = (uint)_nodes.Count
+                });
+            }
+
+            if (primitive.IndexAccessor != null)
+            {
+                indices.AddRange(primitive.IndexAccessor.AsIndicesArray());
+            }
+
+            GeometryNode geometryNode = new()
+            {
+                AlphaMask = primitive.Material.Alpha == AlphaMode.MASK,
+                AlphaCutoff = primitive.Material.AlphaCutoff,
+                DoubleSided = primitive.Material.DoubleSided
+            };
+
+            if (primitive.Material.FindChannel(KnownChannel.BaseColor.ToString()) is MaterialChannel baseColorChannel)
+            {
+                geometryNode.BaseColorFactor = baseColorChannel.Color;
+
+                if (baseColorChannel.Texture != null)
+                {
+                    geometryNode.BaseColorTextureIndex = (uint)baseColorChannel.Texture.LogicalIndex;
+                }
+            }
+
+            if (primitive.Material.FindChannel(KnownChannel.Normal.ToString()) is MaterialChannel normalChannel)
+            {
+                if (normalChannel.Texture != null)
+                {
+                    geometryNode.NormalTextureIndex = (uint)normalChannel.Texture.LogicalIndex;
+                }
+            }
+
+            if (primitive.Material.FindChannel(KnownChannel.MetallicRoughness.ToString()) is MaterialChannel roughnessChannel)
+            {
+                if (roughnessChannel.Texture != null)
+                {
+                    geometryNode.RoughnessTextureIndex = (uint)roughnessChannel.Texture.LogicalIndex;
+                }
+            }
+
+            uint vertexOffset = (uint)_nodes.Count;
+            uint indexOffset = (uint)_indices.Count;
+
+            AccelStructTriangles triangles = new()
+            {
+                VertexFormat = PixelFormat.R32G32B32Float,
+                VertexStride = (uint)sizeof(Vertex),
+                VertexCount = (uint)vertices.Count,
+                VertexOffset = 0,
+                IndexFormat = IndexFormat.U32,
+                IndexCount = (uint)indices.Count,
+                IndexOffset = 0,
+                Transform = node.WorldMatrix
+            };
+
+            _vertices.AddRange(vertices);
+            _indices.AddRange(indices.Select(index => index + vertexOffset));
+            _nodes.Add(geometryNode);
+            _triangles.Add(triangles);
+        }
     }
 }

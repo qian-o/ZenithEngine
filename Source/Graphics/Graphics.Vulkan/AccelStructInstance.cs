@@ -15,7 +15,7 @@ public class AccelStructInstance
     /// <summary>
     /// the bottom-level acceleration structure that is being instanced.
     /// </summary>
-    public required BottomLevelAS BottomLevel { get; set; }
+    public BottomLevelAS? BottomLevel { get; set; }
 
     /// <summary>
     /// An arbitrary 24-bit value that can be accessed via InstanceID() in shader.

@@ -39,7 +39,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
 
             if (geometry is AccelStructTriangles triangles)
             {
-                ulong vertexAddress = triangles.VertexBuffer.Address + triangles.VertexOffset;
+                ulong vertexAddress = triangles.VertexBuffer!.Address + triangles.VertexOffset;
                 ulong indexAddress = triangles.IndexBuffer != null ? triangles.IndexBuffer.Address + triangles.IndexOffset : 0;
                 ulong transformAddress = transformBuffer.Address + (uint)(i * sizeof(TransformMatrixKHR));
 
@@ -95,7 +95,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                             SType = StructureType.AccelerationStructureGeometryAabbsDataKhr,
                             Data = new DeviceOrHostAddressConstKHR
                             {
-                                DeviceAddress = aabbs.AABBs.Address
+                                DeviceAddress = aabbs.AABBs!.Address
                             },
                             Stride = aabbs.Stride
                         }

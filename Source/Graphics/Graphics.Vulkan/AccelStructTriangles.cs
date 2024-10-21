@@ -5,7 +5,7 @@ namespace Graphics.Vulkan;
 
 public class AccelStructTriangles : AccelStructGeometry
 {
-    public required DeviceBuffer VertexBuffer { get; set; }
+    public DeviceBuffer? VertexBuffer { get; set; }
 
     public PixelFormat VertexFormat { get; set; }
 
