@@ -337,9 +337,9 @@ internal sealed unsafe class Program
         ResourceLayoutDescription cboLayoutDescription = new(new ElementDescription("frame", ResourceKind.ConstantBuffer, ShaderStages.Vertex),
                                                              new ElementDescription("nodeTransform", ResourceKind.StorageBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
-                                                                                             new ElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
+                                                                                             new ElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Pixel));
         ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
-                                                                                                 new ElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
+                                                                                                 new ElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Pixel));
 
         _cboLayout = _device.Factory.CreateResourceLayout(in cboLayoutDescription);
         _cboSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_cboLayout, _frameBuffer, _nodeTransformBuffer));
@@ -362,7 +362,7 @@ internal sealed unsafe class Program
         VertexElementDescription normalMapIndexDescription = new("NormalMapIndex", VertexElementFormat.Int1);
 
         _shaders = _device.Factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
-                                                      new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
+                                                      new ShaderDescription(ShaderStages.Pixel, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
         _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription,
                                                                  normalDescription,

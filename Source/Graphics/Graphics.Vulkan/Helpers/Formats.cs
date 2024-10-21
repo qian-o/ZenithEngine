@@ -197,7 +197,7 @@ internal static class Formats
             shaderStageFlags |= ShaderStageFlags.GeometryBit;
         }
 
-        if (stages.HasFlag(ShaderStages.Fragment))
+        if (stages.HasFlag(ShaderStages.Pixel))
         {
             shaderStageFlags |= ShaderStageFlags.FragmentBit;
         }
@@ -519,7 +519,7 @@ internal static class Formats
             shaderStageFlags |= ShaderStageFlags.GeometryBit;
         }
 
-        if (stage.HasFlag(ShaderStages.Fragment))
+        if (stage.HasFlag(ShaderStages.Pixel))
         {
             shaderStageFlags |= ShaderStageFlags.FragmentBit;
         }

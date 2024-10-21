@@ -90,7 +90,7 @@ public static unsafe class DxcHelpers
             ShaderStages.TessellationControl => DxcShaderStage.Hull,
             ShaderStages.TessellationEvaluation => DxcShaderStage.Domain,
             ShaderStages.Geometry => DxcShaderStage.Geometry,
-            ShaderStages.Fragment => DxcShaderStage.Pixel,
+            ShaderStages.Pixel => DxcShaderStage.Pixel,
             ShaderStages.Compute => DxcShaderStage.Compute,
             ShaderStages.RayGeneration or
             ShaderStages.Miss or

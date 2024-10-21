@@ -115,9 +115,9 @@ internal sealed unsafe class MainView : View
         _normalBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Properties>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
 
         ElementDescription cboDescription = new("cbo", ResourceKind.ConstantBuffer, ShaderStages.Vertex);
-        ElementDescription normalDescription = new("properties", ResourceKind.ConstantBuffer, ShaderStages.Fragment);
-        ElementDescription msdfDescription = new("msdf", ResourceKind.SampledImage, ShaderStages.Fragment);
-        ElementDescription msdfSamplerDescription = new("msdfSampler", ResourceKind.Sampler, ShaderStages.Fragment);
+        ElementDescription normalDescription = new("properties", ResourceKind.ConstantBuffer, ShaderStages.Pixel);
+        ElementDescription msdfDescription = new("msdf", ResourceKind.SampledImage, ShaderStages.Pixel);
+        ElementDescription msdfSamplerDescription = new("msdfSampler", ResourceKind.Sampler, ShaderStages.Pixel);
 
         _resourceLayout = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(cboDescription, normalDescription, msdfDescription, msdfSamplerDescription));
 
@@ -125,7 +125,7 @@ internal sealed unsafe class MainView : View
 
         string hlsl = File.ReadAllText("Assets/Shaders/SDF.hlsl");
         _shaders = device.Factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
-                                                     new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
+                                                     new ShaderDescription(ShaderStages.Pixel, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
         _vertexLayoutDescriptions =
         [

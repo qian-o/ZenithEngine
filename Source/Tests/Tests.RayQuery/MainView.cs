@@ -1,10 +1,13 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Text;
 using Graphics.Core;
 using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
+using Graphics.Vulkan.Helpers;
 using Graphics.Vulkan.ImGui;
+using Hexa.NET.ImGui;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
 using SharpGLTF.Validation;
@@ -39,6 +42,8 @@ internal sealed unsafe class MainView : View
     [StructLayout(LayoutKind.Sequential)]
     private struct GeometryNode
     {
+        public Matrix4x4 Transform;
+
         public bool AlphaMask;
 
         public float AlphaCutoff;
@@ -52,6 +57,28 @@ internal sealed unsafe class MainView : View
         public uint NormalTextureIndex;
 
         public uint RoughnessTextureIndex;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Camera
+    {
+        public Vector3 Position;
+
+        public Vector3 Forward;
+
+        public Vector3 Right;
+
+        public Vector3 Up;
+
+        public float NearPlane;
+
+        public float FarPlane;
+
+        public float Fov;
+
+        public Matrix4x4 ViewMatrix;
+
+        public Matrix4x4 ProjectionMatrix;
     }
     #endregion
 
@@ -70,8 +97,21 @@ internal sealed unsafe class MainView : View
     private readonly DeviceBuffer _vertexBuffer;
     private readonly DeviceBuffer _indexBuffer;
     private readonly DeviceBuffer _nodeBuffer;
+    private readonly DeviceBuffer _cameraBuffer;
     private readonly BottomLevelAS _bottomLevel;
     private readonly TopLevelAS _topLevel;
+    private readonly ResourceLayout _resourceLayout0;
+    private readonly ResourceSet _resourceSet0;
+    private readonly ResourceLayout _resourceLayout1;
+    private readonly ResourceSet _resourceSet1;
+    private readonly ResourceLayout _resourceLayout2;
+    private readonly ResourceSet _resourceSet2;
+    private readonly VertexLayoutDescription _vertexLayout;
+    private readonly Shader[] _shaders;
+    private readonly CommandList _commandList;
+
+    private FramebufferObject? _framebufferObject;
+    private Pipeline? _pipeline;
 
     public MainView(GraphicsDevice device, ImGuiController imGuiController) : base("Ray Query")
     {
@@ -80,7 +120,7 @@ internal sealed unsafe class MainView : View
         _viewController = new ViewController(this);
         _cameraController = new CameraController(_viewController);
         _cameraController.Transform(Matrix4x4.CreateRotationY(90.0f.ToRadians()) * Matrix4x4.CreateTranslation(new Vector3(0.0f, 1.2f, 0.0f)));
-        
+
         _textures = [];
         _textureViews = [];
         _vertices = [];
@@ -90,14 +130,16 @@ internal sealed unsafe class MainView : View
 
         LoadGLTF("Assets/Models/Sponza/glTF/Sponza.gltf");
 
-        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(_vertices.Count, BufferUsage.VertexBuffer | BufferUsage.AccelerationStructure));
+        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(_vertices.Count, BufferUsage.VertexBuffer));
         _device.UpdateBuffer(_vertexBuffer, [.. _vertices]);
 
-        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(_indices.Count, BufferUsage.IndexBuffer | BufferUsage.AccelerationStructure));
+        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(_indices.Count, BufferUsage.IndexBuffer));
         _device.UpdateBuffer(_indexBuffer, [.. _indices]);
 
         _nodeBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<GeometryNode>(_nodes.Count, BufferUsage.StorageBuffer));
         _device.UpdateBuffer(_nodeBuffer, [.. _nodes]);
+
+        _cameraBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Camera>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
 
         for (int i = 0; i < _triangles.Count; i++)
         {
@@ -129,18 +171,126 @@ internal sealed unsafe class MainView : View
         };
 
         _topLevel = device.Factory.CreateTopLevelAS(in topLevelASDescription);
+
+        ElementDescription[] elements0 =
+        [
+            new ElementDescription("as", ResourceKind.AccelerationStructure, ShaderStages.Pixel),
+            new ElementDescription("geometryNodes", ResourceKind.StorageBuffer, ShaderStages.Vertex | ShaderStages.Pixel),
+            new ElementDescription("camera", ResourceKind.ConstantBuffer, ShaderStages.Vertex | ShaderStages.Pixel)
+        ];
+
+        _resourceLayout0 = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(elements0));
+        _resourceSet0 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout0, _topLevel, _nodeBuffer, _cameraBuffer));
+
+        ElementDescription[] elements1 =
+        [
+            new ElementDescription("textureArray", ResourceKind.SampledImage, ShaderStages.Pixel)
+        ];
+
+        _resourceLayout1 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless((uint)_textureViews.Count, elements1));
+        _resourceSet1 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout1));
+        _resourceSet1.UpdateBindless([.. _textureViews]);
+
+        ElementDescription[] elements2 =
+        [
+            new ElementDescription("samplerArray", ResourceKind.Sampler, ShaderStages.Pixel)
+        ];
+
+        _resourceLayout2 = device.Factory.CreateResourceLayout(ResourceLayoutDescription.Bindless(2, elements2));
+        _resourceSet2 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout2));
+        _resourceSet2.UpdateBindless([_device.Aniso4xSampler, _device.LinearSampler]);
+
+        VertexElementDescription positionElement = new(nameof(Vertex.Position), VertexElementFormat.Float3);
+        VertexElementDescription normalElement = new(nameof(Vertex.Normal), VertexElementFormat.Float3);
+        VertexElementDescription texCoordElement = new(nameof(Vertex.TexCoord), VertexElementFormat.Float2);
+        VertexElementDescription colorElement = new(nameof(Vertex.Color), VertexElementFormat.Float3);
+        VertexElementDescription tangentElement = new(nameof(Vertex.Tangent), VertexElementFormat.Float4);
+        VertexElementDescription nodeIndexElement = new(nameof(Vertex.NodeIndex), VertexElementFormat.UInt1);
+
+        _vertexLayout = new(positionElement, normalElement, texCoordElement, colorElement, tangentElement, nodeIndexElement);
+
+        string hlsl = File.ReadAllText("Assets/Shaders/rayQuery.hlsl");
+
+        _shaders = _device.Factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
+                                                      new ShaderDescription(ShaderStages.Pixel, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
+
+        _commandList = _device.Factory.CreateGraphicsCommandList();
     }
 
     protected override void OnUpdate(UpdateEventArgs e)
     {
+        _viewController.Update();
+        _cameraController.Update(e.DeltaTime);
+
+        Camera camera = new()
+        {
+            Position = _cameraController.Position,
+            Forward = _cameraController.Forward,
+            Right = _cameraController.Right,
+            Up = _cameraController.Up,
+            NearPlane = _cameraController.NearPlane,
+            FarPlane = _cameraController.FarPlane,
+            Fov = _cameraController.Fov.ToRadians()
+        };
+
+        camera.ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(0.0f, 1.0f, 5.0f), Vector3.Zero, Vector3.UnitY);
+        camera.ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, (float)Width / Height, 0.1f, 1000.0f);
+
+        _device.UpdateBuffer(_cameraBuffer, in camera);
     }
 
     protected override void OnRender(RenderEventArgs e)
     {
+        if (_framebufferObject != null)
+        {
+            _commandList.Begin();
+
+            _commandList.SetFramebuffer(_framebufferObject.Framebuffer);
+            _commandList.ClearColorTarget(0, RgbaFloat.Black);
+            _commandList.ClearDepthStencil(1.0f);
+
+            _commandList.SetVertexBuffer(0, _vertexBuffer);
+            _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U32);
+            _commandList.SetPipeline(_pipeline!);
+            _commandList.SetResourceSet(0, _resourceSet0);
+            _commandList.SetResourceSet(1, _resourceSet1);
+            _commandList.SetResourceSet(2, _resourceSet2);
+
+            _commandList.DrawIndexed((uint)_indices.Count, 1, 0, 0, 0);
+
+            _framebufferObject.Present(_commandList);
+
+            _commandList.End();
+
+            _device.SubmitCommands(_commandList);
+
+            ImGui.Image(_imGuiController.GetBinding(_device.Factory, _framebufferObject.PresentTexture), new Vector2(_framebufferObject.Width, _framebufferObject.Height));
+        }
     }
 
     protected override void OnResize(ResizeEventArgs e)
     {
+        if (_framebufferObject != null)
+        {
+            _imGuiController.RemoveBinding(_imGuiController.GetBinding(_device.Factory, _framebufferObject.PresentTexture));
+
+            _framebufferObject.Dispose();
+        }
+        _framebufferObject = new FramebufferObject(_device, (int)e.Width, (int)e.Height);
+
+        GraphicsPipelineDescription pipelineDescription = new()
+        {
+            BlendState = BlendStateDescription.SingleAlphaBlend,
+            DepthStencilState = DepthStencilStateDescription.DepthOnlyLessEqual,
+            RasterizerState = RasterizerStateDescription.CullNone,
+            PrimitiveTopology = PrimitiveTopology.TriangleList,
+            ResourceLayouts = [_resourceLayout0, _resourceLayout1, _resourceLayout2],
+            Shaders = new GraphicsShaderDescription([_vertexLayout], _shaders),
+            Outputs = _framebufferObject.Framebuffer.OutputDescription
+        };
+
+        _pipeline?.Dispose();
+        _pipeline = _device.Factory.CreateGraphicsPipeline(pipelineDescription);
     }
 
     protected override void Destroy()
@@ -270,6 +420,7 @@ internal sealed unsafe class MainView : View
                 Vector2 texCoord = texCoordBuffer != null ? texCoordBuffer[(int)i] : Vector2.Zero;
                 Vector3 color = colorBuffer != null ? colorBuffer[(int)i] : Vector3.One;
                 Vector4 tangent = tangentBuffer != null ? tangentBuffer[(int)i] : Vector4.Zero;
+                tangent.W = _nodes.Count;
 
                 vertices.Add(new Vertex()
                 {
@@ -289,6 +440,7 @@ internal sealed unsafe class MainView : View
 
             GeometryNode geometryNode = new()
             {
+                Transform = node.WorldMatrix,
                 AlphaMask = primitive.Material.Alpha == AlphaMode.MASK,
                 AlphaCutoff = primitive.Material.AlphaCutoff,
                 DoubleSided = primitive.Material.DoubleSided
@@ -320,7 +472,7 @@ internal sealed unsafe class MainView : View
                 }
             }
 
-            uint vertexOffset = (uint)_nodes.Count;
+            uint vertexOffset = (uint)_vertices.Count;
             uint indexOffset = (uint)_indices.Count;
 
             AccelStructTriangles triangles = new()

@@ -132,7 +132,7 @@ public sealed class GLTFScene : BaseSample
         ModelRoot root = ModelRoot.Load("Sponza.gltf", ReadContext.Create(new FileReader("Assets/Models/Sponza/glTF").ReadFile));
 
         using Shader vs = App.Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Vertex, [.. new FileReader("Assets/Shaders").ReadFile("GLTF.vs.hlsl.spv")], "main"));
-        using Shader fs = App.Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Fragment, [.. new FileReader("Assets/Shaders").ReadFile("GLTF.ps.hlsl.spv")], "main"));
+        using Shader ps = App.Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Pixel, [.. new FileReader("Assets/Shaders").ReadFile("GLTF.ps.hlsl.spv")], "main"));
 
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
         {
@@ -207,9 +207,9 @@ public sealed class GLTFScene : BaseSample
 
         ResourceLayoutDescription cboLayoutDescription = new(new ElementDescription("cbo", ResourceKind.ConstantBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)root.LogicalTextures.Count,
-                                                                                             new ElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Fragment));
+                                                                                             new ElementDescription("textureMap", ResourceKind.SampledImage, ShaderStages.Pixel));
         ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
-                                                                                                 new ElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Fragment));
+                                                                                                 new ElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Pixel));
 
         _cboLayout = App.Device.Factory.CreateResourceLayout(in cboLayoutDescription);
         _cboSet = App.Device.Factory.CreateResourceSet(new ResourceSetDescription(_cboLayout, _cboBuffer));
@@ -251,7 +251,7 @@ public sealed class GLTFScene : BaseSample
                 RasterizerState = _materials[i].DoubleSided ? RasterizerStateDescription.CullNone : RasterizerStateDescription.Default,
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
                 ResourceLayouts = [_cboLayout, _textureMapLayout, _textureSamplerLayout],
-                Shaders = new GraphicsShaderDescription(vertexLayoutDescriptions, [vs, fs], [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
+                Shaders = new GraphicsShaderDescription(vertexLayoutDescriptions, [vs, ps], [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
                 Outputs = swapchain.OutputDescription
             };
 

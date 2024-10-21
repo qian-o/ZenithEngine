@@ -29,9 +29,9 @@ public enum ShaderStages : ushort
     Geometry = 1 << 1,
 
     /// <summary>
-    /// The fragment (or pixel) shader stage.
+    /// The pixel shader stage.
     /// </summary>
-    Fragment = 1 << 4,
+    Pixel = 1 << 4,
 
     /// <summary>
     /// The compute shader stage.

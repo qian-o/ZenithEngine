@@ -1,4 +1,5 @@
 using System.Numerics;
+using Tests.Core.Helpers;
 
 namespace Tests.AndroidApp.Controls;
 
@@ -120,9 +121,6 @@ public partial class CameraController : ContentView
 
     public Matrix4x4 GetProjection(double width, double height)
     {
-        float fov = (float)(Fov * Math.PI / 180);
-        float ratio = (float)(width / height);
-
-        return Matrix4x4.CreatePerspectiveFieldOfView(fov, ratio, NearPlane, FarPlane);
+        return Matrix4x4.CreatePerspectiveFieldOfView(Fov.ToRadians(), (float)(width / height), NearPlane, FarPlane);
     }
 }

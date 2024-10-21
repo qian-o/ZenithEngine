@@ -350,16 +350,16 @@ float4 mainPS(VSOutput input) : SV_TARGET
         _cboBuffer = _factory.CreateBuffer(BufferDescription.Buffer<Matrix4x4>(1, BufferUsage.ConstantBuffer));
 
         Shader[] shaders = _factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(HLSL), "mainVS"),
-                                                       new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(HLSL), "mainPS"));
+                                                       new ShaderDescription(ShaderStages.Pixel, Encoding.UTF8.GetBytes(HLSL), "mainPS"));
 
         VertexLayoutDescription vertexLayoutDescription = new(new VertexElementDescription("Position", VertexElementFormat.Float2),
                                                               new VertexElementDescription("UV", VertexElementFormat.Float2),
                                                               new VertexElementDescription("Color", VertexElementFormat.Byte4Norm));
 
         ResourceLayoutDescription set0 = new(new ElementDescription("cbo", ResourceKind.ConstantBuffer, ShaderStages.Vertex),
-                                             new ElementDescription("pointSampler", ResourceKind.Sampler, ShaderStages.Fragment));
+                                             new ElementDescription("pointSampler", ResourceKind.Sampler, ShaderStages.Pixel));
 
-        ResourceLayoutDescription set1 = new(new ElementDescription("textureColor", ResourceKind.SampledImage, ShaderStages.Fragment));
+        ResourceLayoutDescription set1 = new(new ElementDescription("textureColor", ResourceKind.SampledImage, ShaderStages.Pixel));
 
         _layout0 = _factory.CreateResourceLayout(set0);
         _layout1 = _factory.CreateResourceLayout(set1);
