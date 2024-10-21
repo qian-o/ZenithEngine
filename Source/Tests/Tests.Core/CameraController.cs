@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using Hexa.NET.ImGui;
+using Tests.Core.Helpers;
 
 namespace Tests.Core;
 
@@ -27,6 +28,13 @@ public class CameraController
     public float FarPlane { get; set; } = 1000.0f;
 
     public float Fov { get; set; } = 45.0f;
+
+    public Matrix4x4 ViewMatrix => Matrix4x4.CreateLookAt(Position, Position + Forward, Up);
+
+    public Matrix4x4 ProjectionMatrix(double width, double height)
+    {
+        return Matrix4x4.CreatePerspectiveFieldOfView(Fov.ToRadians(), (float)(width / height), NearPlane, FarPlane);
+    }
 
     public void Transform(Matrix4x4 matrix)
     {

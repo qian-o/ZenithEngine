@@ -130,10 +130,10 @@ internal sealed unsafe class MainView : View
 
         LoadGLTF("Assets/Models/Sponza/glTF/Sponza.gltf");
 
-        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(_vertices.Count, BufferUsage.VertexBuffer));
+        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(_vertices.Count, BufferUsage.VertexBuffer | BufferUsage.AccelerationStructure));
         _device.UpdateBuffer(_vertexBuffer, [.. _vertices]);
 
-        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(_indices.Count, BufferUsage.IndexBuffer));
+        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(_indices.Count, BufferUsage.IndexBuffer | BufferUsage.AccelerationStructure));
         _device.UpdateBuffer(_indexBuffer, [.. _indices]);
 
         _nodeBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<GeometryNode>(_nodes.Count, BufferUsage.StorageBuffer));
@@ -230,11 +230,10 @@ internal sealed unsafe class MainView : View
             Up = _cameraController.Up,
             NearPlane = _cameraController.NearPlane,
             FarPlane = _cameraController.FarPlane,
-            Fov = _cameraController.Fov.ToRadians()
+            Fov = _cameraController.Fov.ToRadians(),
+            ViewMatrix = _cameraController.ViewMatrix,
+            ProjectionMatrix = _cameraController.ProjectionMatrix(Width, Height)
         };
-
-        camera.ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(0.0f, 1.0f, 5.0f), Vector3.Zero, Vector3.UnitY);
-        camera.ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, (float)Width / Height, 0.1f, 1000.0f);
 
         _device.UpdateBuffer(_cameraBuffer, in camera);
     }
@@ -420,7 +419,6 @@ internal sealed unsafe class MainView : View
                 Vector2 texCoord = texCoordBuffer != null ? texCoordBuffer[(int)i] : Vector2.Zero;
                 Vector3 color = colorBuffer != null ? colorBuffer[(int)i] : Vector3.One;
                 Vector4 tangent = tangentBuffer != null ? tangentBuffer[(int)i] : Vector4.Zero;
-                tangent.W = _nodes.Count;
 
                 vertices.Add(new Vertex()
                 {
