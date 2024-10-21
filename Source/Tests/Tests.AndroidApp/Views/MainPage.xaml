@@ -33,14 +33,46 @@
                 <Label WidthRequest="140"
                        FontAttributes="Bold"
                        Text="Ray Query :" />
-                <Label Text="{Binding RayQuerySupported}" />
+                <Label Text="{Binding RayQuerySupported}">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding RayQuerySupported}"
+                                     Value="True">
+                            <Setter Property="TextColor"
+                                    Value="{StaticResource Success}" />
+                        </DataTrigger>
+
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding RayQuerySupported}"
+                                     Value="False">
+                            <Setter Property="TextColor"
+                                    Value="{StaticResource Error}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
             </HorizontalStackLayout>
 
             <HorizontalStackLayout>
                 <Label WidthRequest="140"
                        FontAttributes="Bold"
                        Text="Ray Tracing :" />
-                <Label Text="{Binding RayTracingSupported}" />
+                <Label Text="{Binding RayTracingSupported}">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding RayTracingSupported}"
+                                     Value="True">
+                            <Setter Property="TextColor"
+                                    Value="{StaticResource Success}" />
+                        </DataTrigger>
+
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding RayTracingSupported}"
+                                     Value="False">
+                            <Setter Property="TextColor"
+                                    Value="{StaticResource Error}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
             </HorizontalStackLayout>
         </StackLayout>
     </Grid>
