@@ -68,10 +68,10 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     #region Resource Management
     private readonly object _lock = new();
-    private readonly Dictionary<TextureView, nint> _mapped = [];
-    private readonly Dictionary<Texture, nint> _mappedTextures = [];
-    private readonly Dictionary<nint, ResourceSet> _selfSets = [];
-    private readonly Dictionary<nint, TextureView> _selfViews = [];
+    private readonly Dictionary<TextureView, ulong> _mapped = [];
+    private readonly Dictionary<Texture, ulong> _mappedTextures = [];
+    private readonly Dictionary<ulong, ResourceSet> _selfSets = [];
+    private readonly Dictionary<ulong, TextureView> _selfViews = [];
     #endregion
 
     private DeviceBuffer _vertexBuffer = null!;
@@ -92,11 +92,11 @@ float4 mainPS(VSOutput input) : SV_TARGET
         CreateDeviceResources(colorSpaceHandling);
     }
 
-    public nint GetBinding(ResourceFactory factory, TextureView textureView)
+    public ulong GetBinding(ResourceFactory factory, TextureView textureView)
     {
         lock (_lock)
         {
-            if (!_mapped.TryGetValue(textureView, out nint binding))
+            if (!_mapped.TryGetValue(textureView, out ulong binding))
             {
                 while (_selfSets.ContainsKey(binding))
                 {
@@ -111,11 +111,11 @@ float4 mainPS(VSOutput input) : SV_TARGET
         }
     }
 
-    public nint GetBinding(ResourceFactory factory, Texture texture)
+    public ulong GetBinding(ResourceFactory factory, Texture texture)
     {
         lock (_lock)
         {
-            if (!_mappedTextures.TryGetValue(texture, out nint binding))
+            if (!_mappedTextures.TryGetValue(texture, out ulong binding))
             {
                 TextureView textureView = factory.CreateTextureView(texture);
 
@@ -129,7 +129,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         }
     }
 
-    public void RemoveBinding(nint binding)
+    public void RemoveBinding(ulong binding)
     {
         lock (_lock)
         {
@@ -301,7 +301,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
         _mapped.Clear();
     }
 
-    private ResourceSet GetResourceSet(nint handle)
+    private ResourceSet GetResourceSet(ulong handle)
     {
         if (!_selfSets.TryGetValue(handle, out ResourceSet? resourceSet))
         {

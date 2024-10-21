@@ -174,17 +174,17 @@ public unsafe class ImGuiController : DisposableObject
         }
     }
 
-    public nint GetBinding(ResourceFactory factory, TextureView textureView)
+    public ulong GetBinding(ResourceFactory factory, TextureView textureView)
     {
         return _imGuiRenderer.GetBinding(factory, textureView);
     }
 
-    public nint GetBinding(ResourceFactory factory, Texture texture)
+    public ulong GetBinding(ResourceFactory factory, Texture texture)
     {
         return _imGuiRenderer.GetBinding(factory, texture);
     }
 
-    public void RemoveBinding(nint binding)
+    public void RemoveBinding(ulong binding)
     {
         _imGuiRenderer.RemoveBinding(binding);
     }

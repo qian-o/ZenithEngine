@@ -36,8 +36,6 @@ public class Joystick : SKCanvasView
                 {
                     Radians = (MathF.PI * 2) - Radians;
                 }
-
-                Direction = new Vector2(handle.X, -handle.Y);
             }
 
             InvalidateSurface();
@@ -49,8 +47,6 @@ public class Joystick : SKCanvasView
     public bool Enabled { get; private set; }
 
     public float Radians { get; private set; }
-
-    public Vector2 Direction { get; private set; }
 
     private void Joystick_PaintSurface(object? sender, SKPaintSurfaceEventArgs e)
     {
