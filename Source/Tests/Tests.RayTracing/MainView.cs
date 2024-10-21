@@ -701,7 +701,7 @@ internal sealed unsafe class MainView : View
 
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
         {
-            using MemoryStream stream = new(gltfTexture.PrimaryImage.Content.Content.Span.ToArray());
+            using Stream stream = gltfTexture.PrimaryImage.Content.Open();
 
             if (ImageInfo.FromStream(stream) is not ImageInfo imageInfo)
             {
@@ -732,6 +732,8 @@ internal sealed unsafe class MainView : View
 
             _textures.Add(texture);
             _textureViews.Add(textureView);
+
+            gltfTexture.ClearImages();
         }
 
         commandList.End();

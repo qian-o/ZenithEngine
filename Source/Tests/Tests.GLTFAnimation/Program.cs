@@ -207,7 +207,7 @@ internal sealed unsafe class Program
         commandList.Begin();
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
         {
-            using MemoryStream stream = new(gltfTexture.PrimaryImage.Content.Content.Span.ToArray());
+            using Stream stream = gltfTexture.PrimaryImage.Content.Open();
 
             if (ImageInfo.FromStream(stream) is not ImageInfo imageInfo)
             {
@@ -221,7 +221,11 @@ internal sealed unsafe class Program
 
             uint mipLevels = Math.Max(1, (uint)MathF.Log2(Math.Max(width, height))) + 1;
 
-            TextureDescription description = TextureDescription.Texture2D((uint)width, (uint)height, mipLevels, PixelFormat.R8G8B8A8UNorm, TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
+            TextureDescription description = TextureDescription.Texture2D((uint)width,
+                                                                          (uint)height,
+                                                                          mipLevels,
+                                                                          PixelFormat.R8G8B8A8UNorm,
+                                                                          TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
 
             Texture texture = _device.Factory.CreateTexture(in description);
             texture.Name = gltfTexture.Name;
@@ -234,6 +238,8 @@ internal sealed unsafe class Program
 
             _textures.Add(texture);
             _textureViews.Add(textureView);
+
+            gltfTexture.ClearImages();
         }
         commandList.End();
 
