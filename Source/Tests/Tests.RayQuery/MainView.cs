@@ -237,7 +237,7 @@ internal sealed unsafe class MainView : View
 
         _vertexLayout = new(positionElement, normalElement, texCoordElement, colorElement, tangentElement, nodeIndexElement);
 
-        string hlsl = File.ReadAllText("Assets/Shaders/rayQuery.slang");
+        string hlsl = File.ReadAllText("Assets/Shaders/rayQuery.hlsl");
 
         _shaders = _device.Factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
                                                       new ShaderDescription(ShaderStages.Pixel, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
