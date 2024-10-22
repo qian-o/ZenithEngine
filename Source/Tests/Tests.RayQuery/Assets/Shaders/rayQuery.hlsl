@@ -49,23 +49,23 @@ struct Light
 
 struct VSInput
 {
-    float3 Position : POSITION0;
-    float3 Normal : NORMAL0;
-    float2 TexCoord : TEXCOORD0;
-    float3 Color : COLOR0;
-    float4 Tangent : TEXCOORD1;
-    uint NodeIndex : TEXCOORD2;
+    [[vk::location(0)]] float3 Position : POSITION0;
+    [[vk::location(1)]] float3 Normal : NORMAL0;
+    [[vk::location(2)]] float2 TexCoord : TEXCOORD0;
+    [[vk::location(3)]] float3 Color : COLOR0;
+    [[vk::location(4)]] float4 Tangent : TEXCOORD1;
+    [[vk::location(5)]] uint NodeIndex : TEXCOORD2;
 };
 
 struct VSOutput
 {
     float4 Position : SV_POSITION;
-    float3 WorldPosition : POSITION0;
-    float3 Normal : NORMAL0;
-    float2 TexCoord : TEXCOORD0;
-    float3 Color : COLOR0;
-    float4 Tangent : TEXCOORD1;
-    nointerpolation uint NodeIndex : TEXCOORD2;
+    [[vk::location(0)]] float3 WorldPosition : POSITION0;
+    [[vk::location(1)]] float3 Normal : NORMAL0;
+    [[vk::location(2)]] float2 TexCoord : TEXCOORD0;
+    [[vk::location(3)]] float3 Color : COLOR0;
+    [[vk::location(4)]] float4 Tangent : TEXCOORD1;
+    [[vk::location(5)]] nointerpolation uint NodeIndex : TEXCOORD2;
 };
 
 RaytracingAccelerationStructure as : register(t0, space0);
@@ -95,25 +95,31 @@ VSOutput mainVS(VSInput input)
 
 float4 mainPS(VSOutput input) : SV_TARGET
 {
-    RayDesc myRay;
-    myRay.Origin = input.WorldPosition;
-    myRay.Direction = normalize(-lights[0].position);
-    myRay.TMin = camera.nearPlane;
-    myRay.TMax = camera.farPlane;
-
-    RayQuery < RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > rayQuery;
-
-    rayQuery.TraceRayInline(as, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xff, myRay);
-
     GeometryNode node = geometryNodes[input.NodeIndex];
-
-    float4 baseColor = textureArray[node.baseColorTextureIndex].Sample(samplerArray[0], input.TexCoord);
+    
+    float4 color = textureArray[node.baseColorTextureIndex].Sample(samplerArray[0], input.TexCoord) * float4(input.Color, 1.0);
+    
+    float3 N = normalize(input.Normal);
+    float3 L = normalize(lights[0].position - input.WorldPosition);
+    float3 V = normalize(-input.WorldPosition);
+    float3 R = normalize(-reflect(L, N));
+    float3 diffuse = max(dot(N, L), 0.1) * color;
+    
+    color = float4(diffuse, 1.0);
+    
+    RayDesc ray;
+    ray.Origin = input.WorldPosition;
+    ray.Direction = L;
+    ray.TMin = camera.nearPlane;
+    ray.TMax = camera.farPlane;
+        
+    RayQuery < RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > rayQuery;
+    rayQuery.TraceRayInline(as, 0, 0xff, ray);
 
     if (rayQuery.Proceed())
     {
-        baseColor *= 0.5;
-        baseColor.a = 1.0;
+        color.rgb *= 0.1;
     }
-
-    return baseColor;
+    
+    return color;
 }

@@ -200,7 +200,7 @@ internal sealed unsafe class MainView : View
             new ElementDescription("as", ResourceKind.AccelerationStructure, ShaderStages.Pixel),
             new ElementDescription("geometryNodes", ResourceKind.StorageBuffer, ShaderStages.Vertex | ShaderStages.Pixel),
             new ElementDescription("camera", ResourceKind.ConstantBuffer, ShaderStages.Vertex | ShaderStages.Pixel),
-            new ElementDescription("lights", ResourceKind.StorageBuffer, ShaderStages.Pixel)
+            new ElementDescription("lights", ResourceKind.StorageBuffer, ShaderStages.Vertex | ShaderStages.Pixel)
         ];
 
         _resourceLayout0 = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(elements0));
