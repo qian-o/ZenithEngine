@@ -39,8 +39,8 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
 
             if (geometry is AccelStructTriangles triangles)
             {
-                ulong vertexAddress = triangles.VertexBuffer!.Address + triangles.VertexOffset;
-                ulong indexAddress = triangles.IndexBuffer != null ? triangles.IndexBuffer.Address + triangles.IndexOffset : 0;
+                ulong vertexAddress = triangles.VertexBuffer!.Address + triangles.VertexOffsetInBytes;
+                ulong indexAddress = triangles.IndexBuffer != null ? triangles.IndexBuffer.Address + triangles.IndexOffsetInBytes : 0;
                 ulong transformAddress = transformBuffer.Address + (uint)(i * sizeof(TransformMatrixKHR));
 
                 geometryKhr = new AccelerationStructureGeometryKHR
@@ -58,7 +58,7 @@ public unsafe class BottomLevelAS : VulkanObject<AccelerationStructureKHR>, IBin
                                 DeviceAddress = vertexAddress
                             },
                             VertexFormat = Formats.GetPixelFormat(triangles.VertexFormat, false),
-                            VertexStride = triangles.VertexStride,
+                            VertexStride = triangles.VertexStrideInBytes,
                             MaxVertex = triangles.VertexCount,
                             IndexType = triangles.IndexBuffer != null ? Formats.GetIndexType(triangles.IndexFormat) : IndexType.NoneKhr,
                             IndexData = new DeviceOrHostAddressConstKHR

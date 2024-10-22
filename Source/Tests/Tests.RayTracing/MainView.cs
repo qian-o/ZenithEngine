@@ -873,13 +873,13 @@ internal sealed unsafe class MainView : View
             {
                 VertexBuffer = vertexBuffer,
                 VertexFormat = PixelFormat.R32G32B32Float,
-                VertexStride = (uint)sizeof(Vertex),
+                VertexStrideInBytes = (uint)sizeof(Vertex),
                 VertexCount = (uint)vertices.Count,
-                VertexOffset = 0,
+                VertexOffsetInBytes = 0,
                 IndexBuffer = indexBuffer,
                 IndexFormat = IndexFormat.U32,
                 IndexCount = (uint)indices.Count,
-                IndexOffset = 0,
+                IndexOffsetInBytes = 0,
                 Transform = node.WorldMatrix
             };
 
