@@ -115,8 +115,16 @@ float4 mainPS(VSOutput input) : SV_TARGET
         
     RayQuery < RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > rayQuery;
     rayQuery.TraceRayInline(as, 0, 0xff, ray);
+    
+    while (rayQuery.Proceed())
+    {
+        if (rayQuery.CandidateType() == CANDIDATE_NON_OPAQUE_TRIANGLE)
+        {
+            rayQuery.CommitNonOpaqueTriangleHit();
+        }
+    }
 
-    if (rayQuery.Proceed())
+    if (rayQuery.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
     {
         color.rgb *= 0.1;
     }
