@@ -101,7 +101,7 @@ float4 mainPS(VSOutput input) : SV_TARGET
     myRay.TMin = camera.nearPlane;
     myRay.TMax = camera.farPlane;
 
-    RayQuery<RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH> rayQuery;
+    RayQuery < RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > rayQuery;
 
     rayQuery.TraceRayInline(as, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xff, myRay);
 
