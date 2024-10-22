@@ -80,6 +80,16 @@ internal sealed unsafe class MainView : View
 
         public Matrix4x4 ProjectionMatrix;
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Light
+    {
+        public Vector3 Position;
+
+        public Vector4 AmbientColor;
+
+        public Vector4 DiffuseColor;
+    };
     #endregion
 
     private readonly GraphicsDevice _device;
@@ -93,11 +103,13 @@ internal sealed unsafe class MainView : View
     private readonly List<uint> _indices;
     private readonly List<GeometryNode> _nodes;
     private readonly List<AccelStructTriangles> _triangles;
+    private readonly List<Light> _lights;
 
     private readonly DeviceBuffer _vertexBuffer;
     private readonly DeviceBuffer _indexBuffer;
     private readonly DeviceBuffer _nodeBuffer;
     private readonly DeviceBuffer _cameraBuffer;
+    private readonly DeviceBuffer _lightBuffer;
     private readonly BottomLevelAS _bottomLevel;
     private readonly TopLevelAS _topLevel;
     private readonly ResourceLayout _resourceLayout0;
@@ -127,8 +139,16 @@ internal sealed unsafe class MainView : View
         _indices = [];
         _nodes = [];
         _triangles = [];
+        _lights = [];
 
         LoadGLTF("Assets/Models/Sponza/glTF/Sponza.gltf");
+
+        _lights.Add(new Light()
+        {
+            Position = new Vector3(-100.0f, 100.0f, 0.0f),
+            AmbientColor = new Vector4(0.05f, 0.05f, 0.05f, 1.0f),
+            DiffuseColor = new Vector4(1.0f, 0.9f, 0.7f, 1.0f)
+        });
 
         _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(_vertices.Count, BufferUsage.VertexBuffer | BufferUsage.AccelerationStructure));
         _device.UpdateBuffer(_vertexBuffer, [.. _vertices]);
@@ -140,6 +160,9 @@ internal sealed unsafe class MainView : View
         _device.UpdateBuffer(_nodeBuffer, [.. _nodes]);
 
         _cameraBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Camera>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
+
+        _lightBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Light>(_lights.Count, BufferUsage.StorageBuffer));
+        _device.UpdateBuffer(_lightBuffer, [.. _lights]);
 
         for (int i = 0; i < _triangles.Count; i++)
         {
@@ -176,11 +199,16 @@ internal sealed unsafe class MainView : View
         [
             new ElementDescription("as", ResourceKind.AccelerationStructure, ShaderStages.Pixel),
             new ElementDescription("geometryNodes", ResourceKind.StorageBuffer, ShaderStages.Vertex | ShaderStages.Pixel),
-            new ElementDescription("camera", ResourceKind.ConstantBuffer, ShaderStages.Vertex | ShaderStages.Pixel)
+            new ElementDescription("camera", ResourceKind.ConstantBuffer, ShaderStages.Vertex | ShaderStages.Pixel),
+            new ElementDescription("lights", ResourceKind.StorageBuffer, ShaderStages.Pixel)
         ];
 
         _resourceLayout0 = device.Factory.CreateResourceLayout(new ResourceLayoutDescription(elements0));
-        _resourceSet0 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout0, _topLevel, _nodeBuffer, _cameraBuffer));
+        _resourceSet0 = device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout0,
+                                                                                    _topLevel,
+                                                                                    _nodeBuffer,
+                                                                                    _cameraBuffer,
+                                                                                    _lightBuffer));
 
         ElementDescription[] elements1 =
         [
@@ -209,7 +237,7 @@ internal sealed unsafe class MainView : View
 
         _vertexLayout = new(positionElement, normalElement, texCoordElement, colorElement, tangentElement, nodeIndexElement);
 
-        string hlsl = File.ReadAllText("Assets/Shaders/rayQuery.hlsl");
+        string hlsl = File.ReadAllText("Assets/Shaders/rayQuery.slang");
 
         _shaders = _device.Factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
                                                       new ShaderDescription(ShaderStages.Pixel, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
@@ -316,6 +344,7 @@ internal sealed unsafe class MainView : View
         _topLevel.Dispose();
         _bottomLevel.Dispose();
 
+        _lightBuffer.Dispose();
         _cameraBuffer.Dispose();
         _nodeBuffer.Dispose();
         _indexBuffer.Dispose();
