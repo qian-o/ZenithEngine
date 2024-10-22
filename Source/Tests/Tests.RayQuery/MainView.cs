@@ -543,7 +543,7 @@ internal sealed unsafe class MainView : View
                 VertexFormat = PixelFormat.R32G32B32Float,
                 VertexStride = (uint)sizeof(Vertex),
                 VertexCount = (uint)vertices.Count,
-                VertexOffset = (uint)(sizeof(Vertex) * vertexOffset),
+                VertexOffset = 0,
                 IndexFormat = IndexFormat.U32,
                 IndexCount = (uint)indices.Count,
                 IndexOffset = sizeof(uint) * indexOffset,
