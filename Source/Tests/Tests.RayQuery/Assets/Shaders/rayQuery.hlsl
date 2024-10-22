@@ -118,7 +118,9 @@ float4 mainPS(VSOutput input) : SV_TARGET
     
     while (rayQuery.Proceed())
     {
-        if (rayQuery.CandidateType() == CANDIDATE_NON_OPAQUE_TRIANGLE)
+        uint candidateType = rayQuery.CandidateType();
+        
+        if (candidateType == CANDIDATE_NON_OPAQUE_TRIANGLE)
         {
             rayQuery.CommitNonOpaqueTriangleHit();
         }
