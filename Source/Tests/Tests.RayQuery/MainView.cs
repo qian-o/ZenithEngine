@@ -62,6 +62,10 @@ internal sealed unsafe class MainView : View
     [StructLayout(LayoutKind.Sequential)]
     private struct Camera
     {
+        public float Width;
+
+        public float Height;
+
         public Vector3 Position;
 
         public Vector3 Forward;
@@ -252,6 +256,8 @@ internal sealed unsafe class MainView : View
 
         Camera camera = new()
         {
+            Width = Width,
+            Height = Height,
             Position = _cameraController.Position,
             Forward = _cameraController.Forward,
             Right = _cameraController.Right,
