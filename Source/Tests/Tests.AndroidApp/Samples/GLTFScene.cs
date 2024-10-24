@@ -16,7 +16,7 @@ using TextureView = Graphics.Vulkan.TextureView;
 
 namespace Tests.AndroidApp.Samples;
 
-public sealed class GLTFScene : BaseSample
+public class GLTFScene : BaseSample
 {
     #region Structs
     [StructLayout(LayoutKind.Sequential)]
