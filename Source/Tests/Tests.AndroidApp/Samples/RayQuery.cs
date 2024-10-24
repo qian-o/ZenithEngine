@@ -190,11 +190,11 @@ internal unsafe class RayQuery : BaseSample
 
         _resourceLayout0 = App.Device.Factory.CreateResourceLayout(new ResourceLayoutDescription(elements0));
         _resourceSet0 = App.Device.Factory.CreateResourceSet(new ResourceSetDescription(_resourceLayout0,
-                                                                                    _topLevel,
-                                                                                    _nodeBuffer,
-                                                                                    _cameraBuffer,
-                                                                                    _lightBuffer,
-                                                                                    _paramBuffer));
+                                                                                        _topLevel,
+                                                                                        _nodeBuffer,
+                                                                                        _cameraBuffer,
+                                                                                        _lightBuffer,
+                                                                                        _paramBuffer));
 
         ElementDescription[] elements1 =
         [
