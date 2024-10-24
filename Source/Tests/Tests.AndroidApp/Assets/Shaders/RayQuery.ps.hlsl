@@ -50,7 +50,7 @@ float4 main(VSOutput input) : SV_TARGET
     
     if (shadow)
     {
-        diffuse *= 0.2;
+        diffuse *= 0.5;
         specular = 0.0;
     }
     
