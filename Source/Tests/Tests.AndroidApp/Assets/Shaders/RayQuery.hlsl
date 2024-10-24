@@ -218,6 +218,8 @@ void ProceedRayQuery(RayQuery< Flags> rayQuery, float3 origin, float3 direction,
         if (candidateType == CANDIDATE_NON_OPAQUE_TRIANGLE)
         {
             rayQuery.CommitNonOpaqueTriangleHit();
+            
+            rayQuery.Abort();
         }
     }
 }
