@@ -99,10 +99,6 @@ struct GeometryNode
 
 struct Camera
 {
-    float width;
-    
-    float height;
-    
     float3 position;
 
     float3 forward;
@@ -129,6 +125,17 @@ struct Light
     float4 ambientColor;
 
     float4 diffuseColor;
+};
+
+struct Param
+{
+    uint width;
+    
+    uint height;
+    
+    float2 pixelOffsets[127];
+    
+    uint samples;
 };
 
 struct VSInput
@@ -179,6 +186,7 @@ RaytracingAccelerationStructure as : register(t0, space0);
 StructuredBuffer<GeometryNode> geometryNodes : register(t1, space0);
 ConstantBuffer<Camera> camera : register(b2, space0);
 StructuredBuffer<Light> lights : register(t3, space0);
+ConstantBuffer<Param> param : register(b4, space0);
 Texture2D textureArray[] : register(t0, space1);
 SamplerState samplerArray[] : register(s0, space2);
 
@@ -274,42 +282,47 @@ float4 mainPS(VSOutput input) : SV_TARGET
 {
     GeometryNode node = geometryNodes[input.NodeIndex];
 
-    float4 color =
-        textureArray[node.baseColorTextureIndex].Sample(samplerArray[0], input.TexCoord) * float4(input.Color, 1.0);
-
+    float4 texColor = textureArray[node.baseColorTextureIndex].Sample(samplerArray[0], input.TexCoord) * float4(input.Color, 1.0);
+    
+    if (node.alphaMask && texColor.a < node.alphaCutoff)
+    {
+        discard;
+    }
+    
     float3 N = normalize(input.Normal);
     float3 L = normalize(lights[0].position - input.WorldPosition);
     float3 V = normalize(-input.WorldPosition);
     float3 R = normalize(-reflect(L, N));
-    float3 diffuse = max(dot(N, L), 0.1) * color;
-
-    color = float4(diffuse, 1.0);
-
-    uint2 launchDim = uint2(camera.width, camera.height);
-    uint2 launchIndex = input.Position.xy;
+    float3 diffuse = max(dot(N, L), 0.1) * texColor;
     
-    uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, 40, 16);
-
-    float shadowFactor;
-    for (uint i = 0; i < 10; i++)
+    float3 finalColor = float3(0, 0, 0);
+    
+    for (uint i = 0; i < param.samples; i++)
     {
-        float3 coneSample = getConeSample(randSeed, input.WorldPosition, lights[0].position, 4);
+        float3 tempColor = diffuse;
+        
+        uint2 launchDim = uint2(param.width, param.height);
+        uint2 launchIndex = input.Position.xy + param.pixelOffsets[i];
+
+        uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, i, 16);
+
+        float3 coneSample = getConeSample(randSeed, input.WorldPosition, lights[0].position, 0.2);
 
         RayQuery < RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > rayQuery;
         ProceedRayQuery(rayQuery, input.WorldPosition, coneSample, camera.nearPlane, camera.farPlane);
 
         if (rayQuery.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
         {
-            shadowFactor += 1.0;
+            tempColor *= 0.2;
         }
+        
+        tempColor = lerp(tempColor, finalColor, (float) i / param.samples);
+        
+        finalColor = tempColor;
     }
-    
-    shadowFactor /= 10.0;
-    
-    color.rgb *= (1 - shadowFactor);
 
-    color.rgb *= calculateAmbientOcclusion(input.WorldPosition, N);
+    finalColor *= calculateAmbientOcclusion(input.WorldPosition, N);
 
-    return color;
+    return float4(finalColor, 1);
 
 }
