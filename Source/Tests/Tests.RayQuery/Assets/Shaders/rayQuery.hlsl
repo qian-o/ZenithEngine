@@ -2,8 +2,7 @@
 {
     uint v0 = val0, v1 = val1, s0 = 0;
 
-    [unroll]
-    for (uint n = 0; n < backoff; n++)
+    [unroll] for (uint n = 0; n < backoff; n++)
     {
         s0 += 0x9e3779b9;
         v0 += ((v1 << 4) + 0xa341316c) ^ (v1 + s0) ^ ((v1 >> 5) + 0xc8013ea4);
@@ -78,16 +77,16 @@ float3 getConeSample(inout uint randSeed, float3 shadePosition, float3 lightPosi
 // Get a cosine-weighted random vector centered around a specified normal direction.
 float3 getCosHemisphereSample(inout uint randSeed, float3 hitNorm)
 {
-	// Get 2 random numbers to select our sample with
+    // Get 2 random numbers to select our sample with
     float2 randVal = float2(nextRand(randSeed), nextRand(randSeed));
 
-	// Cosine weighted hemisphere sample from RNG
+    // Cosine weighted hemisphere sample from RNG
     float3 bitangent = getPerpendicularVector(hitNorm);
     float3 tangent = cross(bitangent, hitNorm);
     float r = sqrt(randVal.x);
     float phi = 2.0f * 3.14159265f * randVal.y;
 
-	// Get our cosine-weighted hemisphere lobe sample direction
+    // Get our cosine-weighted hemisphere lobe sample direction
     return tangent * (r * cos(phi).x) + bitangent * (r * sin(phi)) + hitNorm.xyz * sqrt(1 - randVal.x);
 }
 
@@ -129,9 +128,9 @@ struct Camera
     float4x4 view;
 
     float4x4 projection;
-    
+
     float4x4 invView;
-    
+
     float4x4 invProjection;
 };
 
@@ -225,9 +224,8 @@ VSOutput mainVS(VSInput input)
     return output;
 }
 
-template <
-uint Flags>
-void ProceedRayQuery(RayQuery< Flags> rayQuery, float3 origin, float3 direction, float tmin, float tmax)
+template <uint Flags>
+void ProceedRayQuery(RayQuery<Flags> rayQuery, float3 origin, float3 direction, float tmin, float tmax)
 {
     RayDesc ray;
     ray.Origin = origin;
@@ -253,12 +251,12 @@ float3 ScreenToWorld(float2 screenPos, float depth, float4x4 invProjection, floa
     float2 ndcPos;
     ndcPos.x = (screenPos.x / param.width) * 2.0 - 1.0;
     ndcPos.y = 1.0 - (screenPos.y / param.height) * 2.0;
-    
+
     float4 clipSpacePos = float4(ndcPos, depth, 1.0);
-    
+
     float4 viewSpacePos = mul(invProjection, clipSpacePos);
     viewSpacePos /= viewSpacePos.w;
-    
+
     float4 worldSpacePos = mul(invView, viewSpacePos);
 
     return worldSpacePos.xyz;
@@ -280,16 +278,16 @@ float4 mainPS(VSOutput input) : SV_TARGET
     float3 L = normalize(lights[0].position - input.WorldPosition);
     float3 V = normalize(-input.WorldPosition);
     float3 R = normalize(-reflect(L, N));
-    float3 diffuse = max(dot(N, L), 0.1) * texColor;
+    float3 diffuse = max(dot(N, L), 0.1);
 
     float3 finalColor = float3(0, 0, 0);
 
     for (uint i = 0; i < param.samples; i++)
     {
         float3 screenPos = float3(input.Position.xy + param.pixelOffsets[i], 0);
-        
+
         float3 worldPos = ScreenToWorld(screenPos, input.Position.z, camera.invProjection, camera.invView);
-        
+
         float3 tempColor = diffuse;
 
         uint2 launchDim = uint2(param.width, param.height);
@@ -299,31 +297,31 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
         float3 coneSample = getConeSample(randSeed, worldPos, lights[0].position, 0.2);
 
-        RayQuery < RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > rayQuery;
+        RayQuery<RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH> rayQuery;
         ProceedRayQuery(rayQuery, worldPos, coneSample, camera.nearPlane, camera.farPlane);
 
         if (rayQuery.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
         {
             tempColor *= 0.2;
         }
-        
+
         float ambientOcclusion = 0.0f;
         for (int i = 0; i < 4; i++)
         {
             float3 aoDir = getCosHemisphereSample(randSeed, N);
-        
+
             ProceedRayQuery(rayQuery, worldPos, aoDir, 0.01, 1.2);
-            
+
             if (rayQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
             {
                 ambientOcclusion += 1.0;
             }
         }
-    
+
         float aoColor = ambientOcclusion / 4;
         tempColor *= aoColor;
 
-        tempColor = lerp(tempColor, finalColor, (float) i / param.samples);
+        tempColor = lerp(tempColor, finalColor, (float)i / param.samples);
 
         finalColor = tempColor;
     }
