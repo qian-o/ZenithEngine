@@ -80,6 +80,10 @@ internal sealed unsafe class MainView : View
         public Matrix4x4 ViewMatrix;
 
         public Matrix4x4 ProjectionMatrix;
+
+        public Matrix4x4 InvViewMatrix;
+
+        public Matrix4x4 InvProjectionMatrix;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -405,7 +409,7 @@ internal sealed unsafe class MainView : View
         {
             Width = Width,
             Height = Height,
-            Samples = 5
+            Samples = 4
         };
 
         for (int i = 0; i < HaltonSequence.Length; i++)
@@ -431,6 +435,8 @@ internal sealed unsafe class MainView : View
             ViewMatrix = _cameraController.ViewMatrix,
             ProjectionMatrix = _cameraController.ProjectionMatrix(Width, Height)
         };
+        Matrix4x4.Invert(camera.ViewMatrix, out camera.InvViewMatrix);
+        Matrix4x4.Invert(camera.ProjectionMatrix, out camera.InvProjectionMatrix);
 
         _device.UpdateBuffer(_cameraBuffer, in camera);
 

@@ -2,7 +2,8 @@
 {
     uint v0 = val0, v1 = val1, s0 = 0;
 
-    [unroll] for (uint n = 0; n < backoff; n++)
+    [unroll]
+    for (uint n = 0; n < backoff; n++)
     {
         s0 += 0x9e3779b9;
         v0 += ((v1 << 4) + 0xa341316c) ^ (v1 + s0) ^ ((v1 >> 5) + 0xc8013ea4);
@@ -74,6 +75,22 @@ float3 getConeSample(inout uint randSeed, float3 shadePosition, float3 lightPosi
     return mul(R, float3(x, y, z));
 }
 
+// Get a cosine-weighted random vector centered around a specified normal direction.
+float3 getCosHemisphereSample(inout uint randSeed, float3 hitNorm)
+{
+	// Get 2 random numbers to select our sample with
+    float2 randVal = float2(nextRand(randSeed), nextRand(randSeed));
+
+	// Cosine weighted hemisphere sample from RNG
+    float3 bitangent = getPerpendicularVector(hitNorm);
+    float3 tangent = cross(bitangent, hitNorm);
+    float r = sqrt(randVal.x);
+    float phi = 2.0f * 3.14159265f * randVal.y;
+
+	// Get our cosine-weighted hemisphere lobe sample direction
+    return tangent * (r * cos(phi).x) + bitangent * (r * sin(phi)) + hitNorm.xyz * sqrt(1 - randVal.x);
+}
+
 struct GeometryNode
 {
     float4x4 transform;
@@ -112,6 +129,10 @@ struct Camera
     float4x4 view;
 
     float4x4 projection;
+    
+    float4x4 invView;
+    
+    float4x4 invProjection;
 };
 
 struct Light
@@ -204,8 +225,9 @@ VSOutput mainVS(VSInput input)
     return output;
 }
 
-template <uint Flags>
-void ProceedRayQuery(RayQuery<Flags> rayQuery, float3 origin, float3 direction, float tmin, float tmax)
+template <
+uint Flags>
+void ProceedRayQuery(RayQuery< Flags> rayQuery, float3 origin, float3 direction, float tmin, float tmax)
 {
     RayDesc ray;
     ray.Origin = origin;
@@ -226,51 +248,20 @@ void ProceedRayQuery(RayQuery<Flags> rayQuery, float3 origin, float3 direction, 
     }
 }
 
-float calculateAmbientOcclusion(float3 object_point, float3 object_normal)
+float3 ScreenToWorld(float2 screenPos, float depth, float4x4 invProjection, float4x4 invView)
 {
-    const float ao_mult = 1;
-    uint max_ao_each = 3;
-    uint max_ao = max_ao_each * max_ao_each;
-    const float max_dist = 2;
-    const float tmin = 0.01, tmax = max_dist;
-    float accumulated_ao = 0.f;
-    float3 u = abs(dot(object_normal, float3(0, 0, 1))) > 0.9 ? cross(object_normal, float3(1, 0, 0))
-                                                              : cross(object_normal, float3(0, 0, 1));
-    float3 v = cross(object_normal, u);
-    float accumulated_factor = 0;
-    for (uint j = 0; j < max_ao_each; ++j)
-    {
-        float phi = 0.5 * (-3.14159 + 2 * 3.14159 * (float(j + 1) / float(max_ao_each + 2)));
-        for (uint k = 0; k < max_ao_each; ++k)
-        {
-            float theta = 0.5 * (-3.14159 + 2 * 3.14159 * (float(k + 1) / float(max_ao_each + 2)));
-            float x = cos(phi) * sin(theta);
-            float y = sin(phi) * sin(theta);
-            float z = cos(theta);
-            float3 direction = x * u + y * v + z * object_normal;
+    float2 ndcPos;
+    ndcPos.x = (screenPos.x / param.width) * 2.0 - 1.0;
+    ndcPos.y = 1.0 - (screenPos.y / param.height) * 2.0;
+    
+    float4 clipSpacePos = float4(ndcPos, depth, 1.0);
+    
+    float4 viewSpacePos = mul(invProjection, clipSpacePos);
+    viewSpacePos /= viewSpacePos.w;
+    
+    float4 worldSpacePos = mul(invView, viewSpacePos);
 
-            RayQuery<RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH> rayQuery;
-            ProceedRayQuery(rayQuery, object_point, direction, tmin, tmax);
-
-            float dist = max_dist;
-            if (rayQuery.CommittedStatus() != COMMITTED_NOTHING)
-            {
-                dist = rayQuery.CommittedRayT();
-            }
-
-            float ao = min(dist, max_dist);
-            float factor = 0.2 + 0.8 * z * z;
-
-            accumulated_factor += factor;
-            accumulated_ao += ao * factor;
-        }
-    }
-
-    accumulated_ao /= (max_dist * accumulated_factor);
-    accumulated_ao *= accumulated_ao;
-    accumulated_ao = max(min((accumulated_ao)*ao_mult, 1), 0);
-
-    return accumulated_ao;
+    return worldSpacePos.xyz;
 }
 
 float4 mainPS(VSOutput input) : SV_TARGET
@@ -295,29 +286,47 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
     for (uint i = 0; i < param.samples; i++)
     {
+        float3 screenPos = float3(input.Position.xy + param.pixelOffsets[i], 0);
+        
+        float3 worldPos = ScreenToWorld(screenPos, input.Position.z, camera.invProjection, camera.invView);
+        
         float3 tempColor = diffuse;
 
         uint2 launchDim = uint2(param.width, param.height);
-        uint2 launchIndex = input.Position.xy + param.pixelOffsets[i];
+        uint2 launchIndex = input.Position.xy;
 
         uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, i, 16);
 
-        float3 coneSample = getConeSample(randSeed, input.WorldPosition, lights[0].position, 0.2);
+        float3 coneSample = getConeSample(randSeed, worldPos, lights[0].position, 0.2);
 
-        RayQuery<RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH> rayQuery;
-        ProceedRayQuery(rayQuery, input.WorldPosition, coneSample, camera.nearPlane, camera.farPlane);
+        RayQuery < RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > rayQuery;
+        ProceedRayQuery(rayQuery, worldPos, coneSample, camera.nearPlane, camera.farPlane);
 
         if (rayQuery.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
         {
             tempColor *= 0.2;
         }
+        
+        float ambientOcclusion = 0.0f;
+        for (int i = 0; i < 4; i++)
+        {
+            float3 aoDir = getCosHemisphereSample(randSeed, N);
+        
+            ProceedRayQuery(rayQuery, worldPos, aoDir, 0.01, 1.2);
+            
+            if (rayQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+            {
+                ambientOcclusion += 1.0;
+            }
+        }
+    
+        float aoColor = ambientOcclusion / 4;
+        tempColor *= aoColor;
 
-        tempColor = lerp(tempColor, finalColor, (float)i / param.samples);
+        tempColor = lerp(tempColor, finalColor, (float) i / param.samples);
 
         finalColor = tempColor;
     }
-
-    finalColor *= calculateAmbientOcclusion(input.WorldPosition, N);
 
     return float4(finalColor, 1);
 }
