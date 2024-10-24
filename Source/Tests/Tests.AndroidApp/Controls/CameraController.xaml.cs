@@ -114,6 +114,15 @@ public partial class CameraController : ContentView
         }
     }
 
+    public void Transform(Matrix4x4 matrix)
+    {
+        Position = Vector3.Transform(Position, matrix);
+        Forward = Vector3.TransformNormal(Forward, matrix);
+
+        Right = Vector3.Normalize(Vector3.Cross(Forward, Vector3.UnitY));
+        Up = Vector3.Normalize(Vector3.Cross(Right, Forward));
+    }
+
     public Matrix4x4 GetView()
     {
         return Matrix4x4.CreateLookAt(Position, Position + Forward, Up);

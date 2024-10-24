@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Graphics.Core;
 using Graphics.Vulkan;
@@ -97,149 +96,8 @@ internal unsafe class RayQuery : BaseSample
         public uint Width;
 
         public uint Height;
-
-        public PixelOffsets PixelOffsets;
-
-        public uint Samples;
-    }
-
-    [InlineArray(127)]
-    private struct PixelOffsets
-    {
-        private Vector2 _element0;
     }
     #endregion
-
-    private static readonly Vector2[] HaltonSequence =
-    [
-        new Vector2(5.000000e-01f, 6.666667e-01f),
-        new Vector2(2.500000e-01f, 3.333333e-01f),
-        new Vector2(7.500000e-01f, 2.222222e-01f),
-        new Vector2(1.250000e-01f, 8.888889e-01f),
-        new Vector2(6.250000e-01f, 5.555556e-01f),
-        new Vector2(3.750000e-01f, 1.111111e-01f),
-        new Vector2(8.750000e-01f, 7.777778e-01f),
-        new Vector2(6.250000e-02f, 4.444444e-01f),
-        new Vector2(5.625000e-01f, 7.407407e-02f),
-        new Vector2(3.125000e-01f, 7.407407e-01f),
-        new Vector2(8.125000e-01f, 4.074074e-01f),
-        new Vector2(1.875000e-01f, 2.962963e-01f),
-        new Vector2(6.875000e-01f, 9.629630e-01f),
-        new Vector2(4.375000e-01f, 6.296296e-01f),
-        new Vector2(9.375000e-01f, 1.851852e-01f),
-        new Vector2(3.125000e-02f, 8.518519e-01f),
-        new Vector2(5.312500e-01f, 5.185185e-01f),
-        new Vector2(2.812500e-01f, 3.703704e-02f),
-        new Vector2(7.812500e-01f, 7.037037e-01f),
-        new Vector2(1.562500e-01f, 3.703704e-01f),
-        new Vector2(6.562500e-01f, 2.592593e-01f),
-        new Vector2(4.062500e-01f, 9.259259e-01f),
-        new Vector2(9.062500e-01f, 5.925926e-01f),
-        new Vector2(9.375000e-02f, 1.481481e-01f),
-        new Vector2(5.937500e-01f, 8.148148e-01f),
-        new Vector2(3.437500e-01f, 4.814815e-01f),
-        new Vector2(8.437500e-01f, 2.469136e-02f),
-        new Vector2(2.187500e-01f, 6.913580e-01f),
-        new Vector2(7.187500e-01f, 3.580247e-01f),
-        new Vector2(4.687500e-01f, 2.469136e-01f),
-        new Vector2(9.687500e-01f, 9.135802e-01f),
-        new Vector2(1.562500e-02f, 5.802469e-01f),
-        new Vector2(5.156250e-01f, 1.358025e-01f),
-        new Vector2(2.656250e-01f, 8.024691e-01f),
-        new Vector2(7.656250e-01f, 4.691358e-01f),
-        new Vector2(1.406250e-01f, 9.876543e-02f),
-        new Vector2(6.406250e-01f, 7.654321e-01f),
-        new Vector2(3.906250e-01f, 4.320988e-01f),
-        new Vector2(8.906250e-01f, 3.209877e-01f),
-        new Vector2(7.812500e-02f, 9.876543e-01f),
-        new Vector2(5.781250e-01f, 6.543210e-01f),
-        new Vector2(3.281250e-01f, 2.098765e-01f),
-        new Vector2(8.281250e-01f, 8.765432e-01f),
-        new Vector2(2.031250e-01f, 5.432099e-01f),
-        new Vector2(7.031250e-01f, 6.172840e-02f),
-        new Vector2(4.531250e-01f, 7.283951e-01f),
-        new Vector2(9.531250e-01f, 3.950617e-01f),
-        new Vector2(4.687500e-02f, 2.839506e-01f),
-        new Vector2(5.468750e-01f, 9.506173e-01f),
-        new Vector2(2.968750e-01f, 6.172840e-01f),
-        new Vector2(7.968750e-01f, 1.728395e-01f),
-        new Vector2(1.718750e-01f, 8.395062e-01f),
-        new Vector2(6.718750e-01f, 5.061728e-01f),
-        new Vector2(4.218750e-01f, 1.234568e-02f),
-        new Vector2(9.218750e-01f, 6.790123e-01f),
-        new Vector2(1.093750e-01f, 3.456790e-01f),
-        new Vector2(6.093750e-01f, 2.345679e-01f),
-        new Vector2(3.593750e-01f, 9.012346e-01f),
-        new Vector2(8.593750e-01f, 5.679012e-01f),
-        new Vector2(2.343750e-01f, 1.234568e-01f),
-        new Vector2(7.343750e-01f, 7.901235e-01f),
-        new Vector2(4.843750e-01f, 4.567901e-01f),
-        new Vector2(9.843750e-01f, 8.641975e-02f),
-        new Vector2(7.812500e-03f, 7.530864e-01f),
-        new Vector2(5.078125e-01f, 4.197531e-01f),
-        new Vector2(2.578125e-01f, 3.086420e-01f),
-        new Vector2(7.578125e-01f, 9.753086e-01f),
-        new Vector2(1.328125e-01f, 6.419753e-01f),
-        new Vector2(6.328125e-01f, 1.975309e-01f),
-        new Vector2(3.828125e-01f, 8.641975e-01f),
-        new Vector2(8.828125e-01f, 5.308642e-01f),
-        new Vector2(7.031250e-02f, 4.938272e-02f),
-        new Vector2(5.703125e-01f, 7.160494e-01f),
-        new Vector2(3.203125e-01f, 3.827160e-01f),
-        new Vector2(8.203125e-01f, 2.716049e-01f),
-        new Vector2(1.953125e-01f, 9.382716e-01f),
-        new Vector2(6.953125e-01f, 6.049383e-01f),
-        new Vector2(4.453125e-01f, 1.604938e-01f),
-        new Vector2(9.453125e-01f, 8.271605e-01f),
-        new Vector2(3.906250e-02f, 4.938272e-01f),
-        new Vector2(5.390625e-01f, 8.230453e-03f),
-        new Vector2(2.890625e-01f, 6.748971e-01f),
-        new Vector2(7.890625e-01f, 3.415638e-01f),
-        new Vector2(1.640625e-01f, 2.304527e-01f),
-        new Vector2(6.640625e-01f, 8.971193e-01f),
-        new Vector2(4.140625e-01f, 5.637860e-01f),
-        new Vector2(9.140625e-01f, 1.193416e-01f),
-        new Vector2(1.015625e-01f, 7.860082e-01f),
-        new Vector2(6.015625e-01f, 4.526749e-01f),
-        new Vector2(3.515625e-01f, 8.230453e-02f),
-        new Vector2(8.515625e-01f, 7.489712e-01f),
-        new Vector2(2.265625e-01f, 4.156379e-01f),
-        new Vector2(7.265625e-01f, 3.045267e-01f),
-        new Vector2(4.765625e-01f, 9.711934e-01f),
-        new Vector2(9.765625e-01f, 6.378601e-01f),
-        new Vector2(2.343750e-02f, 1.934156e-01f),
-        new Vector2(5.234375e-01f, 8.600823e-01f),
-        new Vector2(2.734375e-01f, 5.267490e-01f),
-        new Vector2(7.734375e-01f, 4.526749e-02f),
-        new Vector2(1.484375e-01f, 7.119342e-01f),
-        new Vector2(6.484375e-01f, 3.786008e-01f),
-        new Vector2(3.984375e-01f, 2.674897e-01f),
-        new Vector2(8.984375e-01f, 9.341564e-01f),
-        new Vector2(8.593750e-02f, 6.008230e-01f),
-        new Vector2(5.859375e-01f, 1.563786e-01f),
-        new Vector2(3.359375e-01f, 8.230453e-01f),
-        new Vector2(8.359375e-01f, 4.897119e-01f),
-        new Vector2(2.109375e-01f, 3.292181e-02f),
-        new Vector2(7.109375e-01f, 6.995885e-01f),
-        new Vector2(4.609375e-01f, 3.662551e-01f),
-        new Vector2(9.609375e-01f, 2.551440e-01f),
-        new Vector2(5.468750e-02f, 9.218107e-01f),
-        new Vector2(5.546875e-01f, 5.884774e-01f),
-        new Vector2(3.046875e-01f, 1.440329e-01f),
-        new Vector2(8.046875e-01f, 8.106996e-01f),
-        new Vector2(1.796875e-01f, 4.773663e-01f),
-        new Vector2(6.796875e-01f, 1.069959e-01f),
-        new Vector2(4.296875e-01f, 7.736626e-01f),
-        new Vector2(9.296875e-01f, 4.403292e-01f),
-        new Vector2(1.171875e-01f, 3.292181e-01f),
-        new Vector2(6.171875e-01f, 9.958848e-01f),
-        new Vector2(3.671875e-01f, 6.625514e-01f),
-        new Vector2(8.671875e-01f, 2.181070e-01f),
-        new Vector2(2.421875e-01f, 8.847737e-01f),
-        new Vector2(7.421875e-01f, 5.514403e-01f),
-        new Vector2(4.921875e-01f, 6.995885e-02f),
-        new Vector2(9.921875e-01f, 7.366255e-01f),
-    ];
 
     private readonly List<Texture> _textures = [];
     private readonly List<TextureView> _textureViews = [];
@@ -265,10 +123,10 @@ internal unsafe class RayQuery : BaseSample
     private ResourceSet _resourceSet2 = null!;
     private Pipeline? _pipeline = null!;
 
-    private Param _param;
-
-    public override void Load(Swapchain swapchain)
+    public override void Load(Swapchain swapchain, CameraController camera)
     {
+        camera.Transform(Matrix4x4.CreateRotationY(90.0f.ToRadians()) * Matrix4x4.CreateTranslation(new Vector3(0.0f, 1.2f, 0.0f)));
+
         LoadGLTF("Assets/Models/Sponza/glTF", "Sponza.gltf");
 
         _lights.Add(new Light()
@@ -369,8 +227,8 @@ internal unsafe class RayQuery : BaseSample
 
         VertexLayoutDescription vertexLayout = new(positionElement, normalElement, texCoordElement, colorElement, tangentElement, nodeIndexElement);
 
-        using Shader vs = App.Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Vertex, [.. new FileReader("Assets/Shaders").ReadFile("rayQuery.vs.hlsl.spv")], "main"));
-        using Shader ps = App.Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Pixel, [.. new FileReader("Assets/Shaders").ReadFile("rayQuery.ps.hlsl.spv")], "main"));
+        using Shader vs = App.Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Vertex, [.. new FileReader("Assets/Shaders").ReadFile("RayQuery.vs.hlsl.spv")], "main"));
+        using Shader ps = App.Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Pixel, [.. new FileReader("Assets/Shaders").ReadFile("RayQuery.ps.hlsl.spv")], "main"));
 
         GraphicsPipelineDescription pipelineDescription = new()
         {
@@ -384,16 +242,6 @@ internal unsafe class RayQuery : BaseSample
         };
 
         _pipeline = App.Device.Factory.CreateGraphicsPipeline(pipelineDescription);
-
-        _param = new Param()
-        {
-            Samples = 4
-        };
-
-        for (int i = 0; i < HaltonSequence.Length; i++)
-        {
-            _param.PixelOffsets[i] = HaltonSequence[i];
-        }
     }
 
     public override void Update(Swapchain swapchain, float width, float height, CameraController camera, float deltaTime, float totalTime)
@@ -417,10 +265,13 @@ internal unsafe class RayQuery : BaseSample
 
         App.Device.UpdateBuffer(_cameraBuffer, in cameraBuffer);
 
-        _param.Width = (uint)width;
-        _param.Height = (uint)height;
+        Param param = new()
+        {
+            Width = (uint)width,
+            Height = (uint)height
+        };
 
-        App.Device.UpdateBuffer(_paramBuffer, in _param);
+        App.Device.UpdateBuffer(_paramBuffer, in param);
     }
 
     public override void Render(CommandList commandList, Swapchain swapchain, float deltaTime, float totalTime)

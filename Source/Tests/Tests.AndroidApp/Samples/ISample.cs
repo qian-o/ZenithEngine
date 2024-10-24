@@ -5,7 +5,7 @@ namespace Tests.AndroidApp.Samples;
 
 public interface ISample
 {
-    void Load(Swapchain swapchain);
+    void Load(Swapchain swapchain, CameraController camera);
 
     void Update(Swapchain swapchain, float width, float height, CameraController camera, float deltaTime, float totalTime);
 

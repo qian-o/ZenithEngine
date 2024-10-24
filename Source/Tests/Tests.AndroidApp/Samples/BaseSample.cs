@@ -12,7 +12,7 @@ public abstract class BaseSample : ISample
     private readonly Queue<Action<CommandList, object[]>> renderTasks = new();
     private readonly Queue<object[]> renderObjects = new();
 
-    public virtual void Load(Swapchain swapchain)
+    public virtual void Load(Swapchain swapchain, CameraController camera)
     {
     }
 

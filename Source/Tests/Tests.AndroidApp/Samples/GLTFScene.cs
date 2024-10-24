@@ -8,6 +8,7 @@ using SharpGLTF.Schema2;
 using StbImageSharp;
 using Tests.AndroidApp.Controls;
 using Tests.AndroidApp.Helpers;
+using Tests.Core.Helpers;
 using GLTFMaterial = SharpGLTF.Schema2.Material;
 using GLTFNode = SharpGLTF.Schema2.Node;
 using GLTFTexture = SharpGLTF.Schema2.Texture;
@@ -126,8 +127,10 @@ public class GLTFScene : BaseSample
 
     private CBO _cbo;
 
-    public override void Load(Swapchain swapchain)
+    public override void Load(Swapchain swapchain, CameraController camera)
     {
+        camera.Transform(Matrix4x4.CreateRotationY(90.0f.ToRadians()) * Matrix4x4.CreateTranslation(new Vector3(0.0f, 1.2f, 0.0f)));
+
         ModelRoot root = ModelRoot.Load("Sponza.gltf", ReadContext.Create(new FileReader("Assets/Models/Sponza/glTF").ReadFile));
 
         using Shader vs = App.Device.Factory.CreateShader(new ShaderDescription(ShaderStages.Vertex, [.. new FileReader("Assets/Shaders").ReadFile("GLTF.vs.hlsl.spv")], "main"));

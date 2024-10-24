@@ -34,7 +34,7 @@ public partial class SamplePage : ShellPage
 
     private void Renderer_Initialized(object sender, EventArgs e)
     {
-        Sample?.Load(Renderer.Swapchain);
+        Sample?.Load(Renderer.Swapchain, Camera);
     }
 
     private void Renderer_Update(object sender, UpdateEventArgs e)

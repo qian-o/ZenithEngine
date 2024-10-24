@@ -1,4 +1,4 @@
-﻿#include "Common.hlsl"
+﻿#include "GLTF.hlsl"
 
 VSOutput main(VSInput input)
 {

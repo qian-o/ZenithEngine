@@ -1,4 +1,4 @@
-﻿#include "Common.hlsl"
+﻿#include "GLTF.hlsl"
 
 float4 main(VSOutput input) : SV_TARGET
 {

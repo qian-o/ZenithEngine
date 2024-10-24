@@ -2,7 +2,8 @@
 {
     uint v0 = val0, v1 = val1, s0 = 0;
 
-    [unroll] for (uint n = 0; n < backoff; n++)
+    [unroll]
+    for (uint n = 0; n < backoff; n++)
     {
         s0 += 0x9e3779b9;
         v0 += ((v1 << 4) + 0xa341316c) ^ (v1 + s0) ^ ((v1 >> 5) + 0xc8013ea4);
@@ -148,10 +149,6 @@ struct Param
     uint width;
 
     uint height;
-
-    float2 pixelOffsets[127];
-
-    uint samples;
 };
 
 struct VSInput
@@ -206,26 +203,9 @@ ConstantBuffer<Param> param : register(b4, space0);
 Texture2D textureArray[] : register(t0, space1);
 SamplerState samplerArray[] : register(s0, space2);
 
-VSOutput mainVS(VSInput input)
-{
-    GeometryNode node = geometryNodes[input.NodeIndex];
-
-    float4 worldPosition = mul(node.transform, float4(input.Position, 1.0));
-
-    VSOutput output;
-    output.Position = mul(camera.projection, mul(camera.view, worldPosition));
-    output.WorldPosition = worldPosition.xyz;
-    output.Normal = normalize(mul(node.transform, float4(input.Normal, 0.0)).xyz);
-    output.TexCoord = input.TexCoord;
-    output.Color = input.Color;
-    output.Tangent = input.Tangent;
-    output.NodeIndex = input.NodeIndex;
-
-    return output;
-}
-
-template <uint Flags>
-void ProceedRayQuery(RayQuery<Flags> rayQuery, float3 origin, float3 direction, float tmin, float tmax)
+template <
+uint Flags>
+void ProceedRayQuery(RayQuery< Flags> rayQuery, float3 origin, float3 direction, float tmin, float tmax)
 {
     RayDesc ray;
     ray.Origin = origin;
@@ -244,87 +224,4 @@ void ProceedRayQuery(RayQuery<Flags> rayQuery, float3 origin, float3 direction, 
             rayQuery.CommitNonOpaqueTriangleHit();
         }
     }
-}
-
-float3 ScreenToWorld(float2 screenPos, float depth, float4x4 invProjection, float4x4 invView)
-{
-    float2 ndcPos;
-    ndcPos.x = (screenPos.x / param.width) * 2.0 - 1.0;
-    ndcPos.y = 1.0 - (screenPos.y / param.height) * 2.0;
-
-    float4 clipSpacePos = float4(ndcPos, depth, 1.0);
-
-    float4 viewSpacePos = mul(invProjection, clipSpacePos);
-    viewSpacePos /= viewSpacePos.w;
-
-    float4 worldSpacePos = mul(invView, viewSpacePos);
-
-    return worldSpacePos.xyz;
-}
-
-float4 mainPS(VSOutput input) : SV_TARGET
-{
-    GeometryNode node = geometryNodes[input.NodeIndex];
-
-    float4 texColor =
-        textureArray[node.baseColorTextureIndex].Sample(samplerArray[0], input.TexCoord) * float4(input.Color, 1.0);
-
-    if (node.alphaMask && texColor.a < node.alphaCutoff)
-    {
-        discard;
-    }
-
-    float3 N = normalize(input.Normal);
-    float3 L = normalize(lights[0].position - input.WorldPosition);
-    float3 V = normalize(-input.WorldPosition);
-    float3 R = normalize(-reflect(L, N));
-    float3 diffuse = max(dot(N, L), 0.1);
-
-    float3 finalColor = float3(0, 0, 0);
-
-    for (uint i = 0; i < param.samples; i++)
-    {
-        float2 screenPos = input.Position.xy + param.pixelOffsets[i];
-
-        float3 worldPos = ScreenToWorld(screenPos, input.Position.z, camera.invProjection, camera.invView);
-
-        float3 tempColor = diffuse;
-
-        uint2 launchDim = uint2(param.width, param.height);
-        uint2 launchIndex = input.Position.xy;
-
-        uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, i, 16);
-
-        float3 coneSample = getConeSample(randSeed, worldPos, lights[0].position, 0.2);
-
-        RayQuery<RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH> rayQuery;
-        ProceedRayQuery(rayQuery, worldPos, coneSample, camera.nearPlane, camera.farPlane);
-
-        if (rayQuery.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
-        {
-            tempColor *= 0.2;
-        }
-
-        float ambientOcclusion = 0.0f;
-        for (int i = 0; i < 4; i++)
-        {
-            float3 aoDir = getCosHemisphereSample(randSeed, N);
-
-            ProceedRayQuery(rayQuery, worldPos, aoDir, 0.01, 1.2);
-
-            if (rayQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
-            {
-                ambientOcclusion += 1.0;
-            }
-        }
-
-        float aoColor = ambientOcclusion / 4;
-        tempColor *= aoColor;
-
-        tempColor = lerp(tempColor, finalColor, (float)i / param.samples);
-
-        finalColor = tempColor;
-    }
-
-    return float4(finalColor, 1);
 }
