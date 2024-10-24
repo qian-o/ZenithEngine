@@ -32,7 +32,7 @@ float4 main(VSOutput input) : SV_TARGET
 
     if (rayQuery.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
     {
-        finalColor *= 0.4;
+        finalColor *= 0.5;
     }
 
     float ambientOcclusion = 0.0f;

@@ -74,10 +74,6 @@ internal unsafe class RayQuery : BaseSample
         public Matrix4x4 ViewMatrix;
 
         public Matrix4x4 ProjectionMatrix;
-
-        public Matrix4x4 InvViewMatrix;
-
-        public Matrix4x4 InvProjectionMatrix;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -260,8 +256,6 @@ internal unsafe class RayQuery : BaseSample
             ViewMatrix = camera.GetView(),
             ProjectionMatrix = camera.GetProjection(width, height)
         };
-        Matrix4x4.Invert(cameraBuffer.ViewMatrix, out cameraBuffer.InvViewMatrix);
-        Matrix4x4.Invert(cameraBuffer.ProjectionMatrix, out cameraBuffer.InvProjectionMatrix);
 
         App.Device.UpdateBuffer(_cameraBuffer, in cameraBuffer);
 
