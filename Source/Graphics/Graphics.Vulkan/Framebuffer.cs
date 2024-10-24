@@ -29,11 +29,11 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
             {
                 Format = colorTarget.VkFormat,
                 Samples = colorTarget.VkSampleCount,
-                LoadOp = AttachmentLoadOp.Clear,
+                LoadOp = AttachmentLoadOp.Load,
                 StoreOp = AttachmentStoreOp.Store,
                 StencilLoadOp = AttachmentLoadOp.DontCare,
                 StencilStoreOp = AttachmentStoreOp.DontCare,
-                InitialLayout = ImageLayout.Undefined,
+                InitialLayout = ImageLayout.ColorAttachmentOptimal,
                 FinalLayout = ImageLayout.ColorAttachmentOptimal
             };
 
@@ -54,11 +54,11 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
             {
                 Format = depthTarget.VkFormat,
                 Samples = depthTarget.VkSampleCount,
-                LoadOp = AttachmentLoadOp.Clear,
+                LoadOp = AttachmentLoadOp.Load,
                 StoreOp = AttachmentStoreOp.Store,
-                StencilLoadOp = AttachmentLoadOp.DontCare,
+                StencilLoadOp = hasStencil ? AttachmentLoadOp.Load : AttachmentLoadOp.DontCare,
                 StencilStoreOp = hasStencil ? AttachmentStoreOp.Store : AttachmentStoreOp.DontCare,
-                InitialLayout = ImageLayout.Undefined,
+                InitialLayout = ImageLayout.DepthStencilAttachmentOptimal,
                 FinalLayout = ImageLayout.DepthStencilAttachmentOptimal
             };
 
@@ -108,21 +108,6 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
 
         VkRenderPass renderPassClear;
         VkRes.Vk.CreateRenderPass(VkRes.VkDevice, &createInfo, null, &renderPassClear).ThrowCode();
-
-        for (uint i = 0; i < colorAttachmentCount; i++)
-        {
-            attachments[i].LoadOp = AttachmentLoadOp.Load;
-            attachments[i].InitialLayout = ImageLayout.ColorAttachmentOptimal;
-        }
-
-        if (hasDepth)
-        {
-            attachments[^1].LoadOp = AttachmentLoadOp.Load;
-            attachments[^1].InitialLayout = ImageLayout.DepthStencilAttachmentOptimal;
-        }
-
-        VkRenderPass renderPassLoad;
-        VkRes.Vk.CreateRenderPass(VkRes.VkDevice, &createInfo, null, &renderPassLoad).ThrowCode();
 
         Texture[] colors = new Texture[colorAttachmentCount];
         TextureView[] colorViews = new TextureView[colorAttachmentCount];
@@ -194,8 +179,7 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
         VkRes.Vk.CreateFramebuffer(VkRes.VkDevice, &framebufferCreateInfo, null, &framebuffer).ThrowCode();
 
         Handle = framebuffer;
-        RenderPassClear = renderPassClear;
-        RenderPassLoad = renderPassLoad;
+        RenderPass = renderPassClear;
         ColorAttachmentCount = colorAttachmentCount;
         DepthAttachmentCount = depthAttachmentCount;
         AttachmentCount = attachmentCount;
@@ -211,9 +195,7 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
 
     internal override VkFramebuffer Handle { get; }
 
-    internal VkRenderPass RenderPassClear { get; }
-
-    internal VkRenderPass RenderPassLoad { get; }
+    internal VkRenderPass RenderPass { get; }
 
     internal uint ColorAttachmentCount { get; }
 
@@ -288,7 +270,6 @@ public unsafe class Framebuffer : VulkanObject<VkFramebuffer>
             colorView.Dispose();
         }
 
-        VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPassLoad, null);
-        VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPassClear, null);
+        VkRes.Vk.DestroyRenderPass(VkRes.VkDevice, RenderPass, null);
     }
 }

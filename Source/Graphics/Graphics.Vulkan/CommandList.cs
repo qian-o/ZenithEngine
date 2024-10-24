@@ -1,6 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 using Graphics.Core;
-using Graphics.Core.Helpers;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Silk.NET.Vulkan;
@@ -798,7 +797,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
         _currentFramebuffer.TransitionToInitialLayout(Handle);
 
-        EnsureRenderPassActive(true);
+        EnsureRenderPassActive();
     }
 
     private void EndRenderPass()
@@ -813,25 +812,14 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
         _currentFramebuffer.TransitionToFinalLayout(Handle);
     }
 
-    private void EnsureRenderPassActive(bool useClearRenderPass = false)
+    private void EnsureRenderPassActive()
     {
         if (!_isInRenderPass)
         {
-            ClearColorValue[] clearColorValues = new ClearColorValue[_currentFramebuffer!.AttachmentCount];
-            for (int i = 0; i < clearColorValues.Length; i++)
-            {
-                clearColorValues[i] = new ClearColorValue(0, 0, 0, 0);
-            }
-
-            if (_currentFramebuffer.DepthAttachmentCount != 0)
-            {
-                clearColorValues[^1] = new ClearColorValue(1, 0);
-            }
-
             RenderPassBeginInfo beginInfo = new()
             {
                 SType = StructureType.RenderPassBeginInfo,
-                RenderPass = useClearRenderPass ? _currentFramebuffer.RenderPassClear : _currentFramebuffer.RenderPassLoad,
+                RenderPass = _currentFramebuffer!.RenderPass,
                 Framebuffer = _currentFramebuffer.Handle,
                 RenderArea = new Rect2D
                 {
@@ -841,9 +829,7 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
                         Width = _currentFramebuffer.Width,
                         Height = _currentFramebuffer.Height
                     }
-                },
-                ClearValueCount = (uint)clearColorValues.Length,
-                PClearValues = (ClearValue*)clearColorValues.AsPointer()
+                }
             };
 
             VkRes.Vk.CmdBeginRenderPass(Handle, &beginInfo, SubpassContents.Inline);
