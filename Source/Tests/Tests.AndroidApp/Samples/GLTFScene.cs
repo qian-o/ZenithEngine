@@ -108,7 +108,6 @@ public class GLTFScene : BaseSample
     }
     #endregion
 
-    private readonly Queue<Action<CommandList>> tasks = [];
     private readonly List<Texture> _textures = [];
     private readonly List<TextureView> _textureViews = [];
     private readonly List<Material> _materials = [];
@@ -277,11 +276,6 @@ public class GLTFScene : BaseSample
     public override void Render(CommandList commandList, Swapchain swapchain, float deltaTime, float totalTime)
     {
         base.Render(commandList, swapchain, deltaTime, totalTime);
-
-        if (tasks.TryDequeue(out Action<CommandList>? task))
-        {
-            task(commandList);
-        }
 
         commandList.SetFramebuffer(swapchain.Framebuffer);
         commandList.ClearColorTarget(0, RgbaFloat.Black);
