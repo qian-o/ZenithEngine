@@ -15,7 +15,7 @@ using Texture = Graphics.Vulkan.Texture;
 
 namespace Tests.AndroidApp.Samples;
 
-internal unsafe class RayQuery : BaseSample
+public unsafe class RayQuery : BaseSample
 {
     #region Structs
     [StructLayout(LayoutKind.Sequential)]
