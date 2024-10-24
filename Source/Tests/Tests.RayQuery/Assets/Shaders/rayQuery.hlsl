@@ -2,8 +2,7 @@
 {
     uint v0 = val0, v1 = val1, s0 = 0;
 
-	[unroll]
-    for (uint n = 0; n < backoff; n++)
+    [unroll] for (uint n = 0; n < backoff; n++)
     {
         s0 += 0x9e3779b9;
         v0 += ((v1 << 4) + 0xa341316c) ^ (v1 + s0) ^ ((v1 >> 5) + 0xc8013ea4);
@@ -29,14 +28,11 @@ float3x3 angleAxis3x3(float angle, float3 axis)
     float y = axis.y;
     float z = axis.z;
 
-    return float3x3(
-		t * x * x + c, t * x * y - s * z, t * x * z + s * y,
-		t * x * y + s * z, t * y * y + c, t * y * z - s * x,
-		t * x * z - s * y, t * y * z + s * x, t * z * z + c
-		);
+    return float3x3(t * x * x + c, t * x * y - s * z, t * x * z + s * y, t * x * y + s * z, t * y * y + c,
+                    t * y * z - s * x, t * x * z - s * y, t * y * z + s * x, t * z * z + c);
 }
 
-// Utility function to get a vector perpendicular to an input vector 
+// Utility function to get a vector perpendicular to an input vector
 //    (from "Efficient Construction of Perpendicular Vectors Without Branching")
 float3 getPerpendicularVector(float3 u)
 {
@@ -68,11 +64,11 @@ float3 getConeSample(inout uint randSeed, float3 shadePosition, float3 lightPosi
     float y = sqrt(1.0f - z * z) * sin(phi);
     float3 north = float3(0.f, 0.f, 1.f);
 
-	// Find the rotation axis `u` and rotation angle `rot` [1]
+    // Find the rotation axis `u` and rotation angle `rot` [1]
     float3 axis = normalize(cross(north, toLight));
     float angle = acos(dot(toLight, north));
 
-	// Convert rotation axis and angle to 3x3 rotation matrix [2]
+    // Convert rotation axis and angle to 3x3 rotation matrix [2]
     float3x3 R = angleAxis3x3(angle, axis);
 
     return mul(R, float3(x, y, z));
@@ -130,11 +126,11 @@ struct Light
 struct Param
 {
     uint width;
-    
+
     uint height;
-    
+
     float2 pixelOffsets[127];
-    
+
     uint samples;
 };
 
@@ -208,9 +204,8 @@ VSOutput mainVS(VSInput input)
     return output;
 }
 
-template <
-uint Flags>
-void ProceedRayQuery(RayQuery< Flags> rayQuery, float3 origin, float3 direction, float tmin, float tmax)
+template <uint Flags>
+void ProceedRayQuery(RayQuery<Flags> rayQuery, float3 origin, float3 direction, float tmin, float tmax)
 {
     RayDesc ray;
     ray.Origin = origin;
@@ -254,7 +249,7 @@ float calculateAmbientOcclusion(float3 object_point, float3 object_normal)
             float z = cos(theta);
             float3 direction = x * u + y * v + z * object_normal;
 
-            RayQuery < RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > rayQuery;
+            RayQuery<RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH> rayQuery;
             ProceedRayQuery(rayQuery, object_point, direction, tmin, tmax);
 
             float dist = max_dist;
@@ -273,7 +268,7 @@ float calculateAmbientOcclusion(float3 object_point, float3 object_normal)
 
     accumulated_ao /= (max_dist * accumulated_factor);
     accumulated_ao *= accumulated_ao;
-    accumulated_ao = max(min((accumulated_ao) * ao_mult, 1), 0);
+    accumulated_ao = max(min((accumulated_ao)*ao_mult, 1), 0);
 
     return accumulated_ao;
 }
@@ -282,25 +277,26 @@ float4 mainPS(VSOutput input) : SV_TARGET
 {
     GeometryNode node = geometryNodes[input.NodeIndex];
 
-    float4 texColor = textureArray[node.baseColorTextureIndex].Sample(samplerArray[0], input.TexCoord) * float4(input.Color, 1.0);
-    
+    float4 texColor =
+        textureArray[node.baseColorTextureIndex].Sample(samplerArray[0], input.TexCoord) * float4(input.Color, 1.0);
+
     if (node.alphaMask && texColor.a < node.alphaCutoff)
     {
         discard;
     }
-    
+
     float3 N = normalize(input.Normal);
     float3 L = normalize(lights[0].position - input.WorldPosition);
     float3 V = normalize(-input.WorldPosition);
     float3 R = normalize(-reflect(L, N));
     float3 diffuse = max(dot(N, L), 0.1) * texColor;
-    
+
     float3 finalColor = float3(0, 0, 0);
-    
+
     for (uint i = 0; i < param.samples; i++)
     {
         float3 tempColor = diffuse;
-        
+
         uint2 launchDim = uint2(param.width, param.height);
         uint2 launchIndex = input.Position.xy + param.pixelOffsets[i];
 
@@ -308,21 +304,20 @@ float4 mainPS(VSOutput input) : SV_TARGET
 
         float3 coneSample = getConeSample(randSeed, input.WorldPosition, lights[0].position, 0.2);
 
-        RayQuery < RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > rayQuery;
+        RayQuery<RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH> rayQuery;
         ProceedRayQuery(rayQuery, input.WorldPosition, coneSample, camera.nearPlane, camera.farPlane);
 
         if (rayQuery.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
         {
             tempColor *= 0.2;
         }
-        
-        tempColor = lerp(tempColor, finalColor, (float) i / param.samples);
-        
+
+        tempColor = lerp(tempColor, finalColor, (float)i / param.samples);
+
         finalColor = tempColor;
     }
 
     finalColor *= calculateAmbientOcclusion(input.WorldPosition, N);
 
     return float4(finalColor, 1);
-
 }
