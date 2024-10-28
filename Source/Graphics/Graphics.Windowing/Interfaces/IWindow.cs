@@ -43,4 +43,6 @@ public interface IWindow
     void ShowDialog();
 
     void Close();
+
+    void PollEvents();
 }

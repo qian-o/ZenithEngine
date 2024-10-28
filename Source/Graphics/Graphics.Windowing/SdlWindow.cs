@@ -346,6 +346,10 @@ public unsafe class SdlWindow : IWindow
         WindowManager.RemoveWindow(this);
     }
 
+    public void PollEvents()
+    {
+    }
+
     private void Init()
     {
         if (window != null)
