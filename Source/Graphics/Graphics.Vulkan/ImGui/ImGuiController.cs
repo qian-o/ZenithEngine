@@ -321,7 +321,7 @@ public unsafe class ImGuiController : DisposableObject
             }
             else
             {
-                char* glyph_ranges = _imGuiFontConfig.GetGlyphRange != null ? (char*)_imGuiFontConfig.GetGlyphRange(io) : io.Fonts.GetGlyphRangesDefault();
+                uint* glyph_ranges = _imGuiFontConfig.GetGlyphRange != null ? (uint*)_imGuiFontConfig.GetGlyphRange(io) : io.Fonts.GetGlyphRangesDefault();
 
                 fontPtr = io.Fonts.AddFontFromFileTTF(_imGuiFontConfig.FontPath, Convert.ToInt32(_imGuiFontConfig.FontSize * display.DpiScale), null, glyph_ranges);
             }
