@@ -2,6 +2,7 @@
 	<PropertyGroup>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageVersion Include="CommunityToolkit.Maui" Version="9.1.0" />
 		<PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.2" />
