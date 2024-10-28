@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
 	<PropertyGroup>
 		<TargetFrameworks>net8.0-android34.0</TargetFrameworks>
 		<OutputType>Exe</OutputType>
@@ -65,5 +64,4 @@
 	<Target Name="CompileShader" BeforeTargets="PreBuildEvent">
 		<Exec Command="call Scripts\CompileShader.bat" />
 	</Target>
-
 </Project>

@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
 	<ItemGroup>
 		<PackageReference Include="Hexa.NET.ImGui" />
 		<PackageReference Include="Hexa.NET.ImGuizmo" />
@@ -14,5 +13,4 @@
 		<PackageReference Include="SkiaSharp.NativeAssets.Win32" />
 		<PackageReference Include="Vortice.Dxc" />
 	</ItemGroup>
-
 </Project>

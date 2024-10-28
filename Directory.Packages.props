@@ -1,10 +1,8 @@
 <Project>
-
-    <PropertyGroup>
-      <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    </PropertyGroup>
-
-    <ItemGroup>
+	<PropertyGroup>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
 		<PackageVersion Include="CommunityToolkit.Maui" Version="9.1.0" />
 		<PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.2" />
 		<PackageVersion Include="Hexa.NET.ImGui" Version="2.1.10" />
@@ -20,6 +18,7 @@
 		<PackageVersion Include="SharpGLTF.Toolkit" Version="1.0.3" />
 		<PackageVersion Include="Silk.NET.Input.Sdl" Version="2.21.0" />
 		<PackageVersion Include="Silk.NET.Maths" Version="2.21.0" />
+		<PackageVersion Include="Silk.NET.SDL" Version="2.21.0" />
 		<PackageVersion Include="Silk.NET.Vulkan" Version="2.21.0" />
 		<PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.21.0" />
 		<PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.21.0" />
@@ -44,6 +43,5 @@
 		<PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.8.6" />
 		<PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" Version="2.8.6" />
 		<PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.8.6" />
-    </ItemGroup>
-
-  </Project>
+	</ItemGroup>
+</Project>
