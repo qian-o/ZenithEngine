@@ -128,7 +128,6 @@ internal sealed unsafe class SwapChainPanel : SurfaceView, ISurfaceHolderCallbac
     private readonly ISwapChainPanel _swapChainPanel;
 
     private ANativeWindow* _window;
-    private Choreographer? _choreographer;
     private FrameCallback? _frameCallback;
 
     public SwapChainPanel(Context context, ISwapChainPanel swapChainPanel) : base(context)
@@ -170,8 +169,7 @@ internal sealed unsafe class SwapChainPanel : SurfaceView, ISurfaceHolderCallbac
 
         _swapChainPanel.CreateSwapChainPanel(new VkSurface(_window));
 
-        _choreographer = Choreographer.Instance;
-        _choreographer!.PostFrameCallback(_frameCallback = new FrameCallback(_choreographer, _swapChainPanel));
+        Choreographer.Instance?.PostFrameCallback(_frameCallback = new FrameCallback(Choreographer.Instance, _swapChainPanel));
     }
 
     private void DestroySurface()
@@ -181,15 +179,15 @@ internal sealed unsafe class SwapChainPanel : SurfaceView, ISurfaceHolderCallbac
             _swapChainPanel.DestroySwapChainPanel();
 
             NativeActivity.ANativeWindowRelease(_window);
-
             _window = null;
         }
 
-        _choreographer?.RemoveFrameCallback(_frameCallback);
-        _choreographer?.Dispose();
-        _frameCallback?.Dispose();
+        if (_frameCallback != null)
+        {
+            Choreographer.Instance?.RemoveFrameCallback(_frameCallback);
 
-        _choreographer = null;
-        _frameCallback = null;
+            _frameCallback?.Dispose();
+            _frameCallback = null;
+        }
     }
 }
