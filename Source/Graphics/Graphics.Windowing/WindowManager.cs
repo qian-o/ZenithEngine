@@ -16,9 +16,11 @@ public static class WindowManager
 
         while (isRunning)
         {
+            SdlManager.PollEvents();
+
             foreach (IWindow window in windows)
             {
-                // Update window
+                window.HandleEvents();
             }
 
             foreach (IWindow window in windowsToAdd)

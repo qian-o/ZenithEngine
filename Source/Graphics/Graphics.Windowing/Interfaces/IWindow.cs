@@ -42,7 +42,7 @@ public interface IWindow
 
     void ShowDialog();
 
-    void Close();
+    void HandleEvents();
 
-    void PollEvents();
+    void Close();
 }

@@ -11,19 +11,17 @@ namespace Graphics.Windowing;
 
 public unsafe class SdlWindow : IWindow
 {
-    public static readonly Sdl Sdl = Sdl.GetApi();
-
     private string title = "SdlWindow";
-    private WindowState windowState;
-    private WindowBorder windowBorder;
+    private WindowState windowState = WindowState.Normal;
+    private WindowBorder windowBorder = WindowBorder.Resizable;
     private Vector2D<int> minimumSize;
     private Vector2D<int> maximumSize;
     private Vector2D<int> position;
-    private Vector2D<int> size;
-    private bool isVisible;
+    private Vector2D<int> size = new(800, 600);
+    private bool isVisible = true;
     private bool topMost;
-    private bool showInTaskbar;
-    private float opacity;
+    private bool showInTaskbar = true;
+    private float opacity = 1.0f;
 
     private Window* window;
     private SdlVkSurface? vkSurface;
@@ -40,7 +38,7 @@ public unsafe class SdlWindow : IWindow
 
             if (IsCreated)
             {
-                Sdl.SetWindowTitle(window, Encoding.UTF8.GetBytes(value).AsPointer());
+                SdlManager.Sdl.SetWindowTitle(window, Encoding.UTF8.GetBytes(value).AsPointer());
             }
         }
     }
@@ -60,16 +58,16 @@ public unsafe class SdlWindow : IWindow
                 switch (value)
                 {
                     case WindowState.Normal:
-                        Sdl.RestoreWindow(window);
+                        SdlManager.Sdl.RestoreWindow(window);
                         break;
                     case WindowState.Minimized:
-                        Sdl.MinimizeWindow(window);
+                        SdlManager.Sdl.MinimizeWindow(window);
                         break;
                     case WindowState.Maximized:
-                        Sdl.MaximizeWindow(window);
+                        SdlManager.Sdl.MaximizeWindow(window);
                         break;
                     case WindowState.Fullscreen:
-                        Sdl.SetWindowFullscreen(window, (uint)WindowFlags.Fullscreen);
+                        SdlManager.Sdl.SetWindowFullscreen(window, (uint)WindowFlags.Fullscreen);
                         break;
                 }
             }
@@ -91,16 +89,16 @@ public unsafe class SdlWindow : IWindow
                 switch (value)
                 {
                     case WindowBorder.Resizable:
-                        Sdl.SetWindowBordered(window, SdlBool.True);
-                        Sdl.SetWindowResizable(window, SdlBool.True);
+                        SdlManager.Sdl.SetWindowBordered(window, SdlBool.True);
+                        SdlManager.Sdl.SetWindowResizable(window, SdlBool.True);
                         break;
                     case WindowBorder.Fixed:
-                        Sdl.SetWindowBordered(window, SdlBool.True);
-                        Sdl.SetWindowResizable(window, SdlBool.False);
+                        SdlManager.Sdl.SetWindowBordered(window, SdlBool.True);
+                        SdlManager.Sdl.SetWindowResizable(window, SdlBool.False);
                         break;
                     case WindowBorder.Hidden:
-                        Sdl.SetWindowBordered(window, SdlBool.False);
-                        Sdl.SetWindowBordered(window, SdlBool.False);
+                        SdlManager.Sdl.SetWindowBordered(window, SdlBool.False);
+                        SdlManager.Sdl.SetWindowBordered(window, SdlBool.False);
                         break;
                 }
             }
@@ -119,7 +117,7 @@ public unsafe class SdlWindow : IWindow
 
             if (IsCreated)
             {
-                Sdl.SetWindowMinimumSize(window, (int)value.X, (int)value.Y);
+                SdlManager.Sdl.SetWindowMinimumSize(window, (int)value.X, (int)value.Y);
             }
         }
     }
@@ -136,7 +134,7 @@ public unsafe class SdlWindow : IWindow
 
             if (IsCreated)
             {
-                Sdl.SetWindowMaximumSize(window, (int)value.X, (int)value.Y);
+                SdlManager.Sdl.SetWindowMaximumSize(window, (int)value.X, (int)value.Y);
             }
         }
     }
@@ -148,7 +146,7 @@ public unsafe class SdlWindow : IWindow
             if (IsCreated)
             {
                 int x, y;
-                Sdl.GetWindowPosition(window, &x, &y);
+                SdlManager.Sdl.GetWindowPosition(window, &x, &y);
 
                 return position = new Vector2D<int>(x, y);
             }
@@ -161,7 +159,7 @@ public unsafe class SdlWindow : IWindow
 
             if (IsCreated)
             {
-                Sdl.SetWindowPosition(window, (int)value.X, (int)value.Y);
+                SdlManager.Sdl.SetWindowPosition(window, (int)value.X, (int)value.Y);
             }
         }
     }
@@ -173,7 +171,7 @@ public unsafe class SdlWindow : IWindow
             if (IsCreated)
             {
                 int width, height;
-                Sdl.GetWindowSize(window, &width, &height);
+                SdlManager.Sdl.GetWindowSize(window, &width, &height);
 
                 return size = new Vector2D<int>(width, height);
             }
@@ -186,7 +184,7 @@ public unsafe class SdlWindow : IWindow
 
             if (IsCreated)
             {
-                Sdl.SetWindowSize(window, (int)value.X, (int)value.Y);
+                SdlManager.Sdl.SetWindowSize(window, (int)value.X, (int)value.Y);
             }
         }
     }
@@ -205,11 +203,11 @@ public unsafe class SdlWindow : IWindow
             {
                 if (value)
                 {
-                    Sdl.ShowWindow(window);
+                    SdlManager.Sdl.ShowWindow(window);
                 }
                 else
                 {
-                    Sdl.HideWindow(window);
+                    SdlManager.Sdl.HideWindow(window);
                 }
             }
         }
@@ -229,11 +227,11 @@ public unsafe class SdlWindow : IWindow
             {
                 if (value)
                 {
-                    Sdl.SetWindowAlwaysOnTop(window, SdlBool.True);
+                    SdlManager.Sdl.SetWindowAlwaysOnTop(window, SdlBool.True);
                 }
                 else
                 {
-                    Sdl.SetWindowAlwaysOnTop(window, SdlBool.False);
+                    SdlManager.Sdl.SetWindowAlwaysOnTop(window, SdlBool.False);
                 }
             }
         }
@@ -268,7 +266,7 @@ public unsafe class SdlWindow : IWindow
 
             if (IsCreated)
             {
-                Sdl.SetWindowOpacity(window, value);
+                SdlManager.Sdl.SetWindowOpacity(window, value);
             }
         }
     }
@@ -293,10 +291,10 @@ public unsafe class SdlWindow : IWindow
     {
         get
         {
-            int displayIndex = Sdl.GetWindowDisplayIndex(window);
+            int displayIndex = SdlManager.Sdl.GetWindowDisplayIndex(window);
 
             float ddpi;
-            Sdl.GetDisplayDPI(displayIndex, &ddpi, null, null);
+            SdlManager.Sdl.GetDisplayDPI(displayIndex, &ddpi, null, null);
 
             return ddpi == 0 ? 1.0f : ddpi / 96.0f;
         }
@@ -306,7 +304,7 @@ public unsafe class SdlWindow : IWindow
     {
         get
         {
-            return ((WindowFlags)Sdl.GetWindowFlags(window)).HasFlag(WindowFlags.InputFocus);
+            return ((WindowFlags)SdlManager.Sdl.GetWindowFlags(window)).HasFlag(WindowFlags.InputFocus);
         }
     }
 
@@ -322,7 +320,7 @@ public unsafe class SdlWindow : IWindow
     {
         Init();
 
-        Sdl.ShowWindow(window);
+        SdlManager.Sdl.ShowWindow(window);
 
         WindowManager.AddWindow(this);
     }
@@ -331,7 +329,7 @@ public unsafe class SdlWindow : IWindow
     {
         Init();
 
-        Sdl.ShowWindow(window);
+        SdlManager.Sdl.ShowWindow(window);
 
         while (true)
         {
@@ -339,15 +337,26 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public void Close()
+    public void HandleEvents()
     {
-        Sdl.DestroyWindow(window);
+        uint id = SdlManager.Sdl.GetWindowID(window);
 
-        WindowManager.RemoveWindow(this);
+        foreach (Event @event in SdlManager.Events)
+        {
+            if (@event.Window.WindowID != id)
+            {
+                continue;
+            }
+
+            OnEvent(@event);
+        }
     }
 
-    public void PollEvents()
+    public void Close()
     {
+        SdlManager.Sdl.DestroyWindow(window);
+
+        WindowManager.RemoveWindow(this);
     }
 
     private void Init()
@@ -398,11 +407,42 @@ public unsafe class SdlWindow : IWindow
             flags |= WindowFlags.SkipTaskbar;
         }
 
-        window = Sdl.CreateWindow(Encoding.UTF8.GetBytes(Title).AsPointer(),
-                                  (int)Position.X,
-                                  (int)Position.Y,
-                                  (int)Size.X,
-                                  (int)Size.Y,
-                                  (uint)flags);
+        flags |= WindowFlags.Vulkan;
+
+        window = SdlManager.Sdl.CreateWindow(Encoding.UTF8.GetBytes(Title).AsPointer(),
+                                             Position.X,
+                                             Position.Y,
+                                             Size.X,
+                                             Size.Y,
+                                             (uint)flags);
+    }
+
+    private void OnEvent(Event @event)
+    {
+        EventType type = (EventType)@event.Type;
+
+        switch (type)
+        {
+            case EventType.Quit:
+                break;
+            case EventType.Windowevent:
+                break;
+            case EventType.Keydown:
+                break;
+            case EventType.Keyup:
+                break;
+            case EventType.Textinput:
+                break;
+            case EventType.Mousemotion:
+                break;
+            case EventType.Mousebuttondown:
+                break;
+            case EventType.Mousebuttonup:
+                break;
+            case EventType.Mousewheel:
+                break;
+            default:
+                break;
+        }
     }
 }
