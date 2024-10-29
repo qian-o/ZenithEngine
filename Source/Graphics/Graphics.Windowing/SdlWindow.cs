@@ -25,6 +25,7 @@ public unsafe class SdlWindow : IWindow
     private float opacity = 1.0f;
 
     private Window* window;
+    private bool isLoopRunning;
     private SdlVkSurface? vkSurface;
 
     public event EventHandler<EventArgs>? Loaded;
@@ -327,38 +328,7 @@ public unsafe class SdlWindow : IWindow
 
     public void Show()
     {
-        Init();
-
-        SdlManager.Sdl.ShowWindow(window);
-
-        WindowManager.AddWindow(this);
-    }
-
-    public void HandleEvents()
-    {
-        uint id = SdlManager.Sdl.GetWindowID(window);
-
-        foreach (Event @event in SdlManager.Events)
-        {
-            if (@event.Window.WindowID != id)
-            {
-                continue;
-            }
-
-            OnEvent(@event);
-        }
-    }
-
-    public void Close()
-    {
-        SdlManager.Sdl.DestroyWindow(window);
-
-        WindowManager.RemoveWindow(this);
-    }
-
-    private void Init()
-    {
-        if (window != null)
+        if (isLoopRunning)
         {
             return;
         }
@@ -413,7 +383,44 @@ public unsafe class SdlWindow : IWindow
                                              Size.Y,
                                              (uint)flags);
 
+        SdlManager.Sdl.ShowWindow(window);
+
+        WindowManager.AddWindow(this);
+
+        isLoopRunning = true;
+
         Loaded?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Close()
+    {
+        if (!isLoopRunning)
+        {
+            return;
+        }
+
+        SdlManager.Sdl.DestroyWindow(window);
+
+        WindowManager.RemoveWindow(this);
+
+        isLoopRunning = false;
+
+        Unloaded?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void HandleEvents()
+    {
+        uint id = SdlManager.Sdl.GetWindowID(window);
+
+        foreach (Event @event in SdlManager.Events)
+        {
+            if (@event.Window.WindowID != id)
+            {
+                continue;
+            }
+
+            OnEvent(@event);
+        }
     }
 
     private void OnEvent(Event @event)
@@ -422,9 +429,6 @@ public unsafe class SdlWindow : IWindow
 
         switch (type)
         {
-            case EventType.Quit:
-                Unloaded?.Invoke(this, EventArgs.Empty);
-                break;
             case EventType.Windowevent:
                 {
                     WindowEventID windowEventID = (WindowEventID)@event.Window.Event;

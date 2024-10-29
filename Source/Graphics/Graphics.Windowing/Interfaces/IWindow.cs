@@ -49,7 +49,7 @@ public interface IWindow
 
     void Show();
 
-    void HandleEvents();
-
     void Close();
+
+    void HandleEvents();
 }
