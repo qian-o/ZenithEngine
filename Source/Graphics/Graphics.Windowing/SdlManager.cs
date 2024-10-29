@@ -4,7 +4,7 @@ namespace Graphics.Windowing;
 
 internal static unsafe class SdlManager
 {
-    public static readonly Sdl Sdl = Sdl.GetApi();
+    public static Sdl Sdl { get; } = Sdl.GetApi();
 
     public static List<Event> Events { get; } = [];
 
