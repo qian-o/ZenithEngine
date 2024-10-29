@@ -11,15 +11,17 @@ public interface IWindow
 
     event EventHandler<EventArgs>? Unloaded;
 
-    event EventHandler<PropertyEventArgs<WindowState>>? StateChanged;
+    event EventHandler<ValueEventArgs<WindowState>>? StateChanged;
 
-    event EventHandler<PropertyEventArgs<Vector2D<int>>>? PositionChanged;
+    event EventHandler<ValueEventArgs<Vector2D<int>>>? PositionChanged;
 
-    event EventHandler<PropertyEventArgs<Vector2D<int>>>? SizeChanged;
+    event EventHandler<ValueEventArgs<Vector2D<int>>>? SizeChanged;
 
     event EventHandler<KeyEventArgs>? KeyDown;
 
     event EventHandler<KeyEventArgs>? KeyUp;
+
+    event EventHandler<ValueEventArgs<char>>? KeyChar;
 
     string Title { get; set; }
 

@@ -16,15 +16,17 @@ public unsafe class SdlWindow : IWindow
 
     public event EventHandler<EventArgs>? Unloaded;
 
-    public event EventHandler<PropertyEventArgs<WindowState>>? StateChanged;
+    public event EventHandler<ValueEventArgs<WindowState>>? StateChanged;
 
-    public event EventHandler<PropertyEventArgs<Vector2D<int>>>? PositionChanged;
+    public event EventHandler<ValueEventArgs<Vector2D<int>>>? PositionChanged;
 
-    public event EventHandler<PropertyEventArgs<Vector2D<int>>>? SizeChanged;
+    public event EventHandler<ValueEventArgs<Vector2D<int>>>? SizeChanged;
 
     public event EventHandler<KeyEventArgs>? KeyDown;
 
     public event EventHandler<KeyEventArgs>? KeyUp;
+
+    public event EventHandler<ValueEventArgs<char>>? KeyChar;
 
     private Window* window;
     private bool isLoopRunning;
@@ -467,6 +469,7 @@ public unsafe class SdlWindow : IWindow
                 ProcessKeyboardEvent(@event.Key, false);
                 break;
             case EventType.Textinput:
+                ProcessTextInputEvent(@event.Text);
                 break;
             case EventType.Mousemotion:
                 break;
@@ -486,15 +489,15 @@ public unsafe class SdlWindow : IWindow
         switch (windowEventID)
         {
             case WindowEventID.Moved:
-                PositionChanged?.Invoke(this, new PropertyEventArgs<Vector2D<int>>(Position));
+                PositionChanged?.Invoke(this, new ValueEventArgs<Vector2D<int>>(Position));
                 break;
             case WindowEventID.Resized:
-                SizeChanged?.Invoke(this, new PropertyEventArgs<Vector2D<int>>(Size));
+                SizeChanged?.Invoke(this, new ValueEventArgs<Vector2D<int>>(Size));
                 break;
             case WindowEventID.Minimized:
             case WindowEventID.Maximized:
             case WindowEventID.Restored:
-                StateChanged?.Invoke(this, new PropertyEventArgs<WindowState>(State));
+                StateChanged?.Invoke(this, new ValueEventArgs<WindowState>(State));
                 break;
             case WindowEventID.Close:
                 Close();
@@ -514,6 +517,24 @@ public unsafe class SdlWindow : IWindow
         else
         {
             KeyUp?.Invoke(this, new KeyEventArgs(key, modifiers));
+        }
+    }
+
+    private void ProcessTextInputEvent(TextInputEvent textInputEvent)
+    {
+        const int charSize = 32;
+
+        var chars = stackalloc char[charSize];
+        Encoding.UTF8.GetChars(&textInputEvent.Text[0], charSize, chars, charSize);
+
+        for (int i = 0; i < charSize; i++)
+        {
+            if (chars[i] == '\0')
+            {
+                break;
+            }
+
+            KeyChar?.Invoke(this, new ValueEventArgs<char>(chars[i]));
         }
     }
 }

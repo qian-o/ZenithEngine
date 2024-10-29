@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Windowing.Interactivity;
 
-public class PropertyEventArgs<T>(T value) : EventArgs
+public class ValueEventArgs<T>(T value) : EventArgs
 {
     public T Value { get; } = value;
 }
