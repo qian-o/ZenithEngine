@@ -11,11 +11,11 @@ public interface IWindow
 
     event EventHandler<EventArgs>? Unloaded;
 
-    event EventHandler<StateChangedEventArgs>? StateChanged;
+    event EventHandler<PropertyEventArgs<WindowState>>? StateChanged;
 
-    event EventHandler<PositionChangedEventArgs>? PositionChanged;
+    event EventHandler<PropertyEventArgs<Vector2D<int>>>? PositionChanged;
 
-    event EventHandler<SizeChangedEventArgs>? SizeChanged;
+    event EventHandler<PropertyEventArgs<Vector2D<int>>>? SizeChanged;
 
     event EventHandler<KeyEventArgs>? KeyDown;
 

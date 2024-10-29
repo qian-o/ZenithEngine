@@ -16,11 +16,11 @@ public unsafe class SdlWindow : IWindow
 
     public event EventHandler<EventArgs>? Unloaded;
 
-    public event EventHandler<StateChangedEventArgs>? StateChanged;
+    public event EventHandler<PropertyEventArgs<WindowState>>? StateChanged;
 
-    public event EventHandler<PositionChangedEventArgs>? PositionChanged;
+    public event EventHandler<PropertyEventArgs<Vector2D<int>>>? PositionChanged;
 
-    public event EventHandler<SizeChangedEventArgs>? SizeChanged;
+    public event EventHandler<PropertyEventArgs<Vector2D<int>>>? SizeChanged;
 
     public event EventHandler<KeyEventArgs>? KeyDown;
 
@@ -63,6 +63,28 @@ public unsafe class SdlWindow : IWindow
     {
         get
         {
+            if (IsCreated)
+            {
+                WindowFlags flags = (WindowFlags)SdlManager.Sdl.GetWindowFlags(window);
+
+                if (flags.HasFlag(WindowFlags.Minimized))
+                {
+                    return state = WindowState.Minimized;
+                }
+                else if (flags.HasFlag(WindowFlags.Maximized))
+                {
+                    return state = WindowState.Maximized;
+                }
+                else if (flags.HasFlag(WindowFlags.Fullscreen))
+                {
+                    return state = WindowState.Fullscreen;
+                }
+                else
+                {
+                    return state = WindowState.Normal;
+                }
+            }
+
             return state;
         }
         set
@@ -442,19 +464,15 @@ public unsafe class SdlWindow : IWindow
                     switch (windowEventID)
                     {
                         case WindowEventID.Moved:
-                            PositionChanged?.Invoke(this, new PositionChangedEventArgs(@event.Window.Data1, @event.Window.Data2));
+                            PositionChanged?.Invoke(this, new PropertyEventArgs<Vector2D<int>>(Position));
                             break;
                         case WindowEventID.Resized:
-                            SizeChanged?.Invoke(this, new SizeChangedEventArgs(@event.Window.Data1, @event.Window.Data2));
+                            SizeChanged?.Invoke(this, new PropertyEventArgs<Vector2D<int>>(Size));
                             break;
                         case WindowEventID.Minimized:
-                            StateChanged?.Invoke(this, new StateChangedEventArgs(WindowState.Minimized));
-                            break;
                         case WindowEventID.Maximized:
-                            StateChanged?.Invoke(this, new StateChangedEventArgs(WindowState.Maximized));
-                            break;
                         case WindowEventID.Restored:
-                            StateChanged?.Invoke(this, new StateChangedEventArgs(WindowState.Normal));
+                            StateChanged?.Invoke(this, new PropertyEventArgs<WindowState>(State));
                             break;
                         case WindowEventID.Close:
                             Close();
