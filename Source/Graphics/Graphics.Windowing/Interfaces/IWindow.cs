@@ -1,4 +1,5 @@
 ﻿using Graphics.Windowing.Enums;
+using Graphics.Windowing.Interactivity;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Maths;
 
@@ -6,6 +7,14 @@ namespace Graphics.Windowing.Interfaces;
 
 public interface IWindow
 {
+    event EventHandler<EventArgs>? Loaded;
+
+    event EventHandler<EventArgs>? Unloaded;
+
+    event EventHandler<KeyEventArgs>? KeyDown;
+
+    event EventHandler<KeyEventArgs>? KeyUp;
+
     string Title { get; set; }
 
     WindowState WindowState { get; set; }
@@ -39,8 +48,6 @@ public interface IWindow
     IVkSurface VkSurface { get; }
 
     void Show();
-
-    void ShowDialog();
 
     void HandleEvents();
 

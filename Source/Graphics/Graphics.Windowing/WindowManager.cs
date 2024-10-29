@@ -32,6 +32,14 @@ public static class WindowManager
             {
                 windows.Remove(window);
             }
+
+            windowsToAdd.Clear();
+            windowsToRemove.Clear();
+
+            if (windows.Count == 0)
+            {
+                Stop();
+            }
         }
     }
 
@@ -47,6 +55,6 @@ public static class WindowManager
 
     internal static void RemoveWindow(IWindow window)
     {
-        windowsToRemove.Remove(window);
+        windowsToRemove.Add(window);
     }
 }

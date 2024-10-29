@@ -13,7 +13,7 @@ public unsafe struct SdlVkSurface(Window* window) : IVkSurface, IDisposable
     {
         VkNonDispatchableHandle surface;
 
-        SdlWindow.Sdl.VulkanCreateSurface(window, instance, &surface);
+        SdlManager.Sdl.VulkanCreateSurface(window, instance, &surface);
 
         return surface;
     }
@@ -22,7 +22,7 @@ public unsafe struct SdlVkSurface(Window* window) : IVkSurface, IDisposable
     {
         fixed (uint* countPtr = &count)
         {
-            SdlWindow.Sdl.VulkanGetInstanceExtensions(window, countPtr, (byte**)0);
+            SdlManager.Sdl.VulkanGetInstanceExtensions(window, countPtr, (byte**)0);
 
             if (requiredExtensions == null)
             {
@@ -33,7 +33,7 @@ public unsafe struct SdlVkSurface(Window* window) : IVkSurface, IDisposable
                 requiredExtensions = (byte**)Marshal.ReAllocHGlobal((nint)requiredExtensions, (nint)count * sizeof(byte*));
             }
 
-            SdlWindow.Sdl.VulkanGetInstanceExtensions(window, countPtr, requiredExtensions);
+            SdlManager.Sdl.VulkanGetInstanceExtensions(window, countPtr, requiredExtensions);
 
             return requiredExtensions;
         }

@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Graphics.Core.Helpers;
 using Graphics.Windowing.Enums;
+using Graphics.Windowing.Interactivity;
 using Graphics.Windowing.Interfaces;
 using Graphics.Windowing.Structs;
 using Silk.NET.Core.Contexts;
@@ -16,7 +17,7 @@ public unsafe class SdlWindow : IWindow
     private WindowBorder windowBorder = WindowBorder.Resizable;
     private Vector2D<int> minimumSize;
     private Vector2D<int> maximumSize;
-    private Vector2D<int> position;
+    private Vector2D<int> position = new(50, 50);
     private Vector2D<int> size = new(800, 600);
     private bool isVisible = true;
     private bool topMost;
@@ -25,6 +26,14 @@ public unsafe class SdlWindow : IWindow
 
     private Window* window;
     private SdlVkSurface? vkSurface;
+
+    public event EventHandler<EventArgs>? Loaded;
+
+    public event EventHandler<EventArgs>? Unloaded;
+
+    public event EventHandler<KeyEventArgs>? KeyDown;
+
+    public event EventHandler<KeyEventArgs>? KeyUp;
 
     public string Title
     {
@@ -325,18 +334,6 @@ public unsafe class SdlWindow : IWindow
         WindowManager.AddWindow(this);
     }
 
-    public void ShowDialog()
-    {
-        Init();
-
-        SdlManager.Sdl.ShowWindow(window);
-
-        while (true)
-        {
-            // Poll events
-        }
-    }
-
     public void HandleEvents()
     {
         uint id = SdlManager.Sdl.GetWindowID(window);
@@ -402,7 +399,7 @@ public unsafe class SdlWindow : IWindow
             flags |= WindowFlags.AlwaysOnTop;
         }
 
-        if (ShowInTaskbar)
+        if (!ShowInTaskbar)
         {
             flags |= WindowFlags.SkipTaskbar;
         }
@@ -415,6 +412,8 @@ public unsafe class SdlWindow : IWindow
                                              Size.X,
                                              Size.Y,
                                              (uint)flags);
+
+        Loaded?.Invoke(this, EventArgs.Empty);
     }
 
     private void OnEvent(Event @event)
@@ -424,10 +423,31 @@ public unsafe class SdlWindow : IWindow
         switch (type)
         {
             case EventType.Quit:
+                Unloaded?.Invoke(this, EventArgs.Empty);
                 break;
             case EventType.Windowevent:
+                {
+                    WindowEventID windowEventID = (WindowEventID)@event.Window.Event;
+
+                    switch (windowEventID)
+                    {
+                        case WindowEventID.Resized:
+                            break;
+                        case WindowEventID.SizeChanged:
+                            break;
+                        case WindowEventID.FocusGained:
+                            break;
+                        case WindowEventID.FocusLost:
+                            break;
+                        case WindowEventID.Close:
+                            Close();
+                            break;
+                    }
+                }
                 break;
             case EventType.Keydown:
+                {
+                }
                 break;
             case EventType.Keyup:
                 break;
@@ -440,8 +460,6 @@ public unsafe class SdlWindow : IWindow
             case EventType.Mousebuttonup:
                 break;
             case EventType.Mousewheel:
-                break;
-            default:
                 break;
         }
     }
