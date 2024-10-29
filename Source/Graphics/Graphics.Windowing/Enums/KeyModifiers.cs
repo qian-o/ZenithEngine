@@ -26,15 +26,5 @@ public enum KeyModifiers
     /// <summary>
     /// The super key.
     /// </summary>
-    Super = 1 << 3,
-
-    /// <summary>
-    /// The caps lock key.
-    /// </summary>
-    CapsLock = 1 << 4,
-
-    /// <summary>
-    /// The num lock key.
-    /// </summary>
-    NumLock = 1 << 5
+    Super = 1 << 3
 }

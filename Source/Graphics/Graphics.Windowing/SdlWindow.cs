@@ -461,8 +461,10 @@ public unsafe class SdlWindow : IWindow
                 ProcessWindowEvent(@event.Window);
                 break;
             case EventType.Keydown:
+                ProcessKeyboardEvent(@event.Key, true);
                 break;
             case EventType.Keyup:
+                ProcessKeyboardEvent(@event.Key, false);
                 break;
             case EventType.Textinput:
                 break;
@@ -497,6 +499,21 @@ public unsafe class SdlWindow : IWindow
             case WindowEventID.Close:
                 Close();
                 break;
+        }
+    }
+
+    private void ProcessKeyboardEvent(KeyboardEvent keyboardEvent, bool isKeyDown)
+    {
+        Key key = SdlManager.GetKey(keyboardEvent.Keysym.Scancode);
+        KeyModifiers modifiers = SdlManager.GetKeyModifiers((Keymod)keyboardEvent.Keysym.Mod);
+
+        if (isKeyDown)
+        {
+            KeyDown?.Invoke(this, new KeyEventArgs(key, modifiers));
+        }
+        else
+        {
+            KeyUp?.Invoke(this, new KeyEventArgs(key, modifiers));
         }
     }
 }
