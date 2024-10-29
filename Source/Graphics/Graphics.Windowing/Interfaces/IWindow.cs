@@ -11,15 +11,21 @@ public interface IWindow
 
     event EventHandler<EventArgs>? Unloaded;
 
+    event EventHandler<StateChangedEventArgs>? StateChanged;
+
+    event EventHandler<PositionChangedEventArgs>? PositionChanged;
+
+    event EventHandler<SizeChangedEventArgs>? SizeChanged;
+
     event EventHandler<KeyEventArgs>? KeyDown;
 
     event EventHandler<KeyEventArgs>? KeyUp;
 
     string Title { get; set; }
 
-    WindowState WindowState { get; set; }
+    WindowState State { get; set; }
 
-    WindowBorder WindowBorder { get; set; }
+    WindowBorder Border { get; set; }
 
     Vector2D<int> MinimumSize { get; set; }
 

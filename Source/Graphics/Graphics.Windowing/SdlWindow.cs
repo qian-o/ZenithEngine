@@ -12,9 +12,27 @@ namespace Graphics.Windowing;
 
 public unsafe class SdlWindow : IWindow
 {
+    public event EventHandler<EventArgs>? Loaded;
+
+    public event EventHandler<EventArgs>? Unloaded;
+
+    public event EventHandler<StateChangedEventArgs>? StateChanged;
+
+    public event EventHandler<PositionChangedEventArgs>? PositionChanged;
+
+    public event EventHandler<SizeChangedEventArgs>? SizeChanged;
+
+    public event EventHandler<KeyEventArgs>? KeyDown;
+
+    public event EventHandler<KeyEventArgs>? KeyUp;
+
+    private Window* window;
+    private bool isLoopRunning;
+    private SdlVkSurface? vkSurface;
+
     private string title = "SdlWindow";
-    private WindowState windowState = WindowState.Normal;
-    private WindowBorder windowBorder = WindowBorder.Resizable;
+    private WindowState state = WindowState.Normal;
+    private WindowBorder border = WindowBorder.Resizable;
     private Vector2D<int> minimumSize;
     private Vector2D<int> maximumSize;
     private Vector2D<int> position = new(50, 50);
@@ -23,18 +41,6 @@ public unsafe class SdlWindow : IWindow
     private bool topMost;
     private bool showInTaskbar = true;
     private float opacity = 1.0f;
-
-    private Window* window;
-    private bool isLoopRunning;
-    private SdlVkSurface? vkSurface;
-
-    public event EventHandler<EventArgs>? Loaded;
-
-    public event EventHandler<EventArgs>? Unloaded;
-
-    public event EventHandler<KeyEventArgs>? KeyDown;
-
-    public event EventHandler<KeyEventArgs>? KeyUp;
 
     public string Title
     {
@@ -53,15 +59,15 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public WindowState WindowState
+    public WindowState State
     {
         get
         {
-            return windowState;
+            return state;
         }
         set
         {
-            windowState = value;
+            state = value;
 
             if (IsCreated)
             {
@@ -84,15 +90,15 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public WindowBorder WindowBorder
+    public WindowBorder Border
     {
         get
         {
-            return windowBorder;
+            return border;
         }
         set
         {
-            windowBorder = value;
+            border = value;
 
             if (IsCreated)
             {
@@ -335,7 +341,7 @@ public unsafe class SdlWindow : IWindow
 
         WindowFlags flags = IsVisible ? WindowFlags.Shown : WindowFlags.Hidden;
 
-        switch (WindowState)
+        switch (State)
         {
             case WindowState.Normal:
                 flags |= WindowFlags.Resizable;
@@ -351,7 +357,7 @@ public unsafe class SdlWindow : IWindow
                 break;
         }
 
-        switch (WindowBorder)
+        switch (Border)
         {
             case WindowBorder.Resizable:
                 flags |= WindowFlags.Resizable;
@@ -435,13 +441,20 @@ public unsafe class SdlWindow : IWindow
 
                     switch (windowEventID)
                     {
+                        case WindowEventID.Moved:
+                            PositionChanged?.Invoke(this, new PositionChangedEventArgs(@event.Window.Data1, @event.Window.Data2));
+                            break;
                         case WindowEventID.Resized:
+                            SizeChanged?.Invoke(this, new SizeChangedEventArgs(@event.Window.Data1, @event.Window.Data2));
                             break;
-                        case WindowEventID.SizeChanged:
+                        case WindowEventID.Minimized:
+                            StateChanged?.Invoke(this, new StateChangedEventArgs(WindowState.Minimized));
                             break;
-                        case WindowEventID.FocusGained:
+                        case WindowEventID.Maximized:
+                            StateChanged?.Invoke(this, new StateChangedEventArgs(WindowState.Maximized));
                             break;
-                        case WindowEventID.FocusLost:
+                        case WindowEventID.Restored:
+                            StateChanged?.Invoke(this, new StateChangedEventArgs(WindowState.Normal));
                             break;
                         case WindowEventID.Close:
                             Close();
