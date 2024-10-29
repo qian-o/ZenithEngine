@@ -155,7 +155,7 @@ public unsafe class SdlWindow : IWindow
 
             if (IsCreated)
             {
-                SdlManager.Sdl.SetWindowMinimumSize(window, (int)value.X, (int)value.Y);
+                SdlManager.Sdl.SetWindowMinimumSize(window, value.X, value.Y);
             }
         }
     }
@@ -172,7 +172,7 @@ public unsafe class SdlWindow : IWindow
 
             if (IsCreated)
             {
-                SdlManager.Sdl.SetWindowMaximumSize(window, (int)value.X, (int)value.Y);
+                SdlManager.Sdl.SetWindowMaximumSize(window, value.X, value.Y);
             }
         }
     }
@@ -197,7 +197,7 @@ public unsafe class SdlWindow : IWindow
 
             if (IsCreated)
             {
-                SdlManager.Sdl.SetWindowPosition(window, (int)value.X, (int)value.Y);
+                SdlManager.Sdl.SetWindowPosition(window, value.X, value.Y);
             }
         }
     }
@@ -222,7 +222,7 @@ public unsafe class SdlWindow : IWindow
 
             if (IsCreated)
             {
-                SdlManager.Sdl.SetWindowSize(window, (int)value.X, (int)value.Y);
+                SdlManager.Sdl.SetWindowSize(window, value.X, value.Y);
             }
         }
     }

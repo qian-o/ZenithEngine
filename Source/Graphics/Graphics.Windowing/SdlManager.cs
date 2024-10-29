@@ -144,7 +144,7 @@ internal static unsafe class SdlManager
 
     public static Key GetKey(Scancode scancode)
     {
-        return keyMap.TryGetValue(scancode, out var key) ? key : Key.Unknown;
+        return keyMap.TryGetValue(scancode, out Key key) ? key : Key.Unknown;
     }
 
     public static KeyModifiers GetKeyModifiers(Keymod keymod)
