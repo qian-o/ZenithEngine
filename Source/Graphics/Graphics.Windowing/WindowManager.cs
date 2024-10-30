@@ -26,15 +26,6 @@ public static class WindowManager
                 window.DoEvents();
             }
 
-            if (isRunning)
-            {
-                foreach (IWindow window in windows)
-                {
-                    window.DoUpdate();
-                    window.DoRender();
-                }
-            }
-
             foreach (IWindow window in windowsToAdd)
             {
                 windows.Add(window);
@@ -47,6 +38,15 @@ public static class WindowManager
 
             windowsToAdd.Clear();
             windowsToRemove.Clear();
+
+            if (isRunning)
+            {
+                foreach (IWindow window in windows)
+                {
+                    window.DoUpdate();
+                    window.DoRender();
+                }
+            }
 
             if (windows.Count == 0)
             {
