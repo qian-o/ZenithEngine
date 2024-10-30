@@ -43,14 +43,13 @@ public static class WindowManager
             {
                 Parallel.ForEach(windows, window =>
                 {
-                    // Test the possibility of deadlock caused by cross-threading.
+                    window.DoUpdate();
                 });
 
-                foreach (IWindow window in windows)
+                Parallel.ForEach(windows, window =>
                 {
-                    window.DoUpdate();
                     window.DoRender();
-                }
+                });
             }
 
             if (windows.Count == 0)

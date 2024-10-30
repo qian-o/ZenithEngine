@@ -66,11 +66,12 @@ internal sealed unsafe class Program
 
     private static void Update(object? sender, TimeEventArgs e)
     {
-        imGuiController.Update((float)e.DeltaTime);
     }
 
     private static void Render(object? sender, TimeEventArgs e)
     {
+        imGuiController.Update((float)e.DeltaTime);
+
         ImGui.ShowDemoWindow();
 
         commandList.Begin();
