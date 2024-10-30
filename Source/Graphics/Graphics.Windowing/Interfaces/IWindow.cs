@@ -7,38 +7,6 @@ namespace Graphics.Windowing.Interfaces;
 
 public interface IWindow
 {
-    event EventHandler<EventArgs>? Loaded;
-
-    event EventHandler<EventArgs>? Unloaded;
-
-    event EventHandler<ValueEventArgs<WindowState>>? StateChanged;
-
-    event EventHandler<ValueEventArgs<Vector2D<int>>>? PositionChanged;
-
-    event EventHandler<ValueEventArgs<Vector2D<int>>>? SizeChanged;
-
-    event EventHandler<KeyEventArgs>? KeyDown;
-
-    event EventHandler<KeyEventArgs>? KeyUp;
-
-    event EventHandler<ValueEventArgs<char>>? KeyChar;
-
-    event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseMove;
-
-    event EventHandler<MouseButtonEventArgs>? MouseDown;
-
-    event EventHandler<MouseButtonEventArgs>? MouseUp;
-
-    event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseWheel;
-
-    event EventHandler<MouseButtonEventArgs>? Click;
-
-    event EventHandler<MouseButtonEventArgs>? DoubleClick;
-
-    event EventHandler<TimeEventArgs>? Update;
-
-    event EventHandler<TimeEventArgs>? Render;
-
     string Title { get; set; }
 
     WindowState State { get; set; }
@@ -74,6 +42,40 @@ public interface IWindow
     bool IsFocused { get; }
 
     IVkSurface VkSurface { get; }
+
+    double Time { get; }
+
+    event EventHandler<EventArgs>? Loaded;
+
+    event EventHandler<EventArgs>? Unloaded;
+
+    event EventHandler<ValueEventArgs<WindowState>>? StateChanged;
+
+    event EventHandler<ValueEventArgs<Vector2D<int>>>? PositionChanged;
+
+    event EventHandler<ValueEventArgs<Vector2D<int>>>? SizeChanged;
+
+    event EventHandler<KeyEventArgs>? KeyDown;
+
+    event EventHandler<KeyEventArgs>? KeyUp;
+
+    event EventHandler<ValueEventArgs<char>>? KeyChar;
+
+    event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseMove;
+
+    event EventHandler<MouseButtonEventArgs>? MouseDown;
+
+    event EventHandler<MouseButtonEventArgs>? MouseUp;
+
+    event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseWheel;
+
+    event EventHandler<MouseButtonEventArgs>? Click;
+
+    event EventHandler<MouseButtonEventArgs>? DoubleClick;
+
+    event EventHandler<TimeEventArgs>? Update;
+
+    event EventHandler<TimeEventArgs>? Render;
 
     void Show();
 

@@ -1,9 +1,7 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System.Text;
 using Graphics.Core.Helpers;
 using Graphics.Windowing.Enums;
 using Graphics.Windowing.Events;
-using Graphics.Windowing.Interfaces;
 using Graphics.Windowing.Structs;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Maths;
@@ -11,44 +9,8 @@ using Silk.NET.SDL;
 
 namespace Graphics.Windowing;
 
-public unsafe class SdlWindow : IWindow
+public unsafe class SdlWindow : WindowImplementationBase
 {
-    public event EventHandler<EventArgs>? Loaded;
-
-    public event EventHandler<EventArgs>? Unloaded;
-
-    public event EventHandler<ValueEventArgs<WindowState>>? StateChanged;
-
-    public event EventHandler<ValueEventArgs<Vector2D<int>>>? PositionChanged;
-
-    public event EventHandler<ValueEventArgs<Vector2D<int>>>? SizeChanged;
-
-    public event EventHandler<KeyEventArgs>? KeyDown;
-
-    public event EventHandler<KeyEventArgs>? KeyUp;
-
-    public event EventHandler<ValueEventArgs<char>>? KeyChar;
-
-    public event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseMove;
-
-    public event EventHandler<MouseButtonEventArgs>? MouseDown;
-
-    public event EventHandler<MouseButtonEventArgs>? MouseUp;
-
-    public event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseWheel;
-
-    public event EventHandler<MouseButtonEventArgs>? Click;
-
-    public event EventHandler<MouseButtonEventArgs>? DoubleClick;
-
-    public event EventHandler<TimeEventArgs>? Update;
-
-    public event EventHandler<TimeEventArgs>? Render;
-
-    private readonly Stopwatch updateStopwatch = new();
-    private readonly Stopwatch renderStopwatch = new();
-    private readonly Stopwatch lifetimeStopwatch = new();
-
     private Window* window;
     private bool isLoopRunning;
     private SdlVkSurface? vkSurface;
@@ -64,10 +26,8 @@ public unsafe class SdlWindow : IWindow
     private bool topMost;
     private bool showInTaskbar = true;
     private float opacity = 1.0f;
-    private double updatePeriod;
-    private double renderPeriod;
 
-    public string Title
+    public override string Title
     {
         get
         {
@@ -84,7 +44,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public WindowState State
+    public override WindowState State
     {
         get
         {
@@ -137,7 +97,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public WindowBorder Border
+    public override WindowBorder Border
     {
         get
         {
@@ -168,7 +128,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public Vector2D<int> MinimumSize
+    public override Vector2D<int> MinimumSize
     {
         get
         {
@@ -185,7 +145,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public Vector2D<int> MaximumSize
+    public override Vector2D<int> MaximumSize
     {
         get
         {
@@ -202,7 +162,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public Vector2D<int> Position
+    public override Vector2D<int> Position
     {
         get
         {
@@ -227,7 +187,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public Vector2D<int> Size
+    public override Vector2D<int> Size
     {
         get
         {
@@ -252,7 +212,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public bool IsVisible
+    public override bool IsVisible
     {
         get
         {
@@ -276,7 +236,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public bool TopMost
+    public override bool TopMost
     {
         get
         {
@@ -300,7 +260,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public bool ShowInTaskbar
+    public override bool ShowInTaskbar
     {
         get
         {
@@ -317,7 +277,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public float Opacity
+    public override float Opacity
     {
         get
         {
@@ -334,31 +294,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public double UpdatePerSecond
-    {
-        get
-        {
-            return updatePeriod <= double.Epsilon ? 0.0 : 1.0 / updatePeriod;
-        }
-        set
-        {
-            updatePeriod = value <= double.Epsilon ? 0.0 : 1.0 / value;
-        }
-    }
-
-    public double RenderPerSecond
-    {
-        get
-        {
-            return renderPeriod <= double.Epsilon ? 0.0 : 1.0 / renderPeriod;
-        }
-        set
-        {
-            renderPeriod = value <= double.Epsilon ? 0.0 : 1.0 / value;
-        }
-    }
-
-    public bool IsCreated
+    public override bool IsCreated
     {
         get
         {
@@ -366,7 +302,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public nint Handle
+    public override nint Handle
     {
         get
         {
@@ -374,7 +310,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public float DpiScale
+    public override float DpiScale
     {
         get
         {
@@ -387,7 +323,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public bool IsFocused
+    public override bool IsFocused
     {
         get
         {
@@ -395,7 +331,7 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public IVkSurface VkSurface
+    public override IVkSurface VkSurface
     {
         get
         {
@@ -403,7 +339,31 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
-    public void Show()
+    public override event EventHandler<ValueEventArgs<WindowState>>? StateChanged;
+
+    public override event EventHandler<ValueEventArgs<Vector2D<int>>>? PositionChanged;
+
+    public override event EventHandler<ValueEventArgs<Vector2D<int>>>? SizeChanged;
+
+    public override event EventHandler<KeyEventArgs>? KeyDown;
+
+    public override event EventHandler<KeyEventArgs>? KeyUp;
+
+    public override event EventHandler<ValueEventArgs<char>>? KeyChar;
+
+    public override event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseMove;
+
+    public override event EventHandler<MouseButtonEventArgs>? MouseDown;
+
+    public override event EventHandler<MouseButtonEventArgs>? MouseUp;
+
+    public override event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseWheel;
+
+    public override event EventHandler<MouseButtonEventArgs>? Click;
+
+    public override event EventHandler<MouseButtonEventArgs>? DoubleClick;
+
+    public override void Show()
     {
         if (isLoopRunning)
         {
@@ -466,14 +426,10 @@ public unsafe class SdlWindow : IWindow
 
         isLoopRunning = true;
 
-        Loaded?.Invoke(this, EventArgs.Empty);
-
-        updateStopwatch.Start();
-        renderStopwatch.Start();
-        lifetimeStopwatch.Start();
+        base.Show();
     }
 
-    public void Close()
+    public override void Close()
     {
         if (!isLoopRunning)
         {
@@ -488,14 +444,10 @@ public unsafe class SdlWindow : IWindow
 
         WindowManager.RemoveWindow(this);
 
-        Unloaded?.Invoke(this, EventArgs.Empty);
-
-        updateStopwatch.Stop();
-        renderStopwatch.Stop();
-        lifetimeStopwatch.Stop();
+        base.Close();
     }
 
-    public void DoEvents()
+    public override void DoEvents()
     {
         uint id = SdlManager.Sdl.GetWindowID(window);
 
@@ -506,35 +458,11 @@ public unsafe class SdlWindow : IWindow
                 continue;
             }
 
-            OnEvent(@event);
+            ProcessEvent(@event);
         }
     }
 
-    public void DoUpdate()
-    {
-        double delta = updateStopwatch.Elapsed.TotalSeconds;
-
-        if (delta >= updatePeriod)
-        {
-            updateStopwatch.Restart();
-
-            Update?.Invoke(this, new TimeEventArgs(delta, lifetimeStopwatch.Elapsed.TotalSeconds));
-        }
-    }
-
-    public void DoRender()
-    {
-        double delta = renderStopwatch.Elapsed.TotalSeconds;
-
-        if (delta >= renderPeriod)
-        {
-            renderStopwatch.Restart();
-
-            Render?.Invoke(this, new TimeEventArgs(delta, lifetimeStopwatch.Elapsed.TotalSeconds));
-        }
-    }
-
-    private void OnEvent(Event @event)
+    private void ProcessEvent(Event @event)
     {
         EventType type = (EventType)@event.Type;
 
