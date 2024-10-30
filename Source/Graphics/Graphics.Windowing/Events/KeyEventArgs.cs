@@ -1,6 +1,6 @@
 ﻿using Graphics.Windowing.Enums;
 
-namespace Graphics.Windowing.Interactivity;
+namespace Graphics.Windowing.Events;
 
 public class KeyEventArgs(Key key, KeyModifiers modifiers) : EventArgs
 {

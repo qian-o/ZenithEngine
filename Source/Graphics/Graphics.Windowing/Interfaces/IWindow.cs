@@ -1,5 +1,5 @@
 ﻿using Graphics.Windowing.Enums;
-using Graphics.Windowing.Interactivity;
+using Graphics.Windowing.Events;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Maths;
 
@@ -22,6 +22,18 @@ public interface IWindow
     event EventHandler<KeyEventArgs>? KeyUp;
 
     event EventHandler<ValueEventArgs<char>>? KeyChar;
+
+    event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseMove;
+
+    event EventHandler<MouseButtonEventArgs>? MouseDown;
+
+    event EventHandler<MouseButtonEventArgs>? MouseUp;
+
+    event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseWheel;
+
+    event EventHandler<MouseButtonEventArgs>? Click;
+
+    event EventHandler<MouseButtonEventArgs>? DoubleClick;
 
     string Title { get; set; }
 

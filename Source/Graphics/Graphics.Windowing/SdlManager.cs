@@ -173,4 +173,16 @@ internal static unsafe class SdlManager
 
         return keyModifiers;
     }
+
+    public static MouseButton GetMouseButton(byte button)
+    {
+        return button switch
+        {
+            0 => MouseButton.Unknown,
+            1 => MouseButton.Left,
+            2 => MouseButton.Middle,
+            3 => MouseButton.Right,
+            _ => (MouseButton)(button - 1)
+        };
+    }
 }

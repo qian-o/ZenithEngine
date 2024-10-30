@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Graphics.Core.Helpers;
 using Graphics.Windowing.Enums;
-using Graphics.Windowing.Interactivity;
+using Graphics.Windowing.Events;
 using Graphics.Windowing.Interfaces;
 using Graphics.Windowing.Structs;
 using Silk.NET.Core.Contexts;
@@ -27,6 +27,18 @@ public unsafe class SdlWindow : IWindow
     public event EventHandler<KeyEventArgs>? KeyUp;
 
     public event EventHandler<ValueEventArgs<char>>? KeyChar;
+
+    public event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseMove;
+
+    public event EventHandler<MouseButtonEventArgs>? MouseDown;
+
+    public event EventHandler<MouseButtonEventArgs>? MouseUp;
+
+    public event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseWheel;
+
+    public event EventHandler<MouseButtonEventArgs>? Click;
+
+    public event EventHandler<MouseButtonEventArgs>? DoubleClick;
 
     private Window* window;
     private bool isLoopRunning;
@@ -472,12 +484,16 @@ public unsafe class SdlWindow : IWindow
                 ProcessTextInputEvent(@event.Text);
                 break;
             case EventType.Mousemotion:
+                MouseMove?.Invoke(this, new ValueEventArgs<Vector2D<int>>(new Vector2D<int>(@event.Motion.X, @event.Motion.Y)));
                 break;
             case EventType.Mousebuttondown:
+                ProcessMouseButtonEvent(@event.Button, true);
                 break;
             case EventType.Mousebuttonup:
+                ProcessMouseButtonEvent(@event.Button, false);
                 break;
             case EventType.Mousewheel:
+                MouseWheel?.Invoke(this, new ValueEventArgs<Vector2D<int>>(new Vector2D<int>(@event.Wheel.X, @event.Wheel.Y)));
                 break;
         }
     }
@@ -535,6 +551,29 @@ public unsafe class SdlWindow : IWindow
             }
 
             KeyChar?.Invoke(this, new ValueEventArgs<char>(chars[i]));
+        }
+    }
+
+    private void ProcessMouseButtonEvent(MouseButtonEvent mouseButtonEvent, bool isMouseDown)
+    {
+        MouseButton button = SdlManager.GetMouseButton(mouseButtonEvent.Button);
+
+        if (isMouseDown)
+        {
+            MouseDown?.Invoke(this, new MouseButtonEventArgs(button, new Vector2D<int>(mouseButtonEvent.X, mouseButtonEvent.Y)));
+        }
+        else
+        {
+            MouseUp?.Invoke(this, new MouseButtonEventArgs(button, new Vector2D<int>(mouseButtonEvent.X, mouseButtonEvent.Y)));
+        }
+
+        if (mouseButtonEvent.Clicks == 1)
+        {
+            Click?.Invoke(this, new MouseButtonEventArgs(button, new Vector2D<int>(mouseButtonEvent.X, mouseButtonEvent.Y)));
+        }
+        else if (mouseButtonEvent.Clicks == 2)
+        {
+            DoubleClick?.Invoke(this, new MouseButtonEventArgs(button, new Vector2D<int>(mouseButtonEvent.X, mouseButtonEvent.Y)));
         }
     }
 }
