@@ -71,17 +71,19 @@ internal sealed unsafe class Program
 
     private static void Render(object? sender, TimeEventArgs e)
     {
+        imGuiController.Begin();
+
+        ImGui.ShowDemoWindow();
+
+        imGuiController.End();
+
         commandList.Begin();
         {
-            imGuiController.Begin();
-
-            ImGui.ShowDemoWindow();
-
             commandList.SetFramebuffer(swapchain.Framebuffer);
             commandList.ClearColorTarget(0, RgbaFloat.Black);
             commandList.ClearDepthStencil(1.0f);
 
-            imGuiController.End(commandList);
+            imGuiController.Render(commandList);
         }
         commandList.End();
 

@@ -155,24 +155,33 @@ public unsafe class ImGuiController : DisposableObject
         _frameBegun = true;
     }
 
-    public void End(CommandList commandList)
+    public void End()
     {
+        SetContext();
+
         if (_frameBegun)
         {
             DearImGui.Render();
 
-            _imGuiRenderer.RenderImDrawData(commandList, DearImGui.GetDrawData());
-
             DearImGui.UpdatePlatformWindows();
+        }
 
-            foreach (ImGuiPlatform platform in _platforms)
-            {
-                commandList.SetFramebuffer(platform.Swapchain!.Framebuffer);
+        _frameBegun = false;
+    }
 
-                _imGuiRenderer.RenderImDrawData(commandList, platform.Viewport->DrawData);
-            }
+    public void Render(CommandList commandList)
+    {
+        SetContext();
 
-            _frameBegun = false;
+        DearImGui.Render();
+
+        _imGuiRenderer.RenderImDrawData(commandList, DearImGui.GetDrawData());
+
+        foreach (ImGuiPlatform platform in _platforms)
+        {
+            commandList.SetFramebuffer(platform.Swapchain!.Framebuffer);
+
+            _imGuiRenderer.RenderImDrawData(commandList, platform.Viewport->DrawData);
         }
     }
 
