@@ -28,15 +28,11 @@ public static class WindowManager
 
             if (isRunning)
             {
-                Parallel.ForEach(windows, window =>
+                foreach (IWindow window in windows)
                 {
                     window.DoUpdate();
-                });
-
-                Parallel.ForEach(windows, window =>
-                {
                     window.DoRender();
-                });
+                }
             }
 
             foreach (IWindow window in windowsToAdd)

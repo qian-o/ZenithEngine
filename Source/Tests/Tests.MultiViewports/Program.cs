@@ -23,18 +23,18 @@ internal sealed unsafe class Program
 
     private static void Main(string[] _)
     {
-        mainWindow.Loaded += MainWindow_Loaded;
-        mainWindow.Unloaded += MainWindow_Unloaded;
-        mainWindow.PositionChanged += MainWindow_PositionChanged;
-        mainWindow.Update += MainWindow_Update;
-        mainWindow.Render += MainWindow_Render;
+        mainWindow.Loaded += Loaded;
+        mainWindow.Unloaded += Unloaded;
+        mainWindow.PositionChanged += PositionChanged;
+        mainWindow.Update += Update;
+        mainWindow.Render += Render;
 
         mainWindow.Show();
 
         WindowManager.Loop();
     }
 
-    private static void MainWindow_Loaded(object? sender, EventArgs e)
+    private static void Loaded(object? sender, EventArgs e)
     {
         context = new();
         device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
@@ -48,7 +48,7 @@ internal sealed unsafe class Program
         commandList = device.Factory.CreateGraphicsCommandList();
     }
 
-    private static void MainWindow_Unloaded(object? sender, EventArgs e)
+    private static void Unloaded(object? sender, EventArgs e)
     {
         commandList.Dispose();
         imGuiController.Dispose();
@@ -59,17 +59,17 @@ internal sealed unsafe class Program
         WindowManager.Stop();
     }
 
-    private static void MainWindow_PositionChanged(object? sender, ValueEventArgs<Vector2D<int>> e)
+    private static void PositionChanged(object? sender, ValueEventArgs<Vector2D<int>> e)
     {
         swapchain.Resize();
     }
 
-    private static void MainWindow_Update(object? sender, TimeEventArgs e)
+    private static void Update(object? sender, TimeEventArgs e)
     {
         imGuiController.Update((float)e.DeltaTime);
     }
 
-    private static void MainWindow_Render(object? sender, TimeEventArgs e)
+    private static void Render(object? sender, TimeEventArgs e)
     {
         ImGui.ShowDemoWindow();
 
