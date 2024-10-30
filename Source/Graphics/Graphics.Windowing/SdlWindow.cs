@@ -40,6 +40,10 @@ public unsafe class SdlWindow : IWindow
 
     public event EventHandler<MouseButtonEventArgs>? DoubleClick;
 
+    public event EventHandler<TimeEventArgs>? Update;
+
+    public event EventHandler<TimeEventArgs>? Render;
+
     private Window* window;
     private bool isLoopRunning;
     private SdlVkSurface? vkSurface;
@@ -441,11 +445,13 @@ public unsafe class SdlWindow : IWindow
             return;
         }
 
+        vkSurface?.Dispose();
+
+        isLoopRunning = false;
+
         SdlManager.Sdl.DestroyWindow(window);
 
         WindowManager.RemoveWindow(this);
-
-        isLoopRunning = false;
 
         Unloaded?.Invoke(this, EventArgs.Empty);
     }

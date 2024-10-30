@@ -35,6 +35,10 @@ public interface IWindow
 
     event EventHandler<MouseButtonEventArgs>? DoubleClick;
 
+    event EventHandler<TimeEventArgs>? Update;
+
+    event EventHandler<TimeEventArgs>? Render;
+
     string Title { get; set; }
 
     WindowState State { get; set; }
