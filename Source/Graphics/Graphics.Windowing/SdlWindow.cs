@@ -516,9 +516,9 @@ public unsafe class SdlWindow : IWindow
 
         if (delta >= updatePeriod)
         {
-            Update?.Invoke(this, new TimeEventArgs(delta, lifetimeStopwatch.Elapsed.TotalSeconds));
-
             updateStopwatch.Restart();
+
+            Update?.Invoke(this, new TimeEventArgs(delta, lifetimeStopwatch.Elapsed.TotalSeconds));
         }
     }
 
@@ -528,9 +528,9 @@ public unsafe class SdlWindow : IWindow
 
         if (delta >= renderPeriod)
         {
-            Render?.Invoke(this, new TimeEventArgs(delta, lifetimeStopwatch.Elapsed.TotalSeconds));
-
             renderStopwatch.Restart();
+
+            Render?.Invoke(this, new TimeEventArgs(delta, lifetimeStopwatch.Elapsed.TotalSeconds));
         }
     }
 
