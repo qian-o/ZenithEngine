@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using Graphics.Core.Helpers;
 using Graphics.Windowing.Enums;
 using Graphics.Windowing.Events;
@@ -44,6 +45,10 @@ public unsafe class SdlWindow : IWindow
 
     public event EventHandler<TimeEventArgs>? Render;
 
+    private readonly Stopwatch updateStopwatch = new();
+    private readonly Stopwatch renderStopwatch = new();
+    private readonly Stopwatch lifetimeStopwatch = new();
+
     private Window* window;
     private bool isLoopRunning;
     private SdlVkSurface? vkSurface;
@@ -59,6 +64,8 @@ public unsafe class SdlWindow : IWindow
     private bool topMost;
     private bool showInTaskbar = true;
     private float opacity = 1.0f;
+    private double updatePeriod;
+    private double renderPeriod;
 
     public string Title
     {
@@ -327,6 +334,30 @@ public unsafe class SdlWindow : IWindow
         }
     }
 
+    public double UpdatePerSecond
+    {
+        get
+        {
+            return updatePeriod <= double.Epsilon ? 0.0 : 1.0 / updatePeriod;
+        }
+        set
+        {
+            updatePeriod = value <= double.Epsilon ? 0.0 : 1.0 / value;
+        }
+    }
+
+    public double RenderPerSecond
+    {
+        get
+        {
+            return renderPeriod <= double.Epsilon ? 0.0 : 1.0 / renderPeriod;
+        }
+        set
+        {
+            renderPeriod = value <= double.Epsilon ? 0.0 : 1.0 / value;
+        }
+    }
+
     public bool IsCreated
     {
         get
@@ -436,6 +467,10 @@ public unsafe class SdlWindow : IWindow
         isLoopRunning = true;
 
         Loaded?.Invoke(this, EventArgs.Empty);
+
+        updateStopwatch.Start();
+        renderStopwatch.Start();
+        lifetimeStopwatch.Start();
     }
 
     public void Close()
@@ -454,9 +489,13 @@ public unsafe class SdlWindow : IWindow
         WindowManager.RemoveWindow(this);
 
         Unloaded?.Invoke(this, EventArgs.Empty);
+
+        updateStopwatch.Stop();
+        renderStopwatch.Stop();
+        lifetimeStopwatch.Stop();
     }
 
-    public void HandleEvents()
+    public void DoEvents()
     {
         uint id = SdlManager.Sdl.GetWindowID(window);
 
@@ -468,6 +507,30 @@ public unsafe class SdlWindow : IWindow
             }
 
             OnEvent(@event);
+        }
+    }
+
+    public void DoUpdate()
+    {
+        double delta = updateStopwatch.Elapsed.TotalSeconds;
+
+        if (delta >= updatePeriod)
+        {
+            Update?.Invoke(this, new TimeEventArgs(delta, lifetimeStopwatch.Elapsed.TotalSeconds));
+
+            updateStopwatch.Restart();
+        }
+    }
+
+    public void DoRender()
+    {
+        double delta = renderStopwatch.Elapsed.TotalSeconds;
+
+        if (delta >= renderPeriod)
+        {
+            Render?.Invoke(this, new TimeEventArgs(delta, lifetimeStopwatch.Elapsed.TotalSeconds));
+
+            renderStopwatch.Restart();
         }
     }
 

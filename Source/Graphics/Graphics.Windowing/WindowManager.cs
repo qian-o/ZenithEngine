@@ -20,8 +20,18 @@ public static class WindowManager
 
             foreach (IWindow window in windows)
             {
-                window.HandleEvents();
+                window.DoEvents();
             }
+
+            Parallel.ForEach(windows, window =>
+            {
+                window.DoUpdate();
+            });
+
+            Parallel.ForEach(windows, window =>
+            {
+                window.DoRender();
+            });
 
             foreach (IWindow window in windowsToAdd)
             {

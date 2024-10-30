@@ -1,8 +1,8 @@
 ﻿namespace Graphics.Windowing.Events;
 
-public class TimeEventArgs(float deltaTime, float totalTime) : EventArgs
+public class TimeEventArgs(double deltaTime, double totalTime) : EventArgs
 {
-    public float DeltaTime { get; } = deltaTime;
+    public double DeltaTime { get; } = deltaTime;
 
-    public float TotalTime { get; } = totalTime;
+    public double TotalTime { get; } = totalTime;
 }

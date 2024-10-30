@@ -61,6 +61,10 @@ public interface IWindow
 
     float Opacity { get; set; }
 
+    double UpdatePerSecond { get; set; }
+
+    double RenderPerSecond { get; set; }
+
     bool IsCreated { get; }
 
     nint Handle { get; }
@@ -75,5 +79,9 @@ public interface IWindow
 
     void Close();
 
-    void HandleEvents();
+    void DoEvents();
+
+    void DoUpdate();
+
+    void DoRender();
 }
