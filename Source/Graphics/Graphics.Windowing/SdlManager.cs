@@ -1,4 +1,6 @@
 ﻿using Graphics.Windowing.Enums;
+using Graphics.Windowing.Structs;
+using Silk.NET.Maths;
 using Silk.NET.SDL;
 
 namespace Graphics.Windowing;
@@ -140,6 +142,40 @@ internal static unsafe class SdlManager
         {
             Events.Add(ev);
         }
+    }
+
+    public static void SetTextInputRect(int x, int y, int w, int h)
+    {
+        Rectangle<int> rect = new(x, y, w, h);
+
+        Sdl.SetTextInputRect(&rect);
+    }
+
+    public static int GetDisplayCount()
+    {
+        return Sdl.GetNumVideoDisplays();
+    }
+
+    public static Display GetDisplay(int index)
+    {
+        string name = Sdl.GetDisplayNameS(index);
+
+        Rectangle<int> main;
+        Sdl.GetDisplayBounds(index, &main);
+
+        Rectangle<int> work;
+        Sdl.GetDisplayUsableBounds(index, &work);
+
+        float ddpi;
+        Sdl.GetDisplayDPI(index, &ddpi, null, null);
+
+        return new Display(index,
+                           name,
+                           main.Origin,
+                           main.Size,
+                           work.Origin,
+                           work.Size,
+                           ddpi == 0 ? 1.0f : ddpi / 96.0f);
     }
 
     public static Key GetKey(Scancode scancode)
