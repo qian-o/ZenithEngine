@@ -565,15 +565,15 @@ public unsafe class SdlWindow : IWindow
         else
         {
             MouseUp?.Invoke(this, new MouseButtonEventArgs(button, new Vector2D<int>(mouseButtonEvent.X, mouseButtonEvent.Y)));
-        }
 
-        if (mouseButtonEvent.Clicks == 1)
-        {
-            Click?.Invoke(this, new MouseButtonEventArgs(button, new Vector2D<int>(mouseButtonEvent.X, mouseButtonEvent.Y)));
-        }
-        else if (mouseButtonEvent.Clicks == 2)
-        {
-            DoubleClick?.Invoke(this, new MouseButtonEventArgs(button, new Vector2D<int>(mouseButtonEvent.X, mouseButtonEvent.Y)));
+            if (mouseButtonEvent.Clicks == 1)
+            {
+                Click?.Invoke(this, new MouseButtonEventArgs(button, new Vector2D<int>(mouseButtonEvent.X, mouseButtonEvent.Y)));
+            }
+            else if (mouseButtonEvent.Clicks == 2)
+            {
+                DoubleClick?.Invoke(this, new MouseButtonEventArgs(button, new Vector2D<int>(mouseButtonEvent.X, mouseButtonEvent.Y)));
+            }
         }
     }
 }
