@@ -10,7 +10,7 @@ public enum Cursor
 
     ResizeNS,
 
-    ResizeEW,
+    ResizeWE,
 
     ResizeNESW,
 

@@ -1,4 +1,5 @@
-﻿using Graphics.Windowing.Interfaces;
+﻿using Graphics.Windowing.Enums;
+using Graphics.Windowing.Interfaces;
 using Graphics.Windowing.Structs;
 
 namespace Graphics.Windowing;
@@ -70,6 +71,11 @@ public static class WindowManager
         }
 
         return false;
+    }
+
+    public static void SetCursor(Cursor cursor)
+    {
+        SdlManager.SetCursor(cursor);
     }
 
     public static void SetTextInputRect(int x, int y, int w, int h)
