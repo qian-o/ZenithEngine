@@ -542,7 +542,7 @@ public unsafe class SdlWindow : WindowImplementationBase
     {
         const int charSize = 32;
 
-        var chars = stackalloc char[charSize];
+        char* chars = stackalloc char[charSize];
         Encoding.UTF8.GetChars(&textInputEvent.Text[0], charSize, chars, charSize);
 
         for (int i = 0; i < charSize; i++)
