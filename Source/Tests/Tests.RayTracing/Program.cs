@@ -49,7 +49,7 @@ internal sealed unsafe class Program
                 commandList.ClearColorTarget(0, RgbaFloat.Black);
                 commandList.ClearDepthStencil(1.0f);
 
-                imGuiController.Render(commandList);
+                imGuiController.End(commandList);
             }
             commandList.End();
 

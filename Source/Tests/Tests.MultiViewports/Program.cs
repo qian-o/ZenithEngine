@@ -66,21 +66,22 @@ internal sealed unsafe class Program
 
     private static void Update(object? sender, TimeEventArgs e)
     {
+        imGuiController.Update((float)e.DeltaTime);
     }
 
     private static void Render(object? sender, TimeEventArgs e)
     {
-        imGuiController.Update((float)e.DeltaTime);
-
-        ImGui.ShowDemoWindow();
-
         commandList.Begin();
         {
+            imGuiController.Begin();
+
+            ImGui.ShowDemoWindow();
+
             commandList.SetFramebuffer(swapchain.Framebuffer);
             commandList.ClearColorTarget(0, RgbaFloat.Black);
             commandList.ClearDepthStencil(1.0f);
 
-            imGuiController.Render(commandList);
+            imGuiController.End(commandList);
         }
         commandList.End();
 

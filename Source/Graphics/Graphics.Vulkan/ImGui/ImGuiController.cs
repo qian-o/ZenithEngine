@@ -130,23 +130,22 @@ public unsafe class ImGuiController : DisposableObject
 
     public void Update(float deltaSeconds)
     {
-        if (_frameBegun)
-        {
-            DearImGui.Render();
-        }
-
-        DearImGui.SetCurrentContext(_imGuiContext);
-        ImPlot.SetCurrentContext(_imPlotContext);
-        ImNodes.SetCurrentContext(_imNodesContext);
-
-        ImPlot.SetImGuiContext(_imGuiContext);
-        ImNodes.SetImGuiContext(_imGuiContext);
-        ImGuizmo.SetImGuiContext(_imGuiContext);
+        SetContext();
 
         SetPerFrameImGuiData(deltaSeconds);
 
         UpdateMouseState();
         UpdateMouseCursor();
+    }
+
+    public void Begin()
+    {
+        SetContext();
+
+        if (_frameBegun)
+        {
+            DearImGui.Render();
+        }
 
         DearImGui.NewFrame();
         ImGuizmo.BeginFrame();
@@ -156,7 +155,7 @@ public unsafe class ImGuiController : DisposableObject
         _frameBegun = true;
     }
 
-    public void Render(CommandList commandList)
+    public void End(CommandList commandList)
     {
         if (_frameBegun)
         {
@@ -223,6 +222,17 @@ public unsafe class ImGuiController : DisposableObject
         ImNodes.DestroyContext(_imNodesContext);
         ImPlot.DestroyContext(_imPlotContext);
         DearImGui.DestroyContext(_imGuiContext);
+    }
+
+    private void SetContext()
+    {
+        DearImGui.SetCurrentContext(_imGuiContext);
+        ImPlot.SetCurrentContext(_imPlotContext);
+        ImNodes.SetCurrentContext(_imNodesContext);
+
+        ImPlot.SetImGuiContext(_imGuiContext);
+        ImNodes.SetImGuiContext(_imGuiContext);
+        ImGuizmo.SetImGuiContext(_imGuiContext);
     }
 
     private void SetPerFrameImGuiData(float deltaSeconds)
