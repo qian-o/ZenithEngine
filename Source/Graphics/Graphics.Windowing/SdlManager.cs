@@ -171,6 +171,43 @@ internal static unsafe class SdlManager
         }
     }
 
+    public static Key GetKey(Scancode scancode)
+    {
+        return keyMap.TryGetValue(scancode, out Key key) ? key : Key.Unknown;
+    }
+
+    public static KeyModifiers GetKeyModifiers(Keymod keymod)
+    {
+        KeyModifiers keyModifiers = KeyModifiers.None;
+
+        if (keymod.HasFlag(Keymod.Lshift) || keymod.HasFlag(Keymod.Rshift) || keymod.HasFlag(Keymod.Shift))
+        {
+            keyModifiers |= KeyModifiers.Shift;
+        }
+
+        if (keymod.HasFlag(Keymod.Lctrl) || keymod.HasFlag(Keymod.Rctrl) || keymod.HasFlag(Keymod.Ctrl))
+        {
+            keyModifiers |= KeyModifiers.Control;
+        }
+
+        if (keymod.HasFlag(Keymod.Lalt) || keymod.HasFlag(Keymod.Ralt) || keymod.HasFlag(Keymod.Alt))
+        {
+            keyModifiers |= KeyModifiers.Alt;
+        }
+
+        if (keymod.HasFlag(Keymod.Lgui) || keymod.HasFlag(Keymod.Rgui) || keymod.HasFlag(Keymod.Gui))
+        {
+            keyModifiers |= KeyModifiers.Super;
+        }
+
+        return keyModifiers;
+    }
+
+    public static MouseButton GetMouseButton(byte button)
+    {
+        return mouseButtonMap.TryGetValue(button, out MouseButton mouseButton) ? mouseButton : MouseButton.Unknown;
+    }
+
     public static Vector2D<int> GetMousePosition()
     {
         int x, y;
@@ -229,42 +266,5 @@ internal static unsafe class SdlManager
                            work.Origin,
                            work.Size,
                            ddpi == 0 ? 1.0f : ddpi / 96.0f);
-    }
-
-    public static Key GetKey(Scancode scancode)
-    {
-        return keyMap.TryGetValue(scancode, out Key key) ? key : Key.Unknown;
-    }
-
-    public static KeyModifiers GetKeyModifiers(Keymod keymod)
-    {
-        KeyModifiers keyModifiers = KeyModifiers.None;
-
-        if (keymod.HasFlag(Keymod.Lshift) || keymod.HasFlag(Keymod.Rshift) || keymod.HasFlag(Keymod.Shift))
-        {
-            keyModifiers |= KeyModifiers.Shift;
-        }
-
-        if (keymod.HasFlag(Keymod.Lctrl) || keymod.HasFlag(Keymod.Rctrl) || keymod.HasFlag(Keymod.Ctrl))
-        {
-            keyModifiers |= KeyModifiers.Control;
-        }
-
-        if (keymod.HasFlag(Keymod.Lalt) || keymod.HasFlag(Keymod.Ralt) || keymod.HasFlag(Keymod.Alt))
-        {
-            keyModifiers |= KeyModifiers.Alt;
-        }
-
-        if (keymod.HasFlag(Keymod.Lgui) || keymod.HasFlag(Keymod.Rgui) || keymod.HasFlag(Keymod.Gui))
-        {
-            keyModifiers |= KeyModifiers.Super;
-        }
-
-        return keyModifiers;
-    }
-
-    public static MouseButton GetMouseButton(byte button)
-    {
-        return mouseButtonMap.TryGetValue(button, out MouseButton mouseButton) ? mouseButton : MouseButton.Unknown;
     }
 }
