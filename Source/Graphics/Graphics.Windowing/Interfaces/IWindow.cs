@@ -81,6 +81,8 @@ public interface IWindow
 
     void Close();
 
+    void Focus();
+
     void DoEvents();
 
     void DoUpdate();

@@ -447,6 +447,11 @@ public unsafe class SdlWindow : WindowImplementationBase
         base.Close();
     }
 
+    public override void Focus()
+    {
+        SdlManager.Sdl.RaiseWindow(window);
+    }
+
     public override void DoEvents()
     {
         uint id = SdlManager.Sdl.GetWindowID(window);
