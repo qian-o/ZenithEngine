@@ -363,9 +363,9 @@ public unsafe class SdlWindow : WindowImplementationBase
 
     public override event EventHandler<MouseButtonEventArgs>? DoubleClick;
 
-    public override void Show()
+    public override void Initialize()
     {
-        if (isLoopRunning)
+        if (IsCreated)
         {
             return;
         }
@@ -419,6 +419,16 @@ public unsafe class SdlWindow : WindowImplementationBase
                                              Size.X,
                                              Size.Y,
                                              (uint)flags);
+    }
+
+    public override void Show()
+    {
+        if (isLoopRunning)
+        {
+            return;
+        }
+
+        Initialize();
 
         SdlManager.Sdl.ShowWindow(window);
 
@@ -431,7 +441,7 @@ public unsafe class SdlWindow : WindowImplementationBase
 
     public override void Close()
     {
-        if (!isLoopRunning)
+        if (!IsCreated)
         {
             return;
         }
@@ -441,6 +451,7 @@ public unsafe class SdlWindow : WindowImplementationBase
         isLoopRunning = false;
 
         SdlManager.Sdl.DestroyWindow(window);
+        window = null;
 
         WindowManager.RemoveWindow(this);
 

@@ -10,6 +10,7 @@ namespace Graphics.Windowing;
 internal static unsafe class SdlManager
 {
     private static readonly Dictionary<Scancode, Key> keyMap;
+    private static readonly Dictionary<byte, MouseButton> mouseButtonMap;
     private static readonly Dictionary<Cursor, nint> cursorMap;
 
     static SdlManager()
@@ -135,6 +136,12 @@ internal static unsafe class SdlManager
             { Scancode.ScancodeRgui, Key.SuperRight },
             { Scancode.ScancodeMenu, Key.Menu }
         };
+        mouseButtonMap = new()
+        {
+            { 1, MouseButton.Left },
+            { 2, MouseButton.Middle },
+            { 3, MouseButton.Right }
+        };
         cursorMap = new()
         {
             { Cursor.Arrow, (nint)Sdl.CreateSystemCursor(SystemCursor.SystemCursorArrow) },
@@ -162,6 +169,27 @@ internal static unsafe class SdlManager
         {
             Events.Add(ev);
         }
+    }
+
+    public static Vector2D<int> GetMousePosition()
+    {
+        int x, y;
+        Sdl.GetGlobalMouseState(&x, &y);
+
+        return new Vector2D<int>(x, y);
+    }
+
+    public static bool IsMouseButtonDown(MouseButton button)
+    {
+        int mask = button switch
+        {
+            MouseButton.Left => 0,
+            MouseButton.Middle => 1,
+            MouseButton.Right => 2,
+            _ => (int)button - 1,
+        };
+
+        return (Sdl.GetGlobalMouseState(null, null) & (1 << mask)) != 0;
     }
 
     public static void SetCursor(Cursor cursor)
@@ -237,13 +265,6 @@ internal static unsafe class SdlManager
 
     public static MouseButton GetMouseButton(byte button)
     {
-        return button switch
-        {
-            0 => MouseButton.Unknown,
-            1 => MouseButton.Left,
-            2 => MouseButton.Middle,
-            3 => MouseButton.Right,
-            _ => (MouseButton)(button - 1)
-        };
+        return mouseButtonMap.TryGetValue(button, out MouseButton mouseButton) ? mouseButton : MouseButton.Unknown;
     }
 }

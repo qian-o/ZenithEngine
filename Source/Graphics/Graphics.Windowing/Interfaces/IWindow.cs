@@ -77,6 +77,8 @@ public interface IWindow
 
     event EventHandler<TimeEventArgs>? Render;
 
+    void Initialize();
+
     void Show();
 
     void Close();

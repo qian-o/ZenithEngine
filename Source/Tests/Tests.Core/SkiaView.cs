@@ -1,10 +1,11 @@
 ﻿using System.Numerics;
 using Graphics.Core;
-using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.ImGui;
 using Graphics.Vulkan.Skia;
+using Graphics.Windowing.Events;
 using Hexa.NET.ImGui;
+using Silk.NET.Maths;
 using SkiaSharp;
 
 namespace Tests.Core;
@@ -19,7 +20,7 @@ public abstract class SkiaView(string title,
     private FramebufferObject? _framebufferObject;
     private SKSurface? _surface;
 
-    protected override void OnRender(RenderEventArgs e)
+    protected override void OnRender(TimeEventArgs e)
     {
         if (_surface != null)
         {
@@ -51,7 +52,7 @@ public abstract class SkiaView(string title,
         }
     }
 
-    protected override void OnResize(ResizeEventArgs e)
+    protected override void OnResize(ValueEventArgs<Vector2D<int>> e)
     {
         _surface?.Dispose();
 
@@ -62,12 +63,12 @@ public abstract class SkiaView(string title,
             _framebufferObject.Dispose();
         }
 
-        _framebufferObject = new FramebufferObject(device, (int)e.Width, (int)e.Height, TextureSampleCount.Count1);
+        _framebufferObject = new FramebufferObject(device, e.Value.X, e.Value.Y, TextureSampleCount.Count1);
 
         _surface = SkiaGraphics.CreateSurface(grContext, _framebufferObject.ColorTexture);
     }
 
-    protected abstract void OnRenderSurface(SKCanvas canvas, RenderEventArgs e);
+    protected abstract void OnRenderSurface(SKCanvas canvas, TimeEventArgs e);
 
     protected override void Destroy()
     {

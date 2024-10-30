@@ -4,9 +4,7 @@
 		<PackageReference Include="Hexa.NET.ImGuizmo" />
 		<PackageReference Include="Hexa.NET.ImNodes" />
 		<PackageReference Include="Hexa.NET.ImPlot" />
-		<PackageReference Include="Silk.NET.Input.Sdl" />
 		<PackageReference Include="Silk.NET.Maths" />
-		<PackageReference Include="Silk.NET.Windowing.Sdl" />
 		<PackageReference Include="SkiaSharp" />
 		<PackageReference Include="SkiaSharp.NativeAssets.Linux" />
 		<PackageReference Include="SkiaSharp.NativeAssets.macOS" />

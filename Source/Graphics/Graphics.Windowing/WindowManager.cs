@@ -1,6 +1,7 @@
 ﻿using Graphics.Windowing.Enums;
 using Graphics.Windowing.Interfaces;
 using Graphics.Windowing.Structs;
+using Silk.NET.Maths;
 
 namespace Graphics.Windowing;
 
@@ -71,6 +72,16 @@ public static class WindowManager
         }
 
         return false;
+    }
+
+    public static Vector2D<int> GetMousePosition()
+    {
+        return SdlManager.GetMousePosition();
+    }
+
+    public static bool IsMouseButtonDown(MouseButton button)
+    {
+        return SdlManager.IsMouseButtonDown(button);
     }
 
     public static void SetCursor(Cursor cursor)

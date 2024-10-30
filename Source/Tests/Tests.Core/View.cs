@@ -1,7 +1,8 @@
 ﻿using System.Numerics;
 using Graphics.Core;
-using Graphics.Core.Window;
+using Graphics.Windowing.Events;
 using Hexa.NET.ImGui;
+using Silk.NET.Maths;
 
 namespace Tests.Core;
 
@@ -21,12 +22,12 @@ public abstract class View(string title) : DisposableObject
 
     public float ActualHeight => UseDpiScale ? Height * (1 / DpiScale) : Height;
 
-    public void Update(UpdateEventArgs e)
+    public void Update(TimeEventArgs e)
     {
         OnUpdate(e);
     }
 
-    public void Render(RenderEventArgs e)
+    public void Render(TimeEventArgs e)
     {
         ImGui.Begin(title);
         {
@@ -43,7 +44,7 @@ public abstract class View(string title) : DisposableObject
                 Width = width;
                 Height = height;
 
-                OnResize(new ResizeEventArgs(width, height));
+                OnResize(new ValueEventArgs<Vector2D<int>>(new Vector2D<int>((int)Width, (int)Height)));
             }
 
             OnRender(e);
@@ -52,9 +53,9 @@ public abstract class View(string title) : DisposableObject
         }
     }
 
-    protected abstract void OnUpdate(UpdateEventArgs e);
+    protected abstract void OnUpdate(TimeEventArgs e);
 
-    protected abstract void OnRender(RenderEventArgs e);
+    protected abstract void OnRender(TimeEventArgs e);
 
-    protected abstract void OnResize(ResizeEventArgs e);
+    protected abstract void OnResize(ValueEventArgs<Vector2D<int>> e);
 }

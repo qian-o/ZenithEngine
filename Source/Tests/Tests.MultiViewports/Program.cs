@@ -1,40 +1,53 @@
 ﻿using Graphics.Core;
-using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.ImGui;
+using Graphics.Windowing;
+using Graphics.Windowing.Events;
 using Hexa.NET.ImGui;
+using Silk.NET.Maths;
 
 internal sealed unsafe class Program
 {
     private static void Main(string[] _)
     {
-        using SdlWindow window = SdlWindow.CreateWindowByVulkan();
-        window.Title = "Tests.MultiViewports";
-        window.MinimumSize = new(100, 100);
+        SdlWindow window = new()
+        {
+            Title = "Tests.MultiViewports",
+            MinimumSize = new(100, 100)
+        };
+
+        window.Show();
 
         using Context context = new();
         using GraphicsDevice device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
         using Swapchain swapchain = device.Factory.CreateSwapchain(new SwapchainDescription(window.VkSurface!, device.GetBestDepthFormat()));
         using ImGuiController imGuiController = new(window,
+                                                    () => new SdlWindow(),
                                                     device,
                                                     swapchain.OutputDescription,
                                                     new ImGuiFontConfig("Assets/Fonts/msyh.ttf", 16, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()),
                                                     ImGuiSizeConfig.Default);
         using CommandList commandList = device.Factory.CreateGraphicsCommandList();
 
+        window.PositionChanged += Window_PositionChanged;
         window.Update += Window_Update;
         window.Render += Window_Render;
-        window.Resize += Window_Resize;
+        window.Unloaded += Window_Unloaded;
 
-        window.Run();
+        WindowManager.Loop();
 
-        void Window_Update(object? sender, UpdateEventArgs e)
+        void Window_PositionChanged(object? sender, ValueEventArgs<Vector2D<int>> e)
         {
-            imGuiController.Update(e.DeltaTime);
+            swapchain.Resize();
         }
 
-        void Window_Render(object? sender, RenderEventArgs e)
+        void Window_Update(object? sender, TimeEventArgs e)
+        {
+            imGuiController.Update((float)e.DeltaTime);
+        }
+
+        void Window_Render(object? sender, TimeEventArgs e)
         {
             ImGui.ShowDemoWindow();
 
@@ -52,10 +65,10 @@ internal sealed unsafe class Program
 
             imGuiController.PlatformSwapBuffers();
         }
-
-        void Window_Resize(object? sender, ResizeEventArgs e)
+        
+        void Window_Unloaded(object? sender, EventArgs e)
         {
-            swapchain.Resize();
+            WindowManager.Stop();
         }
     }
 }

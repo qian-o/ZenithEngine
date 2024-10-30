@@ -2,18 +2,23 @@
 using System.Runtime.InteropServices;
 using Graphics.Core;
 using Graphics.Vulkan.Descriptions;
+using Graphics.Windowing;
+using Graphics.Windowing.Enums;
+using Graphics.Windowing.Interfaces;
+using Graphics.Windowing.Structs;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGuizmo;
 using Hexa.NET.ImNodes;
 using Hexa.NET.ImPlot;
-using Silk.NET.Input;
-using Silk.NET.SDL;
+using Silk.NET.Maths;
+using Cursor = Graphics.Windowing.Enums.Cursor;
 
 namespace Graphics.Vulkan.ImGui;
 
 public unsafe class ImGuiController : DisposableObject
 {
-    private readonly SdlWindow _window;
+    private readonly IWindow _window;
+    private readonly Func<IWindow> _createWindowFunc;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ImGuiContextPtr _imGuiContext;
     private readonly ImPlotContextPtr _imPlotContext;
@@ -24,7 +29,7 @@ public unsafe class ImGuiController : DisposableObject
     private readonly Dictionary<float, ImGuiSizeConfig> _dpiScaleSizes;
     private readonly List<ImGuiPlatform> _platforms;
     private readonly Dictionary<nint, ImGuiPlatform> _platformsByHandle;
-    private readonly Dictionary<ImGuiMouseCursor, nint> _mouseCursors;
+    private readonly Dictionary<ImGuiMouseCursor, Cursor> _mouseCursors;
     private readonly ImGuiRenderer _imGuiRenderer;
 
     private readonly PlatformCreateWindow _createWindow;
@@ -48,7 +53,8 @@ public unsafe class ImGuiController : DisposableObject
     private float _currentDpiScale;
 
     #region Constructors
-    public ImGuiController(SdlWindow window,
+    public ImGuiController(IWindow window,
+                           Func<IWindow> createWindowFunc,
                            GraphicsDevice graphicsDevice,
                            OutputDescription outputDescription,
                            ColorSpaceHandling colorSpaceHandling,
@@ -57,6 +63,7 @@ public unsafe class ImGuiController : DisposableObject
                            Action? onConfigureIO)
     {
         _window = window;
+        _createWindowFunc = createWindowFunc;
         _graphicsDevice = graphicsDevice;
         _imGuiContext = DearImGui.CreateContext();
         _imPlotContext = ImPlot.CreateContext();
@@ -90,11 +97,13 @@ public unsafe class ImGuiController : DisposableObject
         Initialize(onConfigureIO);
     }
 
-    public ImGuiController(SdlWindow window,
+    public ImGuiController(IWindow window,
+                           Func<IWindow> createWindowFunc,
                            GraphicsDevice graphicsDevice,
                            OutputDescription outputDescription,
                            ImGuiFontConfig imGuiFontConfig,
                            ImGuiSizeConfig imGuiSizeConfig) : this(window,
+                                                                   createWindowFunc,
                                                                    graphicsDevice,
                                                                    outputDescription,
                                                                    ColorSpaceHandling.Legacy,
@@ -104,9 +113,11 @@ public unsafe class ImGuiController : DisposableObject
     {
     }
 
-    public ImGuiController(SdlWindow window,
+    public ImGuiController(IWindow window,
+                           Func<IWindow> createWindowFunc,
                            GraphicsDevice graphicsDevice,
                            OutputDescription outputDescription) : this(window,
+                                                                       createWindowFunc,
                                                                        graphicsDevice,
                                                                        outputDescription,
                                                                        ColorSpaceHandling.Legacy,
@@ -193,11 +204,6 @@ public unsafe class ImGuiController : DisposableObject
     {
         _imGuiRenderer.Dispose();
 
-        foreach (nint cursor in _mouseCursors.Values)
-        {
-            SdlWindow.FreeCursor((Cursor*)cursor);
-        }
-
         foreach (ImGuiPlatform platform in _platforms)
         {
             platform.Dispose();
@@ -223,24 +229,23 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiIOPtr io = DearImGui.GetIO();
 
-        io.DisplaySize = _window.FramebufferSize;
-        io.DisplayFramebufferScale = _window.FramebufferSize / _window.Size;
+        io.DisplaySize = (Vector2)_window.Size;
 
         io.DeltaTime = deltaSeconds;
     }
 
     private static void UpdateMouseState()
     {
-        if (SdlWindow.IsMouseFocusOnWindow())
+        if (WindowManager.WindowFocused())
         {
             ImGuiIOPtr io = DearImGui.GetIO();
 
-            MouseButton[] mouseButtons = SdlWindow.GetGlobalMouseState(out Vector2 position);
+            io.AddMouseButtonEvent((int)ImGuiMouseButton.Left, WindowManager.IsMouseButtonDown(MouseButton.Left));
+            io.AddMouseButtonEvent((int)ImGuiMouseButton.Right, WindowManager.IsMouseButtonDown(MouseButton.Right));
+            io.AddMouseButtonEvent((int)ImGuiMouseButton.Middle, WindowManager.IsMouseButtonDown(MouseButton.Middle));
+            io.AddMouseButtonEvent((int)ImGuiMouseButton.Count, WindowManager.IsMouseButtonDown(MouseButton.Button4));
 
-            io.AddMouseButtonEvent((int)ImGuiMouseButton.Left, mouseButtons.Contains(MouseButton.Left));
-            io.AddMouseButtonEvent((int)ImGuiMouseButton.Right, mouseButtons.Contains(MouseButton.Right));
-            io.AddMouseButtonEvent((int)ImGuiMouseButton.Middle, mouseButtons.Contains(MouseButton.Middle));
-            io.AddMouseButtonEvent((int)ImGuiMouseButton.Count, mouseButtons.Contains(MouseButton.Button4));
+            Vector2D<int> position = WindowManager.GetMousePosition();
 
             io.AddMousePosEvent(position.X, position.Y);
         }
@@ -257,7 +262,7 @@ public unsafe class ImGuiController : DisposableObject
 
         ImGuiMouseCursor imguiCursor = DearImGui.GetMouseCursor();
 
-        SdlWindow.SetCursor((Cursor*)_mouseCursors[imguiCursor]);
+        WindowManager.SetCursor(_mouseCursors[imguiCursor]);
     }
 
     private void Initialize(Action? onConfigureIO)
@@ -290,7 +295,7 @@ public unsafe class ImGuiController : DisposableObject
 
         foreach (ImGuiMouseCursor imGuiMouseCursor in Enum.GetValues<ImGuiMouseCursor>())
         {
-            _mouseCursors.Add(imGuiMouseCursor, (nint)SdlWindow.CreateCursor(MapMouseCursor(imGuiMouseCursor)));
+            _mouseCursors.Add(imGuiMouseCursor, MapMouseCursor(imGuiMouseCursor));
         }
 
         InitializePlatform();
@@ -312,7 +317,7 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiIOPtr io = DearImGui.GetIO();
 
-        foreach (Display display in SdlWindow.GetDisplays().DistinctBy(item => item.DpiScale))
+        foreach (Display display in WindowManager.GetDisplays().DistinctBy(item => item.DpiScale))
         {
             ImFontPtr fontPtr;
             if (_imGuiFontConfig.IsDefault)
@@ -340,18 +345,18 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiPlatformIOPtr platformIO = DearImGui.GetPlatformIO();
 
-        platformIO.Monitors.Resize(SdlWindow.GetDisplayCount());
+        platformIO.Monitors.Resize(WindowManager.GetDisplayCount());
 
         for (int i = 0; i < platformIO.Monitors.Size; i++)
         {
-            Display display = SdlWindow.GetDisplay(i);
+            Display display = WindowManager.GetDisplay(i);
 
             ImGuiPlatformMonitor monitor = new()
             {
-                MainPos = display.MainPosition,
-                MainSize = display.MainSize,
-                WorkPos = display.WorkPosition,
-                WorkSize = display.WorkSize,
+                MainPos = (Vector2)display.MainPosition,
+                MainSize = (Vector2)display.MainSize,
+                WorkPos = (Vector2)display.WorkPosition,
+                WorkSize = (Vector2)display.WorkSize,
                 DpiScale = display.DpiScale
             };
 
@@ -383,7 +388,7 @@ public unsafe class ImGuiController : DisposableObject
 
     private void CreateWindow(ImGuiViewport* vp)
     {
-        ImGuiPlatform platform = new(vp, _graphicsDevice);
+        ImGuiPlatform platform = new(vp, _createWindowFunc, _graphicsDevice);
 
         _platforms.Add(platform);
         _platformsByHandle.Add((nint)vp->PlatformHandle, platform);
@@ -415,7 +420,7 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiPlatform platform = _platformsByHandle[(nint)viewport->PlatformHandle];
 
-        *pos = platform.Position;
+        *pos = (Vector2)platform.Position;
 
         return pos;
     }
@@ -424,14 +429,14 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
 
-        platform.Position = pos;
+        platform.Position = new Vector2D<int>((int)pos.X, (int)pos.Y);
     }
 
     private Vector2* GetWindowSize(Vector2* size, ImGuiViewport* viewport)
     {
         ImGuiPlatform platform = _platformsByHandle[(nint)viewport->PlatformHandle];
 
-        *size = platform.Size;
+        *size = (Vector2)platform.Size;
 
         return size;
     }
@@ -440,7 +445,7 @@ public unsafe class ImGuiController : DisposableObject
     {
         ImGuiPlatform platform = _platformsByHandle[(nint)vp->PlatformHandle];
 
-        platform.Size = size;
+        platform.Size = new Vector2D<int>((int)size.X, (int)size.Y);
     }
 
     private byte GetWindowFocus(ImGuiViewport* vp)
@@ -519,23 +524,23 @@ public unsafe class ImGuiController : DisposableObject
             int w = 1;
             int h = Convert.ToInt32(data->InputLineHeight);
 
-            SdlWindow.SetTextIputRect(x, y, w, h);
+            WindowManager.SetTextInputRect(x, y, w, h);
         }
     }
 
-    private static SystemCursor MapMouseCursor(ImGuiMouseCursor imguiCursor)
+    private static Cursor MapMouseCursor(ImGuiMouseCursor imguiCursor)
     {
         return imguiCursor switch
         {
-            ImGuiMouseCursor.TextInput => SystemCursor.SystemCursorIbeam,
-            ImGuiMouseCursor.ResizeAll => SystemCursor.SystemCursorSizeall,
-            ImGuiMouseCursor.ResizeNs => SystemCursor.SystemCursorSizens,
-            ImGuiMouseCursor.ResizeEw => SystemCursor.SystemCursorSizewe,
-            ImGuiMouseCursor.ResizeNesw => SystemCursor.SystemCursorSizenesw,
-            ImGuiMouseCursor.ResizeNwse => SystemCursor.SystemCursorSizenwse,
-            ImGuiMouseCursor.Hand => SystemCursor.SystemCursorHand,
-            ImGuiMouseCursor.NotAllowed => SystemCursor.SystemCursorNo,
-            _ => SystemCursor.SystemCursorArrow
+            ImGuiMouseCursor.TextInput => Cursor.TextInput,
+            ImGuiMouseCursor.ResizeAll => Cursor.ResizeAll,
+            ImGuiMouseCursor.ResizeNs => Cursor.ResizeNS,
+            ImGuiMouseCursor.ResizeEw => Cursor.ResizeWE,
+            ImGuiMouseCursor.ResizeNesw => Cursor.ResizeNESW,
+            ImGuiMouseCursor.ResizeNwse => Cursor.ResizeNWSE,
+            ImGuiMouseCursor.Hand => Cursor.Hand,
+            ImGuiMouseCursor.NotAllowed => Cursor.NotAllowed,
+            _ => Cursor.Arrow
         };
     }
 }

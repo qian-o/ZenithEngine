@@ -7,5 +7,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Graphics.Core\Graphics.Core.csproj" />
+		<ProjectReference Include="..\Graphics.Windowing\Graphics.Windowing.csproj" />
 	</ItemGroup>
 </Project>
