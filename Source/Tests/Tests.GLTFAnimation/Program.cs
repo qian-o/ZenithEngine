@@ -13,9 +13,10 @@ using SharpGLTF.Schema2;
 using SharpGLTF.Validation;
 using Silk.NET.Maths;
 using StbImageSharp;
-using GLTFMaterial = SharpGLTF.Schema2.Material;
-using GLTFNode = SharpGLTF.Schema2.Node;
-using GLTFTexture = SharpGLTF.Schema2.Texture;
+using GAnimation = SharpGLTF.Schema2.Animation;
+using GMaterial = SharpGLTF.Schema2.Material;
+using GNode = SharpGLTF.Schema2.Node;
+using GTexture = SharpGLTF.Schema2.Texture;
 using Texture = Graphics.Vulkan.Texture;
 
 namespace Tests.GLTFAnimation;
@@ -211,7 +212,7 @@ internal sealed unsafe class Program
         using CommandList commandList = device.Factory.CreateGraphicsCommandList();
 
         commandList.Begin();
-        foreach (GLTFTexture gltfTexture in root.LogicalTextures)
+        foreach (GTexture gltfTexture in root.LogicalTextures)
         {
             using Stream stream = gltfTexture.PrimaryImage.Content.Open();
 
@@ -251,7 +252,7 @@ internal sealed unsafe class Program
 
         device.SubmitCommands(commandList);
 
-        foreach (GLTFMaterial gltfMaterial in root.LogicalMaterials)
+        foreach (GMaterial gltfMaterial in root.LogicalMaterials)
         {
             Material material = new();
 
@@ -280,7 +281,7 @@ internal sealed unsafe class Program
             _materials.Add(material);
         }
 
-        foreach (GLTFAnimation gltfAnimation in root.LogicalAnimations)
+        foreach (GAnimation gltfAnimation in root.LogicalAnimations)
         {
             Animation animation = new()
             {
@@ -324,7 +325,7 @@ internal sealed unsafe class Program
         _root.Name = root.DefaultScene.Name;
         _root.Children.AddRange(root.DefaultScene.VisualChildren.Select(item => item.LogicalIndex));
 
-        foreach (GLTFNode gltfNode in root.LogicalNodes)
+        foreach (GNode gltfNode in root.LogicalNodes)
         {
             LoadNode(gltfNode, vertices, indices);
         }
@@ -503,7 +504,7 @@ internal sealed unsafe class Program
         device.SubmitCommandsAndSwapBuffers(_commandList, swapchain);
     }
 
-    private static void LoadNode(GLTFNode gltfNode, List<Vertex> vertices, List<uint> indices)
+    private static void LoadNode(GNode gltfNode, List<Vertex> vertices, List<uint> indices)
     {
         Node node = new()
         {
@@ -512,7 +513,7 @@ internal sealed unsafe class Program
             SkinIndex = gltfNode.Skin != null ? gltfNode.Skin.LogicalIndex : -1,
         };
 
-        foreach (GLTFNode children in gltfNode.VisualChildren)
+        foreach (GNode children in gltfNode.VisualChildren)
         {
             node.Children.Add(children.LogicalIndex);
         }
