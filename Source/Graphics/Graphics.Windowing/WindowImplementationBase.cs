@@ -138,6 +138,10 @@ public abstract class WindowImplementationBase : IWindow
         lifetimeStopwatch.Stop();
 
         Unloaded?.Invoke(this, EventArgs.Empty);
+
+        updateStopwatch.Reset();
+        renderStopwatch.Reset();
+        lifetimeStopwatch.Reset();
     }
 
     public void DoUpdate()
