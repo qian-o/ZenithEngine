@@ -2,13 +2,15 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
-using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
+using Graphics.Windowing;
+using Graphics.Windowing.Events;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
 using SharpGLTF.Validation;
+using Silk.NET.Maths;
 using StbImageSharp;
 using GLTFMaterial = SharpGLTF.Schema2.Material;
 using GLTFNode = SharpGLTF.Schema2.Node;
@@ -100,8 +102,10 @@ internal sealed unsafe class Program
     }
     #endregion
 
-    private static GraphicsDevice _device = null!;
-    private static Swapchain _swapchain = null!;
+    private static SdlWindow mainWindow = null!;
+    private static Context context = null!;
+    private static GraphicsDevice device = null!;
+    private static Swapchain swapchain = null!;
 
     private static readonly List<Texture> _textures = [];
     private static readonly List<TextureView> _textureViews = [];
@@ -126,33 +130,34 @@ internal sealed unsafe class Program
 
     private static void Main(string[] _)
     {
-        using SdlWindow window = SdlWindow.CreateWindowByVulkan();
-        window.Title = "Tests.GLTFScene";
-        window.MinimumSize = new(100, 100);
+        mainWindow = new()
+        {
+            Title = "Tests.GLTFScene",
+            MinimumSize = new(100, 100)
+        };
 
-        using Context context = new();
-        using GraphicsDevice device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
-        using Swapchain swapchain = device.Factory.CreateSwapchain(new SwapchainDescription(window.VkSurface!, device.GetBestDepthFormat()));
+        mainWindow.Loaded += Loaded;
+        mainWindow.Unloaded += Unloaded;
+        mainWindow.SizeChanged += SizeChanged;
+        mainWindow.Update += Update;
+        mainWindow.Render += Render;
 
-        _device = device;
-        _swapchain = swapchain;
+        mainWindow.Show();
 
-        window.Load += Window_Load;
-        window.Update += Window_Update;
-        window.Render += Window_Render;
-        window.Resize += (_, e) => swapchain.Resize();
-        window.Closing += Window_Closing;
-
-        window.Run();
+        WindowManager.Loop();
     }
 
-    private static void Window_Load(object? sender, LoadEventArgs e)
+    private static void Loaded(object? sender, EventArgs e)
     {
+        context = new();
+        device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
+        swapchain = device.Factory.CreateSwapchain(new SwapchainDescription(mainWindow.VkSurface!, device.GetBestDepthFormat()));
+
         string hlsl = File.ReadAllText("Assets/Shaders/GLTF.hlsl");
 
         ModelRoot root = ModelRoot.Load("Assets/Models/Sponza/glTF/Sponza.gltf", new ReadSettings() { Validation = ValidationMode.Skip });
 
-        using CommandList commandList = _device.Factory.CreateGraphicsCommandList();
+        using CommandList commandList = device.Factory.CreateGraphicsCommandList();
 
         commandList.Begin();
         foreach (GLTFTexture gltfTexture in root.LogicalTextures)
@@ -177,10 +182,10 @@ internal sealed unsafe class Program
                                                                           PixelFormat.R8G8B8A8UNorm,
                                                                           TextureUsage.Sampled | TextureUsage.GenerateMipmaps);
 
-            Texture texture = _device.Factory.CreateTexture(in description);
+            Texture texture = device.Factory.CreateTexture(in description);
             texture.Name = gltfTexture.Name;
 
-            TextureView textureView = _device.Factory.CreateTextureView(texture);
+            TextureView textureView = device.Factory.CreateTextureView(texture);
             textureView.Name = gltfTexture.Name;
 
             commandList.UpdateTexture(texture, image.Data, 0, 0, 0, (uint)width, (uint)height, 1, 0, 0);
@@ -193,7 +198,7 @@ internal sealed unsafe class Program
         }
         commandList.End();
 
-        _device.SubmitCommands(commandList);
+        device.SubmitCommands(commandList);
 
         foreach (GLTFMaterial gltfMaterial in root.LogicalMaterials)
         {
@@ -232,13 +237,13 @@ internal sealed unsafe class Program
             LoadNode(gltfNode, null, vertices, indices);
         }
 
-        _vertexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(vertices.Count, BufferUsage.VertexBuffer));
-        _device.UpdateBuffer(_vertexBuffer, [.. vertices]);
+        _vertexBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<Vertex>(vertices.Count, BufferUsage.VertexBuffer));
+        device.UpdateBuffer(_vertexBuffer, [.. vertices]);
 
-        _indexBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Count, BufferUsage.IndexBuffer));
-        _device.UpdateBuffer(_indexBuffer, [.. indices]);
+        _indexBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<uint>(indices.Count, BufferUsage.IndexBuffer));
+        device.UpdateBuffer(_indexBuffer, [.. indices]);
 
-        _cboBuffer = _device.Factory.CreateBuffer(BufferDescription.Buffer<CBO>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
+        _cboBuffer = device.Factory.CreateBuffer(BufferDescription.Buffer<CBO>(1, BufferUsage.ConstantBuffer | BufferUsage.Dynamic));
 
         ResourceLayoutDescription cboLayoutDescription = new(new ElementDescription("cbo", ResourceKind.ConstantBuffer, ShaderStages.Vertex));
         ResourceLayoutDescription textureMapDescription = ResourceLayoutDescription.Bindless((uint)_textureViews.Count,
@@ -246,16 +251,16 @@ internal sealed unsafe class Program
         ResourceLayoutDescription textureSamplerDescription = ResourceLayoutDescription.Bindless(2,
                                                                                                  new ElementDescription("textureSampler", ResourceKind.Sampler, ShaderStages.Pixel));
 
-        _cboLayout = _device.Factory.CreateResourceLayout(in cboLayoutDescription);
-        _cboSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_cboLayout, _cboBuffer));
+        _cboLayout = device.Factory.CreateResourceLayout(in cboLayoutDescription);
+        _cboSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_cboLayout, _cboBuffer));
 
-        _textureMapLayout = _device.Factory.CreateResourceLayout(in textureMapDescription);
-        _textureMapSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_textureMapLayout));
+        _textureMapLayout = device.Factory.CreateResourceLayout(in textureMapDescription);
+        _textureMapSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_textureMapLayout));
         _textureMapSet.UpdateBindless([.. _textureViews]);
 
-        _textureSamplerLayout = _device.Factory.CreateResourceLayout(in textureSamplerDescription);
-        _textureSamplerSet = _device.Factory.CreateResourceSet(new ResourceSetDescription(_textureSamplerLayout));
-        _textureSamplerSet.UpdateBindless(_device.Aniso4xSampler, _device.LinearSampler);
+        _textureSamplerLayout = device.Factory.CreateResourceLayout(in textureSamplerDescription);
+        _textureSamplerSet = device.Factory.CreateResourceSet(new ResourceSetDescription(_textureSamplerLayout));
+        _textureSamplerSet.UpdateBindless(device.Aniso4xSampler, device.LinearSampler);
 
         VertexElementDescription positionDescription = new("Position", VertexElementFormat.Float3);
         VertexElementDescription normalDescription = new("Normal", VertexElementFormat.Float3);
@@ -265,7 +270,7 @@ internal sealed unsafe class Program
         VertexElementDescription colorMapIndexDescription = new("ColorMapIndex", VertexElementFormat.Int1);
         VertexElementDescription normalMapIndexDescription = new("NormalMapIndex", VertexElementFormat.Int1);
 
-        _shaders = _device.Factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
+        _shaders = device.Factory.CreateShaderByHLSL(new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(hlsl), "mainVS"),
                                                       new ShaderDescription(ShaderStages.Pixel, Encoding.UTF8.GetBytes(hlsl), "mainPS"));
 
         _vertexLayoutDescriptions = [new VertexLayoutDescription(positionDescription,
@@ -290,50 +295,16 @@ internal sealed unsafe class Program
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
                 ResourceLayouts = [_cboLayout, _textureMapLayout, _textureSamplerLayout],
                 Shaders = new GraphicsShaderDescription(_vertexLayoutDescriptions, _shaders, [new SpecializationConstant(0, alphaMask), new SpecializationConstant(1, alphaCutoff)]),
-                Outputs = _swapchain.OutputDescription
+                Outputs = swapchain.OutputDescription
             };
 
-            _pipelines[i] = _device.Factory.CreateGraphicsPipeline(ref pipelineDescription);
+            _pipelines[i] = device.Factory.CreateGraphicsPipeline(ref pipelineDescription);
         }
 
-        _commandList = _device.Factory.CreateGraphicsCommandList();
+        _commandList = device.Factory.CreateGraphicsCommandList();
     }
 
-    private static void Window_Update(object? sender, UpdateEventArgs e)
-    {
-        SdlWindow window = (SdlWindow)sender!;
-
-        _cbo = new()
-        {
-            Projection = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, window.FramebufferSize.X / window.FramebufferSize.Y, 0.1f, 1000.0f),
-            View = Matrix4x4.CreateLookAt(new Vector3(7.8f, 2.1f, 0.0f), Vector3.Zero, Vector3.UnitY),
-            LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin(e.TotalTime))),
-            ViewPos = new Vector4(new Vector3(7.8f, 2.1f, 0.0f), 1.0f)
-        };
-    }
-
-    private static void Window_Render(object? sender, RenderEventArgs e)
-    {
-        _commandList.Begin();
-
-        _commandList.SetFramebuffer(_swapchain.Framebuffer);
-        _commandList.ClearColorTarget(0, RgbaFloat.Black);
-        _commandList.ClearDepthStencil(1.0f);
-
-        _commandList.SetVertexBuffer(0, _vertexBuffer);
-        _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U32);
-
-        foreach (Node node in _nodes)
-        {
-            DrawNode(_commandList, node);
-        }
-
-        _commandList.End();
-
-        _device.SubmitCommandsAndSwapBuffers(_commandList, _swapchain);
-    }
-
-    private static void Window_Closing(object? sender, ClosingEventArgs e)
+    private static void Unloaded(object? sender, EventArgs e)
     {
         _commandList.Dispose();
 
@@ -369,6 +340,47 @@ internal sealed unsafe class Program
         {
             texture.Dispose();
         }
+
+        swapchain.Dispose();
+        device.Dispose();
+        context.Dispose();
+    }
+
+    private static void SizeChanged(object? sender, ValueEventArgs<Vector2D<int>> e)
+    {
+        swapchain.Resize();
+    }
+
+    private static void Update(object? sender, TimeEventArgs e)
+    {
+        _cbo = new()
+        {
+            Projection = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 4, (float)mainWindow.Size.X / mainWindow.Size.Y, 0.1f, 1000.0f),
+            View = Matrix4x4.CreateLookAt(new Vector3(7.8f, 2.1f, 0.0f), Vector3.Zero, Vector3.UnitY),
+            LightPos = Vector4.Transform(new Vector4(0.0f, 2.5f, 0.0f, 1.0f), Matrix4x4.CreateRotationX(MathF.Sin((float)e.TotalTime))),
+            ViewPos = new Vector4(new Vector3(7.8f, 2.1f, 0.0f), 1.0f)
+        };
+    }
+
+    private static void Render(object? sender, TimeEventArgs e)
+    {
+        _commandList.Begin();
+
+        _commandList.SetFramebuffer(swapchain.Framebuffer);
+        _commandList.ClearColorTarget(0, RgbaFloat.Black);
+        _commandList.ClearDepthStencil(1.0f);
+
+        _commandList.SetVertexBuffer(0, _vertexBuffer);
+        _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.U32);
+
+        foreach (Node node in _nodes)
+        {
+            DrawNode(_commandList, node);
+        }
+
+        _commandList.End();
+
+        device.SubmitCommandsAndSwapBuffers(_commandList, swapchain);
     }
 
     private static void LoadNode(GLTFNode gltfNode, Node? parent, List<Vertex> vertices, List<uint> indices)

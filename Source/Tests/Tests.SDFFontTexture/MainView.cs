@@ -2,12 +2,13 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
-using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Graphics.Vulkan.ImGui;
+using Graphics.Windowing.Events;
 using Hexa.NET.ImGui;
+using Silk.NET.Maths;
 using StbImageSharp;
 using Tests.Core;
 using Tests.SDFFontTexture.Models;
@@ -135,11 +136,11 @@ internal sealed unsafe class MainView : View
         _commandList = device.Factory.CreateGraphicsCommandList();
     }
 
-    protected override void OnUpdate(UpdateEventArgs e)
+    protected override void OnUpdate(TimeEventArgs e)
     {
     }
 
-    protected override void OnRender(RenderEventArgs e)
+    protected override void OnRender(TimeEventArgs e)
     {
         if (ImGui.Begin("Settings"))
         {
@@ -220,7 +221,7 @@ internal sealed unsafe class MainView : View
         }
     }
 
-    protected override void OnResize(ResizeEventArgs e)
+    protected override void OnResize(ValueEventArgs<Vector2D<int>> e)
     {
         if (framebufferObject != null)
         {
@@ -228,7 +229,7 @@ internal sealed unsafe class MainView : View
 
             framebufferObject.Dispose();
         }
-        framebufferObject = new FramebufferObject(_device, (int)e.Width, (int)e.Height);
+        framebufferObject = new FramebufferObject(_device, e.Value.X, e.Value.Y);
 
         GraphicsPipelineDescription pipelineDescription = new()
         {
