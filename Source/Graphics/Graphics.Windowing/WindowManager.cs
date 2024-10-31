@@ -44,7 +44,7 @@ public static class WindowManager
                 Stop();
             }
 
-            foreach (var window in windows)
+            foreach (IWindow window in windows)
             {
                 window.DoUpdate();
                 window.DoRender();

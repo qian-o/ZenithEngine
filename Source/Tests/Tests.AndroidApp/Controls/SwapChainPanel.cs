@@ -1,7 +1,8 @@
-﻿using Graphics.Core.Window;
-using Graphics.Vulkan;
+﻿using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
+using Graphics.Windowing.Events;
 using Silk.NET.Core.Contexts;
+using Silk.NET.Maths;
 
 namespace Tests.AndroidApp.Controls;
 
@@ -28,11 +29,11 @@ internal sealed class SwapChainPanel : View, ISwapChainPanel
 
     public event EventHandler? Initialized;
 
-    public event EventHandler<UpdateEventArgs>? Update;
+    public event EventHandler<TimeEventArgs>? Update;
 
-    public event EventHandler<RenderEventArgs>? Render;
+    public event EventHandler<TimeEventArgs>? Render;
 
-    public event EventHandler<ResizeEventArgs>? Resize;
+    public event EventHandler<ValueEventArgs<Vector2D<uint>>>? Resize;
 
     public event EventHandler? Disposed;
 
@@ -78,7 +79,7 @@ internal sealed class SwapChainPanel : View, ISwapChainPanel
             return;
         }
 
-        Update?.Invoke(this, new UpdateEventArgs(deltaTime, totalTime));
+        Update?.Invoke(this, new TimeEventArgs(deltaTime, totalTime));
     }
 
     void ISwapChainPanel.Render(float deltaTime, float totalTime)
@@ -88,14 +89,14 @@ internal sealed class SwapChainPanel : View, ISwapChainPanel
             return;
         }
 
-        Render?.Invoke(this, new RenderEventArgs(deltaTime, totalTime));
+        Render?.Invoke(this, new TimeEventArgs(deltaTime, totalTime));
     }
 
     void ISwapChainPanel.Resize(uint width, uint height)
     {
         _swapchain?.Resize();
 
-        Resize?.Invoke(this, new ResizeEventArgs(width, height));
+        Resize?.Invoke(this, new ValueEventArgs<Vector2D<uint>>(new Vector2D<uint>(width, height)));
     }
     #endregion
 }
