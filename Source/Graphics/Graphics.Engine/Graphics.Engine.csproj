@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<ItemGroup>
+		<PackageReference Include="Silk.NET.Vulkan" />
+		<PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" />
+		<PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Graphics.Core\Graphics.Core.csproj" />
+	</ItemGroup>
+</Project>
