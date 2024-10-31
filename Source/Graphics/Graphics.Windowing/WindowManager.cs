@@ -39,22 +39,15 @@ public static class WindowManager
             windowsToAdd.Clear();
             windowsToRemove.Clear();
 
-            if (isRunning)
-            {
-                Parallel.ForEach(windows, window =>
-                {
-                    window.DoUpdate();
-                });
-
-                Parallel.ForEach(windows, window =>
-                {
-                    window.DoRender();
-                });
-            }
-
             if (windows.Count == 0)
             {
                 Stop();
+            }
+
+            foreach (var window in windows)
+            {
+                window.DoUpdate();
+                window.DoRender();
             }
         }
     }

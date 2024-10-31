@@ -71,11 +71,7 @@ internal sealed unsafe class Program
 
     private static void Render(object? sender, TimeEventArgs e)
     {
-        imGuiController.Begin();
-
         ImGui.ShowDemoWindow();
-
-        imGuiController.End();
 
         commandList.Begin();
         {
