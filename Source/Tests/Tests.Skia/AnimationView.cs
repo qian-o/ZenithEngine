@@ -1,6 +1,6 @@
-﻿using Graphics.Core.Window;
-using Graphics.Vulkan;
+﻿using Graphics.Vulkan;
 using Graphics.Vulkan.ImGui;
+using Graphics.Windowing.Events;
 using SkiaSharp;
 using SkiaSharp.Skottie;
 using Tests.Core;
@@ -14,9 +14,9 @@ internal sealed class AnimationView(string filePath,
 {
     private readonly Animation _animation = Animation.Parse(File.ReadAllText(filePath))!;
 
-    private float _time;
+    private double _time;
 
-    protected override void OnUpdate(UpdateEventArgs e)
+    protected override void OnUpdate(TimeEventArgs e)
     {
         _animation.SeekFrameTime(_time += e.DeltaTime);
 
@@ -26,7 +26,7 @@ internal sealed class AnimationView(string filePath,
         }
     }
 
-    protected override void OnRenderSurface(SKCanvas canvas, RenderEventArgs e)
+    protected override void OnRenderSurface(SKCanvas canvas, TimeEventArgs e)
     {
         _animation.Render(canvas, new SKRect(0, 0, ActualWidth, ActualHeight));
     }

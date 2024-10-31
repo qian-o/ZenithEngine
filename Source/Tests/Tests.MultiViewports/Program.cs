@@ -26,7 +26,7 @@ internal sealed unsafe class Program
 
         mainWindow.Loaded += Loaded;
         mainWindow.Unloaded += Unloaded;
-        mainWindow.PositionChanged += PositionChanged;
+        mainWindow.SizeChanged += SizeChanged;
         mainWindow.Update += Update;
         mainWindow.Render += Render;
 
@@ -60,7 +60,7 @@ internal sealed unsafe class Program
         WindowManager.Stop();
     }
 
-    private static void PositionChanged(object? sender, ValueEventArgs<Vector2D<int>> e)
+    private static void SizeChanged(object? sender, ValueEventArgs<Vector2D<int>> e)
     {
         swapchain.Resize();
     }
