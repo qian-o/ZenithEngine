@@ -363,11 +363,51 @@ public unsafe class SdlWindow : WindowImplementationBase
 
     public override event EventHandler<MouseButtonEventArgs>? DoubleClick;
 
-    public override void Initialize()
+    public override void Show()
+    {
+        if (Initialize())
+        {
+            IsVisible = true;
+
+            base.Show();
+        }
+    }
+
+    public override void Close()
+    {
+        if (Uninitialize())
+        {
+            vkSurface?.Dispose();
+
+            base.Close();
+        }
+    }
+
+    public override void Focus()
+    {
+        SdlManager.Sdl.RaiseWindow(window);
+    }
+
+    public override void DoEvents()
+    {
+        uint id = SdlManager.Sdl.GetWindowID(window);
+
+        foreach (Event @event in SdlManager.Events)
+        {
+            if (@event.Window.WindowID != id)
+            {
+                continue;
+            }
+
+            ProcessEvent(@event);
+        }
+    }
+
+    private bool Initialize()
     {
         if (IsCreated)
         {
-            return;
+            return false;
         }
 
         WindowFlags flags = IsVisible ? WindowFlags.Shown : WindowFlags.Hidden;
@@ -419,63 +459,26 @@ public unsafe class SdlWindow : WindowImplementationBase
                                              Size.X,
                                              Size.Y,
                                              (uint)flags);
-    }
-
-    public override void Show()
-    {
-        if (isLoopRunning)
-        {
-            return;
-        }
-
-        Initialize();
-
-        SdlManager.Sdl.ShowWindow(window);
 
         WindowManager.AddWindow(this);
 
-        isLoopRunning = true;
-
-        base.Show();
+        return true;
     }
 
-    public override void Close()
+    private bool Uninitialize()
     {
         if (!IsCreated)
         {
-            return;
+            return false;
         }
 
-        vkSurface?.Dispose();
-
-        isLoopRunning = false;
-
         SdlManager.Sdl.DestroyWindow(window);
+
         window = null;
 
         WindowManager.RemoveWindow(this);
 
-        base.Close();
-    }
-
-    public override void Focus()
-    {
-        SdlManager.Sdl.RaiseWindow(window);
-    }
-
-    public override void DoEvents()
-    {
-        uint id = SdlManager.Sdl.GetWindowID(window);
-
-        foreach (Event @event in SdlManager.Events)
-        {
-            if (@event.Window.WindowID != id)
-            {
-                continue;
-            }
-
-            ProcessEvent(@event);
-        }
+        return true;
     }
 
     private void ProcessEvent(Event @event)

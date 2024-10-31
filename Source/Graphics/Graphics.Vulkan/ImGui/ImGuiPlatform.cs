@@ -123,7 +123,7 @@ public unsafe class ImGuiPlatform : DisposableObject
                 _window.TopMost = true;
             }
 
-            _window.Initialize();
+            _window.Show();
 
             SwapchainDescription swapchainDescription = new()
             {

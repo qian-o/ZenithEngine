@@ -70,8 +70,6 @@ public abstract class WindowImplementationBase : IWindow
     #endregion
 
     #region Abstract Methods
-    public abstract void Initialize();
-
     public abstract void Focus();
 
     public abstract void DoEvents();
