@@ -17,6 +17,8 @@ using GLTFNode = SharpGLTF.Schema2.Node;
 using GLTFTexture = SharpGLTF.Schema2.Texture;
 using Texture = Graphics.Vulkan.Texture;
 
+namespace Tests.GLTFScene;
+
 internal sealed unsafe class Program
 {
     #region Structs

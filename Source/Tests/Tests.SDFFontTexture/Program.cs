@@ -92,9 +92,6 @@ internal sealed unsafe class Program
             view.Render(e);
         }
 
-        grContext.Flush(true);
-        grContext.PurgeUnusedResources(2000);
-
         commandList.Begin();
         {
             commandList.SetFramebuffer(swapchain.Framebuffer);
