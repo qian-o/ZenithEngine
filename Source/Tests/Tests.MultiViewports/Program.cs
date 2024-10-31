@@ -9,12 +9,7 @@ using Silk.NET.Maths;
 
 internal sealed unsafe class Program
 {
-    private static readonly SdlWindow mainWindow = new()
-    {
-        Title = "Tests.MultiViewports",
-        MinimumSize = new(100, 100)
-    };
-
+    private static SdlWindow mainWindow = null!;
     private static Context context = null!;
     private static GraphicsDevice device = null!;
     private static Swapchain swapchain = null!;
@@ -23,6 +18,12 @@ internal sealed unsafe class Program
 
     private static void Main(string[] _)
     {
+        mainWindow = new()
+        {
+            Title = "Tests.MultiViewports",
+            MinimumSize = new(100, 100)
+        };
+
         mainWindow.Loaded += Loaded;
         mainWindow.Unloaded += Unloaded;
         mainWindow.PositionChanged += PositionChanged;
