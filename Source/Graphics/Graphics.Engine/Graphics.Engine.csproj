@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
+		<PackageReference Include="Silk.NET.Direct3D.Compilers" />
+		<PackageReference Include="Silk.NET.SPIRV.Reflect" />
 		<PackageReference Include="Silk.NET.Vulkan" />
 		<PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" />
 		<PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" />
