@@ -12,7 +12,6 @@ namespace Graphics.Windowing;
 public unsafe class SdlWindow : WindowImplementationBase
 {
     private Window* window;
-    private bool isLoopRunning;
     private SdlVkSurface? vkSurface;
 
     private string title = "SdlWindow";
