@@ -527,7 +527,10 @@ public unsafe class SdlWindow : WindowImplementationBase
                 break;
             case WindowEventID.Minimized:
             case WindowEventID.Maximized:
+                StateChanged?.Invoke(this, new ValueEventArgs<WindowState>(State));
+                break;
             case WindowEventID.Restored:
+                SizeChanged?.Invoke(this, new ValueEventArgs<Vector2D<int>>(Size));
                 StateChanged?.Invoke(this, new ValueEventArgs<WindowState>(State));
                 break;
             case WindowEventID.Close:
