@@ -32,6 +32,7 @@ internal sealed unsafe partial class VKContext : Context
 
         InitInstance(useValidationLayers);
         InitPhysicalDevice();
+        InitDevice();
     }
 
     protected override void Destroy()
