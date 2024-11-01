@@ -1,4 +1,6 @@
 ﻿using Graphics.Engine.Exceptions;
+using Silk.NET.Core.Native;
+using Silk.NET.Vulkan;
 
 namespace Graphics.Engine.Vulkan.Helpers;
 
@@ -10,5 +12,15 @@ internal static class VulkanExtensions
         {
             throw new BackendException($"Vulkan error: {result} {message}");
         }
+    }
+
+    public static T GetExtension<T>(this Vk vk, VkInstance instance) where T : NativeExtension<Vk>
+    {
+        if (!vk.TryGetInstanceExtension(instance, out T ext))
+        {
+            throw new InvalidOperationException($"Failed to load extension {typeof(T).Name}!");
+        }
+
+        return ext;
     }
 }

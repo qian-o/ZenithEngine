@@ -15,7 +15,11 @@ internal unsafe class VKContext : Context
 
     public Version32 Version { get; } = Vk.Version13;
 
-    public VkInstance Instance { get; }
+    public VkInstance Instance { get; private set; }
+
+    public VKDebug? Debug { get; private set; }
+
+    public KhrSurface KhrSurface { get; private set; } = null!;
 
     public override void CreateDevice(bool useValidationLayers = false)
     {
@@ -86,10 +90,20 @@ internal unsafe class VKContext : Context
 
         string[] extensions = GetInstanceExtensions();
 
+        if (useValidationLayers)
+        {
+            extensions = [.. extensions, .. VKDebug.ExtensionNames];
+        }
+
         createInfo.EnabledExtensionCount = (uint)extensions.Length;
         createInfo.PpEnabledExtensionNames = alloter.Alloc(extensions);
 
-        Vk.CreateInstance(&createInfo, null, out VkInstance instance).ThrowCode();
+        VkInstance instance;
+        Vk.CreateInstance(&createInfo, null, &instance).ThrowCode();
+
+        Instance = instance;
+        Debug = new VKDebug(this);
+        KhrSurface = Vk.GetExtension<KhrSurface>(Instance);
     }
 
     private static string[] GetInstanceExtensions()
