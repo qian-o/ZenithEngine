@@ -7,7 +7,7 @@ using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Graphics.Engine.Vulkan;
 
-internal unsafe class VKContext : Context
+internal unsafe sealed partial class VKContext : Context
 {
     public override Backend Backend { get; } = Backend.Vulkan;
 
@@ -31,6 +31,7 @@ internal unsafe class VKContext : Context
         }
 
         InitInstance(useValidationLayers);
+        InitPhysicalDevice();
     }
 
     protected override void Destroy()

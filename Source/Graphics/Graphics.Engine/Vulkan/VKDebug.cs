@@ -8,7 +8,7 @@ using Silk.NET.Vulkan.Extensions.EXT;
 
 namespace Graphics.Engine.Vulkan;
 
-internal unsafe class VKDebug : DisposableObject
+internal unsafe sealed class VKDebug : DisposableObject
 {
     private static readonly bool debugUtils;
     private static readonly bool debugReport;
