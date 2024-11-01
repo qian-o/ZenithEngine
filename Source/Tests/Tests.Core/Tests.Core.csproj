@@ -1,24 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	</PropertyGroup>
-
-	<PropertyGroup>
-		<AnalysisLevel>latest-recommended</AnalysisLevel>
-		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-	</PropertyGroup>
-
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="OxyPlot.SkiaSharp" Version="2.2.0" />
-		<PackageReference Include="SharpGLTF.Core" Version="1.0.3" />
-		<PackageReference Include="SharpGLTF.Toolkit" Version="1.0.3" />
-		<PackageReference Include="SkiaSharp.Skottie" Version="2.88.8" />
-		<PackageReference Include="StbImageSharp" Version="2.30.15" />
+		<PackageReference Include="Newtonsoft.Json" />
+		<PackageReference Include="OxyPlot.SkiaSharp" />
+		<PackageReference Include="SharpGLTF.Core" />
+		<PackageReference Include="SharpGLTF.Toolkit" />
+		<PackageReference Include="SkiaSharp.Skottie" />
+		<PackageReference Include="StbImageSharp" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -31,5 +18,4 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
-
 </Project>

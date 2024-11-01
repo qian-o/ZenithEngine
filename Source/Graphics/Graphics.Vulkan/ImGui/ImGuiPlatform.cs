@@ -1,20 +1,20 @@
-﻿using System.Numerics;
-using Graphics.Core;
-using Graphics.Core.Window;
+﻿using Graphics.Core;
 using Graphics.Vulkan.Descriptions;
+using Graphics.Windowing.Enums;
+using Graphics.Windowing.Events;
+using Graphics.Windowing.Interfaces;
 using Hexa.NET.ImGui;
-using Silk.NET.Input;
-using Silk.NET.Windowing;
+using Silk.NET.Maths;
 
 namespace Graphics.Vulkan.ImGui;
 
 public unsafe class ImGuiPlatform : DisposableObject
 {
-    private readonly SdlWindow _window;
+    private readonly IWindow _window;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly bool _isExternalPlatform;
 
-    internal ImGuiPlatform(ImGuiViewport* viewport, SdlWindow window, GraphicsDevice graphicsDevice)
+    internal ImGuiPlatform(ImGuiViewport* viewport, IWindow window, GraphicsDevice graphicsDevice)
     {
         Viewport = viewport;
 
@@ -25,11 +25,11 @@ public unsafe class ImGuiPlatform : DisposableObject
         Initialize();
     }
 
-    internal ImGuiPlatform(ImGuiViewport* viewport, GraphicsDevice graphicsDevice)
+    internal ImGuiPlatform(ImGuiViewport* viewport, Func<IWindow> createWindowFunc, GraphicsDevice graphicsDevice)
     {
         Viewport = viewport;
 
-        _window = SdlWindow.CreateWindowByVulkan();
+        _window = createWindowFunc();
         _graphicsDevice = graphicsDevice;
         _isExternalPlatform = false;
 
@@ -42,15 +42,15 @@ public unsafe class ImGuiPlatform : DisposableObject
 
     public string Title { get => _window.Title; set => _window.Title = value; }
 
-    public Vector2 Position { get => _window.Position; set => _window.Position = value; }
+    public Vector2D<int> Position { get => _window.Position; set => _window.Position = value; }
 
-    public Vector2 Size { get => _window.Size; set => _window.Size = value; }
+    public Vector2D<int> Size { get => _window.Size; set => _window.Size = value; }
 
     public float DpiScale => _window.DpiScale;
 
     public byte IsFocused => _window.IsFocused ? (byte)1 : (byte)0;
 
-    public byte IsMinimized => _window.WindowState == WindowState.Minimized ? (byte)1 : (byte)0;
+    public byte IsMinimized => _window.State == WindowState.Minimized ? (byte)1 : (byte)0;
 
     public float Alpha { get => _window.Opacity; set => _window.Opacity = value; }
 
@@ -76,9 +76,7 @@ public unsafe class ImGuiPlatform : DisposableObject
             return;
         }
 
-        _window.PollEvents();
-
-        if (Swapchain!.Width != _window.FramebufferSize.X || Swapchain!.Height != _window.FramebufferSize.Y)
+        if (Swapchain!.Width != _window.Size.X || Swapchain!.Height != _window.Size.Y)
         {
             Swapchain.Resize();
         }
@@ -102,14 +100,12 @@ public unsafe class ImGuiPlatform : DisposableObject
 
         if (!_isExternalPlatform)
         {
-            _window.Dispose();
+            _window.Close();
         }
     }
 
     private void Initialize()
     {
-        Viewport->PlatformHandle = (void*)_window.Handle;
-
         if (!_isExternalPlatform)
         {
             if (Viewport->Flags.HasFlag(ImGuiViewportFlags.NoTaskBarIcon))
@@ -119,13 +115,15 @@ public unsafe class ImGuiPlatform : DisposableObject
 
             if (Viewport->Flags.HasFlag(ImGuiViewportFlags.NoDecoration))
             {
-                _window.WindowBorder = WindowBorder.Hidden;
+                _window.Border = WindowBorder.Hidden;
             }
 
             if (Viewport->Flags.HasFlag(ImGuiViewportFlags.TopMost))
             {
                 _window.TopMost = true;
             }
+
+            _window.Show();
 
             SwapchainDescription swapchainDescription = new()
             {
@@ -136,34 +134,48 @@ public unsafe class ImGuiPlatform : DisposableObject
             Swapchain = _graphicsDevice.Factory.CreateSwapchain(in swapchainDescription);
         }
 
+        Viewport->PlatformHandle = (void*)_window.Handle;
+
         Register();
     }
 
     private void Register()
     {
-        _window.MouseWheel += MouseWheel;
+        _window.Unloaded += Unloaded;
+        _window.PositionChanged += PositionChanged;
+        _window.SizeChanged += SizeChanged;
         _window.KeyDown += KeyDown;
         _window.KeyUp += KeyUp;
         _window.KeyChar += KeyChar;
-        _window.Move += Move;
-        _window.Resize += Resize;
-        _window.Closing += Closing;
+        _window.MouseWheel += MouseWheel;
     }
 
     private void Unregister()
     {
-        _window.MouseWheel -= MouseWheel;
+        _window.Unloaded -= Unloaded;
+        _window.PositionChanged -= PositionChanged;
+        _window.SizeChanged -= SizeChanged;
         _window.KeyDown -= KeyDown;
         _window.KeyUp -= KeyUp;
         _window.KeyChar -= KeyChar;
-        _window.Move -= Move;
-        _window.Resize -= Resize;
-        _window.Closing -= Closing;
+        _window.MouseWheel -= MouseWheel;
     }
 
-    private void MouseWheel(object? sender, MouseWheelEventArgs e)
+    private void Unloaded(object? sender, EventArgs e)
     {
-        DearImGui.GetIO().AddMouseWheelEvent(e.ScrollWheel.X, e.ScrollWheel.Y);
+        Viewport->PlatformRequestClose = 1;
+    }
+
+    private void PositionChanged(object? sender, ValueEventArgs<Vector2D<int>> e)
+    {
+        Viewport->PlatformRequestMove = 1;
+    }
+
+    private void SizeChanged(object? sender, ValueEventArgs<Vector2D<int>> e)
+    {
+        Viewport->PlatformRequestResize = 1;
+
+        Swapchain?.Resize();
     }
 
     private void KeyDown(object? sender, KeyEventArgs e)
@@ -182,26 +194,14 @@ public unsafe class ImGuiPlatform : DisposableObject
         }
     }
 
-    private void KeyChar(object? sender, KeyCharEventArgs e)
+    private void KeyChar(object? sender, ValueEventArgs<char> e)
     {
-        DearImGui.GetIO().AddInputCharacter(e.KeyChar);
+        DearImGui.GetIO().AddInputCharacter(e.Value);
     }
 
-    private void Move(object? sender, MoveEventArgs e)
+    private void MouseWheel(object? sender, ValueEventArgs<Vector2D<int>> e)
     {
-        Viewport->PlatformRequestMove = 1;
-    }
-
-    private void Resize(object? sender, ResizeEventArgs e)
-    {
-        Viewport->PlatformRequestResize = 1;
-
-        Swapchain?.Resize();
-    }
-
-    private void Closing(object? sender, ClosingEventArgs e)
-    {
-        Viewport->PlatformRequestClose = 1;
+        DearImGui.GetIO().AddMouseWheelEvent(e.Value.X, e.Value.Y);
     }
 
     private static bool TryMapKey(Key key, out ImGuiKey result)

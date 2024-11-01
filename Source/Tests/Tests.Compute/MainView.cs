@@ -2,12 +2,13 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
-using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Graphics.Vulkan.ImGui;
+using Graphics.Windowing.Events;
 using Hexa.NET.ImGui;
+using Silk.NET.Maths;
 using Tests.Core;
 using Tests.Core.Helpers;
 
@@ -112,10 +113,10 @@ internal sealed unsafe class MainView : View
         };
     }
 
-    protected override void OnUpdate(UpdateEventArgs e)
+    protected override void OnUpdate(TimeEventArgs e)
     {
         _viewController.Update();
-        _cameraController.Update(e.DeltaTime);
+        _cameraController.Update((float)e.DeltaTime);
 
         if (ImGui.Begin("Properties"))
         {
@@ -141,7 +142,7 @@ internal sealed unsafe class MainView : View
         _device.UpdateBuffer(_buffer, in _camera);
     }
 
-    protected override void OnRender(RenderEventArgs e)
+    protected override void OnRender(TimeEventArgs e)
     {
         if (_outputTexture != null)
         {
@@ -162,7 +163,7 @@ internal sealed unsafe class MainView : View
         }
     }
 
-    protected override void OnResize(ResizeEventArgs e)
+    protected override void OnResize(ValueEventArgs<Vector2D<int>> e)
     {
         _outputTextureView?.Dispose();
 
@@ -173,8 +174,8 @@ internal sealed unsafe class MainView : View
             _outputTexture.Dispose();
         }
 
-        _outputTexture = _device.Factory.CreateTexture(TextureDescription.Texture2D(e.Width,
-                                                                                    e.Height,
+        _outputTexture = _device.Factory.CreateTexture(TextureDescription.Texture2D((uint)e.Value.X,
+                                                                                    (uint)e.Value.Y,
                                                                                     1,
                                                                                     PixelFormat.R8G8B8A8UNorm,
                                                                                     TextureUsage.Sampled | TextureUsage.Storage));
@@ -183,8 +184,8 @@ internal sealed unsafe class MainView : View
 
         _resourceSet.UpdateSet(_outputTextureView, 1);
 
-        _camera.Width = (int)e.Width;
-        _camera.Height = (int)e.Height;
+        _camera.Width = e.Value.X;
+        _camera.Height = e.Value.Y;
     }
 
     protected override void Destroy()

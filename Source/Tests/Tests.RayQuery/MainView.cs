@@ -3,15 +3,16 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Graphics.Core;
-using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Graphics.Vulkan.ImGui;
+using Graphics.Windowing.Events;
 using Hexa.NET.ImGui;
 using SharpGLTF.Materials;
 using SharpGLTF.Schema2;
 using SharpGLTF.Validation;
+using Silk.NET.Maths;
 using StbImageSharp;
 using Tests.Core;
 using Tests.Core.Helpers;
@@ -418,10 +419,10 @@ internal sealed unsafe class MainView : View
         }
     }
 
-    protected override void OnUpdate(UpdateEventArgs e)
+    protected override void OnUpdate(TimeEventArgs e)
     {
         _viewController.Update();
-        _cameraController.Update(e.DeltaTime);
+        _cameraController.Update((float)e.DeltaTime);
 
         Camera camera = new()
         {
@@ -446,7 +447,7 @@ internal sealed unsafe class MainView : View
         _device.UpdateBuffer(_paramBuffer, in _param);
     }
 
-    protected override void OnRender(RenderEventArgs e)
+    protected override void OnRender(TimeEventArgs e)
     {
         if (_framebufferObject != null)
         {
@@ -475,7 +476,7 @@ internal sealed unsafe class MainView : View
         }
     }
 
-    protected override void OnResize(ResizeEventArgs e)
+    protected override void OnResize(ValueEventArgs<Vector2D<int>> e)
     {
         if (_framebufferObject != null)
         {
@@ -483,7 +484,7 @@ internal sealed unsafe class MainView : View
 
             _framebufferObject.Dispose();
         }
-        _framebufferObject = new FramebufferObject(_device, (int)e.Width, (int)e.Height);
+        _framebufferObject = new FramebufferObject(_device, e.Value.X, e.Value.Y);
 
         GraphicsPipelineDescription pipelineDescription = new()
         {

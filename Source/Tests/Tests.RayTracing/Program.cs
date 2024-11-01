@@ -1,94 +1,94 @@
 ﻿using Graphics.Core;
-using Graphics.Core.Window;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.ImGui;
+using Graphics.Windowing;
+using Graphics.Windowing.Events;
 using Hexa.NET.ImGui;
+using Silk.NET.Maths;
 using Tests.Core;
 
 namespace Tests.RayTracing;
 
 internal sealed unsafe class Program
 {
-    private static GraphicsDevice _device = null!;
-    private static ImGuiController _imGuiController = null!;
-    private static View[] _views = null!;
+    private static SdlWindow mainWindow = null!;
+    private static Context context = null!;
+    private static GraphicsDevice device = null!;
+    private static Swapchain swapchain = null!;
+    private static ImGuiController imGuiController = null!;
+    private static CommandList commandList = null!;
+    private static View[] views = null!;
 
     private static void Main(string[] _)
     {
-        using SdlWindow window = SdlWindow.CreateWindowByVulkan();
-        window.Title = "Tests.RayTracing";
-        window.MinimumSize = new(100, 100);
-
-        using Context context = new();
-        using GraphicsDevice device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
-        using Swapchain swapchain = device.Factory.CreateSwapchain(new SwapchainDescription(window.VkSurface!, device.GetBestDepthFormat()));
-        using ImGuiController imGuiController = new(window,
-                                                    device,
-                                                    swapchain.OutputDescription,
-                                                    new ImGuiFontConfig("Assets/Fonts/msyh.ttf", 16, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()),
-                                                    ImGuiSizeConfig.Default);
-        using CommandList commandList = device.Factory.CreateGraphicsCommandList();
-
-        window.Load += Load;
-
-        window.Update += (a, b) =>
+        mainWindow = new()
         {
-            imGuiController.Update(b.DeltaTime);
-
-            Update(a, b);
+            Title = "Tests.RayTracing",
+            MinimumSize = new(100, 100)
         };
 
-        window.Render += (a, b) =>
-        {
-            Render(a, b);
+        mainWindow.Loaded += Loaded;
+        mainWindow.Unloaded += Unloaded;
+        mainWindow.SizeChanged += SizeChanged;
+        mainWindow.Update += Update;
+        mainWindow.Render += Render;
 
-            commandList.Begin();
-            {
-                commandList.SetFramebuffer(swapchain.Framebuffer);
-                commandList.ClearColorTarget(0, RgbaFloat.Black);
-                commandList.ClearDepthStencil(1.0f);
+        mainWindow.Show();
 
-                imGuiController.Render(commandList);
-            }
-            commandList.End();
-
-            device.SubmitCommandsAndSwapBuffers(commandList, swapchain);
-
-            imGuiController.PlatformSwapBuffers();
-        };
-
-        window.Resize += (a, b) =>
-        {
-            swapchain.Resize();
-
-            Resize(a, b);
-        };
-
-        window.Closing += Closing;
-
-        _device = device;
-        _imGuiController = imGuiController;
-
-        window.Run();
+        WindowManager.Loop();
     }
 
-    private static void Load(object? sender, LoadEventArgs e)
+    private static void Loaded(object? sender, EventArgs e)
     {
-        _views = [new MainView(_device, _imGuiController)];
+        context = new();
+        device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
+        swapchain = device.Factory.CreateSwapchain(new SwapchainDescription(mainWindow.VkSurface!, device.GetBestDepthFormat()));
+        imGuiController = new(mainWindow,
+                              () => new SdlWindow(),
+                              device,
+                              swapchain.OutputDescription,
+                              new ImGuiFontConfig("Assets/Fonts/msyh.ttf", 16, (a) => (nint)a.Fonts.GetGlyphRangesChineseFull()),
+                              ImGuiSizeConfig.Default);
+        commandList = device.Factory.CreateGraphicsCommandList();
+
+        views = [new MainView(device, imGuiController)];
     }
 
-    private static void Update(object? sender, UpdateEventArgs e)
+    private static void Unloaded(object? sender, EventArgs e)
     {
-        foreach (View view in _views)
+        foreach (View view in views)
+        {
+            view.Dispose();
+        }
+
+        commandList.Dispose();
+        imGuiController.Dispose();
+        swapchain.Dispose();
+        device.Dispose();
+        context.Dispose();
+
+        WindowManager.Stop();
+    }
+
+    private static void SizeChanged(object? sender, ValueEventArgs<Vector2D<int>> e)
+    {
+        swapchain.Resize();
+    }
+
+    private static void Update(object? sender, TimeEventArgs e)
+    {
+        imGuiController.Update((float)e.DeltaTime);
+
+        foreach (View view in views)
         {
             view.Update(e);
         }
     }
 
-    private static void Render(object? sender, RenderEventArgs e)
+    private static void Render(object? sender, TimeEventArgs e)
     {
-        foreach (View view in _views)
+        foreach (View view in views)
         {
             view.Render(e);
         }
@@ -107,17 +107,19 @@ internal sealed unsafe class Program
 
             ImGui.End();
         }
-    }
 
-    private static void Resize(object? sender, ResizeEventArgs e)
-    {
-    }
-
-    private static void Closing(object? sender, ClosingEventArgs e)
-    {
-        foreach (View view in _views)
+        commandList.Begin();
         {
-            view.Dispose();
+            commandList.SetFramebuffer(swapchain.Framebuffer);
+            commandList.ClearColorTarget(0, RgbaFloat.Black);
+            commandList.ClearDepthStencil(1.0f);
+
+            imGuiController.Render(commandList);
         }
+        commandList.End();
+
+        device.SubmitCommandsAndSwapBuffers(commandList, swapchain);
+
+        imGuiController.PlatformSwapBuffers();
     }
 }

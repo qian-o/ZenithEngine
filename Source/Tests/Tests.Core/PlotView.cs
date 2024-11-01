@@ -1,6 +1,6 @@
-﻿using Graphics.Core.Window;
-using Graphics.Vulkan;
+﻿using Graphics.Vulkan;
 using Graphics.Vulkan.ImGui;
+using Graphics.Windowing.Events;
 using Hexa.NET.ImGui;
 using OxyPlot;
 using OxyPlot.SkiaSharp;
@@ -116,7 +116,7 @@ public class PlotView : SkiaView, IPlotView
         }
     }
 
-    protected override void OnUpdate(UpdateEventArgs e)
+    protected override void OnUpdate(TimeEventArgs e)
     {
         _viewController.Update();
 
@@ -140,7 +140,7 @@ public class PlotView : SkiaView, IPlotView
         }
     }
 
-    protected override void OnRenderSurface(SKCanvas canvas, RenderEventArgs e)
+    protected override void OnRenderSurface(SKCanvas canvas, TimeEventArgs e)
     {
         if (ActualModel == null)
         {
