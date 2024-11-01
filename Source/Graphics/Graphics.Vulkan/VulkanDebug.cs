@@ -39,7 +39,7 @@ public unsafe class VulkanDebug : DisposableObject
 
         foreach (ExtensionProperties extension in availableExtensions)
         {
-            string name = Alloter.GetString(extension.ExtensionName);
+            string name = Alloter.Get(extension.ExtensionName);
 
             if (name == ExtDebugUtils.ExtensionName)
             {
@@ -159,7 +159,7 @@ public unsafe class VulkanDebug : DisposableObject
                     SType = StructureType.DebugUtilsObjectNameInfoExt,
                     ObjectType = objectTypes[i],
                     ObjectHandle = handles[i],
-                    PObjectName = _alloter.Allocate(objNames[i])
+                    PObjectName = _alloter.Alloc(objNames[i])
                 };
 
                 _debugUtilsExt.SetDebugUtilsObjectName(vkObject.VkRes.VkDevice, &nameInfo);
@@ -175,7 +175,7 @@ public unsafe class VulkanDebug : DisposableObject
                     SType = StructureType.DebugMarkerObjectNameInfoExt,
                     ObjectType = (DebugReportObjectTypeEXT)objectTypes[i],
                     Object = handles[i],
-                    PObjectName = _alloter.Allocate(objNames[i])
+                    PObjectName = _alloter.Alloc(objNames[i])
                 };
 
                 _debugMarkerExt.DebugMarkerSetObjectName(vkObject.VkRes.VkDevice, &nameInfo);
@@ -207,12 +207,12 @@ public unsafe class VulkanDebug : DisposableObject
                                       DebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                       void* pUserData)
     {
-        string message = Alloter.GetString(pCallbackData->PMessage);
+        string message = Alloter.Get(pCallbackData->PMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{messageSeverity}] [{messageTypes}]");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Alloter.GetString(pCallbackData->PMessageIdName)}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Alloter.Get(pCallbackData->PMessageIdName)}");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Number: {pCallbackData->MessageIdNumber}");
         foreach (string str in strings)
         {
@@ -241,14 +241,14 @@ public unsafe class VulkanDebug : DisposableObject
                                       byte* pMessage,
                                       void* pUserData)
     {
-        string message = Alloter.GetString(pMessage);
+        string message = Alloter.Get(pMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{(DebugReportFlagsEXT)flags}] [{objectType}]");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Location: {location}");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Message Code: {messageCode}");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Layer Prefix: {Alloter.GetString(pLayerPrefix)}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Layer Prefix: {Alloter.Get(pLayerPrefix)}");
         foreach (string str in strings)
         {
             stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");

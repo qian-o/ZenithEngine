@@ -31,7 +31,7 @@ public unsafe class Shader : VulkanObject<VkShaderModule>
 
     internal string EntryPoint { get; }
 
-    internal byte* PointerName => Alloter.Allocate(EntryPoint);
+    internal byte* PointerName => Alloter.Alloc(EntryPoint);
 
     internal PipelineShaderStageCreateInfo GetPipelineShaderStageCreateInfo()
     {

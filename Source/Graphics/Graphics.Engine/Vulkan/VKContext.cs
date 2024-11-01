@@ -1,22 +1,114 @@
-﻿using Silk.NET.Core;
+﻿using Graphics.Core.Helpers;
+using Graphics.Engine.Enums;
+using Graphics.Engine.Vulkan.Helpers;
+using Silk.NET.Core;
 using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Graphics.Engine.Vulkan;
 
-internal class VKContext : Context
+internal unsafe class VKContext : Context
 {
-    public static readonly Version32 Version = Vk.Version13;
+    public override Backend Backend { get; } = Backend.Vulkan;
 
-    public VKContext()
-    {
-        Vk = Vk.GetApi();
-    }
+    public Vk Vk { get; } = Vk.GetApi();
 
-    public Vk Vk { get; }
+    public Version32 Version { get; } = Vk.Version13;
 
     public VkInstance Instance { get; }
 
+    public override void CreateDevice(bool useValidationLayers = false)
+    {
+        if (Instance.Handle != 0)
+        {
+            return;
+        }
+
+        InitInstance(useValidationLayers);
+    }
+
     protected override void Destroy()
     {
+    }
+
+    private void InitInstance(bool useValidationLayers)
+    {
+        using Alloter alloter = new();
+
+        ApplicationInfo applicationInfo = new()
+        {
+            SType = StructureType.ApplicationInfo,
+            PApplicationName = alloter.Alloc("Graphics"),
+            ApplicationVersion = new Version32(1, 0, 0),
+            PEngineName = alloter.Alloc("Graphics Engine"),
+            EngineVersion = new Version32(1, 0, 0),
+            ApiVersion = Version
+        };
+
+        InstanceCreateInfo createInfo = new()
+        {
+            SType = StructureType.InstanceCreateInfo,
+            PApplicationInfo = &applicationInfo
+        };
+
+        if (useValidationLayers)
+        {
+            const string ValidationLayerName = "VK_LAYER_KHRONOS_validation";
+
+            uint layerCount = 0;
+            Vk.EnumerateInstanceLayerProperties(&layerCount, null);
+
+            LayerProperties[] availableLayers = new LayerProperties[(int)layerCount];
+            Vk.EnumerateInstanceLayerProperties(&layerCount, availableLayers);
+
+            bool layerFound = false;
+
+            for (int i = 0; i < layerCount; i++)
+            {
+                LayerProperties layer = availableLayers[i];
+
+                if (Alloter.Get(layer.LayerName) == ValidationLayerName)
+                {
+                    layerFound = true;
+
+                    break;
+                }
+            }
+
+            if (!layerFound)
+            {
+                throw new NotSupportedException($"{ValidationLayerName} validation layer not supported");
+            }
+
+            createInfo.EnabledLayerCount = 1;
+            createInfo.PpEnabledLayerNames = alloter.Alloc([ValidationLayerName]);
+        }
+
+        string[] extensions = GetInstanceExtensions();
+
+        createInfo.EnabledExtensionCount = (uint)extensions.Length;
+        createInfo.PpEnabledExtensionNames = alloter.Alloc(extensions);
+
+        Vk.CreateInstance(&createInfo, null, out VkInstance instance).ThrowCode();
+    }
+
+    private static string[] GetInstanceExtensions()
+    {
+        string[] extensions = [KhrSurface.ExtensionName];
+
+        if (OperatingSystem.IsWindows())
+        {
+            extensions = [.. extensions, KhrWin32Surface.ExtensionName];
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            extensions = [.. extensions, KhrXlibSurface.ExtensionName];
+        }
+        else if (OperatingSystem.IsAndroid())
+        {
+            extensions = [.. extensions, KhrAndroidSurface.ExtensionName];
+        }
+
+        return extensions;
     }
 }

@@ -8,7 +8,7 @@ public unsafe class Alloter : DisposableObject
     private readonly List<nint> _marshal = [];
     private readonly List<nint> _nativeMemory = [];
 
-    public byte* Allocate(string value)
+    public byte* Alloc(string value)
     {
         lock (_locker)
         {
@@ -20,7 +20,7 @@ public unsafe class Alloter : DisposableObject
         }
     }
 
-    public byte** Allocate(string[] values)
+    public byte** Alloc(string[] values)
     {
         lock (_locker)
         {
@@ -28,7 +28,7 @@ public unsafe class Alloter : DisposableObject
 
             for (int i = 0; i < values.Length; i++)
             {
-                ptr[i] = Allocate(values[i]);
+                ptr[i] = Alloc(values[i]);
             }
 
             _nativeMemory.Add((nint)ptr);
@@ -37,7 +37,7 @@ public unsafe class Alloter : DisposableObject
         }
     }
 
-    public T* Allocate<T>(int length = 1) where T : unmanaged
+    public T* Alloc<T>(int length = 1) where T : unmanaged
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(length, 1);
 
@@ -51,7 +51,7 @@ public unsafe class Alloter : DisposableObject
         }
     }
 
-    public T* Allocate<T>(params T[] values) where T : unmanaged
+    public T* Alloc<T>(params T[] values) where T : unmanaged
     {
         lock (_locker)
         {
@@ -68,7 +68,7 @@ public unsafe class Alloter : DisposableObject
         }
     }
 
-    public void Clear()
+    public void Free()
     {
         lock (_locker)
         {
@@ -87,25 +87,25 @@ public unsafe class Alloter : DisposableObject
         }
     }
 
-    protected override void Destroy()
-    {
-        Clear();
-    }
-
-    public static unsafe string GetString(byte* stringPtr)
+    public static unsafe string Get(byte* stringPtr)
     {
         return Marshal.PtrToStringAnsi((nint)stringPtr) ?? string.Empty;
     }
 
-    public static unsafe string[] GetStrings(byte** stringsPtr, int count)
+    public static unsafe string[] Get(byte** stringsPtr, int count)
     {
         string[] strings = new string[count];
 
         for (int i = 0; i < count; i++)
         {
-            strings[i] = GetString((byte*)Marshal.ReadIntPtr((nint)stringsPtr, i * nint.Size));
+            strings[i] = Get((byte*)Marshal.ReadIntPtr((nint)stringsPtr, i * nint.Size));
         }
 
         return strings;
+    }
+
+    protected override void Destroy()
+    {
+        Free();
     }
 }
