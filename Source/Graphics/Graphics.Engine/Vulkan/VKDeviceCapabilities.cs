@@ -5,7 +5,7 @@ using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Graphics.Engine.Vulkan;
 
-internal unsafe sealed class VKDeviceCapabilities : DeviceCapabilities
+internal sealed unsafe class VKDeviceCapabilities : DeviceCapabilities
 {
     public override bool IsRayTracingSupported { get; }
 

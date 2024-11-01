@@ -7,7 +7,7 @@ using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Graphics.Engine.Vulkan;
 
-internal unsafe sealed partial class VKContext : Context
+internal sealed unsafe partial class VKContext : Context
 {
     public override Backend Backend { get; } = Backend.Vulkan;
 
