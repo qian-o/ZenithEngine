@@ -2,11 +2,11 @@
 
 namespace Graphics.Engine;
 
-public abstract class GraphicsResource(GraphicsContext context) : DisposableObject
+public abstract class DeviceResource(Context context) : DisposableObject
 {
     private string name = string.Empty;
 
-    public GraphicsContext Context { get; } = context;
+    public Context Context { get; } = context;
 
     public string Name
     {

@@ -2,6 +2,6 @@
 
 namespace Graphics.Engine;
 
-public abstract class GraphicsContext : DisposableObject
+public abstract class Context : DisposableObject
 {
 }
