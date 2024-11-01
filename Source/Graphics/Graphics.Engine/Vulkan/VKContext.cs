@@ -11,6 +11,8 @@ internal unsafe class VKContext : Context
 {
     public override Backend Backend { get; } = Backend.Vulkan;
 
+    public override DeviceCapabilities Capabilities { get; } = new VKDeviceCapabilities();
+
     public Vk Vk { get; } = Vk.GetApi();
 
     public Version32 Version { get; } = Vk.Version13;

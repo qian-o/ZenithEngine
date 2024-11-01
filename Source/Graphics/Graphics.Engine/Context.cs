@@ -7,5 +7,7 @@ public abstract class Context : DisposableObject
 {
     public abstract Backend Backend { get; }
 
+    public abstract DeviceCapabilities Capabilities { get; }
+
     public abstract void CreateDevice(bool useValidationLayers = false);
 }
