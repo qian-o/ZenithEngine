@@ -36,6 +36,15 @@ internal sealed unsafe partial class VKContext : Context
 
     protected override void Destroy()
     {
+        if (Instance.Handle == 0)
+        {
+            return;
+        }
+
+        KhrSurface.Dispose();
+        Debug?.Dispose();
+        Vk.DestroyInstance(Instance, null);
+        Vk.Dispose();
     }
 
     private void InitInstance(bool useValidationLayers)
@@ -105,7 +114,7 @@ internal sealed unsafe partial class VKContext : Context
         Vk.CreateInstance(&createInfo, null, &instance).ThrowCode();
 
         Instance = instance;
-        Debug = new VKDebug(this);
+        Debug = useValidationLayers ? new VKDebug(this) : null;
         KhrSurface = Vk.GetExtension<KhrSurface>(Instance);
     }
 

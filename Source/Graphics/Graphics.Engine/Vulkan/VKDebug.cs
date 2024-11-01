@@ -133,6 +133,19 @@ internal sealed unsafe class VKDebug : DisposableObject
 
     protected override void Destroy()
     {
+        if (debugReportCallbackEXT.HasValue)
+        {
+            extDebugReport!.DestroyDebugReportCallback(instance, debugReportCallbackEXT.Value, null);
+        }
+
+        if (debugUtilsMessengerEXT.HasValue)
+        {
+            extDebugUtils!.DestroyDebugUtilsMessenger(instance, debugUtilsMessengerEXT.Value, null);
+        }
+
+        extDebugMarker?.Dispose();
+        extDebugReport?.Dispose();
+        extDebugUtils?.Dispose();
     }
 
     private uint DebugMessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
