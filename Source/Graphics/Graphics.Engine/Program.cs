@@ -14,7 +14,7 @@ using Buffer buffer = context.Factory.CreateBuffer(in bufferDescription);
 
 Console.ReadKey();
 
-struct Vertex
+internal struct Vertex
 {
     public Vector3 Position;
 
