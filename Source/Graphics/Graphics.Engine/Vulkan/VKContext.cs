@@ -9,13 +9,25 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe partial class VKContext : Context
 {
-    public override Backend Backend { get; } = Backend.Vulkan;
+    public VKContext()
+    {
+        Backend = Backend.Vulkan;
+        Capabilities = new VKDeviceCapabilities();
+        Factory = new VKResourceFactory(this);
 
-    public override VKDeviceCapabilities Capabilities { get; } = new VKDeviceCapabilities();
+        Vk = Vk.GetApi();
+        Version = Vk.Version13;
+    }
 
-    public Vk Vk { get; } = Vk.GetApi();
+    public override Backend Backend { get; }
 
-    public Version32 Version { get; } = Vk.Version13;
+    public override VKDeviceCapabilities Capabilities { get; }
+
+    public override ResourceFactory Factory { get; }
+
+    public Vk Vk { get; }
+
+    public Version32 Version { get; }
 
     public VkInstance Instance { get; private set; }
 

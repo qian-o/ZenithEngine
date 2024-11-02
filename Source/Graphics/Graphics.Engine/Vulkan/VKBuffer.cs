@@ -7,12 +7,8 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKBuffer : Buffer
 {
-    private readonly VKContext vkContext;
-
     public VKBuffer(Context context, ref readonly BufferDescription description) : base(context, in description)
     {
-        vkContext = (VKContext)context;
-
         BufferCreateInfo createInfo = new()
         {
             SType = StructureType.BufferCreateInfo,
@@ -54,18 +50,18 @@ internal sealed unsafe class VKBuffer : Buffer
         }
 
         VkBuffer buffer;
-        vkContext.Vk.CreateBuffer(vkContext.Device, &createInfo, null, &buffer).ThrowCode();
+        Context.Vk.CreateBuffer(Context.Device, &createInfo, null, &buffer).ThrowCode();
 
         MemoryRequirements memoryRequirements;
-        vkContext.Vk.GetBufferMemoryRequirements(vkContext.Device, buffer, &memoryRequirements);
+        Context.Vk.GetBufferMemoryRequirements(Context.Device, buffer, &memoryRequirements);
 
         bool isHostVisible = description.Usage.HasFlag(BufferUsage.Dynamic);
 
-        DeviceMemory = new(vkContext,
+        DeviceMemory = new(Context,
                            memoryRequirements,
                            isHostVisible ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit);
 
-        vkContext.Vk.BindBufferMemory(vkContext.Device, buffer, DeviceMemory.DeviceMemory, 0).ThrowCode();
+        Context.Vk.BindBufferMemory(Context.Device, buffer, DeviceMemory.DeviceMemory, 0).ThrowCode();
 
         BufferDeviceAddressInfo bufferDeviceAddressInfo = new()
         {
@@ -73,10 +69,12 @@ internal sealed unsafe class VKBuffer : Buffer
             Buffer = buffer
         };
 
-        Address = vkContext.Vk.GetBufferDeviceAddress(vkContext.Device, &bufferDeviceAddressInfo);
+        Address = Context.Vk.GetBufferDeviceAddress(Context.Device, &bufferDeviceAddressInfo);
 
         Buffer = buffer;
     }
+
+    public new VKContext Context => (VKContext)base.Context;
 
     public VkBuffer Buffer { get; }
 
@@ -86,13 +84,13 @@ internal sealed unsafe class VKBuffer : Buffer
 
     protected override void SetName(string name)
     {
-        vkContext.SetDebugName(ObjectType.Buffer, Buffer.Handle, name);
+        Context.SetDebugName(ObjectType.Buffer, Buffer.Handle, name);
     }
 
     protected override void Destroy()
     {
         DeviceMemory.Dispose();
 
-        vkContext.Vk.DestroyBuffer(vkContext.Device, Buffer, null);
+        Context.Vk.DestroyBuffer(Context.Device, Buffer, null);
     }
 }

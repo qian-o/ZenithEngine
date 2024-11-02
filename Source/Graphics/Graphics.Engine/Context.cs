@@ -10,6 +10,8 @@ public abstract class Context : DisposableObject
 
     public abstract DeviceCapabilities Capabilities { get; }
 
+    public abstract ResourceFactory Factory { get; }
+
     public abstract void CreateDevice(bool useValidationLayers = false);
 
     public static Context Create(Backend backend)
