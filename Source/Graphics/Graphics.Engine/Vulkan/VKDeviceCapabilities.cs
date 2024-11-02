@@ -7,9 +7,9 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKDeviceCapabilities : DeviceCapabilities
 {
-    public override bool IsRayTracingSupported { get; }
-
     public override bool IsRayQuerySupported { get; }
+
+    public override bool IsRayTracingSupported { get; }
 
     public bool IsDescriptorBufferSupported { get; }
 
@@ -21,8 +21,8 @@ internal sealed unsafe class VKDeviceCapabilities : DeviceCapabilities
         ExtensionProperties[] extensionProperties = new ExtensionProperties[extensionPropertyCount];
         vk.EnumerateDeviceExtensionProperties(physicalDevice, (string)null!, &extensionPropertyCount, extensionProperties);
 
-        this.SetPropertyValue(nameof(IsRayQuerySupported), SupportsExtension(extensionProperties, KhrRayTracingPipeline.ExtensionName));
-        this.SetPropertyValue(nameof(IsRayTracingSupported), SupportsExtension(extensionProperties, KhrRayQuery.ExtensionName));
+        this.SetPropertyValue(nameof(IsRayQuerySupported), SupportsExtension(extensionProperties, KhrRayQuery.ExtensionName));
+        this.SetPropertyValue(nameof(IsRayTracingSupported), SupportsExtension(extensionProperties, KhrRayTracingPipeline.ExtensionName));
         this.SetPropertyValue(nameof(IsDescriptorBufferSupported), SupportsExtension(extensionProperties, ExtDescriptorBuffer.ExtensionName));
     }
 

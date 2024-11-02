@@ -22,8 +22,7 @@ internal unsafe partial class VKContext
         Vk.EnumeratePhysicalDevices(Instance, &physicalDeviceCount, physicalDevices.AsPointer());
 
         PhysicalDevice = GetBestPhysicalDevice(physicalDevices);
-
-        ((VKDeviceCapabilities)Capabilities).Init(Vk, PhysicalDevice);
+        Capabilities.Init(Vk, PhysicalDevice);
     }
 
     private VkPhysicalDevice GetBestPhysicalDevice(VkPhysicalDevice[] physicalDevices)
@@ -138,22 +137,22 @@ internal unsafe partial class VKContext
 
         if (properties.DeviceType is PhysicalDeviceType.IntegratedGpu)
         {
-            score += 1000;
+            score += 4000;
         }
 
         if (properties.DeviceType is PhysicalDeviceType.DiscreteGpu)
         {
-            score += 2000;
+            score += 6000;
         }
 
         if (properties.DeviceType is PhysicalDeviceType.VirtualGpu)
         {
-            score += 1500;
+            score += 2000;
         }
 
         if (properties.DeviceType is PhysicalDeviceType.Cpu)
         {
-            score += 500;
+            score += 1000;
         }
 
         return score;
