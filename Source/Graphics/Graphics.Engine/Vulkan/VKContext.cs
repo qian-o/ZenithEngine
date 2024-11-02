@@ -42,9 +42,12 @@ internal sealed unsafe partial class VKContext : Context
             return;
         }
 
+        DestroyDevice();
+
         KhrSurface.Dispose();
         Debug?.Dispose();
         Vk.DestroyInstance(Instance, null);
+
         Vk.Dispose();
     }
 
@@ -52,15 +55,21 @@ internal sealed unsafe partial class VKContext : Context
     {
         using Alloter alloter = new();
 
-        ApplicationInfo.Chain(out ApplicationInfo applicationInfo);
-        applicationInfo.PApplicationName = alloter.Alloc("Graphics");
-        applicationInfo.ApplicationVersion = new Version32(1, 0, 0);
-        applicationInfo.PEngineName = alloter.Alloc("Graphics Engine");
-        applicationInfo.EngineVersion = new Version32(1, 0, 0);
-        applicationInfo.ApiVersion = Version;
+        ApplicationInfo applicationInfo = new()
+        {
+            SType = StructureType.ApplicationInfo,
+            PApplicationName = alloter.Alloc("Graphics"),
+            ApplicationVersion = new Version32(1, 0, 0),
+            PEngineName = alloter.Alloc("Graphics Engine"),
+            EngineVersion = new Version32(1, 0, 0),
+            ApiVersion = Version
+        };
 
-        InstanceCreateInfo.Chain(out InstanceCreateInfo createInfo);
-        createInfo.PApplicationInfo = &applicationInfo;
+        InstanceCreateInfo createInfo = new()
+        {
+            SType = StructureType.InstanceCreateInfo,
+            PApplicationInfo = &applicationInfo
+        };
 
         if (useValidationLayers)
         {

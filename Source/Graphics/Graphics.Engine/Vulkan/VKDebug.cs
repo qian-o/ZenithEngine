@@ -66,7 +66,8 @@ internal sealed unsafe class VKDebug : DisposableObject
         }
     }
 
-    private readonly Vk vk;
+    private readonly Alloter alloter = new();
+
     private readonly VkInstance instance;
     private readonly ExtDebugUtils? extDebugUtils;
     private readonly ExtDebugReport? extDebugReport;
@@ -76,12 +77,11 @@ internal sealed unsafe class VKDebug : DisposableObject
 
     public VKDebug(VKContext context)
     {
-        vk = context.Vk;
         instance = context.Instance;
 
         if (debugUtils)
         {
-            extDebugUtils = vk.GetExtension<ExtDebugUtils>(instance);
+            extDebugUtils = context.Vk.GetExtension<ExtDebugUtils>(instance);
 
             DebugUtilsMessengerCreateInfoEXT createInfo = new()
             {
@@ -104,11 +104,11 @@ internal sealed unsafe class VKDebug : DisposableObject
         }
         else if (debugReport)
         {
-            extDebugReport = vk.GetExtension<ExtDebugReport>(instance);
+            extDebugReport = context.Vk.GetExtension<ExtDebugReport>(instance);
 
             if (setObjectName)
             {
-                extDebugMarker = vk.GetExtension<ExtDebugMarker>(instance);
+                extDebugMarker = context.Vk.GetExtension<ExtDebugMarker>(instance);
             }
 
             DebugReportCallbackCreateInfoEXT createInfo = new()
@@ -131,6 +131,35 @@ internal sealed unsafe class VKDebug : DisposableObject
 
     public static string[] ExtensionNames { get; } = [];
 
+    public void SetObjectName(VkDevice device, ObjectType objectType, ulong objectHandle, string objectName)
+    {
+        if (extDebugUtils != null)
+        {
+            DebugUtilsObjectNameInfoEXT nameInfo = new()
+            {
+                SType = StructureType.DebugUtilsObjectNameInfoExt,
+                ObjectType = objectType,
+                ObjectHandle = objectHandle,
+                PObjectName = alloter.Alloc(objectName)
+            };
+
+            extDebugUtils.SetDebugUtilsObjectName(device, &nameInfo);
+        }
+
+        if (extDebugMarker != null)
+        {
+            DebugMarkerObjectNameInfoEXT nameInfo = new()
+            {
+                SType = StructureType.DebugMarkerObjectNameInfoExt,
+                ObjectType = (DebugReportObjectTypeEXT)objectType,
+                Object = objectHandle,
+                PObjectName = alloter.Alloc(objectName)
+            };
+
+            extDebugMarker.DebugMarkerSetObjectName(device, &nameInfo);
+        }
+    }
+
     protected override void Destroy()
     {
         if (debugReportCallbackEXT.HasValue)
@@ -146,6 +175,8 @@ internal sealed unsafe class VKDebug : DisposableObject
         extDebugMarker?.Dispose();
         extDebugReport?.Dispose();
         extDebugUtils?.Dispose();
+
+        alloter.Dispose();
     }
 
     private uint DebugMessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
