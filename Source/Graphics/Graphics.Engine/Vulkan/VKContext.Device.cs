@@ -97,7 +97,7 @@ internal unsafe partial class VKContext
         }
 
         VkDevice device;
-        Vk.CreateDevice(PhysicalDevice, &createInfo, null, &device).ThrowCode("Failed to create logical device");
+        Vk.CreateDevice(PhysicalDevice, &createInfo, null, &device).ThrowCode("Failed to create logical device.");
 
         Device = device;
     }

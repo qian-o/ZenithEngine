@@ -19,7 +19,7 @@ internal sealed unsafe class VKShader : Shader
         };
 
         VkShader shader;
-        vkContext.Vk.CreateShaderModule(vkContext.Device, &createInfo, null, &shader).ThrowCode("Failed to create shader module");
+        vkContext.Vk.CreateShaderModule(vkContext.Device, &createInfo, null, &shader).ThrowCode("Failed to create shader module.");
 
         Shader = shader;
     }
@@ -30,7 +30,7 @@ internal sealed unsafe class VKShader : Shader
     {
         VKContext vkContext = (VKContext)Context;
 
-        vkContext.Debug?.SetObjectName(vkContext.Device, ObjectType.ShaderModule, Shader.Handle, name);
+        vkContext.SetDebugName(ObjectType.ShaderModule, Shader.Handle, name);
     }
 
     protected override void Destroy()

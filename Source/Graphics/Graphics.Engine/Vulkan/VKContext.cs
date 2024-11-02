@@ -35,6 +35,11 @@ internal sealed unsafe partial class VKContext : Context
         InitDevice();
     }
 
+    public void SetDebugName(ObjectType objectType, ulong handle, string name)
+    {
+        Debug?.SetObjectName(Device, objectType, handle, name);
+    }
+
     protected override void Destroy()
     {
         if (Instance.Handle == 0)
@@ -115,7 +120,7 @@ internal sealed unsafe partial class VKContext : Context
         createInfo.PpEnabledExtensionNames = alloter.Alloc(extensions);
 
         VkInstance instance;
-        Vk.CreateInstance(&createInfo, null, &instance).ThrowCode();
+        Vk.CreateInstance(&createInfo, null, &instance).ThrowCode("This platform does not support Vulkan.");
 
         Instance = instance;
         Debug = useValidationLayers ? new VKDebug(this) : null;
