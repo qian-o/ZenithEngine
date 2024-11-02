@@ -120,7 +120,7 @@ internal sealed unsafe partial class VKContext : Context
         createInfo.PpEnabledExtensionNames = alloter.Alloc(extensions);
 
         VkInstance instance;
-        Vk.CreateInstance(&createInfo, null, &instance).ThrowCode("This platform does not support Vulkan.");
+        Vk.CreateInstance(&createInfo, null, &instance).ThrowCode();
 
         Instance = instance;
         Debug = useValidationLayers ? new VKDebug(this) : null;

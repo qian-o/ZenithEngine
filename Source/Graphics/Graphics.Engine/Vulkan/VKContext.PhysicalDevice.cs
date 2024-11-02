@@ -8,6 +8,22 @@ internal unsafe partial class VKContext
 {
     public VkPhysicalDevice PhysicalDevice { get; private set; }
 
+    public uint FindMemoryTypeIndex(uint typeFilter, MemoryPropertyFlags properties)
+    {
+        PhysicalDeviceMemoryProperties memoryProperties;
+        Vk.GetPhysicalDeviceMemoryProperties(PhysicalDevice, &memoryProperties);
+
+        for (int i = 0; i < memoryProperties.MemoryTypeCount; i++)
+        {
+            if ((typeFilter & (1 << i)) != 0 && memoryProperties.MemoryTypes[i].PropertyFlags.HasFlag(properties))
+            {
+                return (uint)i;
+            }
+        }
+
+        throw new BackendException("Failed to find suitable memory type.");
+    }
+
     private void InitPhysicalDevice()
     {
         uint physicalDeviceCount = 0;

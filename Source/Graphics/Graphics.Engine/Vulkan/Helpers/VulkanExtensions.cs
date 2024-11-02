@@ -23,4 +23,14 @@ internal static class VulkanExtensions
 
         return ext;
     }
+
+    public static T GetExtension<T>(this Vk vk, VkInstance instance, VkDevice device) where T : NativeExtension<Vk>
+    {
+        if (!vk.TryGetDeviceExtension(instance, device, out T ext))
+        {
+            throw new InvalidOperationException($"Failed to load extension {typeof(T).Name}!");
+        }
+
+        return ext;
+    }
 }

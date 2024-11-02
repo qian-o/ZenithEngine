@@ -36,17 +36,7 @@ public enum BufferUsage
     Dynamic = 1 << 5,
 
     /// <summary>
-    /// Indicates will be used as a staging Buffer.
-    /// </summary>
-    Staging = 1 << 6,
-
-    /// <summary>
-    /// Indicates will be used as a internal Buffer.
-    /// </summary>
-    Internal = 1 << 7,
-
-    /// <summary>
     /// Indicates will be used in a RayTracing acceleration structure.
     /// </summary>
-    AccelerationStructure = 1 << 8
+    AccelerationStructure = 1 << 6
 }

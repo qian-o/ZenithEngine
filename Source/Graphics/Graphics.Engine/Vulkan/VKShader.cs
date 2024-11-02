@@ -7,9 +7,11 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKShader : Shader
 {
+    private readonly VKContext vkContext;
+
     public VKShader(Context context, ref readonly ShaderDescription description) : base(context, in description)
     {
-        VKContext vkContext = (VKContext)context;
+        vkContext = (VKContext)context;
 
         ShaderModuleCreateInfo createInfo = new()
         {
@@ -19,7 +21,7 @@ internal sealed unsafe class VKShader : Shader
         };
 
         VkShader shader;
-        vkContext.Vk.CreateShaderModule(vkContext.Device, &createInfo, null, &shader).ThrowCode("Failed to create shader module.");
+        vkContext.Vk.CreateShaderModule(vkContext.Device, &createInfo, null, &shader).ThrowCode();
 
         Shader = shader;
     }
@@ -28,15 +30,11 @@ internal sealed unsafe class VKShader : Shader
 
     protected override void SetName(string name)
     {
-        VKContext vkContext = (VKContext)Context;
-
         vkContext.SetDebugName(ObjectType.ShaderModule, Shader.Handle, name);
     }
 
     protected override void Destroy()
     {
-        VKContext vkContext = (VKContext)Context;
-
         vkContext.Vk.DestroyShaderModule(vkContext.Device, Shader, null);
     }
 }
