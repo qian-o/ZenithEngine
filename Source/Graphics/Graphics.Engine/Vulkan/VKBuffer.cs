@@ -85,6 +85,7 @@ internal sealed unsafe class VKBuffer : Buffer
     protected override void SetName(string name)
     {
         Context.SetDebugName(ObjectType.Buffer, Buffer.Handle, name);
+        Context.SetDebugName(ObjectType.DeviceMemory, DeviceMemory.DeviceMemory.Handle, $"{name} Memory");
     }
 
     protected override void Destroy()

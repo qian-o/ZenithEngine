@@ -20,3 +20,6 @@ struct Vertex
 
     public Vector4 Color;
 }
+
+// 1. Use Dynamic Rendering instead of RenderPass.
+// 2. Reduce unnecessary assignment operations.
