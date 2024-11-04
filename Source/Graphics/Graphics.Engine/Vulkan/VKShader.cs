@@ -7,7 +7,8 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKShader : Shader
 {
-    public VKShader(Context context, ref readonly ShaderDescription description) : base(context, in description)
+    public VKShader(Context context,
+                    ref readonly ShaderDescription description) : base(context, in description)
     {
         ShaderModuleCreateInfo createInfo = new()
         {

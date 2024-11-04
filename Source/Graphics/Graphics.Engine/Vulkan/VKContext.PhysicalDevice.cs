@@ -8,14 +8,14 @@ internal unsafe partial class VKContext
 {
     public VkPhysicalDevice PhysicalDevice { get; private set; }
 
-    public uint FindMemoryTypeIndex(uint typeFilter, MemoryPropertyFlags properties)
+    public uint FindMemoryTypeIndex(uint typeFilter, MemoryPropertyFlags flags)
     {
         PhysicalDeviceMemoryProperties memoryProperties;
         Vk.GetPhysicalDeviceMemoryProperties(PhysicalDevice, &memoryProperties);
 
         for (int i = 0; i < memoryProperties.MemoryTypeCount; i++)
         {
-            if ((typeFilter & (1 << i)) != 0 && memoryProperties.MemoryTypes[i].PropertyFlags.HasFlag(properties))
+            if ((typeFilter & (1 << i)) != 0 && memoryProperties.MemoryTypes[i].PropertyFlags.HasFlag(flags))
             {
                 return (uint)i;
             }

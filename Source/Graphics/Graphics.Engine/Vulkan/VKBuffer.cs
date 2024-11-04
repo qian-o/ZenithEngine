@@ -7,7 +7,8 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKBuffer : Buffer
 {
-    public VKBuffer(Context context, ref readonly BufferDescription description) : base(context, in description)
+    public VKBuffer(Context context,
+                    ref readonly BufferDescription description) : base(context, in description)
     {
         BufferCreateInfo createInfo = new()
         {
@@ -55,11 +56,7 @@ internal sealed unsafe class VKBuffer : Buffer
         MemoryRequirements memoryRequirements;
         Context.Vk.GetBufferMemoryRequirements(Context.Device, buffer, &memoryRequirements);
 
-        bool isHostVisible = description.Usage.HasFlag(BufferUsage.Dynamic);
-
-        DeviceMemory = new(Context,
-                           memoryRequirements,
-                           isHostVisible ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit : MemoryPropertyFlags.DeviceLocalBit);
+        DeviceMemory = new(Context, description.Usage.HasFlag(BufferUsage.Dynamic), memoryRequirements);
 
         Context.Vk.BindBufferMemory(Context.Device, buffer, DeviceMemory.DeviceMemory, 0).ThrowCode();
 

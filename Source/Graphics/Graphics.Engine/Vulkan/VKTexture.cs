@@ -7,7 +7,8 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKTexture : Texture
 {
-    public VKTexture(Context context, ref readonly TextureDescription description) : base(context, in description)
+    public VKTexture(Context context,
+                     ref readonly TextureDescription description) : base(context, in description)
     {
         bool isCube = description.Type == TextureType.TextureCube;
         uint arrayLayers = (isCube ? 6u : 1u) * description.Depth;
@@ -17,7 +18,8 @@ internal sealed unsafe class VKTexture : Texture
         {
             SType = StructureType.ImageCreateInfo,
             ImageType = Formats.GetImageType(description.Type),
-            Format = Formats.GetPixelFormat(description.Format, description.Usage.HasFlag(TextureUsage.DepthStencil)),
+            Format = Formats.GetPixelFormat(description.Format,
+                                            description.Usage.HasFlag(TextureUsage.DepthStencil)),
             Extent = new Extent3D
             {
                 Width = description.Width,
@@ -40,9 +42,7 @@ internal sealed unsafe class VKTexture : Texture
         MemoryRequirements memoryRequirements;
         Context.Vk.GetImageMemoryRequirements(Context.Device, image, &memoryRequirements);
 
-        DeviceMemory = new(Context,
-                           memoryRequirements,
-                           MemoryPropertyFlags.DeviceLocalBit);
+        DeviceMemory = new(Context, false, memoryRequirements);
 
         Context.Vk.BindImageMemory(Context.Device, image, DeviceMemory.DeviceMemory, 0).ThrowCode();
 

@@ -5,13 +5,25 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKDeviceMemory : VKDeviceResource
 {
-    public VKDeviceMemory(VKContext context, MemoryRequirements requirements, MemoryPropertyFlags properties) : base(context)
+    public VKDeviceMemory(VKContext context,
+                          bool isHostVisible,
+                          MemoryRequirements requirements,
+                          MemoryPropertyFlags flags = MemoryPropertyFlags.None) : base(context)
     {
+        if (isHostVisible)
+        {
+            flags |= MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit;
+        }
+        else
+        {
+            flags |= MemoryPropertyFlags.DeviceLocalBit;
+        }
+
         MemoryAllocateInfo allocateInfo = new()
         {
             SType = StructureType.MemoryAllocateInfo,
             AllocationSize = requirements.Size,
-            MemoryTypeIndex = context.FindMemoryTypeIndex(requirements.MemoryTypeBits, properties)
+            MemoryTypeIndex = context.FindMemoryTypeIndex(requirements.MemoryTypeBits, flags)
         };
 
         allocateInfo.AddNext(out MemoryAllocateFlagsInfo memoryAllocateFlagsInfo);
