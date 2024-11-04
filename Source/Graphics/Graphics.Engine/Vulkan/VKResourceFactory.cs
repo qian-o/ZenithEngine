@@ -8,4 +8,9 @@ internal sealed class VKResourceFactory(Context context) : ResourceFactory(conte
     {
         return new VKBuffer(Context, in description);
     }
+
+    public override Texture CreateTexture(ref readonly TextureDescription description)
+    {
+        return new VKTexture(Context, in description);
+    }
 }

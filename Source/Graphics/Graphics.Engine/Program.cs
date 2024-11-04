@@ -12,7 +12,9 @@ BufferDescription bufferDescription = BufferDescription.Create<Vertex>(1024, Buf
 
 using Buffer buffer = context.Factory.CreateBuffer(in bufferDescription);
 
-Console.ReadKey();
+TextureDescription textureDescription = TextureDescription.Create2D(1024, 1024, 1);
+
+using Texture texture = context.Factory.CreateTexture(in textureDescription);
 
 internal struct Vertex(Vector3 position, Vector4 color)
 {
