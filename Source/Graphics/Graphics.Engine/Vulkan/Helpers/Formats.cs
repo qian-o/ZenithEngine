@@ -155,4 +155,16 @@ internal class Formats
 
         return imageUsageFlags;
     }
+
+    public static ImageViewType GetImageViewType(TextureType type)
+    {
+        return type switch
+        {
+            TextureType.Texture1D => ImageViewType.Type1D,
+            TextureType.Texture2D => ImageViewType.Type2D,
+            TextureType.Texture3D => ImageViewType.Type3D,
+            TextureType.TextureCube => ImageViewType.TypeCube,
+            _ => throw new ArgumentOutOfRangeException(nameof(type))
+        };
+    }
 }

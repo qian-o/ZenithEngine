@@ -11,8 +11,6 @@ internal sealed unsafe class VKTexture : Texture
                      ref readonly TextureDescription description) : base(context, in description)
     {
         bool isCube = description.Type == TextureType.TextureCube;
-        uint arrayLayers = (isCube ? 6u : 1u) * description.Depth;
-        uint subresourceCount = arrayLayers * description.MipLevels;
 
         ImageCreateInfo createInfo = new()
         {
@@ -27,7 +25,7 @@ internal sealed unsafe class VKTexture : Texture
                 Depth = description.Depth
             },
             MipLevels = description.MipLevels,
-            ArrayLayers = arrayLayers,
+            ArrayLayers = isCube ? 6u : 1u,
             Samples = Formats.GetSampleCountFlags(description.SampleCount),
             Tiling = ImageTiling.Optimal,
             Usage = Formats.GetImageUsageFlags(description.Usage),
@@ -46,7 +44,7 @@ internal sealed unsafe class VKTexture : Texture
 
         Context.Vk.BindImageMemory(Context.Device, image, DeviceMemory.DeviceMemory, 0).ThrowCode();
 
-        Layouts = new ImageLayout[subresourceCount];
+        Layouts = new ImageLayout[description.Depth * description.MipLevels * createInfo.ArrayLayers];
         Array.Fill(Layouts, ImageLayout.Preinitialized);
 
         Image = image;
