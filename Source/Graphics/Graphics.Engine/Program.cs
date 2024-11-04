@@ -16,6 +16,10 @@ TextureDescription textureDescription = TextureDescription.Create2D(1024, 1024, 
 
 using Texture texture = context.Factory.CreateTexture(in textureDescription);
 
+TextureViewDescription textureViewDescription = TextureViewDescription.Create(texture);
+
+using TextureView textureView = context.Factory.CreateTextureView(in textureViewDescription);
+
 internal struct Vertex(Vector3 position, Vector4 color)
 {
     public Vector3 Position = position;

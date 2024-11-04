@@ -18,4 +18,9 @@ internal sealed class VKResourceFactory(Context context) : ResourceFactory(conte
     {
         return new VKTexture(Context, in description);
     }
+
+    public override TextureView CreateTextureView(ref readonly TextureViewDescription description)
+    {
+        return new VKTextureView(Context, in description);
+    }
 }

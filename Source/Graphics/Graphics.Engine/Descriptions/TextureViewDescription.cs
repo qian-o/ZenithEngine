@@ -4,12 +4,6 @@ public struct TextureViewDescription(Texture target,
                                      uint baseMipLevel,
                                      uint mipLevels)
 {
-    public TextureViewDescription(Texture target) : this(target,
-                                                         0,
-                                                         target.Description.MipLevels)
-    {
-    }
-
     /// <summary>
     /// The desired target.
     /// </summary>
@@ -24,4 +18,9 @@ public struct TextureViewDescription(Texture target,
     /// The number of mip levels visible in the view.
     /// </summary>
     public uint MipLevels { get; set; } = mipLevels;
+
+    public static TextureViewDescription Create(Texture target)
+    {
+        return new TextureViewDescription(target, 0, target.Description.MipLevels);
+    }
 }
