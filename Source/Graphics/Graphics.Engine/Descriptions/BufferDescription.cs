@@ -2,7 +2,7 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct BufferDescription(uint sizeInBytes, BufferUsage usage)
+public unsafe struct BufferDescription(uint sizeInBytes, BufferUsage usage)
 {
     /// <summary>
     /// The desired capacity, in bytes.
@@ -14,7 +14,7 @@ public struct BufferDescription(uint sizeInBytes, BufferUsage usage)
     /// </summary>
     public BufferUsage Usage { get; set; } = usage;
 
-    public static unsafe BufferDescription Create<T>(int length, BufferUsage usage) where T : unmanaged
+    public static BufferDescription Create<T>(int length, BufferUsage usage) where T : unmanaged
     {
         return new BufferDescription((uint)(length * sizeof(T)), usage);
     }
