@@ -46,6 +46,16 @@ internal static class VulkanExtensions
 
         return vkTextureView;
     }
+
+    public static VKSampler VK(this Sampler sampler)
+    {
+        if (sampler is not VKSampler vkSampler)
+        {
+            throw new BackendException("Sampler is not a Vulkan sampler!");
+        }
+
+        return vkSampler;
+    }
     #endregion
 
     public static void ThrowCode(this VkResult result, string message = "")

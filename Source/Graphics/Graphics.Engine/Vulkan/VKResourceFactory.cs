@@ -23,4 +23,9 @@ internal sealed class VKResourceFactory(Context context) : ResourceFactory(conte
     {
         return new VKTextureView(Context, in description);
     }
+
+    public override Sampler CreateSampler(ref readonly SamplerDescription description)
+    {
+        return new VKSampler(Context, in description);
+    }
 }

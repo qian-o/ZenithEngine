@@ -13,4 +13,6 @@ public abstract class ResourceFactory(Context context)
     public abstract Texture CreateTexture(ref readonly TextureDescription description);
 
     public abstract TextureView CreateTextureView(ref readonly TextureViewDescription description);
+
+    public abstract Sampler CreateSampler(ref readonly SamplerDescription description);
 }

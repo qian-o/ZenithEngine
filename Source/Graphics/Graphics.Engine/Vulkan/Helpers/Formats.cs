@@ -167,4 +167,100 @@ internal class Formats
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
     }
+
+    public static void GetFilter(SamplerFilter filter,
+                                 out Filter minFilter,
+                                 out Filter magFilter,
+                                 out SamplerMipmapMode mipmapMode)
+    {
+        switch (filter)
+        {
+            case SamplerFilter.MinPointMagPointMipPoint:
+                minFilter = Filter.Nearest;
+                magFilter = Filter.Nearest;
+                mipmapMode = SamplerMipmapMode.Nearest;
+                break;
+            case SamplerFilter.MinPointMagPointMipLinear:
+                minFilter = Filter.Nearest;
+                magFilter = Filter.Nearest;
+                mipmapMode = SamplerMipmapMode.Linear;
+                break;
+            case SamplerFilter.MinPointMagLinearMipPoint:
+                minFilter = Filter.Nearest;
+                magFilter = Filter.Linear;
+                mipmapMode = SamplerMipmapMode.Nearest;
+                break;
+            case SamplerFilter.MinPointMagLinearMipLinear:
+                minFilter = Filter.Nearest;
+                magFilter = Filter.Linear;
+                mipmapMode = SamplerMipmapMode.Linear;
+                break;
+            case SamplerFilter.MinLinearMagPointMipPoint:
+                minFilter = Filter.Linear;
+                magFilter = Filter.Nearest;
+                mipmapMode = SamplerMipmapMode.Nearest;
+                break;
+            case SamplerFilter.MinLinearMagPointMipLinear:
+                minFilter = Filter.Linear;
+                magFilter = Filter.Nearest;
+                mipmapMode = SamplerMipmapMode.Linear;
+                break;
+            case SamplerFilter.MinLinearMagLinearMipPoint:
+                minFilter = Filter.Linear;
+                magFilter = Filter.Linear;
+                mipmapMode = SamplerMipmapMode.Nearest;
+                break;
+            case SamplerFilter.MinLinearMagLinearMipLinear:
+                minFilter = Filter.Linear;
+                magFilter = Filter.Linear;
+                mipmapMode = SamplerMipmapMode.Linear;
+                break;
+            case SamplerFilter.Anisotropic:
+                minFilter = Filter.Linear;
+                magFilter = Filter.Linear;
+                mipmapMode = SamplerMipmapMode.Linear;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(filter));
+        }
+    }
+
+    public static SamplerAddressMode GetSamplerAddressMode(AddressMode addressMode)
+    {
+        return addressMode switch
+        {
+            AddressMode.Wrap => SamplerAddressMode.Repeat,
+            AddressMode.Mirror => SamplerAddressMode.MirroredRepeat,
+            AddressMode.Clamp => SamplerAddressMode.ClampToEdge,
+            AddressMode.Border => SamplerAddressMode.ClampToBorder,
+            _ => throw new ArgumentOutOfRangeException(nameof(addressMode))
+        };
+    }
+
+    public static CompareOp GetCompareOp(ComparisonKind comparisonKind)
+    {
+        return comparisonKind switch
+        {
+            ComparisonKind.Never => CompareOp.Never,
+            ComparisonKind.Less => CompareOp.Less,
+            ComparisonKind.Equal => CompareOp.Equal,
+            ComparisonKind.LessEqual => CompareOp.LessOrEqual,
+            ComparisonKind.Greater => CompareOp.Greater,
+            ComparisonKind.NotEqual => CompareOp.NotEqual,
+            ComparisonKind.GreaterEqual => CompareOp.GreaterOrEqual,
+            ComparisonKind.Always => CompareOp.Always,
+            _ => throw new ArgumentOutOfRangeException(nameof(comparisonKind))
+        };
+    }
+
+    public static BorderColor GetBorderColor(SamplerBorderColor borderColor)
+    {
+        return borderColor switch
+        {
+            SamplerBorderColor.TransparentBlack => BorderColor.FloatTransparentBlack,
+            SamplerBorderColor.OpaqueBlack => BorderColor.FloatOpaqueBlack,
+            SamplerBorderColor.OpaqueWhite => BorderColor.FloatOpaqueWhite,
+            _ => throw new ArgumentOutOfRangeException(nameof(borderColor))
+        };
+    }
 }
