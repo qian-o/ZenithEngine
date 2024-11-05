@@ -20,6 +20,12 @@ TextureViewDescription textureViewDescription = TextureViewDescription.Create(te
 
 using TextureView textureView = context.Factory.CreateTextureView(in textureViewDescription);
 
+SamplerDescription samplerDescription = SamplerDescription.Linear;
+
+using Sampler sampler = context.Factory.CreateSampler(in samplerDescription);
+
+Console.WriteLine("Initialization completed.");
+
 internal struct Vertex(Vector3 position, Vector4 color)
 {
     public Vector3 Position = position;
