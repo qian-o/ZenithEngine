@@ -37,7 +37,7 @@ public struct TextureViewDescription(Texture target,
     {
         return new TextureViewDescription(target,
                                           CubeMapFace.PositiveX,
-                                          1,
+                                          target.Description.Type == TextureType.TextureCube ? 6u : 1u,
                                           0,
                                           target.Description.MipLevels);
     }
