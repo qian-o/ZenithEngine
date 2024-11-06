@@ -31,7 +31,7 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
 
         if (hasDepthStencil)
         {
-            FrameBufferAttachmentDescription attachmentDescription = description.DepthStencilTarget.Value;
+            FrameBufferAttachmentDescription attachmentDescription = description.DepthStencilTarget!.Value;
 
             TextureViewDescription textureViewDescription = new(attachmentDescription.Target,
                                                                 attachmentDescription.Face,
