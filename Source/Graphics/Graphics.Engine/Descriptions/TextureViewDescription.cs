@@ -1,6 +1,10 @@
-﻿namespace Graphics.Engine.Descriptions;
+﻿using Graphics.Engine.Enums;
+
+namespace Graphics.Engine.Descriptions;
 
 public struct TextureViewDescription(Texture target,
+                                     CubeMapFace baseFace,
+                                     uint faceCount,
                                      uint baseMipLevel,
                                      uint mipLevels)
 {
@@ -8,6 +12,16 @@ public struct TextureViewDescription(Texture target,
     /// The desired target.
     /// </summary>
     public Texture Target { get; set; } = target;
+
+    /// <summary>
+    /// If it is a cube map, it indicates the starting face to view. (Cube Map exclusive)
+    /// </summary>
+    public CubeMapFace BaseFace { get; set; } = baseFace;
+
+    /// <summary>
+    /// Number of faces to view. (Cube Map exclusive)
+    /// </summary>
+    public uint FaceCount { get; set; } = faceCount;
 
     /// <summary>
     /// The base mip level visible in the view. Must be less than the number of mip levels in the target Texture.
@@ -21,6 +35,10 @@ public struct TextureViewDescription(Texture target,
 
     public static TextureViewDescription Create(Texture target)
     {
-        return new TextureViewDescription(target, 0, target.Description.MipLevels);
+        return new TextureViewDescription(target,
+                                          CubeMapFace.PositiveX,
+                                          1,
+                                          0,
+                                          target.Description.MipLevels);
     }
 }

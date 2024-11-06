@@ -16,8 +16,7 @@ internal sealed unsafe class VKTexture : Texture
         {
             SType = StructureType.ImageCreateInfo,
             ImageType = Formats.GetImageType(description.Type),
-            Format = Formats.GetPixelFormat(description.Format,
-                                            description.Usage.HasFlag(TextureUsage.DepthStencil)),
+            Format = Formats.GetPixelFormat(description.Format),
             Extent = new Extent3D
             {
                 Width = description.Width,

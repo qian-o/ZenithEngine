@@ -16,7 +16,7 @@ internal sealed class Formats
         };
     }
 
-    public static Format GetPixelFormat(PixelFormat pixelFormat, bool depthFormat)
+    public static Format GetPixelFormat(PixelFormat pixelFormat)
     {
         return pixelFormat switch
         {
@@ -25,7 +25,7 @@ internal sealed class Formats
             PixelFormat.R8UInt => Format.R8Uint,
             PixelFormat.R8SInt => Format.R8Sint,
 
-            PixelFormat.R16UNorm => depthFormat ? Format.D16Unorm : Format.R16Unorm,
+            PixelFormat.R16UNorm => Format.R16Unorm,
             PixelFormat.R16SNorm => Format.R16SNorm,
             PixelFormat.R16UInt => Format.R16Uint,
             PixelFormat.R16SInt => Format.R16Sint,
@@ -33,7 +33,7 @@ internal sealed class Formats
 
             PixelFormat.R32UInt => Format.R32Uint,
             PixelFormat.R32SInt => Format.R32Sint,
-            PixelFormat.R32Float => depthFormat ? Format.D32Sfloat : Format.R32Sfloat,
+            PixelFormat.R32Float => Format.R32Sfloat,
 
             PixelFormat.R8G8UNorm => Format.R8G8Unorm,
             PixelFormat.R8G8SNorm => Format.R8G8SNorm,

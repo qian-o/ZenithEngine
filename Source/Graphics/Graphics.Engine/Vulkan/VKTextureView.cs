@@ -12,21 +12,21 @@ internal sealed unsafe class VKTextureView : TextureView
     {
         TextureDescription texture = description.Target.Description;
 
-        bool isDepthStencil = texture.Usage.HasFlag(TextureUsage.DepthStencil);
+        bool isCube = texture.Type == TextureType.TextureCube;
 
         ImageViewCreateInfo createInfo = new()
         {
             SType = StructureType.ImageViewCreateInfo,
             ViewType = Formats.GetImageViewType(texture.Type),
             Image = description.Target.VK().Image,
-            Format = Formats.GetPixelFormat(texture.Format, isDepthStencil),
+            Format = Formats.GetPixelFormat(texture.Format),
             SubresourceRange = new ImageSubresourceRange
             {
-                AspectMask = isDepthStencil ? ImageAspectFlags.DepthBit : ImageAspectFlags.ColorBit,
+                AspectMask = texture.Usage.HasFlag(TextureUsage.DepthStencil) ? ImageAspectFlags.DepthBit : ImageAspectFlags.ColorBit,
                 BaseMipLevel = description.BaseMipLevel,
                 LevelCount = description.MipLevels,
-                BaseArrayLayer = 0,
-                LayerCount = texture.Type == TextureType.TextureCube ? 6u : 1u
+                BaseArrayLayer = isCube ? (uint)description.BaseFace : 0u,
+                LayerCount = isCube ? description.FaceCount : 1u
             }
         };
 
