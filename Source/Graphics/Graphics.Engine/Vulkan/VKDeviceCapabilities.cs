@@ -30,7 +30,7 @@ internal sealed unsafe class VKDeviceCapabilities : DeviceCapabilities
     {
         foreach (ExtensionProperties extensionProperty in extensionProperties)
         {
-            if (Allocator.Get(extensionProperty.ExtensionName) == extensionName)
+            if (Allocator.GetString(extensionProperty.ExtensionName) == extensionName)
             {
                 return true;
             }

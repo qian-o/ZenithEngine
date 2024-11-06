@@ -175,7 +175,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
         sampledTextures.Clear();
         storageTextures.Clear();
-        Alloter.Free();
+        Alloter.Clear();
 
         if (VkRes.DescriptorBufferSupported)
         {

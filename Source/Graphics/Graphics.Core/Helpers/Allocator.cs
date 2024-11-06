@@ -2,6 +2,9 @@
 
 namespace Graphics.Core.Helpers;
 
+/// <summary>
+/// Provides a persistent memory allocator.
+/// </summary>
 public unsafe class Allocator : DisposableObject
 {
     private readonly object _locker = new();
@@ -68,7 +71,7 @@ public unsafe class Allocator : DisposableObject
         }
     }
 
-    public void Free()
+    public void Clear()
     {
         lock (_locker)
         {
@@ -87,18 +90,18 @@ public unsafe class Allocator : DisposableObject
         }
     }
 
-    public static unsafe string Get(byte* stringPtr)
+    public static unsafe string GetString(byte* stringPtr)
     {
         return Marshal.PtrToStringAnsi((nint)stringPtr) ?? string.Empty;
     }
 
-    public static unsafe string[] Get(byte** stringsPtr, int count)
+    public static unsafe string[] GetStrings(byte** stringsPtr, int count)
     {
         string[] strings = new string[count];
 
         for (int i = 0; i < count; i++)
         {
-            strings[i] = Get((byte*)Marshal.ReadIntPtr((nint)stringsPtr, i * nint.Size));
+            strings[i] = GetString((byte*)Marshal.ReadIntPtr((nint)stringsPtr, i * nint.Size));
         }
 
         return strings;
@@ -106,6 +109,6 @@ public unsafe class Allocator : DisposableObject
 
     protected override void Destroy()
     {
-        Free();
+        Clear();
     }
 }

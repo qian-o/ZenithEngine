@@ -39,7 +39,7 @@ public unsafe class VulkanDebug : DisposableObject
 
         foreach (ExtensionProperties extension in availableExtensions)
         {
-            string name = Allocator.Get(extension.ExtensionName);
+            string name = Allocator.GetString(extension.ExtensionName);
 
             if (name == ExtDebugUtils.ExtensionName)
             {
@@ -207,12 +207,12 @@ public unsafe class VulkanDebug : DisposableObject
                                       DebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                       void* pUserData)
     {
-        string message = Allocator.Get(pCallbackData->PMessage);
+        string message = Allocator.GetString(pCallbackData->PMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{messageSeverity}] [{messageTypes}]");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Allocator.Get(pCallbackData->PMessageIdName)}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Allocator.GetString(pCallbackData->PMessageIdName)}");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Number: {pCallbackData->MessageIdNumber}");
         foreach (string str in strings)
         {
@@ -241,14 +241,14 @@ public unsafe class VulkanDebug : DisposableObject
                                       byte* pMessage,
                                       void* pUserData)
     {
-        string message = Allocator.Get(pMessage);
+        string message = Allocator.GetString(pMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{(DebugReportFlagsEXT)flags}] [{objectType}]");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Location: {location}");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Message Code: {messageCode}");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Layer Prefix: {Allocator.Get(pLayerPrefix)}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Layer Prefix: {Allocator.GetString(pLayerPrefix)}");
         foreach (string str in strings)
         {
             stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");

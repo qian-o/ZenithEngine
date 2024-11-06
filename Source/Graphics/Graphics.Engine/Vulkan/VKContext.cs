@@ -104,7 +104,7 @@ internal sealed unsafe partial class VKContext : Context
             {
                 LayerProperties layer = availableLayers[i];
 
-                if (Allocator.Get(layer.LayerName) == ValidationLayerName)
+                if (Allocator.GetString(layer.LayerName) == ValidationLayerName)
                 {
                     layerFound = true;
 

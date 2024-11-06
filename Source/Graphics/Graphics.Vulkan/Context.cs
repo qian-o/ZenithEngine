@@ -46,7 +46,7 @@ public unsafe class Context : DisposableObject
         _physicalDeviceMap = [];
         _graphicsDeviceMap = [];
 
-        _alloter.Free();
+        _alloter.Clear();
     }
 
     public static Version32 ApiVersion { get; }
@@ -224,7 +224,7 @@ public unsafe class Context : DisposableObject
         {
             LayerProperties layer = availableLayers[i];
 
-            if (Allocator.Get(layer.LayerName) == ValidationLayerName)
+            if (Allocator.GetString(layer.LayerName) == ValidationLayerName)
             {
                 return true;
             }

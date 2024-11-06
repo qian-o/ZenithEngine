@@ -7,9 +7,9 @@ public abstract class DeviceResource(Context context) : DisposableObject
 {
     private string name = string.Empty;
 
-    public Context Context { get; } = context;
+    internal Allocator Allocator { get; } = new();
 
-    public Allocator Allocator { get; } = new();
+    public Context Context { get; } = context;
 
     public string Name
     {
