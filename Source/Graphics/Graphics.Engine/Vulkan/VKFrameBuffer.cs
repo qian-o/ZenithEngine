@@ -12,7 +12,7 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
         bool hasDepthStencil = description.DepthStencilTarget.HasValue;
 
         ColorTargets = new TextureView[description.ColorTargets.Length];
-        
+
         for (int i = 0; i < ColorTargets.Length; i++)
         {
             FrameBufferAttachmentDescription attachmentDescription = description.ColorTargets[i];
@@ -46,7 +46,7 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
         }
 
         RenderingAttachmentInfo[] colorAttachmentInfos = new RenderingAttachmentInfo[ColorTargets.Length];
-        
+
         for (int i = 0; i < ColorTargets.Length; i++)
         {
             colorAttachmentInfos[i] = new()
