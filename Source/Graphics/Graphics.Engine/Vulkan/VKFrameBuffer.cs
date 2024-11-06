@@ -9,9 +9,11 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
     public VKFrameBuffer(Context context,
                          ref readonly FrameBufferDescription description) : base(context, in description)
     {
-        ColorTargets = new TextureView[description.ColorTargets.Length];
+        bool hasDepthStencil = description.DepthStencilTarget.HasValue;
 
-        for (int i = 0; i < description.ColorTargets.Length; i++)
+        ColorTargets = new TextureView[description.ColorTargets.Length];
+        
+        for (int i = 0; i < ColorTargets.Length; i++)
         {
             FrameBufferAttachmentDescription attachmentDescription = description.ColorTargets[i];
 
@@ -27,7 +29,7 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
             Height = ColorTargets[i].Height;
         }
 
-        if (description.DepthStencilTarget.HasValue)
+        if (hasDepthStencil)
         {
             FrameBufferAttachmentDescription attachmentDescription = description.DepthStencilTarget.Value;
 
@@ -43,9 +45,8 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
             Height = DepthStencilTarget.Height;
         }
 
-        RenderingAttachmentInfo* colorAttachmentInfos = Allocator.Alloc<RenderingAttachmentInfo>(ColorTargets.Length);
-        RenderingAttachmentInfo* depthStencilAttachmentInfo = null;
-
+        RenderingAttachmentInfo[] colorAttachmentInfos = new RenderingAttachmentInfo[ColorTargets.Length];
+        
         for (int i = 0; i < ColorTargets.Length; i++)
         {
             colorAttachmentInfos[i] = new()
@@ -58,19 +59,14 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
             };
         }
 
-        if (DepthStencilTarget != null)
+        RenderingAttachmentInfo? depthStencilAttachmentInfo = hasDepthStencil ? new()
         {
-            depthStencilAttachmentInfo = Allocator.Alloc<RenderingAttachmentInfo>();
-
-            depthStencilAttachmentInfo[0] = new()
-            {
-                SType = StructureType.RenderingAttachmentInfo,
-                ImageView = DepthStencilTarget.VK().ImageView,
-                ImageLayout = ImageLayout.AttachmentOptimal,
-                LoadOp = AttachmentLoadOp.Load,
-                StoreOp = AttachmentStoreOp.Store
-            };
-        }
+            SType = StructureType.RenderingAttachmentInfo,
+            ImageView = DepthStencilTarget!.VK().ImageView,
+            ImageLayout = ImageLayout.AttachmentOptimal,
+            LoadOp = AttachmentLoadOp.Load,
+            StoreOp = AttachmentStoreOp.Store
+        } : null;
 
         RenderingInfo = new()
         {
@@ -91,9 +87,9 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
             LayerCount = 1,
             ViewMask = 0,
             ColorAttachmentCount = (uint)ColorTargets.Length,
-            PColorAttachments = colorAttachmentInfos,
-            PDepthAttachment = depthStencilAttachmentInfo,
-            PStencilAttachment = depthStencilAttachmentInfo
+            PColorAttachments = Allocator.Alloc(colorAttachmentInfos),
+            PDepthAttachment = hasDepthStencil ? Allocator.Alloc(depthStencilAttachmentInfo!.Value) : null,
+            PStencilAttachment = hasDepthStencil ? Allocator.Alloc(depthStencilAttachmentInfo!.Value) : null
         };
     }
 
