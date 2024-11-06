@@ -3,7 +3,7 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Engine.Vulkan.Helpers;
 
-internal class Formats
+internal sealed class Formats
 {
     public static ImageType GetImageType(TextureType type)
     {
