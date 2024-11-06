@@ -130,7 +130,5 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
         }
 
         DepthStencilTarget?.Dispose();
-
-        base.Destroy();
     }
 }
