@@ -42,7 +42,10 @@ public unsafe class Allocator : DisposableObject
 
     public T* Alloc<T>(int length = 1) where T : unmanaged
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(length, 1);
+        if (length < 1)
+        {
+            return null;
+        }
 
         lock (_locker)
         {

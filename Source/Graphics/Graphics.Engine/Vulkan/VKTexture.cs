@@ -51,6 +51,12 @@ internal sealed unsafe class VKTexture : Texture
 
     public new VKContext Context => (VKContext)base.Context;
 
+    public override uint Width => Description.Width;
+
+    public override uint Height => Description.Height;
+
+    public override uint Depth => Description.Depth;
+
     public VkImage Image { get; }
 
     public VKDeviceMemory DeviceMemory { get; }

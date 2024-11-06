@@ -4,9 +4,10 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Engine.Vulkan;
 
-internal sealed class VKFrameBuffer : FrameBuffer
+internal sealed unsafe class VKFrameBuffer : FrameBuffer
 {
-    public VKFrameBuffer(Context context, ref readonly FrameBufferDescription description) : base(context, in description)
+    public VKFrameBuffer(Context context,
+                         ref readonly FrameBufferDescription description) : base(context, in description)
     {
         ColorTargets = new TextureView[description.ColorTargets.Length];
 
@@ -21,6 +22,9 @@ internal sealed class VKFrameBuffer : FrameBuffer
                                                                 1);
 
             ColorTargets[i] = context.Factory.CreateTextureView(in textureViewDescription);
+
+            Width = ColorTargets[i].Width;
+            Height = ColorTargets[i].Height;
         }
 
         if (description.DepthStencilTarget.HasValue)
@@ -34,13 +38,17 @@ internal sealed class VKFrameBuffer : FrameBuffer
                                                                 1);
 
             DepthStencilTarget = context.Factory.CreateTextureView(in textureViewDescription);
+
+            Width = DepthStencilTarget.Width;
+            Height = DepthStencilTarget.Height;
         }
 
-        ColorAttachmentInfos = new RenderingAttachmentInfo[ColorTargets.Length];
+        RenderingAttachmentInfo* colorAttachmentInfos = Allocator.Alloc<RenderingAttachmentInfo>(ColorTargets.Length);
+        RenderingAttachmentInfo* depthStencilAttachmentInfo = null;
 
         for (int i = 0; i < ColorTargets.Length; i++)
         {
-            ColorAttachmentInfos[i] = new()
+            colorAttachmentInfos[i] = new()
             {
                 SType = StructureType.RenderingAttachmentInfo,
                 ImageView = ColorTargets[i].VK().ImageView,
@@ -52,7 +60,9 @@ internal sealed class VKFrameBuffer : FrameBuffer
 
         if (DepthStencilTarget != null)
         {
-            DepthStencilAttachmentInfo = new()
+            depthStencilAttachmentInfo = Allocator.Alloc<RenderingAttachmentInfo>();
+
+            depthStencilAttachmentInfo[0] = new()
             {
                 SType = StructureType.RenderingAttachmentInfo,
                 ImageView = DepthStencilTarget.VK().ImageView,
@@ -61,17 +71,43 @@ internal sealed class VKFrameBuffer : FrameBuffer
                 StoreOp = AttachmentStoreOp.Store
             };
         }
+
+        RenderingInfo = new()
+        {
+            SType = StructureType.RenderingInfo,
+            RenderArea = new Rect2D
+            {
+                Offset = new Offset2D
+                {
+                    X = 0,
+                    Y = 0
+                },
+                Extent = new Extent2D
+                {
+                    Width = Width,
+                    Height = Height
+                }
+            },
+            LayerCount = 1,
+            ViewMask = 0,
+            ColorAttachmentCount = (uint)ColorTargets.Length,
+            PColorAttachments = colorAttachmentInfos,
+            PDepthAttachment = depthStencilAttachmentInfo,
+            PStencilAttachment = depthStencilAttachmentInfo
+        };
     }
 
     public new VKContext Context => (VKContext)base.Context;
+
+    public override uint Width { get; }
+
+    public override uint Height { get; }
 
     public TextureView[] ColorTargets { get; }
 
     public TextureView? DepthStencilTarget { get; }
 
-    public RenderingAttachmentInfo[] ColorAttachmentInfos { get; }
-
-    public RenderingAttachmentInfo? DepthStencilAttachmentInfo { get; }
+    public RenderingInfo RenderingInfo { get; }
 
     protected override void SetName(string name)
     {
@@ -94,5 +130,7 @@ internal sealed class VKFrameBuffer : FrameBuffer
         }
 
         DepthStencilTarget?.Dispose();
+
+        base.Destroy();
     }
 }

@@ -32,7 +32,7 @@ public abstract class DeviceResource(Context context) : DisposableObject
 
     protected abstract void SetName(string name);
 
-    override protected void Destroy()
+    protected override void Destroy()
     {
         Allocator.Dispose();
     }
