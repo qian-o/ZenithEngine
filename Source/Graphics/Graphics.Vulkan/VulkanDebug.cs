@@ -14,7 +14,7 @@ public unsafe class VulkanDebug : DisposableObject
     private static readonly bool _debugReport;
     private static readonly bool _setObjectName;
 
-    private readonly Alloter _alloter = new();
+    private readonly Allocator _alloter = new();
     private readonly Vk _vk;
     private readonly VkInstance _instance;
     private readonly ExtDebugUtils? _debugUtilsExt;
@@ -39,7 +39,7 @@ public unsafe class VulkanDebug : DisposableObject
 
         foreach (ExtensionProperties extension in availableExtensions)
         {
-            string name = Alloter.Get(extension.ExtensionName);
+            string name = Allocator.Get(extension.ExtensionName);
 
             if (name == ExtDebugUtils.ExtensionName)
             {
@@ -207,12 +207,12 @@ public unsafe class VulkanDebug : DisposableObject
                                       DebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                       void* pUserData)
     {
-        string message = Alloter.Get(pCallbackData->PMessage);
+        string message = Allocator.Get(pCallbackData->PMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{messageSeverity}] [{messageTypes}]");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Alloter.Get(pCallbackData->PMessageIdName)}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Allocator.Get(pCallbackData->PMessageIdName)}");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Number: {pCallbackData->MessageIdNumber}");
         foreach (string str in strings)
         {
@@ -241,14 +241,14 @@ public unsafe class VulkanDebug : DisposableObject
                                       byte* pMessage,
                                       void* pUserData)
     {
-        string message = Alloter.Get(pMessage);
+        string message = Allocator.Get(pMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{(DebugReportFlagsEXT)flags}] [{objectType}]");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Location: {location}");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Message Code: {messageCode}");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Layer Prefix: {Alloter.Get(pLayerPrefix)}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Layer Prefix: {Allocator.Get(pLayerPrefix)}");
         foreach (string str in strings)
         {
             stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");

@@ -1,4 +1,6 @@
 ﻿using Graphics.Engine.Descriptions;
+using Graphics.Engine.Vulkan.Helpers;
+using Silk.NET.Vulkan;
 
 namespace Graphics.Engine.Vulkan;
 
@@ -6,8 +8,7 @@ internal sealed class VKFrameBuffer : FrameBuffer
 {
     public VKFrameBuffer(Context context, ref readonly FrameBufferDescription description) : base(context, in description)
     {
-        TextureView[] colorTargets = new TextureView[description.ColorTargets.Length];
-        TextureView? depthStencilTarget = null;
+        ColorTargets = new TextureView[description.ColorTargets.Length];
 
         for (int i = 0; i < description.ColorTargets.Length; i++)
         {
@@ -19,7 +20,7 @@ internal sealed class VKFrameBuffer : FrameBuffer
                                                                 attachmentDescription.MipLevel,
                                                                 1);
 
-            colorTargets[i] = context.Factory.CreateTextureView(in textureViewDescription);
+            ColorTargets[i] = context.Factory.CreateTextureView(in textureViewDescription);
         }
 
         if (description.DepthStencilTarget.HasValue)
@@ -32,11 +33,34 @@ internal sealed class VKFrameBuffer : FrameBuffer
                                                                 attachmentDescription.MipLevel,
                                                                 1);
 
-            depthStencilTarget = context.Factory.CreateTextureView(in textureViewDescription);
+            DepthStencilTarget = context.Factory.CreateTextureView(in textureViewDescription);
         }
 
-        ColorTargets = colorTargets;
-        DepthStencilTarget = depthStencilTarget;
+        ColorAttachmentInfos = new RenderingAttachmentInfo[ColorTargets.Length];
+
+        for (int i = 0; i < ColorTargets.Length; i++)
+        {
+            ColorAttachmentInfos[i] = new()
+            {
+                SType = StructureType.RenderingAttachmentInfo,
+                ImageView = ColorTargets[i].VK().ImageView,
+                ImageLayout = ImageLayout.AttachmentOptimal,
+                LoadOp = AttachmentLoadOp.Load,
+                StoreOp = AttachmentStoreOp.Store
+            };
+        }
+
+        if (DepthStencilTarget != null)
+        {
+            DepthStencilAttachmentInfo = new()
+            {
+                SType = StructureType.RenderingAttachmentInfo,
+                ImageView = DepthStencilTarget.VK().ImageView,
+                ImageLayout = ImageLayout.AttachmentOptimal,
+                LoadOp = AttachmentLoadOp.Load,
+                StoreOp = AttachmentStoreOp.Store
+            };
+        }
     }
 
     public new VKContext Context => (VKContext)base.Context;
@@ -44,6 +68,10 @@ internal sealed class VKFrameBuffer : FrameBuffer
     public TextureView[] ColorTargets { get; }
 
     public TextureView? DepthStencilTarget { get; }
+
+    public RenderingAttachmentInfo[] ColorAttachmentInfos { get; }
+
+    public RenderingAttachmentInfo? DepthStencilAttachmentInfo { get; }
 
     protected override void SetName(string name)
     {

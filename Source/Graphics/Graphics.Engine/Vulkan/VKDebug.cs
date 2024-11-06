@@ -26,7 +26,7 @@ internal sealed unsafe class VKDebug : DisposableObject
 
         foreach (ExtensionProperties extension in availableExtensions)
         {
-            string name = Alloter.Get(extension.ExtensionName);
+            string name = Allocator.Get(extension.ExtensionName);
 
             if (name == ExtDebugUtils.ExtensionName)
             {
@@ -66,7 +66,7 @@ internal sealed unsafe class VKDebug : DisposableObject
         }
     }
 
-    private readonly Alloter alloter = new();
+    private readonly Allocator allocator = new();
 
     private readonly VkInstance instance;
     private readonly ExtDebugUtils? extDebugUtils;
@@ -140,7 +140,7 @@ internal sealed unsafe class VKDebug : DisposableObject
                 SType = StructureType.DebugUtilsObjectNameInfoExt,
                 ObjectType = objectType,
                 ObjectHandle = objectHandle,
-                PObjectName = alloter.Alloc(objectName)
+                PObjectName = allocator.Alloc(objectName)
             };
 
             extDebugUtils.SetDebugUtilsObjectName(device, &nameInfo);
@@ -153,7 +153,7 @@ internal sealed unsafe class VKDebug : DisposableObject
                 SType = StructureType.DebugMarkerObjectNameInfoExt,
                 ObjectType = (DebugReportObjectTypeEXT)objectType,
                 Object = objectHandle,
-                PObjectName = alloter.Alloc(objectName)
+                PObjectName = allocator.Alloc(objectName)
             };
 
             extDebugMarker.DebugMarkerSetObjectName(device, &nameInfo);
@@ -176,7 +176,7 @@ internal sealed unsafe class VKDebug : DisposableObject
         extDebugReport?.Dispose();
         extDebugUtils?.Dispose();
 
-        alloter.Dispose();
+        allocator.Dispose();
     }
 
     private uint DebugMessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
@@ -184,12 +184,12 @@ internal sealed unsafe class VKDebug : DisposableObject
                                       DebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                       void* pUserData)
     {
-        string message = Alloter.Get(pCallbackData->PMessage);
+        string message = Allocator.Get(pCallbackData->PMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{messageSeverity}] [{messageTypes}]");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Alloter.Get(pCallbackData->PMessageIdName)}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Allocator.Get(pCallbackData->PMessageIdName)}");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Number: {pCallbackData->MessageIdNumber}");
         foreach (string str in strings)
         {
@@ -217,14 +217,14 @@ internal sealed unsafe class VKDebug : DisposableObject
                                       byte* pMessage,
                                       void* pUserData)
     {
-        string message = Alloter.Get(pMessage);
+        string message = Allocator.Get(pMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{(DebugReportFlagsEXT)flags}] [{objectType}]");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Location: {location}");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Message Code: {messageCode}");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Layer Prefix: {Alloter.Get(pLayerPrefix)}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Layer Prefix: {Allocator.Get(pLayerPrefix)}");
         foreach (string str in strings)
         {
             stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");

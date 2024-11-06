@@ -12,7 +12,7 @@ public abstract unsafe class VulkanObject<THandle>(VulkanResources vkRes, params
 
     internal VulkanResources VkRes { get; } = vkRes;
 
-    internal Alloter Alloter { get; } = new();
+    internal Allocator Alloter { get; } = new();
 
     public string Name { get => name; set { name = value; UpdateResourceName(); } }
 

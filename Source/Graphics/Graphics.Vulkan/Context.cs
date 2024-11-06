@@ -13,7 +13,7 @@ public unsafe class Context : DisposableObject
 {
     private const string ValidationLayerName = "VK_LAYER_KHRONOS_validation";
 
-    private readonly Alloter _alloter;
+    private readonly Allocator _alloter;
     private readonly Vk _vk;
     private readonly VkInstance _instance;
     private readonly KhrSurface _surface;
@@ -224,7 +224,7 @@ public unsafe class Context : DisposableObject
         {
             LayerProperties layer = availableLayers[i];
 
-            if (Alloter.Get(layer.LayerName) == ValidationLayerName)
+            if (Allocator.Get(layer.LayerName) == ValidationLayerName)
             {
                 return true;
             }

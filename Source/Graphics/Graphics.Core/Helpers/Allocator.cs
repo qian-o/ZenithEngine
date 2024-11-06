@@ -2,7 +2,7 @@
 
 namespace Graphics.Core.Helpers;
 
-public unsafe class Alloter : DisposableObject
+public unsafe class Allocator : DisposableObject
 {
     private readonly object _locker = new();
     private readonly List<nint> _marshal = [];

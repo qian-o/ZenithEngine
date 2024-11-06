@@ -60,7 +60,7 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
 
         Handle = physicalDevice;
         ApiVersion = (Version32)properties2.Properties.ApiVersion;
-        Name = Alloter.Get(properties2.Properties.DeviceName);
+        Name = Allocator.Get(properties2.Properties.DeviceName);
         Features = features;
         ExtensionProperties = extensionProperties;
         DescriptorBufferSupported = descriptorBufferSupported;
@@ -286,7 +286,7 @@ public unsafe class PhysicalDevice : VulkanObject<VkPhysicalDevice>
     {
         foreach (ExtensionProperties extensionProperty in extensionProperties)
         {
-            if (Alloter.Get(extensionProperty.ExtensionName) == extensionName)
+            if (Allocator.Get(extensionProperty.ExtensionName) == extensionName)
             {
                 return true;
             }

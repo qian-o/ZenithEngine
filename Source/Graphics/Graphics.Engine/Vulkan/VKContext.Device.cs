@@ -29,7 +29,7 @@ internal unsafe partial class VKContext
 
     private void InitDevice()
     {
-        using Alloter alloter = new();
+        using Allocator allocator = new();
 
         string[] extensions = GetDeviceExtensions();
 
@@ -37,7 +37,7 @@ internal unsafe partial class VKContext
         {
             SType = StructureType.DeviceCreateInfo,
             EnabledExtensionCount = (uint)extensions.Length,
-            PpEnabledExtensionNames = alloter.Alloc(extensions)
+            PpEnabledExtensionNames = allocator.Alloc(extensions)
         };
 
         // Init queues

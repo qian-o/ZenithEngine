@@ -1,4 +1,5 @@
 ﻿using Graphics.Core;
+using Graphics.Core.Helpers;
 
 namespace Graphics.Engine;
 
@@ -7,6 +8,8 @@ public abstract class DeviceResource(Context context) : DisposableObject
     private string name = string.Empty;
 
     public Context Context { get; } = context;
+
+    public Allocator Allocator { get; } = new();
 
     public string Name
     {
@@ -28,4 +31,9 @@ public abstract class DeviceResource(Context context) : DisposableObject
     }
 
     protected abstract void SetName(string name);
+
+    override protected void Destroy()
+    {
+        Allocator.Dispose();
+    }
 }

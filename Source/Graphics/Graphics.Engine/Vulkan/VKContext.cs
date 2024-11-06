@@ -70,14 +70,14 @@ internal sealed unsafe partial class VKContext : Context
 
     private void InitInstance(bool useValidationLayers)
     {
-        using Alloter alloter = new();
+        using Allocator allocator = new();
 
         ApplicationInfo applicationInfo = new()
         {
             SType = StructureType.ApplicationInfo,
-            PApplicationName = alloter.Alloc("Graphics"),
+            PApplicationName = allocator.Alloc("Graphics"),
             ApplicationVersion = new Version32(1, 0, 0),
-            PEngineName = alloter.Alloc("Graphics Engine"),
+            PEngineName = allocator.Alloc("Graphics Engine"),
             EngineVersion = new Version32(1, 0, 0),
             ApiVersion = Version
         };
@@ -104,7 +104,7 @@ internal sealed unsafe partial class VKContext : Context
             {
                 LayerProperties layer = availableLayers[i];
 
-                if (Alloter.Get(layer.LayerName) == ValidationLayerName)
+                if (Allocator.Get(layer.LayerName) == ValidationLayerName)
                 {
                     layerFound = true;
 
@@ -118,7 +118,7 @@ internal sealed unsafe partial class VKContext : Context
             }
 
             createInfo.EnabledLayerCount = 1;
-            createInfo.PpEnabledLayerNames = alloter.Alloc([ValidationLayerName]);
+            createInfo.PpEnabledLayerNames = allocator.Alloc([ValidationLayerName]);
         }
 
         string[] extensions = GetInstanceExtensions();
@@ -129,7 +129,7 @@ internal sealed unsafe partial class VKContext : Context
         }
 
         createInfo.EnabledExtensionCount = (uint)extensions.Length;
-        createInfo.PpEnabledExtensionNames = alloter.Alloc(extensions);
+        createInfo.PpEnabledExtensionNames = allocator.Alloc(extensions);
 
         VkInstance instance;
         Vk.CreateInstance(&createInfo, null, &instance).ThrowCode();
