@@ -28,4 +28,9 @@ internal sealed class VKResourceFactory(Context context) : ResourceFactory(conte
     {
         return new VKSampler(Context, in description);
     }
+
+    public override FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDescription description)
+    {
+        return new VKFrameBuffer(Context, in description);
+    }
 }
