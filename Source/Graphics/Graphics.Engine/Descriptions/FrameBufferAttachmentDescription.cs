@@ -2,25 +2,30 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct FrameBufferAttachmentDescription(Texture target, CubeMapFace face, uint mipLevel)
+public struct FrameBufferAttachmentDescription
 {
     /// <summary>
     /// The target texture to render into.
     /// </summary>
-    public Texture Target { get; set; } = target;
+    public Texture Target { get; set; }
 
     /// <summary>
     /// If the target is a cube map, the face to render to. (Cube Map exclusive)
     /// </summary>
-    public CubeMapFace Face { get; set; } = face;
+    public CubeMapFace Face { get; set; }
 
     /// <summary>
     /// The mip level to render to.
     /// </summary>
-    public uint MipLevel { get; set; } = mipLevel;
+    public uint MipLevel { get; set; }
 
-    public static FrameBufferAttachmentDescription Create(Texture target)
+    public static FrameBufferAttachmentDescription Default(Texture target)
     {
-        return new FrameBufferAttachmentDescription(target, CubeMapFace.PositiveX, 0);
+        return new FrameBufferAttachmentDescription()
+        {
+            Target = target,
+            Face = CubeMapFace.PositiveX,
+            MipLevel = 0
+        };
     }
 }

@@ -23,4 +23,15 @@ public struct DepthStencilOperationDescription
     /// The comparison operator used in the stencil test.
     /// </summary>
     public ComparisonFunction StencilFunction { get; set; }
+
+    public static DepthStencilOperationDescription Default()
+    {
+        return new DepthStencilOperationDescription
+        {
+            StencilFailOperation = StencilOperation.Keep,
+            StencilDepthFailOperation = StencilOperation.Keep,
+            StencilPassOperation = StencilOperation.Keep,
+            StencilFunction = ComparisonFunction.Always
+        };
+    }
 }

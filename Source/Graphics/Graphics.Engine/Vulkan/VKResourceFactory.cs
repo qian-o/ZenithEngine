@@ -33,4 +33,9 @@ internal sealed class VKResourceFactory(Context context) : ResourceFactory(conte
     {
         return new VKFrameBuffer(Context, in description);
     }
+
+    public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDescription description)
+    {
+        throw new NotImplementedException();
+    }
 }

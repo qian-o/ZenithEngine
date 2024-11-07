@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Engine.Enums;
 
-public enum BlendFunction
+public enum BlendOperation
 {
     /// <summary>
     /// Source and destination are added.
@@ -20,10 +20,10 @@ public enum BlendFunction
     /// <summary>
     /// The minimum of source and destination is selected.
     /// </summary>
-    Minimum,
+    Min,
 
     /// <summary>
     /// The maximum of source and destination is selected.
     /// </summary>
-    Maximum
+    Max
 }

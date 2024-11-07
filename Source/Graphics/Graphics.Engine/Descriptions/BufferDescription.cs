@@ -2,20 +2,24 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public unsafe struct BufferDescription(uint sizeInBytes, BufferUsage usage)
+public unsafe struct BufferDescription
 {
     /// <summary>
     /// The desired capacity, in bytes.
     /// </summary>
-    public uint SizeInBytes { get; set; } = sizeInBytes;
+    public uint SizeInBytes { get; set; }
 
     /// <summary>
     /// Indicates the intended use of the buffer.
     /// </summary>
-    public BufferUsage Usage { get; set; } = usage;
+    public BufferUsage Usage { get; set; }
 
-    public static BufferDescription Create<T>(int length, BufferUsage usage) where T : unmanaged
+    public static BufferDescription Default<T>(int length, BufferUsage usage) where T : unmanaged
     {
-        return new BufferDescription((uint)(length * sizeof(T)), usage);
+        return new BufferDescription()
+        {
+            SizeInBytes = (uint)(length * sizeof(T)),
+            Usage = usage
+        };
     }
 }

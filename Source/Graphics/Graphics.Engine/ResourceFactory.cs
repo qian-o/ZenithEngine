@@ -17,4 +17,6 @@ public abstract class ResourceFactory(Context context)
     public abstract Sampler CreateSampler(ref readonly SamplerDescription description);
 
     public abstract FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDescription description);
+
+    public abstract GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDescription description);
 }
