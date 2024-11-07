@@ -237,18 +237,18 @@ internal sealed class Formats
         };
     }
 
-    public static CompareOp GetCompareOp(ComparisonKind comparisonKind)
+    public static CompareOp GetCompareOp(ComparisonFunction comparisonKind)
     {
         return comparisonKind switch
         {
-            ComparisonKind.Never => CompareOp.Never,
-            ComparisonKind.Less => CompareOp.Less,
-            ComparisonKind.Equal => CompareOp.Equal,
-            ComparisonKind.LessEqual => CompareOp.LessOrEqual,
-            ComparisonKind.Greater => CompareOp.Greater,
-            ComparisonKind.NotEqual => CompareOp.NotEqual,
-            ComparisonKind.GreaterEqual => CompareOp.GreaterOrEqual,
-            ComparisonKind.Always => CompareOp.Always,
+            ComparisonFunction.Never => CompareOp.Never,
+            ComparisonFunction.Less => CompareOp.Less,
+            ComparisonFunction.Equal => CompareOp.Equal,
+            ComparisonFunction.LessEqual => CompareOp.LessOrEqual,
+            ComparisonFunction.Greater => CompareOp.Greater,
+            ComparisonFunction.NotEqual => CompareOp.NotEqual,
+            ComparisonFunction.GreaterEqual => CompareOp.GreaterOrEqual,
+            ComparisonFunction.Always => CompareOp.Always,
             _ => throw new ArgumentOutOfRangeException(nameof(comparisonKind))
         };
     }

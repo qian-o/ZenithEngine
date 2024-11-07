@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Engine.Enums;
 
-public enum PolygonFillMode
+public enum FillMode
 {
     /// <summary>
     /// Polygons are filled completely.

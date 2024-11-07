@@ -6,7 +6,7 @@ public struct SamplerDescription(AddressMode addressModeU,
                                  AddressMode addressModeV,
                                  AddressMode addressModeW,
                                  SamplerFilter filter,
-                                 ComparisonKind? comparisonKind,
+                                 ComparisonFunction? comparisonFunction,
                                  uint maximumAnisotropy,
                                  uint minimumLod,
                                  uint maximumLod,
@@ -67,9 +67,10 @@ public struct SamplerDescription(AddressMode addressModeU,
     public SamplerFilter Filter { get; set; } = filter;
 
     /// <summary>
-    /// An optional value controlling the kind of comparison to use when sampling. If null, comparison sampling is not used.
+    /// A function that compares sampled data against existing sampled data.
+    /// If null, comparison sampling is not used.
     /// </summary>
-    public ComparisonKind? ComparisonKind { get; set; } = comparisonKind;
+    public ComparisonFunction? ComparisonFunction { get; set; } = comparisonFunction;
 
     /// <summary>
     /// The maximum anisotropy of the filter.

@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Engine.Enums;
 
-public enum FaceCullMode
+public enum CullMode
 {
     /// <summary>
     /// No face culling.

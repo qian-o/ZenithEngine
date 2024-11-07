@@ -15,7 +15,7 @@ internal sealed unsafe class VKSampler : Sampler
                           out Filter magFilter,
                           out SamplerMipmapMode mipFilter);
 
-        bool compareEnable = description.ComparisonKind.HasValue;
+        bool compareEnable = description.ComparisonFunction.HasValue;
 
         SamplerCreateInfo createInfo = new()
         {
@@ -27,7 +27,7 @@ internal sealed unsafe class VKSampler : Sampler
             AddressModeV = Formats.GetSamplerAddressMode(description.AddressModeV),
             AddressModeW = Formats.GetSamplerAddressMode(description.AddressModeW),
             CompareEnable = compareEnable,
-            CompareOp = compareEnable ? Formats.GetCompareOp(description.ComparisonKind!.Value) : CompareOp.Never,
+            CompareOp = compareEnable ? Formats.GetCompareOp(description.ComparisonFunction!.Value) : CompareOp.Never,
             AnisotropyEnable = description.Filter == SamplerFilter.Anisotropic,
             MaxAnisotropy = description.MaximumAnisotropy,
             MinLod = description.MinimumLod,

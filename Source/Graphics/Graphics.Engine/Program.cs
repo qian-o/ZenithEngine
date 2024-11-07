@@ -2,6 +2,7 @@
 using Graphics.Engine;
 using Graphics.Engine.Descriptions;
 using Graphics.Engine.Enums;
+using Graphics.Engine.Helpers;
 using Buffer = Graphics.Engine.Buffer;
 
 using Context context = Context.Create(Backend.Vulkan);
@@ -12,7 +13,7 @@ BufferDescription bufferDescription = BufferDescription.Create<Vertex>(1024, Buf
 
 using Buffer buffer = context.Factory.CreateBuffer(in bufferDescription);
 
-TextureDescription textureDescription = TextureDescription.Create2D(1024, 1024, 1);
+TextureDescription textureDescription = TextureDescription.Create2D(1024, 1024, Utils.GetMipLevels(1024, 1024));
 
 using Texture texture = context.Factory.CreateTexture(in textureDescription);
 
