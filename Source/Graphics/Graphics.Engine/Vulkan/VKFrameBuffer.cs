@@ -18,11 +18,14 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
         {
             FrameBufferAttachmentDescription attachmentDescription = description.ColorTargets[i];
 
-            TextureViewDescription textureViewDescription = new(attachmentDescription.Target,
-                                                                attachmentDescription.Face,
-                                                                1,
-                                                                attachmentDescription.MipLevel,
-                                                                1);
+            TextureViewDescription textureViewDescription = new()
+            {
+                Target = attachmentDescription.Target,
+                BaseFace = attachmentDescription.Face,
+                FaceCount = 1,
+                BaseMipLevel = attachmentDescription.MipLevel,
+                MipLevels = 1
+            };
 
             ColorTargets[i] = context.Factory.CreateTextureView(in textureViewDescription);
         }
@@ -31,11 +34,14 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
         {
             FrameBufferAttachmentDescription attachmentDescription = description.DepthStencilTarget!.Value;
 
-            TextureViewDescription textureViewDescription = new(attachmentDescription.Target,
-                                                                attachmentDescription.Face,
-                                                                1,
-                                                                attachmentDescription.MipLevel,
-                                                                1);
+            TextureViewDescription textureViewDescription = new()
+            {
+                Target = attachmentDescription.Target,
+                BaseFace = attachmentDescription.Face,
+                FaceCount = 1,
+                BaseMipLevel = attachmentDescription.MipLevel,
+                MipLevels = 1
+            };
 
             DepthStencilTarget = context.Factory.CreateTextureView(in textureViewDescription);
         }
