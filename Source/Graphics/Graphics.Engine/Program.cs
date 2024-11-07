@@ -24,6 +24,10 @@ SamplerDescription samplerDescription = SamplerDescription.Linear;
 
 using Sampler sampler = context.Factory.CreateSampler(in samplerDescription);
 
+FrameBufferDescription frameBufferDescription = FrameBufferDescription.Create(null, texture);
+
+using FrameBuffer frameBuffer = context.Factory.CreateFrameBuffer(in frameBufferDescription);
+
 Console.WriteLine("Initialization completed.");
 
 internal struct Vertex(Vector3 position, Vector4 color)

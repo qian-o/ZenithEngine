@@ -1,4 +1,5 @@
 ﻿using Graphics.Engine.Descriptions;
+using Graphics.Engine.Helpers;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 
@@ -24,9 +25,6 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
                                                                 1);
 
             ColorTargets[i] = context.Factory.CreateTextureView(in textureViewDescription);
-
-            Width = ColorTargets[i].Width;
-            Height = ColorTargets[i].Height;
         }
 
         if (hasDepthStencil)
@@ -40,9 +38,6 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
                                                                 1);
 
             DepthStencilTarget = context.Factory.CreateTextureView(in textureViewDescription);
-
-            Width = DepthStencilTarget.Width;
-            Height = DepthStencilTarget.Height;
         }
 
         RenderingAttachmentInfo[] colorAttachmentInfos = new RenderingAttachmentInfo[ColorTargets.Length];
@@ -68,6 +63,14 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
             StoreOp = AttachmentStoreOp.Store
         } : null;
 
+        TextureView view = ColorTargets.Length > 0 ? ColorTargets[0] : DepthStencilTarget!;
+
+        Utils.GetMipDimensions(view.Description.Target.Description.Width,
+                               view.Description.Target.Description.Height,
+                               view.Description.BaseMipLevel,
+                               out uint width,
+                               out uint height);
+
         RenderingInfo = new()
         {
             SType = StructureType.RenderingInfo,
@@ -80,8 +83,8 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
                 },
                 Extent = new Extent2D
                 {
-                    Width = Width,
-                    Height = Height
+                    Width = width,
+                    Height = height
                 }
             },
             LayerCount = 1,
@@ -94,10 +97,6 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
     }
 
     public new VKContext Context => (VKContext)base.Context;
-
-    public override uint Width { get; }
-
-    public override uint Height { get; }
 
     public TextureView[] ColorTargets { get; }
 

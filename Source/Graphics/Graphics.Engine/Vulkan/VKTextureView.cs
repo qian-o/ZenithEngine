@@ -1,6 +1,5 @@
 ﻿using Graphics.Engine.Descriptions;
 using Graphics.Engine.Enums;
-using Graphics.Engine.Helpers;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 
@@ -12,18 +11,6 @@ internal sealed unsafe class VKTextureView : TextureView
                          ref readonly TextureViewDescription description) : base(context, in description)
     {
         TextureDescription texture = description.Target.Description;
-
-        Utils.GetMipDimensions(texture.Width,
-                               texture.Height,
-                               texture.Depth,
-                               description.BaseMipLevel,
-                               out uint width,
-                               out uint height,
-                               out uint depth);
-
-        Width = width;
-        Height = height;
-        Depth = depth;
 
         bool isCube = texture.Type == TextureType.TextureCube;
 
@@ -50,12 +37,6 @@ internal sealed unsafe class VKTextureView : TextureView
     }
 
     public new VKContext Context => (VKContext)base.Context;
-
-    public override uint Width { get; }
-
-    public override uint Height { get; }
-
-    public override uint Depth { get; }
 
     public VkImageView ImageView { get; }
 
