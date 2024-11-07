@@ -2,43 +2,42 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct TextureViewDescription(Texture target,
-                                     CubeMapFace baseFace,
-                                     uint faceCount,
-                                     uint baseMipLevel,
-                                     uint mipLevels)
+public struct TextureViewDescription
 {
     /// <summary>
     /// The desired target.
     /// </summary>
-    public Texture Target { get; set; } = target;
+    public Texture Target { get; set; }
 
     /// <summary>
     /// If it is a cube map, it indicates the starting face to view. (Cube Map exclusive)
     /// </summary>
-    public CubeMapFace BaseFace { get; set; } = baseFace;
+    public CubeMapFace BaseFace { get; set; }
 
     /// <summary>
     /// Number of faces to view. (Cube Map exclusive)
     /// </summary>
-    public uint FaceCount { get; set; } = faceCount;
+    public uint FaceCount { get; set; }
 
     /// <summary>
     /// The base mip level visible in the view. Must be less than the number of mip levels in the target Texture.
     /// </summary>
-    public uint BaseMipLevel { get; set; } = baseMipLevel;
+    public uint BaseMipLevel { get; set; }
 
     /// <summary>
     /// The number of mip levels visible in the view.
     /// </summary>
-    public uint MipLevels { get; set; } = mipLevels;
+    public uint MipLevels { get; set; }
 
-    public static TextureViewDescription Create(Texture target)
+    public static TextureViewDescription Default(Texture target)
     {
-        return new TextureViewDescription(target,
-                                          CubeMapFace.PositiveX,
-                                          6,
-                                          0,
-                                          target.Description.MipLevels);
+        return new()
+        {
+            Target = target,
+            BaseFace = CubeMapFace.PositiveX,
+            FaceCount = 6,
+            BaseMipLevel = 0,
+            MipLevels = target.Description.MipLevels
+        };
     }
 }

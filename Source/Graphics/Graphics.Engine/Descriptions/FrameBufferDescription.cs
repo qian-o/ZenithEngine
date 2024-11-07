@@ -1,22 +1,24 @@
 ﻿namespace Graphics.Engine.Descriptions;
 
-public struct FrameBufferDescription(FrameBufferAttachmentDescription? depthStencilTarget,
-                                     params FrameBufferAttachmentDescription[] colorTargets)
+public struct FrameBufferDescription
 {
     /// <summary>
     /// The depth/stencil texture attachment.
     /// </summary>
-    public FrameBufferAttachmentDescription? DepthStencilTarget { get; set; } = depthStencilTarget;
+    public FrameBufferAttachmentDescription? DepthStencilTarget { get; set; }
 
     /// <summary>
     /// An array of color texture attachments.
     /// </summary>
-    public FrameBufferAttachmentDescription[] ColorTargets { get; set; } = colorTargets;
+    public FrameBufferAttachmentDescription[] ColorTargets { get; set; }
 
-    public static FrameBufferDescription Create(Texture? depthStencilTarget,
-                                                params Texture[] colorTargets)
+    public static FrameBufferDescription Default(Texture? depthStencilTarget,
+                                                 params Texture[] colorTargets)
     {
-        return new FrameBufferDescription(depthStencilTarget != null ? FrameBufferAttachmentDescription.Create(depthStencilTarget) : null,
-                                          [.. colorTargets.Select(FrameBufferAttachmentDescription.Create)]);
+        return new()
+        {
+            DepthStencilTarget = depthStencilTarget != null ? FrameBufferAttachmentDescription.Default(depthStencilTarget) : null,
+            ColorTargets = colorTargets.Select(FrameBufferAttachmentDescription.Default).ToArray()
+        };
     }
 }

@@ -2,112 +2,117 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct TextureDescription(TextureType type,
-                                 PixelFormat format,
-                                 uint width,
-                                 uint height,
-                                 uint depth,
-                                 uint mipLevels,
-                                 TextureUsage usage,
-                                 TextureSampleCount sampleCount)
+public struct TextureDescription
 {
     /// <summary>
     /// The type of the texture.
     /// </summary>
-    public TextureType Type { get; set; } = type;
+    public TextureType Type { get; set; }
 
     /// <summary>
     /// The format of individual texture elements.
     /// </summary>
-    public PixelFormat Format { get; set; } = format;
+    public PixelFormat Format { get; set; }
 
     /// <summary>
     /// The total width, in texels.
     /// </summary>
-    public uint Width { get; set; } = width;
+    public uint Width { get; set; }
 
     /// <summary>
     /// The total height, in texels.
     /// </summary>
-    public uint Height { get; set; } = height;
+    public uint Height { get; set; }
 
     /// <summary>
     /// The total depth, in texels.
     /// </summary>
-    public uint Depth { get; set; } = depth;
+    public uint Depth { get; set; }
 
     /// <summary>
     /// The number of mipmap levels.
     /// </summary>
-    public uint MipLevels { get; set; } = mipLevels;
+    public uint MipLevels { get; set; }
 
     /// <summary>
     /// Controls how the Texture is permitted to be used. If the Texture will be sampled from a shader.
     /// </summary>
-    public TextureUsage Usage { get; set; } = usage;
+    public TextureUsage Usage { get; set; }
 
     /// <summary>
     /// The number of samples.
     /// </summary>
-    public TextureSampleCount SampleCount { get; set; } = sampleCount;
+    public TextureSampleCount SampleCount { get; set; }
 
-    public static TextureDescription Create1D(uint width,
-                                              uint mipLevels,
-                                              PixelFormat format = PixelFormat.R8G8B8A8UNorm)
+    public static TextureDescription Default1D(uint width,
+                                               uint mipLevels,
+                                               PixelFormat format = PixelFormat.R8G8B8A8UNorm)
     {
-        return new TextureDescription(TextureType.Texture1D,
-                                      format,
-                                      width,
-                                      1,
-                                      1,
-                                      mipLevels,
-                                      TextureUsage.Sampled,
-                                      TextureSampleCount.Count1);
+        return new()
+        {
+            Type = TextureType.Texture1D,
+            Format = format,
+            Width = width,
+            Height = 1,
+            Depth = 1,
+            MipLevels = mipLevels,
+            Usage = TextureUsage.Sampled,
+            SampleCount = TextureSampleCount.Count1
+        };
     }
 
-    public static TextureDescription Create2D(uint width,
-                                              uint height,
-                                              uint mipLevels,
-                                              PixelFormat format = PixelFormat.R8G8B8A8UNorm)
+    public static TextureDescription Default2D(uint width,
+                                               uint height,
+                                               uint mipLevels,
+                                               PixelFormat format = PixelFormat.R8G8B8A8UNorm)
     {
-        return new TextureDescription(TextureType.Texture2D,
-                                      format,
-                                      width,
-                                      height,
-                                      1,
-                                      mipLevels,
-                                      TextureUsage.Sampled,
-                                      TextureSampleCount.Count1);
+        return new()
+        {
+            Type = TextureType.Texture2D,
+            Format = format,
+            Width = width,
+            Height = height,
+            Depth = 1,
+            MipLevels = mipLevels,
+            Usage = TextureUsage.Sampled,
+            SampleCount = TextureSampleCount.Count1
+        };
     }
 
-    public static TextureDescription Create3D(uint width,
-                                              uint height,
-                                              uint depth,
-                                              uint mipLevels,
-                                              PixelFormat format = PixelFormat.R8G8B8A8UNorm)
+    public static TextureDescription Default3D(uint width,
+                                               uint height,
+                                               uint depth,
+                                               uint mipLevels,
+                                               PixelFormat format = PixelFormat.R8G8B8A8UNorm)
     {
-        return new TextureDescription(TextureType.Texture3D,
-                                      format,
-                                      width,
-                                      height,
-                                      depth,
-                                      mipLevels,
-                                      TextureUsage.Sampled,
-                                      TextureSampleCount.Count1);
+        return new()
+        {
+            Type = TextureType.Texture3D,
+            Format = format,
+            Width = width,
+            Height = height,
+            Depth = depth,
+            MipLevels = mipLevels,
+            Usage = TextureUsage.Sampled,
+            SampleCount = TextureSampleCount.Count1
+        };
     }
 
-    public static TextureDescription CreateCube(uint width,
-                                                uint height,
-                                                uint mipLevels,
-                                                PixelFormat format = PixelFormat.R8G8B8A8UNorm)
+    public static TextureDescription DefaultCube(uint width,
+                                                 uint height,
+                                                 uint mipLevels,
+                                                 PixelFormat format = PixelFormat.R8G8B8A8UNorm)
     {
-        return new TextureDescription(TextureType.TextureCube,
-                                      format,
-                                      width,
-                                      height,
-                                      1,
-                                      mipLevels,
-                                      TextureUsage.Sampled,
-                                      TextureSampleCount.Count1);
+        return new()
+        {
+            Type = TextureType.TextureCube,
+            Format = format,
+            Width = width,
+            Height = height,
+            Depth = 1,
+            MipLevels = mipLevels,
+            Usage = TextureUsage.Sampled,
+            SampleCount = TextureSampleCount.Count1
+        };
     }
 }

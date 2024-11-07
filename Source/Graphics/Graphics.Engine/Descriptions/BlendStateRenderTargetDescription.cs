@@ -55,7 +55,7 @@ public struct BlendStateRenderTargetDescription
 
     public static BlendStateRenderTargetDescription Default(bool blendEnabled = false)
     {
-        return new BlendStateRenderTargetDescription
+        return new()
         {
             BlendEnabled = blendEnabled,
             SourceBlendColor = Blend.One,

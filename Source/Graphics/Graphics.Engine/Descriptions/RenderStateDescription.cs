@@ -28,4 +28,22 @@ public struct RenderStateDescription
     /// Array of blend factors, one for each RGBA component.
     /// </summary>
     public Vector4? BlendFactor { get; set; }
+
+    /// <summary>
+    /// 32-bit sample coverage. The default value is 0xFFFFFF. See remarks.
+    /// </summary>
+    public int? SampleMask { get; set; }
+
+    public static RenderStateDescription Default()
+    {
+        return new()
+        {
+            RasterizerState = RasterizerStateDescription.Default(),
+            DepthStencilState = DepthStencilStateDescription.Default(),
+            BlendState = BlendStateDescription.Default(),
+            StencilReference = 0,
+            BlendFactor = null,
+            SampleMask = 16777215
+        };
+    }
 }

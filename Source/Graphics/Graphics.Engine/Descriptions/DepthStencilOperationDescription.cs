@@ -26,7 +26,7 @@ public struct DepthStencilOperationDescription
 
     public static DepthStencilOperationDescription Default()
     {
-        return new DepthStencilOperationDescription
+        return new()
         {
             StencilFailOperation = StencilOperation.Keep,
             StencilDepthFailOperation = StencilOperation.Keep,

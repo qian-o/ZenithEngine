@@ -54,7 +54,7 @@ public struct BlendStateDescription
 
     public static BlendStateDescription Default()
     {
-        return new BlendStateDescription
+        return new()
         {
             AlphaToCoverageEnable = false,
             IndependentBlendEnable = false,

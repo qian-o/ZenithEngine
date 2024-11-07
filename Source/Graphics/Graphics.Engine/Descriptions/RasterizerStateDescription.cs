@@ -2,64 +2,60 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct RasterizerStateDescription(CullMode cullMode,
-                                         FillMode fillMode,
-                                         FrontFace frontFace,
-                                         int depthBias,
-                                         float depthBiasClamp,
-                                         float slopeScaledDepthBias,
-                                         bool depthClipEnabled,
-                                         bool scissorEnabled)
+public struct RasterizerStateDescription
 {
     /// <summary>
     /// Controls which face will be culled.
     /// </summary>
-    public CullMode CullMode { get; set; } = cullMode;
+    public CullMode CullMode { get; set; }
 
     /// <summary>
     /// Controls how the rasterizer fills polygons.
     /// </summary>
-    public FillMode FillMode { get; set; } = fillMode;
+    public FillMode FillMode { get; set; }
 
     /// <summary>
     /// Controls the winding order used to determine the front face of primitives.
     /// </summary>
-    public FrontFace FrontFace { get; set; } = frontFace;
+    public FrontFace FrontFace { get; set; }
 
     /// <summary>
     /// Depth value added to a given pixel. For info about depth bias.
     /// </summary>
-    public int DepthBias { get; set; } = depthBias;
+    public int DepthBias { get; set; }
 
     /// <summary>
     /// Maximum depth bias of a pixel.
     /// </summary>
-    public float DepthBiasClamp { get; set; } = depthBiasClamp;
+    public float DepthBiasClamp { get; set; }
 
     /// <summary>
     /// Scalar on a given pixel's slope.
     /// </summary>
-    public float SlopeScaledDepthBias { get; set; } = slopeScaledDepthBias;
+    public float SlopeScaledDepthBias { get; set; }
 
     /// <summary>
     /// Controls whether depth clipping is enabled.
     /// </summary>
-    public bool DepthClipEnabled { get; set; } = depthClipEnabled;
+    public bool DepthClipEnabled { get; set; }
 
     /// <summary>
     /// Controls whether the scissor test is enabled.
     /// </summary>
-    public bool ScissorEnabled { get; set; } = scissorEnabled;
+    public bool ScissorEnabled { get; set; }
 
-    public static RasterizerStateDescription Create(bool depthClipEnabled = true, bool scissorTestEnabled = false)
+    public static RasterizerStateDescription Default(bool depthClipEnabled = true, bool scissorEnabled = false)
     {
-        return new RasterizerStateDescription(CullMode.Back,
-                                              FillMode.Solid,
-                                              FrontFace.CounterClockwise,
-                                              0,
-                                              0.0f,
-                                              0.0f,
-                                              depthClipEnabled,
-                                              scissorTestEnabled);
+        return new()
+        {
+            CullMode = CullMode.Back,
+            FillMode = FillMode.Solid,
+            FrontFace = FrontFace.CounterClockwise,
+            DepthBias = 0,
+            DepthBiasClamp = 0.0f,
+            SlopeScaledDepthBias = 0.0f,
+            DepthClipEnabled = depthClipEnabled,
+            ScissorEnabled = scissorEnabled
+        };
     }
 }

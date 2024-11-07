@@ -48,7 +48,7 @@ public struct DepthStencilStateDescription
 
     public static DepthStencilStateDescription Default(bool depthEnabled = true, bool stencilEnabled = false)
     {
-        return new DepthStencilStateDescription
+        return new()
         {
             DepthEnabled = depthEnabled,
             DepthWriteEnabled = true,

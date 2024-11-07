@@ -21,7 +21,7 @@ public struct FrameBufferAttachmentDescription
 
     public static FrameBufferAttachmentDescription Default(Texture target)
     {
-        return new FrameBufferAttachmentDescription()
+        return new()
         {
             Target = target,
             Face = CubeMapFace.PositiveX,

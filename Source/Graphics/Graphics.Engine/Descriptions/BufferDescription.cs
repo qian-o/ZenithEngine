@@ -16,7 +16,7 @@ public unsafe struct BufferDescription
 
     public static BufferDescription Default<T>(int length, BufferUsage usage) where T : unmanaged
     {
-        return new BufferDescription()
+        return new()
         {
             SizeInBytes = (uint)(length * sizeof(T)),
             Usage = usage
