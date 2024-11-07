@@ -39,3 +39,4 @@ internal struct Vertex(Vector3 position, Vector4 color)
 
 // 1. Use Dynamic Rendering instead of RenderPass.
 // 2. Reduce unnecessary assignment operations.
+// 3. Use slang instead of HLSL.
