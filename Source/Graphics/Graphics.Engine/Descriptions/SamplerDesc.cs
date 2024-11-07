@@ -2,7 +2,7 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct SamplerDescription
+public struct SamplerDesc
 {
     /// <summary>
     /// Mode to use for the U (or S) coordinate.
@@ -55,7 +55,7 @@ public struct SamplerDescription
     /// </summary>
     public SamplerBorderColor BorderColor { get; set; }
 
-    public static SamplerDescription Default(bool isLinear, uint anisotropy = 0)
+    public static SamplerDesc Default(bool isLinear, uint anisotropy = 0)
     {
         SamplerFilter filter;
 

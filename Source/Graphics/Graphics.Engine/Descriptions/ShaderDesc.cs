@@ -2,7 +2,7 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct ShaderDescription
+public struct ShaderDesc
 {
     /// <summary>
     /// The shader stage this instance describes.

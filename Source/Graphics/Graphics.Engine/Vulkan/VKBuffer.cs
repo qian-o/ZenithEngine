@@ -8,44 +8,44 @@ namespace Graphics.Engine.Vulkan;
 internal sealed unsafe class VKBuffer : Buffer
 {
     public VKBuffer(Context context,
-                    ref readonly BufferDescription description) : base(context, in description)
+                    ref readonly BufferDesc desc) : base(context, in desc)
     {
         BufferCreateInfo createInfo = new()
         {
             SType = StructureType.BufferCreateInfo,
-            Size = description.SizeInBytes,
+            Size = desc.SizeInBytes,
             Usage = BufferUsageFlags.TransferSrcBit
                     | BufferUsageFlags.TransferDstBit
                     | BufferUsageFlags.ShaderDeviceAddressBit,
             SharingMode = SharingMode.Exclusive
         };
 
-        if (description.Usage.HasFlag(BufferUsage.VertexBuffer))
+        if (desc.Usage.HasFlag(BufferUsage.VertexBuffer))
         {
             createInfo.Usage |= BufferUsageFlags.VertexBufferBit;
         }
 
-        if (description.Usage.HasFlag(BufferUsage.IndexBuffer))
+        if (desc.Usage.HasFlag(BufferUsage.IndexBuffer))
         {
             createInfo.Usage |= BufferUsageFlags.IndexBufferBit;
         }
 
-        if (description.Usage.HasFlag(BufferUsage.ConstantBuffer))
+        if (desc.Usage.HasFlag(BufferUsage.ConstantBuffer))
         {
             createInfo.Usage |= BufferUsageFlags.UniformBufferBit;
         }
 
-        if (description.Usage.HasFlag(BufferUsage.StorageBuffer))
+        if (desc.Usage.HasFlag(BufferUsage.StorageBuffer))
         {
             createInfo.Usage |= BufferUsageFlags.StorageBufferBit;
         }
 
-        if (description.Usage.HasFlag(BufferUsage.IndirectBuffer))
+        if (desc.Usage.HasFlag(BufferUsage.IndirectBuffer))
         {
             createInfo.Usage |= BufferUsageFlags.IndirectBufferBit;
         }
 
-        if (description.Usage.HasFlag(BufferUsage.AccelerationStructure))
+        if (desc.Usage.HasFlag(BufferUsage.AccelerationStructure))
         {
             createInfo.Usage |= BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr;
         }
@@ -56,7 +56,7 @@ internal sealed unsafe class VKBuffer : Buffer
         MemoryRequirements memoryRequirements;
         Context.Vk.GetBufferMemoryRequirements(Context.Device, buffer, &memoryRequirements);
 
-        DeviceMemory = new(Context, description.Usage.HasFlag(BufferUsage.Dynamic), memoryRequirements);
+        DeviceMemory = new(Context, desc.Usage.HasFlag(BufferUsage.Dynamic), memoryRequirements);
 
         Context.Vk.BindBufferMemory(Context.Device, buffer, DeviceMemory.DeviceMemory, 0).ThrowCode();
 

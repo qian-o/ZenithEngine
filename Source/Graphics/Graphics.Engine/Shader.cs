@@ -3,7 +3,7 @@
 namespace Graphics.Engine;
 
 public abstract class Shader(Context context,
-                             ref readonly ShaderDescription description) : DeviceResource(context)
+                             ref readonly ShaderDesc desc) : DeviceResource(context)
 {
-    public ShaderDescription Description { get; } = description;
+    public ShaderDesc Desc { get; } = desc;
 }

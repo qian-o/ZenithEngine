@@ -3,7 +3,7 @@
 namespace Graphics.Engine;
 
 public abstract class Buffer(Context context,
-                             ref readonly BufferDescription description) : DeviceResource(context)
+                             ref readonly BufferDesc desc) : DeviceResource(context)
 {
-    public BufferDescription Description { get; } = description;
+    public BufferDesc Desc { get; } = desc;
 }

@@ -2,7 +2,7 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct DepthStencilOperationDescription
+public struct DepthStencilOperationDesc
 {
     /// <summary>
     /// The stencil operation to perform when stencil testing fails.
@@ -24,7 +24,7 @@ public struct DepthStencilOperationDescription
     /// </summary>
     public ComparisonFunction StencilFunction { get; set; }
 
-    public static DepthStencilOperationDescription Default()
+    public static DepthStencilOperationDesc Default()
     {
         return new()
         {

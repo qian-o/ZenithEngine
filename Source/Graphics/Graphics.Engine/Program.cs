@@ -9,25 +9,25 @@ using Context context = Context.Create(Backend.Vulkan);
 
 context.CreateDevice(true);
 
-BufferDescription bufferDescription = BufferDescription.Default<Vertex>(1024, BufferUsage.VertexBuffer | BufferUsage.Dynamic);
+BufferDesc bufferDesc = BufferDesc.Default<Vertex>(1024, BufferUsage.VertexBuffer | BufferUsage.Dynamic);
 
-using Buffer buffer = context.Factory.CreateBuffer(in bufferDescription);
+using Buffer buffer = context.Factory.CreateBuffer(in bufferDesc);
 
-TextureDescription textureDescription = TextureDescription.Default2D(1024, 1024, Utils.GetMipLevels(1024, 1024));
+TextureDesc textureDesc = TextureDesc.Default2D(1024, 1024, Utils.GetMipLevels(1024, 1024));
 
-using Texture texture = context.Factory.CreateTexture(in textureDescription);
+using Texture texture = context.Factory.CreateTexture(in textureDesc);
 
-TextureViewDescription textureViewDescription = TextureViewDescription.Default(texture);
+TextureViewDesc textureViewDesc = TextureViewDesc.Default(texture);
 
-using TextureView textureView = context.Factory.CreateTextureView(in textureViewDescription);
+using TextureView textureView = context.Factory.CreateTextureView(in textureViewDesc);
 
-SamplerDescription samplerDescription = SamplerDescription.Default(true, 4);
+SamplerDesc samplerDesc = SamplerDesc.Default(true, 4);
 
-using Sampler sampler = context.Factory.CreateSampler(in samplerDescription);
+using Sampler sampler = context.Factory.CreateSampler(in samplerDesc);
 
-FrameBufferDescription frameBufferDescription = FrameBufferDescription.Default(null, texture);
+FrameBufferDesc frameBufferDesc = FrameBufferDesc.Default(null, texture);
 
-using FrameBuffer frameBuffer = context.Factory.CreateFrameBuffer(in frameBufferDescription);
+using FrameBuffer frameBuffer = context.Factory.CreateFrameBuffer(in frameBufferDesc);
 
 Console.WriteLine("Initialization completed.");
 

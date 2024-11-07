@@ -4,37 +4,37 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed class VKResourceFactory(Context context) : ResourceFactory(context)
 {
-    public override Shader CreateShader(ref readonly ShaderDescription description)
+    public override Shader CreateShader(ref readonly ShaderDesc desc)
     {
-        return new VKShader(Context, in description);
+        return new VKShader(Context, in desc);
     }
 
-    public override Buffer CreateBuffer(ref readonly BufferDescription description)
+    public override Buffer CreateBuffer(ref readonly BufferDesc desc)
     {
-        return new VKBuffer(Context, in description);
+        return new VKBuffer(Context, in desc);
     }
 
-    public override Texture CreateTexture(ref readonly TextureDescription description)
+    public override Texture CreateTexture(ref readonly TextureDesc desc)
     {
-        return new VKTexture(Context, in description);
+        return new VKTexture(Context, in desc);
     }
 
-    public override TextureView CreateTextureView(ref readonly TextureViewDescription description)
+    public override TextureView CreateTextureView(ref readonly TextureViewDesc desc)
     {
-        return new VKTextureView(Context, in description);
+        return new VKTextureView(Context, in desc);
     }
 
-    public override Sampler CreateSampler(ref readonly SamplerDescription description)
+    public override Sampler CreateSampler(ref readonly SamplerDesc desc)
     {
-        return new VKSampler(Context, in description);
+        return new VKSampler(Context, in desc);
     }
 
-    public override FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDescription description)
+    public override FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc)
     {
-        return new VKFrameBuffer(Context, in description);
+        return new VKFrameBuffer(Context, in desc);
     }
 
-    public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDescription description)
+    public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc)
     {
         throw new NotImplementedException();
     }

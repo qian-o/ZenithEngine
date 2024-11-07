@@ -8,9 +8,9 @@ namespace Graphics.Engine.Vulkan;
 internal sealed unsafe class VKTextureView : TextureView
 {
     public VKTextureView(Context context,
-                         ref readonly TextureViewDescription description) : base(context, in description)
+                         ref readonly TextureViewDesc desc) : base(context, in desc)
     {
-        TextureDescription texture = description.Target.Description;
+        TextureDesc texture = desc.Target.Desc;
 
         bool isCube = texture.Type == TextureType.TextureCube;
 
@@ -18,15 +18,15 @@ internal sealed unsafe class VKTextureView : TextureView
         {
             SType = StructureType.ImageViewCreateInfo,
             ViewType = Formats.GetImageViewType(texture.Type),
-            Image = description.Target.VK().Image,
+            Image = desc.Target.VK().Image,
             Format = Formats.GetPixelFormat(texture.Format),
             SubresourceRange = new ImageSubresourceRange
             {
                 AspectMask = texture.Usage.HasFlag(TextureUsage.DepthStencil) ? ImageAspectFlags.DepthBit : ImageAspectFlags.ColorBit,
-                BaseMipLevel = description.BaseMipLevel,
-                LevelCount = description.MipLevels,
-                BaseArrayLayer = isCube ? (uint)description.BaseFace : 0u,
-                LayerCount = isCube ? description.FaceCount : 1u
+                BaseMipLevel = desc.BaseMipLevel,
+                LevelCount = desc.MipLevels,
+                BaseArrayLayer = isCube ? (uint)desc.BaseFace : 0u,
+                LayerCount = isCube ? desc.FaceCount : 1u
             }
         };
 

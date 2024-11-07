@@ -2,7 +2,7 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct BlendStateRenderTargetDescription
+public struct BlendStateRenderTargetDesc
 {
     /// <summary>
     /// Controls whether blending is enabled for the color attachment.
@@ -53,7 +53,7 @@ public struct BlendStateRenderTargetDescription
     /// </summary>
     public ColorWriteChannels ColorWriteChannels { get; set; }
 
-    public static BlendStateRenderTargetDescription Default(bool blendEnabled = false)
+    public static BlendStateRenderTargetDesc Default(bool blendEnabled = false)
     {
         return new()
         {

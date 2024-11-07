@@ -2,22 +2,22 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct RenderStateDescription
+public struct RenderStateDesc
 {
     /// <summary>
     /// Gets or sets the Rasterizer State.
     /// </summary>
-    public RasterizerStateDescription RasterizerState { get; set; }
+    public RasterizerStateDesc RasterizerState { get; set; }
 
     /// <summary>
     /// Gets or sets the DepthStencil state.
     /// </summary>
-    public DepthStencilStateDescription DepthStencilState { get; set; }
+    public DepthStencilStateDesc DepthStencilState { get; set; }
 
     /// <summary>
     /// Gets or sets the BlendState state.
     /// </summary>
-    public BlendStateDescription BlendState { get; set; }
+    public BlendStateDesc BlendState { get; set; }
 
     /// <summary>
     /// The reference value to use when doing a stencil test.
@@ -34,13 +34,13 @@ public struct RenderStateDescription
     /// </summary>
     public int? SampleMask { get; set; }
 
-    public static RenderStateDescription Default()
+    public static RenderStateDesc Default()
     {
         return new()
         {
-            RasterizerState = RasterizerStateDescription.Default(),
-            DepthStencilState = DepthStencilStateDescription.Default(),
-            BlendState = BlendStateDescription.Default(),
+            RasterizerState = RasterizerStateDesc.Default(),
+            DepthStencilState = DepthStencilStateDesc.Default(),
+            BlendState = BlendStateDesc.Default(),
             StencilReference = 0,
             BlendFactor = null,
             SampleMask = 16777215

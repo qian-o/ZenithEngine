@@ -2,7 +2,7 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct FrameBufferAttachmentDescription
+public struct FrameBufferAttachmentDesc
 {
     /// <summary>
     /// The target texture to render into.
@@ -19,7 +19,7 @@ public struct FrameBufferAttachmentDescription
     /// </summary>
     public uint MipLevel { get; set; }
 
-    public static FrameBufferAttachmentDescription Default(Texture target)
+    public static FrameBufferAttachmentDesc Default(Texture target)
     {
         return new()
         {

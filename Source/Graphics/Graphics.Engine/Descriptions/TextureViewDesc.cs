@@ -2,7 +2,7 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct TextureViewDescription
+public struct TextureViewDesc
 {
     /// <summary>
     /// The desired target.
@@ -29,7 +29,7 @@ public struct TextureViewDescription
     /// </summary>
     public uint MipLevels { get; set; }
 
-    public static TextureViewDescription Default(Texture target)
+    public static TextureViewDesc Default(Texture target)
     {
         return new()
         {
@@ -37,7 +37,7 @@ public struct TextureViewDescription
             BaseFace = CubeMapFace.PositiveX,
             FaceCount = 6,
             BaseMipLevel = 0,
-            MipLevels = target.Description.MipLevels
+            MipLevels = target.Desc.MipLevels
         };
     }
 }

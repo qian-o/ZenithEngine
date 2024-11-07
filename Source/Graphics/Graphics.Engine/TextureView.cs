@@ -3,7 +3,7 @@
 namespace Graphics.Engine;
 
 public abstract class TextureView(Context context,
-                                  ref readonly TextureViewDescription description) : DeviceResource(context)
+                                  ref readonly TextureViewDesc desc) : DeviceResource(context)
 {
-    public TextureViewDescription Description { get; } = description;
+    public TextureViewDesc Desc { get; } = desc;
 }

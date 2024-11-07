@@ -2,7 +2,7 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct TextureDescription
+public struct TextureDesc
 {
     /// <summary>
     /// The type of the texture.
@@ -44,7 +44,7 @@ public struct TextureDescription
     /// </summary>
     public TextureSampleCount SampleCount { get; set; }
 
-    public static TextureDescription Default1D(uint width,
+    public static TextureDesc Default1D(uint width,
                                                uint mipLevels,
                                                PixelFormat format = PixelFormat.R8G8B8A8UNorm)
     {
@@ -61,7 +61,7 @@ public struct TextureDescription
         };
     }
 
-    public static TextureDescription Default2D(uint width,
+    public static TextureDesc Default2D(uint width,
                                                uint height,
                                                uint mipLevels,
                                                PixelFormat format = PixelFormat.R8G8B8A8UNorm)
@@ -79,7 +79,7 @@ public struct TextureDescription
         };
     }
 
-    public static TextureDescription Default3D(uint width,
+    public static TextureDesc Default3D(uint width,
                                                uint height,
                                                uint depth,
                                                uint mipLevels,
@@ -98,7 +98,7 @@ public struct TextureDescription
         };
     }
 
-    public static TextureDescription DefaultCube(uint width,
+    public static TextureDesc DefaultCube(uint width,
                                                  uint height,
                                                  uint mipLevels,
                                                  PixelFormat format = PixelFormat.R8G8B8A8UNorm)

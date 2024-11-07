@@ -8,14 +8,14 @@ namespace Graphics.Engine.Vulkan;
 internal sealed unsafe class VKSampler : Sampler
 {
     public VKSampler(Context context,
-                     ref readonly SamplerDescription description) : base(context, in description)
+                     ref readonly SamplerDesc desc) : base(context, in desc)
     {
-        Formats.GetFilter(description.Filter,
+        Formats.GetFilter(desc.Filter,
                           out Filter minFilter,
                           out Filter magFilter,
                           out SamplerMipmapMode mipFilter);
 
-        bool compareEnable = description.ComparisonFunction.HasValue;
+        bool compareEnable = desc.ComparisonFunction.HasValue;
 
         SamplerCreateInfo createInfo = new()
         {
@@ -23,17 +23,17 @@ internal sealed unsafe class VKSampler : Sampler
             MagFilter = magFilter,
             MinFilter = minFilter,
             MipmapMode = mipFilter,
-            AddressModeU = Formats.GetSamplerAddressMode(description.AddressModeU),
-            AddressModeV = Formats.GetSamplerAddressMode(description.AddressModeV),
-            AddressModeW = Formats.GetSamplerAddressMode(description.AddressModeW),
+            AddressModeU = Formats.GetSamplerAddressMode(desc.AddressModeU),
+            AddressModeV = Formats.GetSamplerAddressMode(desc.AddressModeV),
+            AddressModeW = Formats.GetSamplerAddressMode(desc.AddressModeW),
             CompareEnable = compareEnable,
-            CompareOp = compareEnable ? Formats.GetCompareOp(description.ComparisonFunction!.Value) : CompareOp.Never,
-            AnisotropyEnable = description.Filter == SamplerFilter.Anisotropic,
-            MaxAnisotropy = description.MaximumAnisotropy,
-            MinLod = description.MinimumLod,
-            MaxLod = description.MaximumLod,
-            MipLodBias = description.LodBias,
-            BorderColor = Formats.GetBorderColor(description.BorderColor)
+            CompareOp = compareEnable ? Formats.GetCompareOp(desc.ComparisonFunction!.Value) : CompareOp.Never,
+            AnisotropyEnable = desc.Filter == SamplerFilter.Anisotropic,
+            MaxAnisotropy = desc.MaximumAnisotropy,
+            MinLod = desc.MinimumLod,
+            MaxLod = desc.MaximumLod,
+            MipLodBias = desc.LodBias,
+            BorderColor = Formats.GetBorderColor(desc.BorderColor)
         };
 
         VkSampler sampler;

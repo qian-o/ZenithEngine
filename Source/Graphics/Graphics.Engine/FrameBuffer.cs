@@ -3,7 +3,7 @@
 namespace Graphics.Engine;
 
 public abstract class FrameBuffer(Context context,
-                                  ref readonly FrameBufferDescription description) : DeviceResource(context)
+                                  ref readonly FrameBufferDesc desc) : DeviceResource(context)
 {
-    public FrameBufferDescription Description { get; } = description;
+    public FrameBufferDesc Desc { get; } = desc;
 }

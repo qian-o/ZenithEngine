@@ -1,5 +1,5 @@
 ﻿namespace Graphics.Engine.Descriptions;
 
-public struct GraphicsPipelineDescription
+public struct GraphicsPipelineDesc
 {
 }

@@ -8,26 +8,26 @@ namespace Graphics.Engine.Vulkan;
 internal sealed unsafe class VKTexture : Texture
 {
     public VKTexture(Context context,
-                     ref readonly TextureDescription description) : base(context, in description)
+                     ref readonly TextureDesc desc) : base(context, in desc)
     {
-        bool isCube = description.Type == TextureType.TextureCube;
+        bool isCube = desc.Type == TextureType.TextureCube;
 
         ImageCreateInfo createInfo = new()
         {
             SType = StructureType.ImageCreateInfo,
-            ImageType = Formats.GetImageType(description.Type),
-            Format = Formats.GetPixelFormat(description.Format),
+            ImageType = Formats.GetImageType(desc.Type),
+            Format = Formats.GetPixelFormat(desc.Format),
             Extent = new Extent3D
             {
-                Width = description.Width,
-                Height = description.Height,
-                Depth = description.Depth
+                Width = desc.Width,
+                Height = desc.Height,
+                Depth = desc.Depth
             },
-            MipLevels = description.MipLevels,
+            MipLevels = desc.MipLevels,
             ArrayLayers = isCube ? 6u : 1u,
-            Samples = Formats.GetSampleCountFlags(description.SampleCount),
+            Samples = Formats.GetSampleCountFlags(desc.SampleCount),
             Tiling = ImageTiling.Optimal,
-            Usage = Formats.GetImageUsageFlags(description.Usage),
+            Usage = Formats.GetImageUsageFlags(desc.Usage),
             SharingMode = SharingMode.Exclusive,
             InitialLayout = ImageLayout.Preinitialized,
             Flags = isCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
@@ -43,7 +43,7 @@ internal sealed unsafe class VKTexture : Texture
 
         Context.Vk.BindImageMemory(Context.Device, image, DeviceMemory.DeviceMemory, 0).ThrowCode();
 
-        Layouts = new ImageLayout[description.Depth * description.MipLevels * createInfo.ArrayLayers];
+        Layouts = new ImageLayout[desc.Depth * desc.MipLevels * createInfo.ArrayLayers];
         Array.Fill(Layouts, ImageLayout.Preinitialized);
 
         Image = image;

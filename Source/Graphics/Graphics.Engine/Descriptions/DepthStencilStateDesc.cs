@@ -2,7 +2,7 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct DepthStencilStateDescription
+public struct DepthStencilStateDesc
 {
     /// <summary>
     /// Controls whether depth testing is enabled.
@@ -38,15 +38,15 @@ public struct DepthStencilStateDescription
     /// Identify how to use the results of the depth test and the stencil test for pixels
     /// whose surface normal is facing towards the camera.
     /// </summary>
-    public DepthStencilOperationDescription FrontFace { get; set; }
+    public DepthStencilOperationDesc FrontFace { get; set; }
 
     /// <summary>
     /// Identify how to use the results of the depth test and the stencil test for pixels
     /// whose surface normal is facing away from the camera.
     /// </summary>
-    public DepthStencilOperationDescription BackFace { get; set; }
+    public DepthStencilOperationDesc BackFace { get; set; }
 
-    public static DepthStencilStateDescription Default(bool depthEnabled = true, bool stencilEnabled = false)
+    public static DepthStencilStateDesc Default(bool depthEnabled = true, bool stencilEnabled = false)
     {
         return new()
         {
@@ -56,8 +56,8 @@ public struct DepthStencilStateDescription
             StencilEnabled = stencilEnabled,
             StencilReadMask = byte.MaxValue,
             StencilWriteMask = byte.MaxValue,
-            FrontFace = DepthStencilOperationDescription.Default(),
-            BackFace = DepthStencilOperationDescription.Default()
+            FrontFace = DepthStencilOperationDesc.Default(),
+            BackFace = DepthStencilOperationDesc.Default()
         };
     }
 }

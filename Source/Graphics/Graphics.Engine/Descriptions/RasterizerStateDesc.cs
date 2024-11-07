@@ -2,7 +2,7 @@
 
 namespace Graphics.Engine.Descriptions;
 
-public struct RasterizerStateDescription
+public struct RasterizerStateDesc
 {
     /// <summary>
     /// Controls which face will be culled.
@@ -44,7 +44,7 @@ public struct RasterizerStateDescription
     /// </summary>
     public bool ScissorEnabled { get; set; }
 
-    public static RasterizerStateDescription Default(bool depthClipEnabled = true, bool scissorEnabled = false)
+    public static RasterizerStateDesc Default(bool depthClipEnabled = true, bool scissorEnabled = false)
     {
         return new()
         {

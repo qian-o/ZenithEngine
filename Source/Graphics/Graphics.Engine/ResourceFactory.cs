@@ -6,17 +6,17 @@ public abstract class ResourceFactory(Context context)
 {
     public Context Context { get; } = context;
 
-    public abstract Shader CreateShader(ref readonly ShaderDescription description);
+    public abstract Shader CreateShader(ref readonly ShaderDesc desc);
 
-    public abstract Buffer CreateBuffer(ref readonly BufferDescription description);
+    public abstract Buffer CreateBuffer(ref readonly BufferDesc desc);
 
-    public abstract Texture CreateTexture(ref readonly TextureDescription description);
+    public abstract Texture CreateTexture(ref readonly TextureDesc desc);
 
-    public abstract TextureView CreateTextureView(ref readonly TextureViewDescription description);
+    public abstract TextureView CreateTextureView(ref readonly TextureViewDesc desc);
 
-    public abstract Sampler CreateSampler(ref readonly SamplerDescription description);
+    public abstract Sampler CreateSampler(ref readonly SamplerDesc desc);
 
-    public abstract FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDescription description);
+    public abstract FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc);
 
-    public abstract GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDescription description);
+    public abstract GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc);
 }

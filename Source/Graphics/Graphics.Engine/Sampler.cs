@@ -3,7 +3,7 @@
 namespace Graphics.Engine;
 
 public abstract class Sampler(Context context,
-                              ref readonly SamplerDescription description) : DeviceResource(context)
+                              ref readonly SamplerDesc desc) : DeviceResource(context)
 {
-    public SamplerDescription Description { get; } = description;
+    public SamplerDesc Desc { get; } = desc;
 }

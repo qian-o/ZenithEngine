@@ -8,42 +8,42 @@ namespace Graphics.Engine.Vulkan;
 internal sealed unsafe class VKFrameBuffer : FrameBuffer
 {
     public VKFrameBuffer(Context context,
-                         ref readonly FrameBufferDescription description) : base(context, in description)
+                         ref readonly FrameBufferDesc desc) : base(context, in desc)
     {
-        bool hasDepthStencil = description.DepthStencilTarget.HasValue;
+        bool hasDepthStencil = desc.DepthStencilTarget.HasValue;
 
-        ColorTargets = new TextureView[description.ColorTargets.Length];
+        ColorTargets = new TextureView[desc.ColorTargets.Length];
 
         for (int i = 0; i < ColorTargets.Length; i++)
         {
-            FrameBufferAttachmentDescription attachmentDescription = description.ColorTargets[i];
+            FrameBufferAttachmentDesc attachmentDesc = desc.ColorTargets[i];
 
-            TextureViewDescription textureViewDescription = new()
+            TextureViewDesc textureViewDesc = new()
             {
-                Target = attachmentDescription.Target,
-                BaseFace = attachmentDescription.Face,
+                Target = attachmentDesc.Target,
+                BaseFace = attachmentDesc.Face,
                 FaceCount = 1,
-                BaseMipLevel = attachmentDescription.MipLevel,
+                BaseMipLevel = attachmentDesc.MipLevel,
                 MipLevels = 1
             };
 
-            ColorTargets[i] = context.Factory.CreateTextureView(in textureViewDescription);
+            ColorTargets[i] = context.Factory.CreateTextureView(in textureViewDesc);
         }
 
         if (hasDepthStencil)
         {
-            FrameBufferAttachmentDescription attachmentDescription = description.DepthStencilTarget!.Value;
+            FrameBufferAttachmentDesc attachmentDesc = desc.DepthStencilTarget!.Value;
 
-            TextureViewDescription textureViewDescription = new()
+            TextureViewDesc textureViewDesc = new()
             {
-                Target = attachmentDescription.Target,
-                BaseFace = attachmentDescription.Face,
+                Target = attachmentDesc.Target,
+                BaseFace = attachmentDesc.Face,
                 FaceCount = 1,
-                BaseMipLevel = attachmentDescription.MipLevel,
+                BaseMipLevel = attachmentDesc.MipLevel,
                 MipLevels = 1
             };
 
-            DepthStencilTarget = context.Factory.CreateTextureView(in textureViewDescription);
+            DepthStencilTarget = context.Factory.CreateTextureView(in textureViewDesc);
         }
 
         RenderingAttachmentInfo[] colorAttachmentInfos = new RenderingAttachmentInfo[ColorTargets.Length];
@@ -71,9 +71,9 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
 
         TextureView view = ColorTargets.Length > 0 ? ColorTargets[0] : DepthStencilTarget!;
 
-        Utils.GetMipDimensions(view.Description.Target.Description.Width,
-                               view.Description.Target.Description.Height,
-                               view.Description.BaseMipLevel,
+        Utils.GetMipDimensions(view.Desc.Target.Desc.Width,
+                               view.Desc.Target.Desc.Height,
+                               view.Desc.BaseMipLevel,
                                out uint width,
                                out uint height);
 
