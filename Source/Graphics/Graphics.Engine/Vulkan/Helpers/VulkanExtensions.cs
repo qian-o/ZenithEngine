@@ -56,6 +56,46 @@ internal static class VulkanExtensions
 
         return vkSampler;
     }
+
+    public static VKResourceLayout VK(this ResourceLayout resourceLayout)
+    {
+        if (resourceLayout is not VKResourceLayout vkResourceLayout)
+        {
+            throw new BackendException("Resource layout is not a Vulkan resource layout!");
+        }
+
+        return vkResourceLayout;
+    }
+
+    public static VKResourceSet VK(this ResourceSet resourceSet)
+    {
+        if (resourceSet is not VKResourceSet vkResourceSet)
+        {
+            throw new BackendException("Resource set is not a Vulkan resource set!");
+        }
+
+        return vkResourceSet;
+    }
+
+    public static VKFrameBuffer VK(this FrameBuffer frameBuffer)
+    {
+        if (frameBuffer is not VKFrameBuffer vkFrameBuffer)
+        {
+            throw new BackendException("Frame buffer is not a Vulkan frame buffer!");
+        }
+
+        return vkFrameBuffer;
+    }
+
+    public static VKGraphicsPipeline VK(this GraphicsPipeline pipeline)
+    {
+        if (pipeline is not VKGraphicsPipeline vkPipeline)
+        {
+            throw new BackendException("Graphics pipeline is not a Vulkan graphics pipeline!");
+        }
+
+        return vkPipeline;
+    }
     #endregion
 
     public static void ThrowCode(this VkResult result, string message = "")

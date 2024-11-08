@@ -34,6 +34,11 @@ internal sealed class VKResourceFactory(Context context) : ResourceFactory(conte
         return new VKResourceLayout(Context, in desc);
     }
 
+    public override ResourceSet CreateResourceSet(ref readonly ResourceSetDesc desc)
+    {
+        return new VKResourceSet(Context, in desc);
+    }
+
     public override FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc)
     {
         return new VKFrameBuffer(Context, in desc);
