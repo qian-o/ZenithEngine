@@ -2,7 +2,6 @@
 using Graphics.Engine.Exceptions;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Vulkan;
-using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Graphics.Engine.Vulkan;
@@ -24,8 +23,6 @@ internal unsafe partial class VKContext
     public KhrAccelerationStructure? KhrAccelerationStructure { get; private set; }
 
     public KhrDeferredHostOperations? KhrDeferredHostOperations { get; private set; }
-
-    public ExtDescriptorBuffer? ExtDescriptorBuffer { get; private set; }
 
     private void InitDevice()
     {
@@ -92,11 +89,6 @@ internal unsafe partial class VKContext
                 createInfo.AddNext(out PhysicalDeviceAccelerationStructureFeaturesKHR _);
             }
 
-            if (Capabilities.IsDescriptorBufferSupported)
-            {
-                createInfo.AddNext(out PhysicalDeviceDescriptorBufferFeaturesEXT _);
-            }
-
             Vk.GetPhysicalDeviceFeatures2(PhysicalDevice, &features2);
         }
 
@@ -108,7 +100,6 @@ internal unsafe partial class VKContext
         KhrRayTracingPipeline = extensions.Contains(KhrRayTracingPipeline.ExtensionName) ? Vk.GetExtension<KhrRayTracingPipeline>(Instance, Device) : null;
         KhrAccelerationStructure = extensions.Contains(KhrAccelerationStructure.ExtensionName) ? Vk.GetExtension<KhrAccelerationStructure>(Instance, Device) : null;
         KhrDeferredHostOperations = extensions.Contains(KhrDeferredHostOperations.ExtensionName) ? Vk.GetExtension<KhrDeferredHostOperations>(Instance, Device) : null;
-        ExtDescriptorBuffer = extensions.Contains(ExtDescriptorBuffer.ExtensionName) ? Vk.GetExtension<ExtDescriptorBuffer>(Instance, Device) : null;
     }
 
     private void DestroyDevice()
@@ -133,11 +124,6 @@ internal unsafe partial class VKContext
         if (Capabilities.IsRayQuerySupported || Capabilities.IsRayTracingSupported)
         {
             extensions = [.. extensions, KhrAccelerationStructure.ExtensionName, KhrDeferredHostOperations.ExtensionName];
-        }
-
-        if (Capabilities.IsDescriptorBufferSupported)
-        {
-            extensions = [.. extensions, ExtDescriptorBuffer.ExtensionName];
         }
 
         return extensions;

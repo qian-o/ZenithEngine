@@ -1,6 +1,5 @@
 ﻿using Graphics.Core.Helpers;
 using Silk.NET.Vulkan;
-using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace Graphics.Engine.Vulkan;
@@ -10,8 +9,6 @@ internal sealed unsafe class VKDeviceCapabilities : DeviceCapabilities
     public override bool IsRayQuerySupported { get; }
 
     public override bool IsRayTracingSupported { get; }
-
-    public bool IsDescriptorBufferSupported { get; }
 
     public void Init(Vk vk, VkPhysicalDevice physicalDevice)
     {
@@ -23,7 +20,6 @@ internal sealed unsafe class VKDeviceCapabilities : DeviceCapabilities
 
         this.SetPropertyValue(nameof(IsRayQuerySupported), SupportsExtension(extensionProperties, KhrRayQuery.ExtensionName));
         this.SetPropertyValue(nameof(IsRayTracingSupported), SupportsExtension(extensionProperties, KhrRayTracingPipeline.ExtensionName));
-        this.SetPropertyValue(nameof(IsDescriptorBufferSupported), SupportsExtension(extensionProperties, ExtDescriptorBuffer.ExtensionName));
     }
 
     private static bool SupportsExtension(ExtensionProperties[] extensionProperties, string extensionName)
