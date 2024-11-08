@@ -1,4 +1,6 @@
-﻿namespace Graphics.Engine.Descriptions;
+﻿using Graphics.Engine.Enums;
+
+namespace Graphics.Engine.Descriptions;
 
 public struct GraphicsPipelineDesc
 {
@@ -11,4 +13,26 @@ public struct GraphicsPipelineDesc
     /// The shader state description.
     /// </summary>
     public GraphicsShaderDesc Shaders { get; set; }
+
+    /// <summary>
+    /// Describes the resource layouts input array.
+    /// </summary>
+    public ResourceLayout[] ResourceLayouts { get; set; }
+
+    /// <summary>
+    /// Define how vertices are interpreted and rendered by the pipeline.
+    /// </summary>
+    public PrimitiveTopology PrimitiveTopology { get; set; }
+
+    public static GraphicsPipelineDesc Default(GraphicsShaderDesc shaders,
+                                               params ResourceLayout[] resourceLayouts)
+    {
+        return new()
+        {
+            RenderStates = RenderStateDesc.Default(),
+            Shaders = shaders,
+            ResourceLayouts = resourceLayouts,
+            PrimitiveTopology = PrimitiveTopology.TriangleList
+        };
+    }
 }
