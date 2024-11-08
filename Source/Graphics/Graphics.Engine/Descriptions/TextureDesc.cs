@@ -45,8 +45,8 @@ public struct TextureDesc
     public TextureSampleCount SampleCount { get; set; }
 
     public static TextureDesc Default1D(uint width,
-                                               uint mipLevels,
-                                               PixelFormat format = PixelFormat.R8G8B8A8UNorm)
+                                        uint mipLevels,
+                                        PixelFormat format = PixelFormat.R8G8B8A8UNorm)
     {
         return new()
         {
@@ -62,9 +62,9 @@ public struct TextureDesc
     }
 
     public static TextureDesc Default2D(uint width,
-                                               uint height,
-                                               uint mipLevels,
-                                               PixelFormat format = PixelFormat.R8G8B8A8UNorm)
+                                        uint height,
+                                        uint mipLevels,
+                                        PixelFormat format = PixelFormat.R8G8B8A8UNorm)
     {
         return new()
         {
@@ -80,10 +80,10 @@ public struct TextureDesc
     }
 
     public static TextureDesc Default3D(uint width,
-                                               uint height,
-                                               uint depth,
-                                               uint mipLevels,
-                                               PixelFormat format = PixelFormat.R8G8B8A8UNorm)
+                                        uint height,
+                                        uint depth,
+                                        uint mipLevels,
+                                        PixelFormat format = PixelFormat.R8G8B8A8UNorm)
     {
         return new()
         {
@@ -99,9 +99,9 @@ public struct TextureDesc
     }
 
     public static TextureDesc DefaultCube(uint width,
-                                                 uint height,
-                                                 uint mipLevels,
-                                                 PixelFormat format = PixelFormat.R8G8B8A8UNorm)
+                                          uint height,
+                                          uint mipLevels,
+                                          PixelFormat format = PixelFormat.R8G8B8A8UNorm)
     {
         return new()
         {

@@ -21,7 +21,7 @@ public struct ElementDesc
 
     public static ElementDesc Default(string name, ElementFormat format, uint offset = 0)
     {
-        return new ElementDesc
+        return new()
         {
             Name = name,
             Format = format,

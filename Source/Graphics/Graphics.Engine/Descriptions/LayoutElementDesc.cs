@@ -29,7 +29,7 @@ public struct LayoutElementDesc
                                             ShaderStages stages,
                                             ElementOptions options = ElementOptions.None)
     {
-        return new LayoutElementDesc
+        return new()
         {
             Slot = slot,
             Type = type,

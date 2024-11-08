@@ -24,7 +24,7 @@ public struct LayoutDesc
             stride += GetFormatSizeInBytes(elements[i].Format);
         }
 
-        return new LayoutDesc
+        return new()
         {
             Elements = elements,
             StepFunction = stepFunction,
@@ -33,7 +33,7 @@ public struct LayoutDesc
         };
     }
 
-    public static uint GetFormatSizeInBytes(ElementFormat format)
+    private static uint GetFormatSizeInBytes(ElementFormat format)
     {
         return format switch
         {

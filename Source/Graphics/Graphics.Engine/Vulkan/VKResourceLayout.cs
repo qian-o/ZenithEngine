@@ -1,4 +1,5 @@
-﻿using Graphics.Engine.Descriptions;
+﻿using Graphics.Core.Helpers;
+using Graphics.Engine.Descriptions;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 
@@ -25,15 +26,31 @@ internal sealed unsafe class VKResourceLayout : ResourceLayout
 
             bindings[i] = binding;
         }
+
+        DescriptorSetLayoutCreateInfo createInfo = new()
+        {
+            SType = StructureType.DescriptorSetLayoutCreateInfo,
+            BindingCount = (uint)bindings.Length,
+            PBindings = bindings.AsPointer()
+        };
+
+        VkDescriptorSetLayout descriptorSetLayout;
+        Context.Vk.CreateDescriptorSetLayout(Context.Device, &createInfo, null, &descriptorSetLayout).ThrowCode();
+
+        DescriptorSetLayout = descriptorSetLayout;
     }
 
     public new VKContext Context => (VKContext)base.Context;
 
+    public VkDescriptorSetLayout DescriptorSetLayout { get; }
+
     protected override void SetName(string name)
     {
+        Context.SetDebugName(ObjectType.DescriptorSetLayout, DescriptorSetLayout.Handle, name);
     }
 
     protected override void Destroy()
     {
+        Context.Vk.DestroyDescriptorSetLayout(Context.Device, DescriptorSetLayout, null);
     }
 }

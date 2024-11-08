@@ -6,7 +6,7 @@ public struct ResourceLayoutDesc
 
     public static ResourceLayoutDesc Default(params LayoutElementDesc[] elements)
     {
-        return new ResourceLayoutDesc
+        return new()
         {
             Elements = elements
         };

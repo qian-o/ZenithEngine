@@ -21,7 +21,7 @@ public struct GraphicsShaderDesc
                                              Shader? geometry = null,
                                              Shader? pixel = null)
     {
-        return new GraphicsShaderDesc
+        return new()
         {
             InputLayout = inputLayout,
             Vertex = vertex,
