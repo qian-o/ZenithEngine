@@ -29,6 +29,11 @@ internal sealed class VKResourceFactory(Context context) : ResourceFactory(conte
         return new VKSampler(Context, in desc);
     }
 
+    public override ResourceLayout CreateResourceLayout(ref readonly ResourceLayoutDesc desc)
+    {
+        return new VKResourceLayout(Context, in desc);
+    }
+
     public override FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc)
     {
         return new VKFrameBuffer(Context, in desc);
@@ -36,6 +41,6 @@ internal sealed class VKResourceFactory(Context context) : ResourceFactory(conte
 
     public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKGraphicsPipeline(Context, in desc);
     }
 }

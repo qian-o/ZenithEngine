@@ -2,10 +2,10 @@
 
 namespace Graphics.Engine.Vulkan;
 
-internal sealed unsafe class VKResourceLayout : ResourceLayout
+internal sealed unsafe class VKGraphicsPipeline : GraphicsPipeline
 {
-    public VKResourceLayout(Context context,
-                            ref readonly ResourceLayoutDesc desc) : base(context, in desc)
+    public VKGraphicsPipeline(Context context,
+                              ref readonly GraphicsPipelineDesc desc) : base(context, in desc)
     {
     }
 
