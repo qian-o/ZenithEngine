@@ -24,17 +24,24 @@ public struct LayoutElementDesc
     /// </summary>
     public ElementOptions Options { get; set; }
 
+    /// <summary>
+    /// If it is greater than 0, it overrides the size of this resource (in bytes). Only valid on Buffers.
+    /// </summary>
+    public uint Size { get; set; }
+
     public static LayoutElementDesc Default(uint slot,
                                             ResourceType type,
                                             ShaderStages stages,
-                                            ElementOptions options = ElementOptions.None)
+                                            ElementOptions options = ElementOptions.None,
+                                            uint size = 0)
     {
         return new()
         {
             Slot = slot,
             Type = type,
             Stages = stages,
-            Options = options
+            Options = options,
+            Size = size
         };
     }
 }

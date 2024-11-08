@@ -1,5 +1,6 @@
 ﻿using Graphics.Core.Helpers;
 using Graphics.Engine.Descriptions;
+using Graphics.Engine.Enums;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 
@@ -50,7 +51,59 @@ internal sealed unsafe class VKResourceSet : ResourceSet
         VkDescriptorSet descriptorSet;
         Context.Vk.AllocateDescriptorSets(Context.Device, &allocateInfo, &descriptorSet).ThrowCode();
 
-        // TODO: Write descriptor set.
+        WriteDescriptorSet[] writes = new WriteDescriptorSet[desc.Resources.Length];
+
+        for (uint i = 0; i < writes.Length; i++)
+        {
+            LayoutElementDesc element = layout.Desc.Elements[i];
+            DeviceResource resource = desc.Resources[i];
+
+            WriteDescriptorSet write = new()
+            {
+                SType = StructureType.WriteDescriptorSet,
+                DstSet = descriptorSet,
+                DstBinding = VKHelpers.GetBinding(element),
+                DescriptorCount = 1,
+                DescriptorType = Formats.GetDescriptorType(element.Type, element.Options)
+            };
+
+            if (resource is VKBuffer buffer)
+            {
+                DescriptorBufferInfo bufferInfo = new()
+                {
+                    Buffer = buffer.Buffer,
+                    Offset = 0,
+                    Range = element.Size == 0 ? Vk.WholeSize : element.Size
+                };
+
+                write.PBufferInfo = &bufferInfo;
+            }
+            else if (resource is VKTextureView textureView)
+            {
+                DescriptorImageInfo imageInfo = new()
+                {
+                    ImageView = textureView.ImageView,
+                    ImageLayout = element.Type == ResourceType.Texture ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.General
+                };
+
+                write.PImageInfo = &imageInfo;
+            }
+            else if (resource is VKSampler sampler)
+            {
+                DescriptorImageInfo imageInfo = new()
+                {
+                    Sampler = sampler.Sampler
+                };
+
+                write.PImageInfo = &imageInfo;
+            }
+            else
+            {
+                throw new NotSupportedException("Resource type not supported.");
+            }
+        }
+
+        Context.Vk.UpdateDescriptorSets(Context.Device, (uint)writes.Length, writes.AsPointer(), 0, null);
 
         DescriptorPool = descriptorPool;
         DescriptorSet = descriptorSet;
