@@ -8,6 +8,9 @@ public abstract class DeviceResource(Context context) : IDisposable
 
     private string name = string.Empty;
 
+    /// <summary>
+    /// Persistent memory allocator.
+    /// </summary>
     protected Allocator Allocator { get; } = new();
 
     public Context Context { get; } = context;

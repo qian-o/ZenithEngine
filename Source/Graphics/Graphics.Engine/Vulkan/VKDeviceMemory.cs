@@ -3,7 +3,7 @@ using Silk.NET.Vulkan;
 
 namespace Graphics.Engine.Vulkan;
 
-internal sealed unsafe class VKDeviceMemory : VKDeviceResource
+internal sealed unsafe class VKDeviceMemory : DeviceResource
 {
     public VKDeviceMemory(VKContext context,
                           bool isHostVisible,
@@ -36,7 +36,14 @@ internal sealed unsafe class VKDeviceMemory : VKDeviceResource
         DeviceMemory = deviceMemory;
     }
 
+    public new VKContext Context => (VKContext)base.Context;
+
     public VkDeviceMemory DeviceMemory { get; }
+
+    protected override void SetName(string name)
+    {
+        Context.SetDebugName(ObjectType.DeviceMemory, DeviceMemory.Handle, name);
+    }
 
     protected override void Destroy()
     {

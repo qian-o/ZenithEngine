@@ -5,6 +5,73 @@ namespace Graphics.Engine.Vulkan.Helpers;
 
 internal sealed class Formats
 {
+    public static ShaderStageFlags GetShaderStageFlags(ShaderStages stages)
+    {
+        ShaderStageFlags flags = ShaderStageFlags.None;
+
+        if (stages.HasFlag(ShaderStages.Vertex))
+        {
+            flags |= ShaderStageFlags.VertexBit;
+        }
+
+        if (stages.HasFlag(ShaderStages.Hull))
+        {
+            flags |= ShaderStageFlags.TessellationControlBit;
+        }
+
+        if (stages.HasFlag(ShaderStages.Domain))
+        {
+            flags |= ShaderStageFlags.TessellationEvaluationBit;
+        }
+
+        if (stages.HasFlag(ShaderStages.Geometry))
+        {
+            flags |= ShaderStageFlags.GeometryBit;
+        }
+
+        if (stages.HasFlag(ShaderStages.Pixel))
+        {
+            flags |= ShaderStageFlags.FragmentBit;
+        }
+
+        if (stages.HasFlag(ShaderStages.Compute))
+        {
+            flags |= ShaderStageFlags.ComputeBit;
+        }
+
+        if (stages.HasFlag(ShaderStages.RayGeneration))
+        {
+            flags |= ShaderStageFlags.RaygenBitKhr;
+        }
+
+        if (stages.HasFlag(ShaderStages.Miss))
+        {
+            flags |= ShaderStageFlags.MissBitKhr;
+        }
+
+        if (stages.HasFlag(ShaderStages.ClosestHit))
+        {
+            flags |= ShaderStageFlags.ClosestHitBitKhr;
+        }
+
+        if (stages.HasFlag(ShaderStages.AnyHit))
+        {
+            flags |= ShaderStageFlags.AnyHitBitKhr;
+        }
+
+        if (stages.HasFlag(ShaderStages.Intersection))
+        {
+            flags |= ShaderStageFlags.IntersectionBitKhr;
+        }
+
+        if (stages.HasFlag(ShaderStages.Callable))
+        {
+            flags |= ShaderStageFlags.CallableBitKhr;
+        }
+
+        return flags;
+    }
+
     public static ImageType GetImageType(TextureType type)
     {
         return type switch
@@ -261,6 +328,25 @@ internal sealed class Formats
             SamplerBorderColor.OpaqueBlack => BorderColor.FloatOpaqueBlack,
             SamplerBorderColor.OpaqueWhite => BorderColor.FloatOpaqueWhite,
             _ => throw new ArgumentOutOfRangeException(nameof(borderColor))
+        };
+    }
+
+    public static DescriptorType GetDescriptorType(ResourceType type, ElementOptions options)
+    {
+        bool dynamic = options.HasFlag(ElementOptions.DynamicBinding);
+
+        return type switch
+        {
+            ResourceType.ConstantBuffer => dynamic ? DescriptorType.UniformBufferDynamic : DescriptorType.UniformBuffer,
+
+            ResourceType.StructuredBuffer or
+            ResourceType.StructuredBufferReadWrite => dynamic ? DescriptorType.StorageBufferDynamic : DescriptorType.StorageBuffer,
+
+            ResourceType.Texture => DescriptorType.SampledImage,
+            ResourceType.TextureReadWrite => DescriptorType.StorageImage,
+            ResourceType.Sampler => DescriptorType.Sampler,
+            ResourceType.AccelerationStructure => DescriptorType.AccelerationStructureKhr,
+            _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
     }
 }
