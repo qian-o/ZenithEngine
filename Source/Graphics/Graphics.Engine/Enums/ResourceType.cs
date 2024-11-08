@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Engine.Enums;
 
-public enum ResourceKind
+public enum ResourceType
 {
     /// <summary>
     /// Bind as constant buffer.
