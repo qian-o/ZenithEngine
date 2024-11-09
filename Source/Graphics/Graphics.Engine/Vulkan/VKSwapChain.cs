@@ -9,13 +9,16 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKSwapChain : SwapChain
 {
-    private SwapchainKHR? swapchain;
+    private SwapchainKHR swapchain;
     private Texture? depthStencilTarget;
-    private FrameBuffer[]? frameBuffers;
+    private FrameBuffer[] frameBuffers = [];
+
+    private uint currentImageIndex;
 
     public VKSwapChain(Context context,
                        ref readonly SwapChainDesc desc) : base(context, in desc)
     {
+        Fence = new VKFence(Context);
         Surface = desc.Target.Create<AllocationCallbacks>(Context.Instance.ToHandle(), null).ToSurface();
 
         InitSwapChain();
@@ -24,11 +27,35 @@ internal sealed unsafe class VKSwapChain : SwapChain
 
     public new VKContext Context => (VKContext)base.Context;
 
+    public VKFence Fence { get; }
+
     public SurfaceKHR Surface { get; }
+
+    public FrameBuffer FrameBuffer => frameBuffers[currentImageIndex];
 
     public override void Present()
     {
-        // TODO: Present
+        SwapchainKHR swapchainKHR = swapchain;
+        uint imageIndex = currentImageIndex;
+
+        PresentInfoKHR presentInfo = new()
+        {
+            SType = StructureType.PresentInfoKhr,
+            SwapchainCount = 1,
+            PSwapchains = &swapchainKHR,
+            PImageIndices = &imageIndex
+        };
+
+        Result result = Context.KhrSwapchain.QueuePresent(Context.GraphicsQueue, &presentInfo);
+
+        if (result == Result.ErrorOutOfDateKhr)
+        {
+            return;
+        }
+        else
+        {
+            result.ThrowCode();
+        }
 
         AcquireNextImage();
     }
@@ -41,15 +68,14 @@ internal sealed unsafe class VKSwapChain : SwapChain
 
     protected override void SetName(string name)
     {
-        if (swapchain != null)
-        {
-            Context.SetDebugName(ObjectType.SwapchainKhr, swapchain.Value.Handle, name);
-        }
+        Context.SetDebugName(ObjectType.SwapchainKhr, swapchain.Handle, name);
     }
 
     protected override void Destroy()
     {
         DestroySwapChain();
+
+        Fence.Dispose();
     }
 
     private void InitSwapChain()
@@ -147,31 +173,38 @@ internal sealed unsafe class VKSwapChain : SwapChain
 
     private void DestroySwapChain()
     {
-        if (swapchain != null)
+        if (swapchain.Handle == default)
         {
-            foreach (FrameBuffer frameBuffer in frameBuffers!)
-            {
-                frameBuffer.Dispose();
-            }
-
-            depthStencilTarget?.Dispose();
-
-            Context.KhrSwapchain.DestroySwapchain(Context.Device, swapchain.Value, null);
-
-            swapchain = null;
-            depthStencilTarget = null;
-            frameBuffers = null;
+            return;
         }
+
+        foreach (FrameBuffer frameBuffer in frameBuffers)
+        {
+            frameBuffer.Dispose();
+        }
+
+        depthStencilTarget?.Dispose();
+
+        Context.KhrSwapchain.DestroySwapchain(Context.Device, swapchain, null);
+
+        swapchain = default;
+        depthStencilTarget = null;
+        frameBuffers = [];
     }
 
     private void AcquireNextImage()
     {
-        if (swapchain == null)
-        {
-            throw new InvalidOperationException("Swapchain is not initialized");
-        }
+        uint imageIndex;
+        Context.KhrSwapchain.AcquireNextImage(Context.Device,
+                                              swapchain,
+                                              ulong.MaxValue,
+                                              default,
+                                              Fence.Fence,
+                                              &imageIndex);
 
-        // TODO: Acquire next image
+        currentImageIndex = imageIndex;
+
+        Fence.Wait();
     }
 
     private static SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] surfaceFormats)

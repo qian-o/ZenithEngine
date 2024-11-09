@@ -10,11 +10,11 @@ internal unsafe partial class VKContext
 {
     public VkDevice Device { get; private set; }
 
-    public uint GraphicsIndex { get; private set; }
+    public VkQueue GraphicsQueue { get; private set; }
 
-    public uint ComputeIndex { get; private set; }
+    public VkQueue ComputeQueue { get; private set; }
 
-    public uint TransferIndex { get; private set; }
+    public VkQueue TransferQueue { get; private set; }
 
     public KhrSwapchain KhrSwapchain { get; private set; } = null!;
 
@@ -27,6 +27,10 @@ internal unsafe partial class VKContext
     private void InitDevice()
     {
         using Allocator allocator = new();
+
+        uint graphicsIndex = GetGraphicsQueueFamilyIndex(QueueFlags.GraphicsBit);
+        uint computeIndex = GetGraphicsQueueFamilyIndex(QueueFlags.ComputeBit);
+        uint transferIndex = GetGraphicsQueueFamilyIndex(QueueFlags.TransferBit);
 
         string[] extensions = GetDeviceExtensions();
 
@@ -41,11 +45,7 @@ internal unsafe partial class VKContext
         {
             float queuePriorities = 1.0f;
 
-            GraphicsIndex = GetGraphicsQueueFamilyIndex(QueueFlags.GraphicsBit);
-            ComputeIndex = GetGraphicsQueueFamilyIndex(QueueFlags.ComputeBit);
-            TransferIndex = GetGraphicsQueueFamilyIndex(QueueFlags.TransferBit);
-
-            HashSet<uint> queueFamilies = [GraphicsIndex, ComputeIndex, TransferIndex];
+            HashSet<uint> queueFamilies = [graphicsIndex, computeIndex, transferIndex];
 
             DeviceQueueCreateInfo[] deviceQueueCreateInfos = new DeviceQueueCreateInfo[queueFamilies.Count];
 
@@ -94,7 +94,19 @@ internal unsafe partial class VKContext
         VkDevice device;
         Vk.CreateDevice(PhysicalDevice, &createInfo, null, &device).ThrowCode();
 
+        VkQueue graphicsQueue;
+        Vk.GetDeviceQueue(device, graphicsIndex, 0, &graphicsQueue);
+
+        VkQueue computeQueue;
+        Vk.GetDeviceQueue(device, computeIndex, 0, &computeQueue);
+
+        VkQueue transferQueue;
+        Vk.GetDeviceQueue(device, transferIndex, 0, &transferQueue);
+
         Device = device;
+        GraphicsQueue = graphicsQueue;
+        ComputeQueue = computeQueue;
+        TransferQueue = transferQueue;
         KhrSwapchain = Vk.GetExtension<KhrSwapchain>(Instance, Device);
         KhrRayTracingPipeline = extensions.Contains(KhrRayTracingPipeline.ExtensionName) ? Vk.GetExtension<KhrRayTracingPipeline>(Instance, Device) : null;
         KhrAccelerationStructure = extensions.Contains(KhrAccelerationStructure.ExtensionName) ? Vk.GetExtension<KhrAccelerationStructure>(Instance, Device) : null;

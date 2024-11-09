@@ -4,7 +4,7 @@ internal sealed class Utils
 {
     public static uint Lerp(uint a, uint b, float step)
     {
-        return (uint)(a + (b - a) * step);
+        return (uint)(a + ((b - a) * step));
     }
 
     public static uint GetMipLevels(uint width, uint height)
