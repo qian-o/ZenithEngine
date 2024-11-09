@@ -29,11 +29,6 @@ public struct RenderStateDesc
     /// </summary>
     public Vector4? BlendFactor { get; set; }
 
-    /// <summary>
-    /// 32-bit sample coverage. The default value is 0xFFFFFF. See remarks.
-    /// </summary>
-    public int? SampleMask { get; set; }
-
     public static RenderStateDesc Default()
     {
         return new()
@@ -42,8 +37,7 @@ public struct RenderStateDesc
             DepthStencilState = DepthStencilStateDesc.Default(),
             BlendState = BlendStateDesc.Default(),
             StencilReference = 0,
-            BlendFactor = null,
-            SampleMask = 16777215
+            BlendFactor = null
         };
     }
 }

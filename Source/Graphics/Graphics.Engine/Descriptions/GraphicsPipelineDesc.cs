@@ -15,6 +15,11 @@ public struct GraphicsPipelineDesc
     public GraphicsShaderDesc Shaders { get; set; }
 
     /// <summary>
+    /// vertex input layout.
+    /// </summary>
+    public InputLayouts InputLayouts { get; set; }
+
+    /// <summary>
     /// Describes the resource layouts input array.
     /// </summary>
     public ResourceLayout[] ResourceLayouts { get; set; }
@@ -24,7 +29,13 @@ public struct GraphicsPipelineDesc
     /// </summary>
     public PrimitiveTopology PrimitiveTopology { get; set; }
 
+    /// <summary>
+    /// A description of the output attachments of the pipeline.
+    /// </summary>
+    public OutputDesc Outputs { get; set; }
+
     public static GraphicsPipelineDesc Default(GraphicsShaderDesc shaders,
+                                               OutputDesc outputs,
                                                params ResourceLayout[] resourceLayouts)
     {
         return new()
@@ -32,7 +43,8 @@ public struct GraphicsPipelineDesc
             RenderStates = RenderStateDesc.Default(),
             Shaders = shaders,
             ResourceLayouts = resourceLayouts,
-            PrimitiveTopology = PrimitiveTopology.TriangleList
+            PrimitiveTopology = PrimitiveTopology.TriangleList,
+            Outputs = outputs
         };
     }
 }

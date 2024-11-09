@@ -21,11 +21,20 @@ internal sealed unsafe class VKShader : Shader
         Context.Vk.CreateShaderModule(Context.Device, &createInfo, null, &shader).ThrowCode();
 
         Shader = shader;
+        ShaderStateInfo = new()
+        {
+            SType = StructureType.PipelineShaderStageCreateInfo,
+            Stage = Formats.GetShaderStageFlags(desc.Stage),
+            Module = Shader,
+            PName = Allocator.Alloc(desc.EntryPoint)
+        };
     }
 
     public new VKContext Context => (VKContext)base.Context;
 
     public VkShader Shader { get; }
+
+    public PipelineShaderStageCreateInfo ShaderStateInfo { get; }
 
     protected override void SetName(string name)
     {

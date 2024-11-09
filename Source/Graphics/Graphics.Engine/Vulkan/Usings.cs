@@ -8,6 +8,7 @@ global using VkImage = Silk.NET.Vulkan.Image;
 global using VkImageView = Silk.NET.Vulkan.ImageView;
 global using VkInstance = Silk.NET.Vulkan.Instance;
 global using VkPhysicalDevice = Silk.NET.Vulkan.PhysicalDevice;
+global using VkPipeline = Silk.NET.Vulkan.Pipeline;
 global using VkResult = Silk.NET.Vulkan.Result;
 global using VkSampler = Silk.NET.Vulkan.Sampler;
 global using VkShader = Silk.NET.Vulkan.ShaderModule;

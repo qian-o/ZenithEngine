@@ -12,14 +12,11 @@ public struct GraphicsShaderDesc
 
     public Shader? Pixel { get; set; }
 
-    public LayoutDesc[] InputLayout { get; set; }
-
     public static GraphicsShaderDesc Default(Shader? vertex = null,
                                              Shader? hull = null,
                                              Shader? domain = null,
                                              Shader? geometry = null,
-                                             Shader? pixel = null,
-                                             params LayoutDesc[] inputLayout)
+                                             Shader? pixel = null)
     {
         return new()
         {
@@ -27,8 +24,7 @@ public struct GraphicsShaderDesc
             Hull = hull,
             Domain = domain,
             Geometry = geometry,
-            Pixel = pixel,
-            InputLayout = inputLayout
+            Pixel = pixel
         };
     }
 }

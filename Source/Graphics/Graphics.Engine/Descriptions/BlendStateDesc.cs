@@ -3,14 +3,17 @@
 public struct BlendStateDesc
 {
     /// <summary>
-    /// Gets or sets the alpha to coverage enable.
+    /// Specifies whether to use alpha-to-coverage as a multisampling technique when
+    /// setting a pixel to a render target.
     /// </summary>
-    public bool AlphaToCoverageEnable { get; set; }
+    public bool AlphaToCoverageEnabled { get; set; }
 
     /// <summary>
-    /// Gets or sets the independent blend enable.
+    /// Specifies whether to enable independent blending in simultaneous render targets.
+    /// Set to TRUE to enable independent blending. If set to FALSE, only the RenderTarget[0]
+    /// members are used; RenderTarget[1..7] are ignored.
     /// </summary>
-    public bool IndependentBlendEnable { get; set; }
+    public bool IndependentBlendEnabled { get; set; }
 
     /// <summary>
     /// RenderTarget blend description 0 / 7.
@@ -56,8 +59,8 @@ public struct BlendStateDesc
     {
         return new()
         {
-            AlphaToCoverageEnable = false,
-            IndependentBlendEnable = false,
+            AlphaToCoverageEnabled = false,
+            IndependentBlendEnabled = false,
             RenderTarget0 = BlendStateRenderTargetDesc.Default(),
             RenderTarget1 = BlendStateRenderTargetDesc.Default(),
             RenderTarget2 = BlendStateRenderTargetDesc.Default(),

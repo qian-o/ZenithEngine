@@ -4,12 +4,25 @@ namespace Graphics.Engine.Descriptions;
 
 public struct LayoutDesc
 {
+    /// <summary>
+    /// A array of individual vertex elements comprising a single vertex.
+    /// </summary>
     public ElementDesc[] Elements { get; set; }
 
+    /// <summary>
+    /// The frequency with which the vertex function fetches attribute data.
+    /// </summary>
     public VertexStepFunction StepFunction { get; set; }
 
+    /// <summary>
+    /// A value controlling how often data for instances is updated for this layout.
+    /// For per-vertex elements, this value should be 0.
+    /// </summary>
     public uint StepRate { get; set; }
 
+    /// <summary>
+    /// The total size of an individual vertex in bytes.
+    /// </summary>
     public uint Stride { get; set; }
 
     public static LayoutDesc Default(VertexStepFunction stepFunction = VertexStepFunction.PerVertexData,
@@ -19,7 +32,7 @@ public struct LayoutDesc
         uint stride = 0;
         for (int i = 0; i < elements.Length; i++)
         {
-            elements[i].Offset = stride;
+            elements[i].Offset = (int)stride;
 
             stride += GetFormatSizeInBytes(elements[i].Format);
         }

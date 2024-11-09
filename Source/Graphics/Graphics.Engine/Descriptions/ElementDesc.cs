@@ -5,9 +5,14 @@ namespace Graphics.Engine.Descriptions;
 public struct ElementDesc
 {
     /// <summary>
-    /// The name of the element.
+    /// The type of the element.
     /// </summary>
-    public string Name { get; set; }
+    public ElementSemanticType Semantic { get; set; }
+
+    /// <summary>
+    /// The index of the element.
+    /// </summary>
+    public uint SemanticIndex { get; set; }
 
     /// <summary>
     /// The format of the element.
@@ -15,15 +20,19 @@ public struct ElementDesc
     public ElementFormat Format { get; set; }
 
     /// <summary>
-    /// The offset in bytes from the beginning of the vertex.
+    /// The element offset.
     /// </summary>
-    public uint Offset { get; set; }
+    public int Offset { get; set; }
 
-    public static ElementDesc Default(string name, ElementFormat format, uint offset = 0)
+    public static ElementDesc Default(ElementSemanticType Semantic,
+                                      ElementFormat format,
+                                      uint semanticIndex = 0,
+                                      int offset = -1)
     {
         return new()
         {
-            Name = name,
+            Semantic = Semantic,
+            SemanticIndex = semanticIndex,
             Format = format,
             Offset = offset
         };

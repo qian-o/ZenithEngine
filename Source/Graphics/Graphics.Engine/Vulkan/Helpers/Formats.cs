@@ -1,5 +1,7 @@
 ﻿using Graphics.Engine.Enums;
 using Silk.NET.Vulkan;
+using FrontFace = Graphics.Engine.Enums.FrontFace;
+using VkFrontFace = Silk.NET.Vulkan.FrontFace;
 
 namespace Graphics.Engine.Vulkan.Helpers;
 
@@ -348,5 +350,112 @@ internal sealed class Formats
             ResourceType.AccelerationStructure => DescriptorType.AccelerationStructureKhr,
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
+    }
+
+    public static CullModeFlags GetCullModeFlags(CullMode cullMode)
+    {
+        return cullMode switch
+        {
+            CullMode.None => CullModeFlags.None,
+            CullMode.Front => CullModeFlags.FrontBit,
+            CullMode.Back => CullModeFlags.BackBit,
+            _ => throw new ArgumentOutOfRangeException(nameof(cullMode))
+        };
+    }
+
+    public static PolygonMode GetPolygonMode(FillMode fillMode)
+    {
+        return fillMode switch
+        {
+            FillMode.Solid => PolygonMode.Fill,
+            FillMode.Wireframe => PolygonMode.Line,
+            _ => throw new ArgumentOutOfRangeException(nameof(fillMode))
+        };
+    }
+
+    public static VkFrontFace GetFrontFace(FrontFace frontFace)
+    {
+        return frontFace switch
+        {
+            FrontFace.CounterClockwise => VkFrontFace.CounterClockwise,
+            FrontFace.Clockwise => VkFrontFace.Clockwise,
+            _ => throw new ArgumentOutOfRangeException(nameof(frontFace))
+        };
+    }
+
+    public static StencilOp GetStencilOp(StencilOperation operation)
+    {
+        return operation switch
+        {
+            StencilOperation.Keep => StencilOp.Keep,
+            StencilOperation.Zero => StencilOp.Zero,
+            StencilOperation.Replace => StencilOp.Replace,
+            StencilOperation.IncrementAndClamp => StencilOp.IncrementAndClamp,
+            StencilOperation.DecrementAndClamp => StencilOp.DecrementAndClamp,
+            StencilOperation.Invert => StencilOp.Invert,
+            StencilOperation.IncrementAndWrap => StencilOp.IncrementAndWrap,
+            StencilOperation.DecrementAndWrap => StencilOp.DecrementAndWrap,
+            _ => throw new ArgumentOutOfRangeException(nameof(operation))
+        };
+    }
+
+    public static BlendFactor GetBlendFactor(Blend blend)
+    {
+        return blend switch
+        {
+            Blend.Zero => BlendFactor.Zero,
+            Blend.One => BlendFactor.One,
+            Blend.SourceAlpha => BlendFactor.SrcAlpha,
+            Blend.InverseSourceAlpha => BlendFactor.OneMinusSrcAlpha,
+            Blend.DestinationAlpha => BlendFactor.DstAlpha,
+            Blend.InverseDestinationAlpha => BlendFactor.OneMinusDstAlpha,
+            Blend.SourceColor => BlendFactor.SrcColor,
+            Blend.InverseSourceColor => BlendFactor.OneMinusSrcColor,
+            Blend.DestinationColor => BlendFactor.DstColor,
+            Blend.InverseDestinationColor => BlendFactor.OneMinusDstColor,
+            Blend.BlendFactor => BlendFactor.ConstantColor,
+            Blend.InverseBlendFactor => BlendFactor.OneMinusConstantColor,
+            _ => throw new ArgumentOutOfRangeException(nameof(blend))
+        };
+    }
+
+    public static BlendOp GetBlendOp(BlendOperation operation)
+    {
+        return operation switch
+        {
+            BlendOperation.Add => BlendOp.Add,
+            BlendOperation.Subtract => BlendOp.Subtract,
+            BlendOperation.ReverseSubtract => BlendOp.ReverseSubtract,
+            BlendOperation.Min => BlendOp.Min,
+            BlendOperation.Max => BlendOp.Max,
+            _ => throw new ArgumentOutOfRangeException(nameof(operation))
+        };
+    }
+
+    public static ColorComponentFlags GetColorComponentFlags(ColorWriteChannels channels)
+    {
+        ColorComponentFlags flags = ColorComponentFlags.None;
+
+        if (channels.HasFlag(ColorWriteChannels.Red))
+        {
+            flags |= ColorComponentFlags.RBit;
+        }
+
+        if (channels.HasFlag(ColorWriteChannels.Green))
+        {
+            flags |= ColorComponentFlags.GBit;
+        }
+
+        if (channels.HasFlag(ColorWriteChannels.Blue))
+        {
+            flags |= ColorComponentFlags.BBit;
+        }
+
+        if (channels.HasFlag(ColorWriteChannels.Alpha))
+        {
+            flags |= ColorComponentFlags.ABit;
+        }
+
+        return flags;
     }
 }
