@@ -49,23 +49,36 @@ internal sealed unsafe class VKTexture : Texture
         Image = image;
     }
 
+    public VKTexture(Context context,
+                     VkImage image,
+                     ref readonly TextureDesc desc) : base(context, in desc)
+    {
+        Image = image;
+        Layouts = new ImageLayout[desc.Depth * desc.MipLevels];
+        Array.Fill(Layouts, ImageLayout.Undefined);
+    }
+
     public new VKContext Context => (VKContext)base.Context;
 
     public VkImage Image { get; }
 
-    public VKDeviceMemory DeviceMemory { get; }
+    public VKDeviceMemory? DeviceMemory { get; }
 
     public ImageLayout[] Layouts { get; }
 
     protected override void SetName(string name)
     {
         Context.SetDebugName(ObjectType.Image, Image.Handle, name);
-        Context.SetDebugName(ObjectType.DeviceMemory, DeviceMemory.DeviceMemory.Handle, $"{name} Memory");
+
+        if (DeviceMemory != null)
+        {
+            Context.SetDebugName(ObjectType.DeviceMemory, DeviceMemory.DeviceMemory.Handle, $"{name} Memory");
+        }
     }
 
     protected override void Destroy()
     {
-        DeviceMemory.Dispose();
+        DeviceMemory?.Dispose();
 
         Context.Vk.DestroyImage(Context.Device, Image, null);
     }

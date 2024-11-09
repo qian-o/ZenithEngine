@@ -1,5 +1,6 @@
 ﻿using Graphics.Core.Helpers;
 using Graphics.Engine.Descriptions;
+using Graphics.Engine.Enums;
 using Graphics.Engine.Helpers;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Vulkan;
@@ -9,6 +10,8 @@ namespace Graphics.Engine.Vulkan;
 internal sealed unsafe class VKSwapChain : SwapChain
 {
     private SwapchainKHR? swapchain;
+    private Texture? depthStencilTarget;
+    private FrameBuffer[]? frameBuffers;
 
     public VKSwapChain(Context context,
                        ref readonly SwapChainDesc desc) : base(context, in desc)
@@ -113,13 +116,51 @@ internal sealed unsafe class VKSwapChain : SwapChain
 
         VkImage[] images = new VkImage[imageCount];
         Context.KhrSwapchain.GetSwapchainImages(Context.Device, swapchain, &imageCount, images.AsPointer());
+
+        if (Desc.DepthStencilTargetFormat != null)
+        {
+            TextureDesc depthStencilDesc = TextureDesc.Default2D(createInfo.ImageExtent.Width,
+                                                                 createInfo.ImageExtent.Height,
+                                                                 1,
+                                                                 Desc.DepthStencilTargetFormat.Value);
+            depthStencilDesc.Usage = TextureUsage.DepthStencil;
+
+            depthStencilTarget = Context.Factory.CreateTexture(ref depthStencilDesc);
+        }
+
+        frameBuffers = new FrameBuffer[imageCount];
+        for (int i = 0; i < imageCount; i++)
+        {
+            TextureDesc colorDesc = TextureDesc.Default2D(createInfo.ImageExtent.Width,
+                                                          createInfo.ImageExtent.Height,
+                                                          1,
+                                                          Formats.GetPixelFormat(createInfo.ImageFormat));
+            colorDesc.Usage = TextureUsage.RenderTarget;
+
+            VKTexture colorTarget = new(Context, images[i], ref colorDesc);
+
+            FrameBufferDesc frameBufferDesc = FrameBufferDesc.Default(depthStencilTarget, colorTarget);
+
+            frameBuffers[i] = Context.Factory.CreateFrameBuffer(ref frameBufferDesc);
+        }
     }
 
     private void DestroySwapChain()
     {
         if (swapchain != null)
         {
+            foreach (FrameBuffer frameBuffer in frameBuffers!)
+            {
+                frameBuffer.Dispose();
+            }
+
+            depthStencilTarget?.Dispose();
+
             Context.KhrSwapchain.DestroySwapchain(Context.Device, swapchain.Value, null);
+
+            swapchain = null;
+            depthStencilTarget = null;
+            frameBuffers = null;
         }
     }
 
