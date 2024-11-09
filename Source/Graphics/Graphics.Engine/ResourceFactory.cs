@@ -6,6 +6,8 @@ public abstract class ResourceFactory(Context context)
 {
     public Context Context { get; } = context;
 
+    public abstract SwapChain CreateSwapChain(ref readonly SwapChainDesc desc);
+
     public abstract Shader CreateShader(ref readonly ShaderDesc desc);
 
     public abstract Buffer CreateBuffer(ref readonly BufferDesc desc);

@@ -4,6 +4,11 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed class VKResourceFactory(Context context) : ResourceFactory(context)
 {
+    public override SwapChain CreateSwapChain(ref readonly SwapChainDesc desc)
+    {
+        return new VKSwapChain(Context, in desc);
+    }
+
     public override Shader CreateShader(ref readonly ShaderDesc desc)
     {
         return new VKShader(Context, in desc);

@@ -72,7 +72,7 @@ internal sealed unsafe class VKTexture : Texture
 
         if (DeviceMemory != null)
         {
-            Context.SetDebugName(ObjectType.DeviceMemory, DeviceMemory.DeviceMemory.Handle, $"{name} Memory");
+            DeviceMemory.Name = name;
         }
     }
 

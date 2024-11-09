@@ -7,6 +7,16 @@ namespace Graphics.Engine.Vulkan.Helpers;
 internal static class VulkanExtensions
 {
     #region VulkanObject
+    public static VKSwapChain VK(this SwapChain swapChain)
+    {
+        if (swapChain is not VKSwapChain vkSwapChain)
+        {
+            throw new BackendException("Swap chain is not a Vulkan swap chain!");
+        }
+
+        return vkSwapChain;
+    }
+
     public static VKShader VK(this Shader shader)
     {
         if (shader is not VKShader vkShader)
