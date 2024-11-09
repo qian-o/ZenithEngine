@@ -117,7 +117,42 @@ internal sealed unsafe class VKGraphicsPipeline : GraphicsPipeline
 
         // Shaders
         {
+            List<PipelineShaderStageCreateInfo> shaderStages = [];
 
+            if (desc.Shaders.Vertex != null)
+            {
+                shaderStages.Add(desc.Shaders.Vertex.VK().ShaderStateInfo);
+            }
+
+            if (desc.Shaders.Hull != null)
+            {
+                shaderStages.Add(desc.Shaders.Hull.VK().ShaderStateInfo);
+            }
+
+            if (desc.Shaders.Domain != null)
+            {
+                shaderStages.Add(desc.Shaders.Domain.VK().ShaderStateInfo);
+            }
+
+            if (desc.Shaders.Geometry != null)
+            {
+                shaderStages.Add(desc.Shaders.Geometry.VK().ShaderStateInfo);
+            }
+
+            if (desc.Shaders.Pixel != null)
+            {
+                shaderStages.Add(desc.Shaders.Pixel.VK().ShaderStateInfo);
+            }
+
+            PipelineShaderStageCreateInfo[] stages = [.. shaderStages];
+
+            createInfo.StageCount = (uint)stages.Length;
+            createInfo.PStages = stages.AsPointer();
+        }
+
+        // Input Layouts
+        {
+            // TODO: Implement
         }
 
         // Outputs
