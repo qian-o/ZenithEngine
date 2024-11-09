@@ -1,8 +1,9 @@
-﻿using Graphics.Engine.Descriptions;
+﻿using System.Collections;
+using Graphics.Engine.Descriptions;
 
 namespace Graphics.Engine;
 
-public class InputLayouts
+public class InputLayouts : IEnumerable<LayoutDesc>
 {
     private readonly List<LayoutDesc> layouts = [];
 
@@ -15,5 +16,15 @@ public class InputLayouts
         layouts.Add(item);
 
         return this;
+    }
+
+    public IEnumerator<LayoutDesc> GetEnumerator()
+    {
+        return layouts.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

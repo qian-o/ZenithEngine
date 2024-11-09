@@ -1,7 +1,9 @@
 ﻿using Graphics.Engine.Enums;
 using Silk.NET.Vulkan;
 using FrontFace = Graphics.Engine.Enums.FrontFace;
+using PrimitiveTopology = Graphics.Engine.Enums.PrimitiveTopology;
 using VkFrontFace = Silk.NET.Vulkan.FrontFace;
+using VkPrimitiveTopology = Silk.NET.Vulkan.PrimitiveTopology;
 
 namespace Graphics.Engine.Vulkan.Helpers;
 
@@ -457,5 +459,79 @@ internal sealed class Formats
         }
 
         return flags;
+    }
+
+    public static Format GetElementFormat(ElementFormat format)
+    {
+        return format switch
+        {
+            ElementFormat.UByte1 => Format.R8Uint,
+            ElementFormat.UByte2 => Format.R8G8Uint,
+            ElementFormat.UByte3 => Format.R8G8B8Uint,
+            ElementFormat.UByte4 => Format.R8G8B8A8Uint,
+            ElementFormat.Byte1 => Format.R8Sint,
+            ElementFormat.Byte2 => Format.R8G8Sint,
+            ElementFormat.Byte3 => Format.R8G8B8Sint,
+            ElementFormat.Byte4 => Format.R8G8B8A8Sint,
+            ElementFormat.UByte1Normalized => Format.R8Unorm,
+            ElementFormat.UByte2Normalized => Format.R8G8Unorm,
+            ElementFormat.UByte3Normalized => Format.R8G8B8Unorm,
+            ElementFormat.UByte4Normalized => Format.R8G8B8A8Unorm,
+            ElementFormat.Byte1Normalized => Format.R8SNorm,
+            ElementFormat.Byte2Normalized => Format.R8G8SNorm,
+            ElementFormat.Byte3Normalized => Format.R8G8B8SNorm,
+            ElementFormat.Byte4Normalized => Format.R8G8B8A8SNorm,
+            ElementFormat.UShort1 => Format.R16Uint,
+            ElementFormat.UShort2 => Format.R16G16Uint,
+            ElementFormat.UShort3 => Format.R16G16B16Uint,
+            ElementFormat.UShort4 => Format.R16G16B16A16Uint,
+            ElementFormat.Short1 => Format.R16Sint,
+            ElementFormat.Short2 => Format.R16G16Sint,
+            ElementFormat.Short3 => Format.R16G16B16Sint,
+            ElementFormat.Short4 => Format.R16G16B16A16Sint,
+            ElementFormat.UShort1Normalized => Format.R16Unorm,
+            ElementFormat.UShort2Normalized => Format.R16G16Unorm,
+            ElementFormat.UShort3Normalized => Format.R16G16B16Unorm,
+            ElementFormat.UShort4Normalized => Format.R16G16B16A16Unorm,
+            ElementFormat.Short1Normalized => Format.R16SNorm,
+            ElementFormat.Short2Normalized => Format.R16G16SNorm,
+            ElementFormat.Short3Normalized => Format.R16G16B16SNorm,
+            ElementFormat.Short4Normalized => Format.R16G16B16A16SNorm,
+            ElementFormat.Half1 => Format.R16Sfloat,
+            ElementFormat.Half2 => Format.R16G16Sfloat,
+            ElementFormat.Half3 => Format.R16G16B16Sfloat,
+            ElementFormat.Half4 => Format.R16G16B16A16Sfloat,
+            ElementFormat.Float1 => Format.R32Sfloat,
+            ElementFormat.Float2 => Format.R32G32Sfloat,
+            ElementFormat.Float3 => Format.R32G32B32Sfloat,
+            ElementFormat.Float4 => Format.R32G32B32A32Sfloat,
+            ElementFormat.UInt1 => Format.R32Uint,
+            ElementFormat.UInt2 => Format.R32G32Uint,
+            ElementFormat.UInt3 => Format.R32G32B32Uint,
+            ElementFormat.UInt4 => Format.R32G32B32A32Uint,
+            ElementFormat.Int1 => Format.R32Sint,
+            ElementFormat.Int2 => Format.R32G32Sint,
+            ElementFormat.Int3 => Format.R32G32B32Sint,
+            ElementFormat.Int4 => Format.R32G32B32A32Sint,
+            _ => throw new ArgumentOutOfRangeException(nameof(format))
+        };
+    }
+
+    public static VkPrimitiveTopology GetPrimitiveTopology(PrimitiveTopology topology)
+    {
+        return topology switch
+        {
+            PrimitiveTopology.PointList => VkPrimitiveTopology.PointList,
+            PrimitiveTopology.LineList => VkPrimitiveTopology.LineList,
+            PrimitiveTopology.LineStrip => VkPrimitiveTopology.LineStrip,
+            PrimitiveTopology.TriangleList => VkPrimitiveTopology.TriangleList,
+            PrimitiveTopology.TriangleStrip => VkPrimitiveTopology.TriangleStrip,
+            PrimitiveTopology.LineListWithAdjacency => VkPrimitiveTopology.LineListWithAdjacency,
+            PrimitiveTopology.LineStripWithAdjacency => VkPrimitiveTopology.LineStripWithAdjacency,
+            PrimitiveTopology.TriangleListWithAdjacency => VkPrimitiveTopology.TriangleListWithAdjacency,
+            PrimitiveTopology.TriangleStripWithAdjacency => VkPrimitiveTopology.TriangleStripWithAdjacency,
+            PrimitiveTopology.PatchList => VkPrimitiveTopology.PatchList,
+            _ => throw new ArgumentOutOfRangeException(nameof(topology))
+        };
     }
 }

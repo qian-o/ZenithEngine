@@ -2,6 +2,7 @@
 using Graphics.Engine.Descriptions;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Vulkan;
+using PrimitiveTopology = Graphics.Engine.Enums.PrimitiveTopology;
 
 namespace Graphics.Engine.Vulkan;
 
@@ -152,11 +153,116 @@ internal sealed unsafe class VKGraphicsPipeline : GraphicsPipeline
 
         // Input Layouts
         {
-            // TODO: Implement
+            uint vertexInputBindingCount = (uint)desc.InputLayouts.Count;
+            uint vertexInputAttributeCount = (uint)desc.InputLayouts.Sum(static item => item.Elements.Count);
+
+            VertexInputBindingDescription[] bindingDescriptions = new VertexInputBindingDescription[vertexInputBindingCount];
+            VertexInputAttributeDescription[] attributeDescriptions = new VertexInputAttributeDescription[vertexInputAttributeCount];
+
+            uint attributeIndex = 0;
+            uint bindingLocation = 0;
+            for (uint i = 0; i < vertexInputBindingCount; i++)
+            {
+                LayoutDesc layout = desc.InputLayouts[(int)i];
+
+                bindingDescriptions[i] = new VertexInputBindingDescription
+                {
+                    Binding = i,
+                    Stride = layout.Stride,
+                    InputRate = layout.StepRate == 0 ? VertexInputRate.Vertex : VertexInputRate.Instance
+                };
+
+                for (int j = 0; j < layout.Elements.Count; j++)
+                {
+                    ElementDesc element = layout.Elements[j];
+
+                    attributeDescriptions[attributeIndex++] = new VertexInputAttributeDescription
+                    {
+                        Binding = i,
+                        Location = (uint)(bindingLocation + j),
+                        Format = Formats.GetElementFormat(element.Format),
+                        Offset = (uint)element.Offset
+                    };
+                }
+
+                bindingLocation += (uint)layout.Elements.Count;
+            }
+
+            PipelineVertexInputStateCreateInfo vertexInputState = new()
+            {
+                SType = StructureType.PipelineVertexInputStateCreateInfo,
+                VertexBindingDescriptionCount = vertexInputBindingCount,
+                PVertexBindingDescriptions = bindingDescriptions.AsPointer(),
+                VertexAttributeDescriptionCount = vertexInputAttributeCount,
+                PVertexAttributeDescriptions = attributeDescriptions.AsPointer()
+            };
+
+            createInfo.PVertexInputState = &vertexInputState;
+        }
+
+        // Resource Layouts
+        {
+            DescriptorSetLayout[] setLayouts = desc.ResourceLayouts.Select(static item => item.VK().DescriptorSetLayout)
+                                                                   .ToArray();
+
+            PipelineLayoutCreateInfo pipelineLayoutCreateInfo = new()
+            {
+                SType = StructureType.PipelineLayoutCreateInfo,
+                SetLayoutCount = (uint)setLayouts.Length,
+                PSetLayouts = setLayouts.AsPointer()
+            };
+
+            Context.Vk.CreatePipelineLayout(Context.Device, &pipelineLayoutCreateInfo, null, &createInfo.Layout).ThrowCode();
+
+            PipelineLayout = createInfo.Layout;
+        }
+
+        // Primitive Topology
+        {
+            PipelineInputAssemblyStateCreateInfo inputAssemblyState = new()
+            {
+                SType = StructureType.PipelineInputAssemblyStateCreateInfo,
+                Topology = Formats.GetPrimitiveTopology(desc.PrimitiveTopology)
+            };
+
+            if (desc.PrimitiveTopology >= PrimitiveTopology.PatchList)
+            {
+                uint patchControlPoints = (uint)(desc.PrimitiveTopology - PrimitiveTopology.PatchList + 1);
+
+                PipelineTessellationStateCreateInfo tessellationState = new()
+                {
+                    SType = StructureType.PipelineTessellationStateCreateInfo,
+                    PatchControlPoints = patchControlPoints
+                };
+
+                createInfo.PTessellationState = &tessellationState;
+            }
+
+            createInfo.PInputAssemblyState = &inputAssemblyState;
         }
 
         // Outputs
         {
+            Format[] colorAttachmentFormats = desc.Outputs.ColorAttachments.Select(static item => Formats.GetPixelFormat(item))
+                                                                           .ToArray();
+
+            PipelineRenderingCreateInfo renderingCreateInfo = new()
+            {
+                SType = StructureType.PipelineRenderingCreateInfo,
+                ColorAttachmentCount = (uint)colorAttachmentFormats.Length,
+                PColorAttachmentFormats = colorAttachmentFormats.AsPointer(),
+            };
+
+            if (desc.Outputs.DepthStencilAttachment.HasValue)
+            {
+                Format depthStencilAttachmentFormat = Formats.GetPixelFormat(desc.Outputs.DepthStencilAttachment.Value);
+
+                renderingCreateInfo.DepthAttachmentFormat = depthStencilAttachmentFormat;
+                renderingCreateInfo.StencilAttachmentFormat = depthStencilAttachmentFormat;
+            }
+
+            createInfo.PNext = &renderingCreateInfo;
+
             PipelineMultisampleStateCreateInfo multisampleState = new()
             {
                 SType = StructureType.PipelineMultisampleStateCreateInfo,
@@ -165,19 +271,28 @@ internal sealed unsafe class VKGraphicsPipeline : GraphicsPipeline
 
             createInfo.PMultisampleState = &multisampleState;
         }
+
+        VkPipeline pipeline;
+        Context.Vk.CreateGraphicsPipelines(Context.Device, default, 1, &createInfo, null, &pipeline).ThrowCode();
+
+        Pipeline = pipeline;
     }
 
     public new VKContext Context => (VKContext)base.Context;
 
     public VkPipeline Pipeline { get; }
 
+    public VkPipelineLayout PipelineLayout { get; }
+
     protected override void SetName(string name)
     {
         Context.SetDebugName(ObjectType.Pipeline, Pipeline.Handle, name);
+        Context.SetDebugName(ObjectType.PipelineLayout, PipelineLayout.Handle, name);
     }
 
     protected override void Destroy()
     {
         Context.Vk.DestroyPipeline(Context.Device, Pipeline, null);
+        Context.Vk.DestroyPipelineLayout(Context.Device, PipelineLayout, null);
     }
 }
