@@ -4,6 +4,8 @@ namespace Graphics.Engine.Descriptions;
 
 public struct ElementDesc
 {
+    public const int AppendAligned = -1;
+
     /// <summary>
     /// The type of the element.
     /// </summary>
@@ -27,7 +29,7 @@ public struct ElementDesc
     public static ElementDesc Default(ElementSemanticType Semantic,
                                       ElementFormat format,
                                       uint semanticIndex = 0,
-                                      int offset = -1)
+                                      int offset = AppendAligned)
     {
         return new()
         {

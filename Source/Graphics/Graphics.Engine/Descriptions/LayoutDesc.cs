@@ -5,9 +5,9 @@ namespace Graphics.Engine.Descriptions;
 public struct LayoutDesc
 {
     /// <summary>
-    /// A array of individual vertex elements comprising a single vertex.
+    /// A collection of individual vertex elements comprising a single vertex.
     /// </summary>
-    public ElementDesc[] Elements { get; set; }
+    public List<ElementDesc> Elements { get; set; }
 
     /// <summary>
     /// The frequency with which the vertex function fetches attribute data.
@@ -25,24 +25,28 @@ public struct LayoutDesc
     /// </summary>
     public uint Stride { get; set; }
 
-    public static LayoutDesc Default(VertexStepFunction stepFunction = VertexStepFunction.PerVertexData,
-                                     uint stepRate = 0,
-                                     params ElementDesc[] elements)
+    public LayoutDesc Add(ElementDesc element)
     {
-        uint stride = 0;
-        for (int i = 0; i < elements.Length; i++)
+        if (element.Offset == ElementDesc.AppendAligned)
         {
-            elements[i].Offset = (int)stride;
-
-            stride += GetFormatSizeInBytes(elements[i].Format);
+            element.Offset = (int)Stride;
         }
 
+        Elements.Add(element);
+        Stride += GetFormatSizeInBytes(element.Format);
+
+        return this;
+    }
+
+    public static LayoutDesc Default(VertexStepFunction stepFunction = VertexStepFunction.PerVertexData,
+                                     uint stepRate = 0)
+    {
         return new()
         {
-            Elements = elements,
+            Elements = [],
             StepFunction = stepFunction,
             StepRate = stepRate,
-            Stride = stride
+            Stride = 0
         };
     }
 

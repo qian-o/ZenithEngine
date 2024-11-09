@@ -35,6 +35,7 @@ public struct GraphicsPipelineDesc
     public OutputDesc Outputs { get; set; }
 
     public static GraphicsPipelineDesc Default(GraphicsShaderDesc shaders,
+                                               InputLayouts inputLayouts,
                                                OutputDesc outputs,
                                                params ResourceLayout[] resourceLayouts)
     {
@@ -42,6 +43,7 @@ public struct GraphicsPipelineDesc
         {
             RenderStates = RenderStateDesc.Default(),
             Shaders = shaders,
+            InputLayouts = inputLayouts,
             ResourceLayouts = resourceLayouts,
             PrimitiveTopology = PrimitiveTopology.TriangleList,
             Outputs = outputs
