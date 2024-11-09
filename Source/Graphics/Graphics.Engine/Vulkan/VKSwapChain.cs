@@ -102,8 +102,7 @@ internal sealed unsafe class VKSwapChain : SwapChain
             CompositeAlpha = surfaceCapabilities.SupportedCompositeAlpha,
             PresentMode = ChooseSwapPresentMode(presentModes, Desc.VSync),
             ImageSharingMode = SharingMode.Exclusive,
-            Clipped = Vk.True,
-            OldSwapchain = default
+            Clipped = Vk.True
         };
 
         SwapchainKHR swapchain;
