@@ -243,7 +243,6 @@ public unsafe class ImGuiController : DisposableObject
             io.AddMouseButtonEvent((int)ImGuiMouseButton.Left, WindowManager.IsMouseButtonDown(MouseButton.Left));
             io.AddMouseButtonEvent((int)ImGuiMouseButton.Right, WindowManager.IsMouseButtonDown(MouseButton.Right));
             io.AddMouseButtonEvent((int)ImGuiMouseButton.Middle, WindowManager.IsMouseButtonDown(MouseButton.Middle));
-            io.AddMouseButtonEvent((int)ImGuiMouseButton.Count, WindowManager.IsMouseButtonDown(MouseButton.Button4));
 
             Vector2D<int> position = WindowManager.GetMousePosition();
 

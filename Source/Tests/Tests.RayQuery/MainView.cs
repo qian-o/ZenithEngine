@@ -112,7 +112,7 @@ internal sealed unsafe class MainView : View
     [InlineArray(127)]
     private struct PixelOffsets
     {
-        private Vector2 _element0;
+        public Vector2 Element0;
     }
     #endregion
 
