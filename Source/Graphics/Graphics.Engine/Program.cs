@@ -13,20 +13,22 @@ using Context context = Context.Create(Backend.Vulkan);
 
 context.CreateDevice(true);
 
+CommandProcessor commandProcessor = context.Factory.CreateCommandProcessor();
+
 SwapChain swapChain = null!;
 
 SdlWindow window = new();
-window.Loaded += Window_Loaded;
-window.Update += Window_Update;
-window.Render += Window_Render;
-window.SizeChanged += Window_SizeChanged;
-window.Unloaded += Window_Unloaded;
+window.Loaded += Loaded;
+window.Update += Update;
+window.Render += Render;
+window.SizeChanged += SizeChanged;
+window.Unloaded += Unloaded;
 
 window.Show();
 
 WindowManager.Loop();
 
-void Window_Loaded(object? sender, EventArgs e)
+void Loaded(object? sender, EventArgs e)
 {
     SwapChainDesc swapChainDesc = SwapChainDesc.Default(window.Surface);
     swapChain = context.Factory.CreateSwapChain(in swapChainDesc);
@@ -34,20 +36,34 @@ void Window_Loaded(object? sender, EventArgs e)
     Console.WriteLine("Initialization completed.");
 }
 
-void Window_Update(object? sender, TimeEventArgs e)
+void Update(object? sender, TimeEventArgs e)
 {
 }
 
-void Window_Render(object? sender, TimeEventArgs e)
+void Render(object? sender, TimeEventArgs e)
 {
+    CommandBuffer commandBuffer = commandProcessor.CommandBuffer();
+
+    commandBuffer.Begin();
+
+    // commandBuffer.SetFramebuffer(swapChain.Framebuffer);
+    // record commands
+
+    commandBuffer.End();
+    commandBuffer.Commit();
+
+    commandProcessor.Submit();
+    commandProcessor.WaitIdle();
+
+    swapChain.Present();
 }
 
-void Window_SizeChanged(object? sender, ValueEventArgs<Vector2D<int>> e)
+void SizeChanged(object? sender, ValueEventArgs<Vector2D<int>> e)
 {
     swapChain.Resize();
 }
 
-void Window_Unloaded(object? sender, EventArgs e)
+void Unloaded(object? sender, EventArgs e)
 {
     swapChain.Dispose();
 }
