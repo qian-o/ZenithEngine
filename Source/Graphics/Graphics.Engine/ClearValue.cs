@@ -5,7 +5,7 @@ namespace Graphics.Engine;
 
 public struct ClearValue
 {
-    public readonly static ClearValue None = new()
+    public static readonly ClearValue None = new()
     {
         ColorValues = new Vector4[1],
         Depth = 1.0f,
@@ -13,7 +13,7 @@ public struct ClearValue
         Options = ClearOptions.None
     };
 
-    public readonly static ClearValue Default = new()
+    public static readonly ClearValue Default = new()
     {
         ColorValues = new Vector4[1],
         Depth = 1.0f,
