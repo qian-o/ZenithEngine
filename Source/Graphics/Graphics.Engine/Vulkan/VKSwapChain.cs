@@ -76,6 +76,8 @@ internal sealed unsafe class VKSwapChain : SwapChain
         DestroySwapChain();
 
         Fence.Dispose();
+
+        Context.KhrSurface.DestroySurface(Context.Instance, Surface, null);
     }
 
     private void InitSwapChain()
@@ -134,8 +136,7 @@ internal sealed unsafe class VKSwapChain : SwapChain
             Clipped = true
         };
 
-        SwapchainKHR swapchain;
-        Context.KhrSwapchain.CreateSwapchain(Context.Device, &createInfo, null, &swapchain).ThrowCode();
+        Context.KhrSwapchain.CreateSwapchain(Context.Device, &createInfo, null, out swapchain).ThrowCode();
 
         uint imageCount;
         Context.KhrSwapchain.GetSwapchainImages(Context.Device, swapchain, &imageCount, null);

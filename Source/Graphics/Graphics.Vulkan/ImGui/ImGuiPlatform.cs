@@ -127,7 +127,7 @@ public unsafe class ImGuiPlatform : DisposableObject
 
             SwapchainDescription swapchainDescription = new()
             {
-                Target = _window.VkSurface!,
+                Target = _window.Surface!,
                 DepthFormat = _graphicsDevice.GetBestDepthFormat()
             };
 

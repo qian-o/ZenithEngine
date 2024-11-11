@@ -39,7 +39,7 @@ internal sealed unsafe class Program
     {
         context = new();
         device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
-        swapchain = device.Factory.CreateSwapchain(new SwapchainDescription(mainWindow.VkSurface!, device.GetBestDepthFormat()));
+        swapchain = device.Factory.CreateSwapchain(new SwapchainDescription(mainWindow.Surface!, device.GetBestDepthFormat()));
         imGuiController = new(mainWindow,
                               () => new SdlWindow(),
                               device,
