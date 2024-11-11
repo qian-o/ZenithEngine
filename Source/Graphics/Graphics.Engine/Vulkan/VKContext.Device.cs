@@ -16,12 +16,6 @@ internal unsafe partial class VKContext
 
     public uint TransferFamilyIndex { get; private set; }
 
-    public VkQueue GraphicsQueue { get; private set; }
-
-    public VkQueue ComputeQueue { get; private set; }
-
-    public VkQueue TransferQueue { get; private set; }
-
     public KhrSwapchain KhrSwapchain { get; private set; } = null!;
 
     public KhrRayTracingPipeline? KhrRayTracingPipeline { get; private set; }
@@ -100,19 +94,7 @@ internal unsafe partial class VKContext
         VkDevice device;
         Vk.CreateDevice(PhysicalDevice, &createInfo, null, &device).ThrowCode();
 
-        VkQueue graphicsQueue;
-        Vk.GetDeviceQueue(device, GraphicsFamilyIndex, 0, &graphicsQueue);
-
-        VkQueue computeQueue;
-        Vk.GetDeviceQueue(device, ComputeFamilyIndex, 0, &computeQueue);
-
-        VkQueue transferQueue;
-        Vk.GetDeviceQueue(device, TransferFamilyIndex, 0, &transferQueue);
-
         Device = device;
-        GraphicsQueue = graphicsQueue;
-        ComputeQueue = computeQueue;
-        TransferQueue = transferQueue;
         KhrSwapchain = Vk.GetExtension<KhrSwapchain>(Instance, Device);
         KhrRayTracingPipeline = extensions.Contains(KhrRayTracingPipeline.ExtensionName) ? Vk.GetExtension<KhrRayTracingPipeline>(Instance, Device) : null;
         KhrAccelerationStructure = extensions.Contains(KhrAccelerationStructure.ExtensionName) ? Vk.GetExtension<KhrAccelerationStructure>(Instance, Device) : null;

@@ -9,6 +9,7 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKSwapChain : SwapChain
 {
+    private VkQueue queue;
     private SwapchainKHR swapchain;
     private Texture? depthStencilTarget;
     private FrameBuffer[] frameBuffers = [];
@@ -46,7 +47,7 @@ internal sealed unsafe class VKSwapChain : SwapChain
             PImageIndices = &imageIndex
         };
 
-        Result result = Context.KhrSwapchain.QueuePresent(Context.GraphicsQueue, &presentInfo);
+        Result result = Context.KhrSwapchain.QueuePresent(queue, &presentInfo);
 
         if (result == Result.ErrorOutOfDateKhr)
         {
@@ -82,6 +83,11 @@ internal sealed unsafe class VKSwapChain : SwapChain
 
     private void InitSwapChain()
     {
+        if (queue.Handle == default)
+        {
+            Context.Vk.GetDeviceQueue(Context.Device, Context.GraphicsFamilyIndex, 0, queue.AsPointer());
+        }
+
         DestroySwapChain();
 
         SurfaceCapabilitiesKHR surfaceCapabilities;

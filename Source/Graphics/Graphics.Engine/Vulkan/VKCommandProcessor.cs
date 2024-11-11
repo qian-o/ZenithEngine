@@ -1,4 +1,5 @@
-﻿using Graphics.Engine.Enums;
+﻿using Graphics.Core.Helpers;
+using Graphics.Engine.Enums;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Engine.Vulkan;
@@ -7,6 +8,7 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
 {
     private readonly Queue<VKCommandBuffer> availableBuffers = [];
 
+    private VkQueue queue;
     private VKCommandBuffer[] waitSubmitBuffers = [];
     private int waitSubmitBufferCount;
 
@@ -20,20 +22,12 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
             _ => throw new NotSupportedException()
         };
 
-        Queue = type switch
-        {
-            CommandProcessorType.Graphics => Context.GraphicsQueue,
-            CommandProcessorType.Compute => Context.ComputeQueue,
-            CommandProcessorType.Transfer => Context.TransferQueue,
-            _ => throw new NotSupportedException()
-        };
+        Context.Vk.GetDeviceQueue(Context.Device, FamilyIndex, 0, queue.AsPointer());
     }
 
     public new VKContext Context => (VKContext)base.Context;
 
     public uint FamilyIndex { get; }
-
-    public VkQueue Queue { get; }
 
     public override CommandBuffer CommandBuffer()
     {
@@ -69,7 +63,7 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
                 PWaitDstStageMask = &pipelineStageFlags
             };
 
-            Context.Vk.QueueSubmit(Queue, 1, &submitInfo, default);
+            Context.Vk.QueueSubmit(queue, 1, &submitInfo, default);
 
             availableBuffers.Enqueue(vKCommandBuffer);
         }
@@ -80,7 +74,7 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
 
     public override void WaitIdle()
     {
-        Context.Vk.QueueWaitIdle(Queue);
+        Context.Vk.QueueWaitIdle(queue);
     }
 
     public void CommitCommandBuffer(VKCommandBuffer commandBuffer)
@@ -95,7 +89,7 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
 
     protected override void SetName(string name)
     {
-        Context.SetDebugName(ObjectType.Queue, (ulong)Queue.Handle, name);
+        Context.SetDebugName(ObjectType.Queue, (ulong)queue.Handle, name);
     }
 
     protected override void Destroy()
