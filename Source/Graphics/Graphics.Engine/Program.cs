@@ -9,6 +9,7 @@ using Silk.NET.Maths;
 // 2. Reduce unnecessary assignment operations.
 // 3. Use slang instead of HLSL.
 // 4. Silk.NET 3.0 use VkStruct == NULL.
+// 5. Use Silk.NET.Maths instead of System.Numerics.
 
 using Context context = Context.Create(Backend.Vulkan);
 
