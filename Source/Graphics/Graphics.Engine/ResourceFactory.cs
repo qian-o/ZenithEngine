@@ -1,4 +1,5 @@
 ﻿using Graphics.Engine.Descriptions;
+using Graphics.Engine.Enums;
 
 namespace Graphics.Engine;
 
@@ -25,4 +26,6 @@ public abstract class ResourceFactory(Context context)
     public abstract FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc);
 
     public abstract GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc);
+
+    public abstract CommandProcessor CreateCommandProcessor(CommandProcessorType type = CommandProcessorType.Graphics);
 }

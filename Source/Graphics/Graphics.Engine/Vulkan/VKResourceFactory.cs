@@ -1,4 +1,5 @@
 ﻿using Graphics.Engine.Descriptions;
+using Graphics.Engine.Enums;
 
 namespace Graphics.Engine.Vulkan;
 
@@ -52,5 +53,10 @@ internal sealed class VKResourceFactory(Context context) : ResourceFactory(conte
     public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc)
     {
         return new VKGraphicsPipeline(Context, in desc);
+    }
+
+    public override CommandProcessor CreateCommandProcessor(CommandProcessorType type = CommandProcessorType.Graphics)
+    {
+        return new VKCommandProcessor(Context, type);
     }
 }
