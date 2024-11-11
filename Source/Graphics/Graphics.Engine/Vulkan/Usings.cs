@@ -1,4 +1,6 @@
 ﻿global using VkBuffer = Silk.NET.Vulkan.Buffer;
+global using VkCommandBuffer = Silk.NET.Vulkan.CommandBuffer;
+global using VkCommandPool = Silk.NET.Vulkan.CommandPool;
 global using VkDescriptorPool = Silk.NET.Vulkan.DescriptorPool;
 global using VkDescriptorSet = Silk.NET.Vulkan.DescriptorSet;
 global using VkDescriptorSetLayout = Silk.NET.Vulkan.DescriptorSetLayout;

@@ -10,6 +10,12 @@ internal unsafe partial class VKContext
 {
     public VkDevice Device { get; private set; }
 
+    public uint GraphicsFamilyIndex { get; private set; }
+
+    public uint ComputeFamilyIndex { get; private set; }
+
+    public uint TransferFamilyIndex { get; private set; }
+
     public VkQueue GraphicsQueue { get; private set; }
 
     public VkQueue ComputeQueue { get; private set; }
@@ -28,9 +34,9 @@ internal unsafe partial class VKContext
     {
         using Allocator allocator = new();
 
-        uint graphicsIndex = GetGraphicsQueueFamilyIndex(QueueFlags.GraphicsBit);
-        uint computeIndex = GetGraphicsQueueFamilyIndex(QueueFlags.ComputeBit);
-        uint transferIndex = GetGraphicsQueueFamilyIndex(QueueFlags.TransferBit);
+        GraphicsFamilyIndex = GetGraphicsQueueFamilyIndex(QueueFlags.GraphicsBit);
+        ComputeFamilyIndex = GetGraphicsQueueFamilyIndex(QueueFlags.ComputeBit);
+        TransferFamilyIndex = GetGraphicsQueueFamilyIndex(QueueFlags.TransferBit);
 
         string[] extensions = GetDeviceExtensions();
 
@@ -45,7 +51,7 @@ internal unsafe partial class VKContext
         {
             float queuePriorities = 1.0f;
 
-            HashSet<uint> queueFamilies = [graphicsIndex, computeIndex, transferIndex];
+            HashSet<uint> queueFamilies = [GraphicsFamilyIndex, ComputeFamilyIndex, TransferFamilyIndex];
 
             DeviceQueueCreateInfo[] deviceQueueCreateInfos = new DeviceQueueCreateInfo[queueFamilies.Count];
 
@@ -95,13 +101,13 @@ internal unsafe partial class VKContext
         Vk.CreateDevice(PhysicalDevice, &createInfo, null, &device).ThrowCode();
 
         VkQueue graphicsQueue;
-        Vk.GetDeviceQueue(device, graphicsIndex, 0, &graphicsQueue);
+        Vk.GetDeviceQueue(device, GraphicsFamilyIndex, 0, &graphicsQueue);
 
         VkQueue computeQueue;
-        Vk.GetDeviceQueue(device, computeIndex, 0, &computeQueue);
+        Vk.GetDeviceQueue(device, ComputeFamilyIndex, 0, &computeQueue);
 
         VkQueue transferQueue;
-        Vk.GetDeviceQueue(device, transferIndex, 0, &transferQueue);
+        Vk.GetDeviceQueue(device, TransferFamilyIndex, 0, &transferQueue);
 
         Device = device;
         GraphicsQueue = graphicsQueue;
