@@ -34,10 +34,6 @@ internal unsafe partial class VKContext
     {
         using Allocator allocator = new();
 
-        GraphicsFamilyIndex = GetGraphicsQueueFamilyIndex(QueueFlags.GraphicsBit);
-        ComputeFamilyIndex = GetGraphicsQueueFamilyIndex(QueueFlags.ComputeBit);
-        TransferFamilyIndex = GetGraphicsQueueFamilyIndex(QueueFlags.TransferBit);
-
         string[] extensions = GetDeviceExtensions();
 
         DeviceCreateInfo createInfo = new()
@@ -51,16 +47,20 @@ internal unsafe partial class VKContext
         {
             float queuePriorities = 1.0f;
 
-            HashSet<uint> queueFamilies = [GraphicsFamilyIndex, ComputeFamilyIndex, TransferFamilyIndex];
+            GraphicsFamilyIndex = GetGraphicsQueueFamilyIndex(QueueFlags.GraphicsBit);
+            ComputeFamilyIndex = GetGraphicsQueueFamilyIndex(QueueFlags.ComputeBit);
+            TransferFamilyIndex = GetGraphicsQueueFamilyIndex(QueueFlags.TransferBit);
 
-            DeviceQueueCreateInfo[] deviceQueueCreateInfos = new DeviceQueueCreateInfo[queueFamilies.Count];
+            HashSet<uint> queueFamilyIndices = [GraphicsFamilyIndex, ComputeFamilyIndex, TransferFamilyIndex];
 
-            for (int i = 0; i < queueFamilies.Count; i++)
+            DeviceQueueCreateInfo[] deviceQueueCreateInfos = new DeviceQueueCreateInfo[queueFamilyIndices.Count];
+
+            for (int i = 0; i < queueFamilyIndices.Count; i++)
             {
                 DeviceQueueCreateInfo deviceQueueCreateInfo = new()
                 {
                     SType = StructureType.DeviceQueueCreateInfo,
-                    QueueFamilyIndex = queueFamilies.ElementAt(i),
+                    QueueFamilyIndex = queueFamilyIndices.ElementAt(i),
                     QueueCount = 1,
                     PQueuePriorities = &queuePriorities
                 };
