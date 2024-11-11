@@ -9,8 +9,9 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
     private readonly Queue<VKCommandBuffer> availableBuffers = [];
 
     private VkQueue queue;
-    private VKCommandBuffer[] waitSubmitBuffers = [];
+
     private int waitSubmitBufferCount;
+    private VKCommandBuffer[] waitSubmitBuffers = [];
 
     public VKCommandProcessor(Context context, CommandProcessorType type) : base(context)
     {
@@ -68,8 +69,8 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
             availableBuffers.Enqueue(vKCommandBuffer);
         }
 
-        Array.Clear(waitSubmitBuffers, 0, waitSubmitBufferCount);
         waitSubmitBufferCount = 0;
+        Array.Clear(waitSubmitBuffers, 0, waitSubmitBuffers.Length);
     }
 
     public override void WaitIdle()

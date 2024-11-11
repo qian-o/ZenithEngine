@@ -44,14 +44,23 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
     public override void Begin()
     {
+        CommandBufferBeginInfo beginInfo = new()
+        {
+            SType = StructureType.CommandBufferBeginInfo,
+            Flags = CommandBufferUsageFlags.OneTimeSubmitBit
+        };
+
+        Context.Vk.BeginCommandBuffer(CommandBuffer, &beginInfo).ThrowCode();
     }
 
     public override void Reset()
     {
+        Context.Vk.ResetCommandBuffer(CommandBuffer, CommandBufferResetFlags.None).ThrowCode();
     }
 
     public override void Commit()
     {
+        Processor.CommitCommandBuffer(this);
     }
 
     protected override void SetName(string name)
@@ -71,5 +80,6 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
     protected override void EndInternal()
     {
+        Context.Vk.EndCommandBuffer(CommandBuffer).ThrowCode();
     }
 }

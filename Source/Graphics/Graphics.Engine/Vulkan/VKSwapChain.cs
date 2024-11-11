@@ -10,7 +10,9 @@ namespace Graphics.Engine.Vulkan;
 internal sealed unsafe class VKSwapChain : SwapChain
 {
     private VkQueue queue;
+
     private SwapchainKHR swapchain;
+
     private Texture? depthStencilTarget;
     private FrameBuffer[] frameBuffers = [];
 
