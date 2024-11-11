@@ -7,6 +7,8 @@ public abstract class SwapChain(Context context,
 {
     public SwapChainDesc Desc { get; } = desc;
 
+    public abstract FrameBuffer FrameBuffer { get; }
+
     public abstract void Present();
 
     public abstract void Resize();

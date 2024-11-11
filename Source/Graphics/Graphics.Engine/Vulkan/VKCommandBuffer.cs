@@ -1,4 +1,6 @@
-﻿using Graphics.Engine.Vulkan.Helpers;
+﻿using Graphics.Engine.Enums;
+using Graphics.Engine.Vulkan.Helpers;
+using Silk.NET.Maths;
 using Silk.NET.Vulkan;
 
 namespace Graphics.Engine.Vulkan;
@@ -61,6 +63,78 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
     public override void Commit()
     {
         Processor.CommitCommandBuffer(this);
+    }
+
+    public override void BeginRendering(FrameBuffer frameBuffer, ClearValue clearValue)
+    {
+        RenderingInfo renderingInfo = frameBuffer.VK().RenderingInfo;
+
+        Context.Vk.CmdBeginRendering(CommandBuffer, &renderingInfo);
+    }
+
+    public override void EndRendering()
+    {
+        Context.Vk.CmdEndRendering(CommandBuffer);
+    }
+
+    public override void SetViewports(Viewport[] viewports)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void SetScissorRectangles(Rectangle<int>[] scissors)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void SetPipeline(Pipeline pipeline)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void SetVertexBuffer(uint slot, Buffer buffer, uint offset = 0)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void SetIndexBuffer(Buffer buffer, IndexFormat format = IndexFormat.U16Bit, uint offset = 0)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void SetResourceSet(ResourceSet resourceSet, uint index = 0, uint[]? constantBufferOffsets = null)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void DrawInstanced(uint vertexCountPerInstance, uint instanceCount, uint startVertexLocation = 0, uint startInstanceLocation = 0)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void DrawInstancedIndirect(Buffer argBuffer, uint offset, uint drawCount, uint stride)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void DrawIndexed(uint indexCount, uint startIndexLocation = 0, uint baseVertexLocation = 0)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void DrawIndexedInstanced(uint indexCountPerInstance, uint instanceCount, uint startIndexLocation = 0, uint baseVertexLocation = 0, uint startInstanceLocation = 0)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void DrawIndexedInstancedIndirect(Buffer argBuffer, uint offset, uint drawCount, uint stride)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ)
+    {
+        throw new NotImplementedException();
     }
 
     protected override void SetName(string name)

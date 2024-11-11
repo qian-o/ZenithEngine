@@ -8,6 +8,7 @@ using Silk.NET.Maths;
 // 1. Use Dynamic Rendering instead of RenderPass.
 // 2. Reduce unnecessary assignment operations.
 // 3. Use slang instead of HLSL.
+// 4. Silk.NET 3.0 use VkStruct == NULL.
 
 using Context context = Context.Create(Backend.Vulkan);
 
@@ -45,10 +46,11 @@ void Render(object? sender, TimeEventArgs e)
     CommandBuffer commandBuffer = commandProcessor.CommandBuffer();
 
     commandBuffer.Begin();
+    commandBuffer.BeginRendering(swapChain.FrameBuffer, ClearValue.Default);
 
-    // commandBuffer.SetFramebuffer(swapChain.Framebuffer);
-    // record commands
+    // render code...
 
+    commandBuffer.EndRendering();
     commandBuffer.End();
     commandBuffer.Commit();
 

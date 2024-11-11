@@ -34,7 +34,7 @@ internal sealed unsafe class VKSwapChain : SwapChain
 
     public SurfaceKHR Surface { get; }
 
-    public FrameBuffer FrameBuffer => frameBuffers[currentImageIndex];
+    public override FrameBuffer FrameBuffer => frameBuffers[currentImageIndex];
 
     public override void Present()
     {
