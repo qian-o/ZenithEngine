@@ -136,7 +136,7 @@ internal sealed unsafe class VKSwapChain : SwapChain
             Clipped = true
         };
 
-        Context.KhrSwapchain.CreateSwapchain(Context.Device, &createInfo, null, out swapchain).ThrowCode();
+        Context.KhrSwapchain.CreateSwapchain(Context.Device, &createInfo, null, swapchain.AsPointer()).ThrowCode();
 
         uint imageCount;
         Context.KhrSwapchain.GetSwapchainImages(Context.Device, swapchain, &imageCount, null);
