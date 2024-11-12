@@ -10,7 +10,8 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKCommandBuffer : CommandBuffer
 {
-    private VKFrameBuffer? current;
+    private VKFrameBuffer? activeFrameBuffer;
+    private Pipeline? activePipeline;
 
     public VKCommandBuffer(Context context, VKCommandProcessor processor) : base(context)
     {
@@ -59,7 +60,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
         Context.Vk.BeginCommandBuffer(CommandBuffer, &beginInfo).ThrowCode();
 
-        current = null;
+        activeFrameBuffer = null;
     }
 
     public override void Reset()
@@ -74,13 +75,13 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
     public override void BeginRendering(FrameBuffer frameBuffer, ClearValue clearValue)
     {
-        current?.TransitionToFinalLayout(CommandBuffer);
+        activeFrameBuffer?.TransitionToFinalLayout(CommandBuffer);
 
-        current = frameBuffer.VK();
+        activeFrameBuffer = frameBuffer.VK();
 
-        current.TransitionToIntermedialLayout(CommandBuffer);
+        activeFrameBuffer.TransitionToIntermedialLayout(CommandBuffer);
 
-        RenderingInfo renderingInfo = current.RenderingInfo;
+        RenderingInfo renderingInfo = activeFrameBuffer.RenderingInfo;
 
         Context.Vk.CmdBeginRendering(CommandBuffer, &renderingInfo);
 
@@ -90,7 +91,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
         if (clearColor)
         {
-            for (int i = 0; i < current.ColorTargets.Length; i++)
+            for (int i = 0; i < activeFrameBuffer.ColorTargets.Length; i++)
             {
                 Vector4 color = clearValue.ColorValues[i];
 
@@ -110,7 +111,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
                     }
                 };
 
-                Texture colorTarget = current.ColorTargets[i].Desc.Target;
+                Texture colorTarget = activeFrameBuffer.ColorTargets[i].Desc.Target;
 
                 ClearRect clearRect = new()
                 {
@@ -135,7 +136,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
             }
         }
 
-        if (current.DepthStencilTarget != null && (clearDepth || clearStencil))
+        if (activeFrameBuffer.DepthStencilTarget != null && (clearDepth || clearStencil))
         {
             ImageAspectFlags aspectMask = 0;
 
@@ -162,7 +163,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
                 }
             };
 
-            Texture depthStencilTarget = current.DepthStencilTarget.Desc.Target;
+            Texture depthStencilTarget = activeFrameBuffer.DepthStencilTarget.Desc.Target;
 
             ClearRect clearRect = new()
             {
@@ -194,7 +195,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
     {
         Context.Vk.CmdEndRendering(CommandBuffer);
 
-        current?.TransitionToFinalLayout(CommandBuffer);
+        activeFrameBuffer?.TransitionToFinalLayout(CommandBuffer);
     }
 
     public override void SetViewports(Viewport[] viewports)
@@ -233,68 +234,116 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
     public override void SetFullViewports(float minDepth = 0, float maxDepth = 1)
     {
-        Viewport[] viewports = new Viewport[current!.ColorTargets.Length];
-        Array.Fill(viewports, new Viewport(0, 0, current.Width, current.Height, minDepth, maxDepth));
+        Viewport[] viewports = new Viewport[activeFrameBuffer!.ColorTargets.Length];
+        Array.Fill(viewports, new Viewport(0, 0, activeFrameBuffer.Width, activeFrameBuffer.Height, minDepth, maxDepth));
 
         SetViewports(viewports);
     }
 
     public override void SetFullScissorRectangles()
     {
-        Rectangle<int>[] scissors = new Rectangle<int>[current!.ColorTargets.Length];
-        Array.Fill(scissors, new Rectangle<int>(0, 0, (int)current.Width, (int)current.Height));
+        Rectangle<int>[] scissors = new Rectangle<int>[activeFrameBuffer!.ColorTargets.Length];
+        Array.Fill(scissors, new Rectangle<int>(0, 0, (int)activeFrameBuffer.Width, (int)activeFrameBuffer.Height));
 
         SetScissorRectangles(scissors);
     }
 
-    public override void SetPipeline(Pipeline pipeline)
+    public override void SetGraphicsPipeline(GraphicsPipeline pipeline)
     {
-        throw new NotImplementedException();
+        Context.Vk.CmdBindPipeline(CommandBuffer, PipelineBindPoint.Graphics, pipeline.VK().Pipeline);
+
+        activePipeline = pipeline;
     }
 
     public override void SetVertexBuffer(uint slot, Buffer buffer, uint offset = 0)
     {
-        throw new NotImplementedException();
+        VkBuffer vkBuffer = buffer.VK().Buffer;
+
+        ulong vkOffset = offset;
+
+        Context.Vk.CmdBindVertexBuffers(CommandBuffer, slot, 1, &vkBuffer, &vkOffset);
     }
 
     public override void SetIndexBuffer(Buffer buffer, IndexFormat format = IndexFormat.U16Bit, uint offset = 0)
     {
-        throw new NotImplementedException();
+        VkBuffer vkBuffer = buffer.VK().Buffer;
+
+        IndexType vkFormat = format switch
+        {
+            IndexFormat.U16Bit => IndexType.Uint16,
+            IndexFormat.U32Bit => IndexType.Uint32,
+            _ => throw new ArgumentOutOfRangeException(nameof(format))
+        };
+
+        Context.Vk.CmdBindIndexBuffer(CommandBuffer, vkBuffer, offset, vkFormat);
     }
 
     public override void SetResourceSet(ResourceSet resourceSet, uint index = 0, uint[]? constantBufferOffsets = null)
     {
-        throw new NotImplementedException();
+        VKResourceSet vKResourceSet = resourceSet.VK();
+
+        foreach (VKTexture texture in vKResourceSet.StorageTextures)
+        {
+            texture.TransitionImageLayout(CommandBuffer, ImageLayout.General);
+        }
+
+        foreach (VKTexture texture in vKResourceSet.Textures)
+        {
+            texture.TransitionImageLayout(CommandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+        }
+
+        VkDescriptorSet descriptorSet = vKResourceSet.DescriptorSet;
+        uint[] offsets = constantBufferOffsets ?? [];
+
+        if (activePipeline is VKGraphicsPipeline graphicsPipeline)
+        {
+            Context.Vk.CmdBindDescriptorSets(CommandBuffer,
+                                             PipelineBindPoint.Graphics,
+                                             graphicsPipeline.PipelineLayout,
+                                             index,
+                                             1,
+                                             &descriptorSet,
+                                             (uint)offsets.Length,
+                                             offsets);
+        }
+        else
+        {
+            throw new InvalidOperationException("The active pipeline type is not supported.");
+        }
     }
 
     public override void DrawInstanced(uint vertexCountPerInstance, uint instanceCount, uint startVertexLocation = 0, uint startInstanceLocation = 0)
     {
-        throw new NotImplementedException();
+        Context.Vk.CmdDraw(CommandBuffer, vertexCountPerInstance, instanceCount, startVertexLocation, startInstanceLocation);
     }
 
     public override void DrawInstancedIndirect(Buffer argBuffer, uint offset, uint drawCount, uint stride)
     {
-        throw new NotImplementedException();
+        VkBuffer vkBuffer = argBuffer.VK().Buffer;
+
+        Context.Vk.CmdDrawIndirect(CommandBuffer, vkBuffer, offset, drawCount, stride);
     }
 
     public override void DrawIndexed(uint indexCount, uint startIndexLocation = 0, uint baseVertexLocation = 0)
     {
-        throw new NotImplementedException();
+        Context.Vk.CmdDrawIndexed(CommandBuffer, indexCount, 1, startIndexLocation, (int)baseVertexLocation, 0);
     }
 
     public override void DrawIndexedInstanced(uint indexCountPerInstance, uint instanceCount, uint startIndexLocation = 0, uint baseVertexLocation = 0, uint startInstanceLocation = 0)
     {
-        throw new NotImplementedException();
+        Context.Vk.CmdDrawIndexed(CommandBuffer, indexCountPerInstance, instanceCount, startIndexLocation, (int)baseVertexLocation, startInstanceLocation);
     }
 
     public override void DrawIndexedInstancedIndirect(Buffer argBuffer, uint offset, uint drawCount, uint stride)
     {
-        throw new NotImplementedException();
+        VkBuffer vkBuffer = argBuffer.VK().Buffer;
+
+        Context.Vk.CmdDrawIndexedIndirect(CommandBuffer, vkBuffer, offset, drawCount, stride);
     }
 
     public override void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ)
     {
-        throw new NotImplementedException();
+        Context.Vk.CmdDispatch(CommandBuffer, groupCountX, groupCountY, groupCountZ);
     }
 
     protected override void SetName(string name)

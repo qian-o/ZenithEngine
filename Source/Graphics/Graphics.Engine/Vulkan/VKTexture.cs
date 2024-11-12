@@ -112,6 +112,12 @@ internal sealed unsafe class VKTexture : Texture
         Layouts[index] = newLayout;
     }
 
+    public void TransitionImageLayout(VkCommandBuffer commandBuffer,
+                                      ImageLayout newLayout)
+    {
+        TransitionImageLayout(commandBuffer, newLayout, 0, Desc.MipLevels, CubeMapFace.PositiveX, 6);
+    }
+
     protected override void SetName(string name)
     {
         Context.SetDebugName(ObjectType.Image, Image.Handle, name);

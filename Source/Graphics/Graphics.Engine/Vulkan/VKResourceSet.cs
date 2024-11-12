@@ -107,6 +107,12 @@ internal sealed unsafe class VKResourceSet : ResourceSet
 
         DescriptorPool = descriptorPool;
         DescriptorSet = descriptorSet;
+        StorageTextures = desc.Resources.Where((res, index) => layout.Desc.Elements[index].Type == ResourceType.TextureReadWrite)
+                                        .Cast<VKTexture>()
+                                        .ToArray();
+        Textures = desc.Resources.Where((res, index) => layout.Desc.Elements[index].Type == ResourceType.Texture)
+                                 .Cast<VKTexture>()
+                                 .ToArray();
     }
 
     public new VKContext Context => (VKContext)base.Context;
@@ -114,6 +120,10 @@ internal sealed unsafe class VKResourceSet : ResourceSet
     public VkDescriptorPool DescriptorPool { get; }
 
     public VkDescriptorSet DescriptorSet { get; }
+
+    public VKTexture[] StorageTextures { get; }
+
+    public VKTexture[] Textures { get; }
 
     protected override void SetName(string name)
     {

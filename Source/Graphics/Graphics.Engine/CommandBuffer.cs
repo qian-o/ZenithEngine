@@ -67,10 +67,10 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     public abstract void SetFullScissorRectangles();
 
     /// <summary>
-    /// Sets a pipeline for this command buffer.
+    /// Sets the graphics pipeline state object for this command buffer.
     /// </summary>
     /// <param name="pipeline"></param>
-    public abstract void SetPipeline(Pipeline pipeline);
+    public abstract void SetGraphicsPipeline(GraphicsPipeline pipeline);
 
     /// <summary>
     /// Sets buffers to the input-assembler stage.
