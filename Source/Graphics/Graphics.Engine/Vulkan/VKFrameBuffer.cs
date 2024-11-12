@@ -101,6 +101,9 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
             PDepthAttachment = hasDepthStencil ? Allocator.Alloc(depthStencilAttachmentInfo!.Value) : null,
             PStencilAttachment = hasDepthStencil ? Allocator.Alloc(depthStencilAttachmentInfo!.Value) : null
         };
+
+        Width = width;
+        Height = height;
     }
 
     public new VKContext Context => (VKContext)base.Context;
@@ -110,6 +113,10 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
     public TextureView? DepthStencilTarget { get; }
 
     public RenderingInfo RenderingInfo { get; }
+
+    public override uint Width { get; }
+
+    public override uint Height { get; }
 
     public void TransitionToIntermedialLayout(VkCommandBuffer commandBuffer)
     {

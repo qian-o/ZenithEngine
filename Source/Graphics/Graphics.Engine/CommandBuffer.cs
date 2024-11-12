@@ -55,6 +55,16 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     public abstract void SetScissorRectangles(Rectangle<int>[] scissors);
 
     /// <summary>
+    /// Sets full viewports for this command buffer.
+    /// </summary>
+    public abstract void SetFullViewports();
+
+    /// <summary>
+    /// Sets full scissor rectangles for this command buffer.
+    /// </summary>
+    public abstract void SetFullScissorRectangles();
+
+    /// <summary>
     /// Sets a pipeline for this command buffer.
     /// </summary>
     /// <param name="pipeline"></param>

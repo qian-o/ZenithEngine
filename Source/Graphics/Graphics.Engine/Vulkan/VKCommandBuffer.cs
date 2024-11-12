@@ -1,8 +1,10 @@
 ﻿using System.Numerics;
+using Graphics.Core.Helpers;
 using Graphics.Engine.Enums;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Maths;
 using Silk.NET.Vulkan;
+using VkViewport = Silk.NET.Vulkan.Viewport;
 
 namespace Graphics.Engine.Vulkan;
 
@@ -108,7 +110,19 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
                 {
                     BaseArrayLayer = 0,
                     LayerCount = 1,
-                    Rect = renderingInfo.RenderArea
+                    Rect = new()
+                    {
+                        Offset = new()
+                        {
+                            X = 0,
+                            Y = 0
+                        },
+                        Extent = new()
+                        {
+                            Width = current.Width,
+                            Height = current.Height
+                        }
+                    }
                 };
 
                 Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
@@ -118,7 +132,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         bool clearDepth = clearValue.Options.HasFlag(ClearOptions.Depth);
         bool clearStencil = clearValue.Options.HasFlag(ClearOptions.Stencil);
 
-        if (frameBuffer.Desc.DepthStencilTarget != null && (clearDepth || clearStencil))
+        if (current.Desc.DepthStencilTarget != null && (clearDepth || clearStencil))
         {
             ImageAspectFlags aspectMask = 0;
 
@@ -149,7 +163,19 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
             {
                 BaseArrayLayer = 0,
                 LayerCount = 1,
-                Rect = renderingInfo.RenderArea
+                Rect = new()
+                {
+                    Offset = new()
+                    {
+                        X = 0,
+                        Y = 0
+                    },
+                    Extent = new()
+                    {
+                        Width = current.Width,
+                        Height = current.Height
+                    }
+                }
             };
 
             Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
@@ -165,12 +191,44 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
     public override void SetViewports(Viewport[] viewports)
     {
-        throw new NotImplementedException();
+        VkViewport[] vkViewports = viewports.Select(viewport => new VkViewport
+        {
+            X = viewport.X,
+            Y = viewport.Y + viewport.Height,
+            Width = viewport.Width,
+            Height = -viewport.Height,
+            MinDepth = viewport.MinDepth,
+            MaxDepth = viewport.MaxDepth
+        }).ToArray();
+
+        Context.Vk.CmdSetViewport(CommandBuffer, 0, (uint)vkViewports.Length, vkViewports.AsPointer());
     }
 
     public override void SetScissorRectangles(Rectangle<int>[] scissors)
     {
-        throw new NotImplementedException();
+        Rect2D[] vkScissors = scissors.Select(scissor => new Rect2D
+        {
+            Offset = new Offset2D
+            {
+                X = scissor.Origin.X,
+                Y = scissor.Origin.Y
+            },
+            Extent = new Extent2D
+            {
+                Width = (uint)scissor.Size.X,
+                Height = (uint)scissor.Size.Y
+            }
+        }).ToArray();
+
+        Context.Vk.CmdSetScissor(CommandBuffer, 0, (uint)vkScissors.Length, vkScissors.AsPointer());
+    }
+
+    public override void SetFullViewports()
+    {
+    }
+
+    public override void SetFullScissorRectangles()
+    {
     }
 
     public override void SetPipeline(Pipeline pipeline)
