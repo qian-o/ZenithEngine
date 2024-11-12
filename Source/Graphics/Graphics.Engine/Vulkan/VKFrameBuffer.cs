@@ -8,6 +8,8 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKFrameBuffer : FrameBuffer
 {
+    private RenderingInfo renderingInfo;
+
     public VKFrameBuffer(Context context,
                          ref readonly FrameBufferDesc desc) : base(context, in desc)
     {
@@ -112,7 +114,7 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
 
     public TextureView? DepthStencilTarget { get; }
 
-    public RenderingInfo RenderingInfo { get; }
+    public ref RenderingInfo RenderingInfo => ref renderingInfo;
 
     public override uint Width { get; }
 

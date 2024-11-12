@@ -80,9 +80,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
         current.TransitionToIntermedialLayout(CommandBuffer);
 
-        RenderingInfo renderingInfo = current.RenderingInfo;
-
-        Context.Vk.CmdBeginRendering(CommandBuffer, &renderingInfo);
+        Context.Vk.CmdBeginRendering(CommandBuffer, in current.RenderingInfo);
 
         if (clearValue.Options.HasFlag(ClearOptions.Color))
         {
@@ -132,7 +130,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         bool clearDepth = clearValue.Options.HasFlag(ClearOptions.Depth);
         bool clearStencil = clearValue.Options.HasFlag(ClearOptions.Stencil);
 
-        if (current.Desc.DepthStencilTarget != null && (clearDepth || clearStencil))
+        if (current.DepthStencilTarget != null && (clearDepth || clearStencil))
         {
             ImageAspectFlags aspectMask = 0;
 
