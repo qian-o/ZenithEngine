@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using Graphics.Core.Helpers;
 using Graphics.Engine.Enums;
+using Graphics.Engine.Helpers;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Maths;
 using Silk.NET.Vulkan;
@@ -90,7 +91,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
         if (clearColor)
         {
-            for (int i = 0; i < clearValue.ColorValues.Length; i++)
+            for (int i = 0; i < current.ColorTargets.Length; i++)
             {
                 Vector4 color = clearValue.ColorValues[i];
 
@@ -110,6 +111,14 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
                     }
                 };
 
+                Texture colorTarget = current.ColorTargets[i].Desc.Target;
+
+                Utils.GetMipDimensions(colorTarget.Desc.Width,
+                                       colorTarget.Desc.Height,
+                                       current.ColorTargets[i].Desc.BaseMipLevel,
+                                       out uint width,
+                                       out uint height);
+
                 ClearRect clearRect = new()
                 {
                     BaseArrayLayer = 0,
@@ -123,8 +132,8 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
                         },
                         Extent = new()
                         {
-                            Width = current.Width,
-                            Height = current.Height
+                            Width = width,
+                            Height = height
                         }
                     }
                 };
@@ -160,6 +169,14 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
                 }
             };
 
+            Texture depthStencilTarget = current.DepthStencilTarget.Desc.Target;
+
+            Utils.GetMipDimensions(depthStencilTarget.Desc.Width,
+                                   depthStencilTarget.Desc.Height,
+                                   current.DepthStencilTarget.Desc.BaseMipLevel,
+                                   out uint width,
+                                   out uint height);
+
             ClearRect clearRect = new()
             {
                 BaseArrayLayer = 0,
@@ -173,8 +190,8 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
                     },
                     Extent = new()
                     {
-                        Width = current.Width,
-                        Height = current.Height
+                        Width = width,
+                        Height = height
                     }
                 }
             };
