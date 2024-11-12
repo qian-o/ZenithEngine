@@ -19,6 +19,11 @@ public abstract class Context : DisposableObject
                                           uint sourceSizeInBytes,
                                           uint destinationOffsetInBytes = 0);
 
+    public abstract void UpdateTextureData(Texture texture,
+                                           nint source,
+                                           uint sourceSizeInBytes,
+                                           uint destinationOffsetInBytes = 0);
+
     public abstract MappedResource MapMemory(Buffer buffer, MapMode mode);
 
     public abstract void UnmapMemory(Buffer buffer);

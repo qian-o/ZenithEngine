@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Graphics.Core.Helpers;
+﻿using Graphics.Core.Helpers;
 using Graphics.Engine.Enums;
 using Graphics.Engine.Exceptions;
 using Graphics.Engine.Vulkan.Helpers;
@@ -35,42 +34,26 @@ internal unsafe partial class VKContext
                                           uint sourceSizeInBytes,
                                           uint destinationOffsetInBytes = 0)
     {
-        if (sourceSizeInBytes + destinationOffsetInBytes > buffer.Desc.SizeInBytes)
-        {
-            throw new BackendException("Source size is too large.");
-        }
+        CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
 
-        if (buffer.Desc.Usage.HasFlag(BufferUsage.Dynamic))
-        {
-            MappedResource mappedResource = MapMemory(buffer, MapMode.Write);
+        commandBuffer.Begin();
 
-            Unsafe.CopyBlock((void*)(mappedResource.Data + destinationOffsetInBytes),
-                             (void*)source,
-                             sourceSizeInBytes);
+        commandBuffer.UpdateBufferData(buffer, source, sourceSizeInBytes, destinationOffsetInBytes);
 
-            UnmapMemory(buffer);
-        }
-        else
-        {
-            Buffer stagingBuffer = BufferPool.Buffer(sourceSizeInBytes);
+        commandBuffer.End();
 
-            UpdateBufferData(stagingBuffer, source, sourceSizeInBytes);
+        commandBuffer.Commit();
 
-            CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
+        CommandProcessor.Submit();
+        CommandProcessor.WaitIdle();
+    }
 
-            commandBuffer.Begin();
-
-            commandBuffer.CopyBuffer(stagingBuffer, buffer, sourceSizeInBytes, destinationOffsetInBytes);
-
-            commandBuffer.End();
-
-            commandBuffer.Commit();
-
-            CommandProcessor.Submit();
-            CommandProcessor.WaitIdle();
-
-            BufferPool.Return(stagingBuffer);
-        }
+    public override void UpdateTextureData(Texture texture,
+                                           nint source,
+                                           uint sourceSizeInBytes,
+                                           uint destinationOffsetInBytes = 0)
+    {
+        // TODO: Implement
     }
 
     public override MappedResource MapMemory(Buffer buffer, MapMode mode)

@@ -73,40 +73,25 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         Processor.CommitCommandBuffer(this);
     }
 
+    public override void UpdateBufferData(Buffer buffer,
+                                          nint source,
+                                          uint sourceSizeInBytes,
+                                          uint destinationOffsetInBytes = 0)
+    {
+        VKBuffer vkBuffer = buffer.VK();
+
+        vkBuffer.SetData(CommandBuffer, source, sourceSizeInBytes, destinationOffsetInBytes);
+    }
+
     public override void CopyBuffer(Buffer source,
                                     Buffer destination,
                                     uint sourceSizeInBytes,
                                     uint destinationOffsetInBytes = 0)
     {
-        VkBuffer srcBuffer = source.VK().Buffer;
-        VkBuffer dstBuffer = destination.VK().Buffer;
+        VKBuffer vkSource = source.VK();
+        VKBuffer vkDestination = destination.VK();
 
-        BufferCopy copyRegion = new()
-        {
-            SrcOffset = 0,
-            DstOffset = destinationOffsetInBytes,
-            Size = sourceSizeInBytes
-        };
-
-        Context.Vk.CmdCopyBuffer(CommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-        MemoryBarrier barrier = new()
-        {
-            SType = StructureType.MemoryBarrier,
-            SrcAccessMask = AccessFlags.MemoryWriteBit,
-            DstAccessMask = AccessFlags.VertexAttributeReadBit
-        };
-
-        Context.Vk.CmdPipelineBarrier(CommandBuffer,
-                                      PipelineStageFlags.TransferBit,
-                                      PipelineStageFlags.AllGraphicsBit,
-                                      DependencyFlags.None,
-                                      1,
-                                      &barrier,
-                                      1,
-                                      null,
-                                      0,
-                                      null);
+        vkSource.CopyTo(CommandBuffer, vkDestination, sourceSizeInBytes, destinationOffsetInBytes);
     }
 
     public override void BeginRendering(FrameBuffer frameBuffer, ClearValue clearValue)

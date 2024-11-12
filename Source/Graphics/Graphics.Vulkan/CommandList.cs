@@ -243,18 +243,16 @@ public unsafe class CommandList : VulkanObject<CommandBuffer>
 
         // Add a memory barrier to ensure that the buffer is ready to be used
         {
-            bool needToProtectUniformBuffer = buffer.Usage.HasFlag(BufferUsage.ConstantBuffer);
-
             MemoryBarrier memoryBarrier = new()
             {
                 SType = StructureType.MemoryBarrier,
                 SrcAccessMask = AccessFlags.MemoryWriteBit,
-                DstAccessMask = needToProtectUniformBuffer ? AccessFlags.UniformReadBit : AccessFlags.VertexAttributeReadBit
+                DstAccessMask = AccessFlags.VertexAttributeReadBit
             };
 
             VkRes.Vk.CmdPipelineBarrier(Handle,
                                         PipelineStageFlags.TransferBit,
-                                        needToProtectUniformBuffer ? PipelineStageFlags.AllGraphicsBit : PipelineStageFlags.VertexInputBit,
+                                        PipelineStageFlags.AllGraphicsBit,
                                         DependencyFlags.None,
                                         1,
                                         &memoryBarrier,

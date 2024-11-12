@@ -1,5 +1,7 @@
-﻿using Graphics.Engine.Descriptions;
+﻿using System.Runtime.CompilerServices;
+using Graphics.Engine.Descriptions;
 using Graphics.Engine.Enums;
+using Graphics.Engine.Exceptions;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 
@@ -78,6 +80,41 @@ internal sealed unsafe class VKBuffer : Buffer
     public VKDeviceMemory DeviceMemory { get; }
 
     public ulong Address { get; }
+
+    public void SetData(VkCommandBuffer commandBuffer,
+                        nint source,
+                        uint sourceSizeInBytes,
+                        uint destinationOffsetInBytes = 0)
+    {
+        if (sourceSizeInBytes + destinationOffsetInBytes > Desc.SizeInBytes)
+        {
+            throw new BackendException("Source size is too large.");
+        }
+
+        if (Desc.Usage.HasFlag(BufferUsage.Dynamic))
+        {
+            MappedResource mappedResource = Context.MapMemory(this, MapMode.Write);
+
+            Unsafe.CopyBlock((void*)(mappedResource.Data + destinationOffsetInBytes),
+                             (void*)source,
+                             sourceSizeInBytes);
+
+            Context.UnmapMemory(this);
+        }
+        else
+        {
+            // TODO: Implement
+        }
+    }
+
+    public void CopyTo(VkCommandBuffer commandBuffer,
+                       VKBuffer destination,
+                       uint size,
+                       uint sourceOffset = 0,
+                       uint destinationOffset = 0)
+    {
+        // TODO: Implement
+    }
 
     protected override void SetName(string name)
     {

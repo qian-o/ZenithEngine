@@ -31,13 +31,28 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     public abstract void Commit();
 
     /// <summary>
+    /// Updates the data in a buffer.
+    /// </summary>
+    /// <param name="buffer"></param>
+    /// <param name="source"></param>
+    /// <param name="sourceSizeInBytes"></param>
+    /// <param name="destinationOffsetInBytes"></param>
+    public abstract void UpdateBufferData(Buffer buffer,
+                                          nint source,
+                                          uint sourceSizeInBytes,
+                                          uint destinationOffsetInBytes = 0);
+
+    /// <summary>
     /// Copies data from one buffer to another.
     /// </summary>
     /// <param name="source"></param>
     /// <param name="destination"></param>
     /// <param name="sourceSizeInBytes"></param>
     /// <param name="destinationOffsetInBytes"></param>
-    public abstract void CopyBuffer(Buffer source, Buffer destination, uint sourceSizeInBytes, uint destinationOffsetInBytes = 0);
+    public abstract void CopyBuffer(Buffer source,
+                                    Buffer destination,
+                                    uint sourceSizeInBytes,
+                                    uint destinationOffsetInBytes = 0);
 
     /// <summary>
     /// Begin rendering to a specific frame buffer.
