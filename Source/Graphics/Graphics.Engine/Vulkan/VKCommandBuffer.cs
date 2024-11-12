@@ -80,9 +80,15 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
         current.TransitionToIntermedialLayout(CommandBuffer);
 
-        Context.Vk.CmdBeginRendering(CommandBuffer, in current.RenderingInfo);
+        RenderingInfo renderingInfo = current.RenderingInfo;
 
-        if (clearValue.Options.HasFlag(ClearOptions.Color))
+        Context.Vk.CmdBeginRendering(CommandBuffer, &renderingInfo);
+
+        bool clearColor = clearValue.Options.HasFlag(ClearOptions.Color);
+        bool clearDepth = clearValue.Options.HasFlag(ClearOptions.Depth);
+        bool clearStencil = clearValue.Options.HasFlag(ClearOptions.Stencil);
+
+        if (clearColor)
         {
             for (int i = 0; i < clearValue.ColorValues.Length; i++)
             {
@@ -126,9 +132,6 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
                 Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
             }
         }
-
-        bool clearDepth = clearValue.Options.HasFlag(ClearOptions.Depth);
-        bool clearStencil = clearValue.Options.HasFlag(ClearOptions.Stencil);
 
         if (current.DepthStencilTarget != null && (clearDepth || clearStencil))
         {

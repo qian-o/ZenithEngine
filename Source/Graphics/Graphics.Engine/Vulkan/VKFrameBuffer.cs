@@ -8,8 +8,6 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKFrameBuffer : FrameBuffer
 {
-    private RenderingInfo renderingInfo;
-
     public VKFrameBuffer(Context context,
                          ref readonly FrameBufferDesc desc) : base(context, in desc)
     {
@@ -83,14 +81,14 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
         RenderingInfo = new()
         {
             SType = StructureType.RenderingInfo,
-            RenderArea = new Rect2D
+            RenderArea = new()
             {
-                Offset = new Offset2D
+                Offset = new()
                 {
                     X = 0,
                     Y = 0
                 },
-                Extent = new Extent2D
+                Extent = new()
                 {
                     Width = width,
                     Height = height
@@ -114,7 +112,7 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
 
     public TextureView? DepthStencilTarget { get; }
 
-    public ref RenderingInfo RenderingInfo => ref renderingInfo;
+    public RenderingInfo RenderingInfo { get; }
 
     public override uint Width { get; }
 
