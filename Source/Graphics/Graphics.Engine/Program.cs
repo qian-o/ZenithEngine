@@ -16,7 +16,7 @@ using Context context = Context.Create(Backend.Vulkan);
 
 context.CreateDevice(true);
 
-CommandProcessor commandProcessor = context.Factory.CreateCommandProcessor();
+using CommandProcessor commandProcessor = context.Factory.CreateCommandProcessor();
 
 SwapChain swapChain = null!;
 
@@ -30,6 +30,8 @@ window.Unloaded += Unloaded;
 window.Show();
 
 WindowManager.Loop();
+
+swapChain.Dispose();
 
 void Loaded(object? sender, EventArgs e)
 {

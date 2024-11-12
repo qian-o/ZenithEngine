@@ -76,7 +76,7 @@ internal sealed unsafe class VKTexture : Texture
     {
         bool isCube = Desc.Type == TextureType.TextureCube;
 
-        uint index = isCube ? (uint)baseFace * Desc.MipLevels + baseMipLevel : baseMipLevel;
+        uint index = isCube ? ((uint)baseFace * Desc.MipLevels) + baseMipLevel : baseMipLevel;
 
         ImageMemoryBarrier barrier = new()
         {
