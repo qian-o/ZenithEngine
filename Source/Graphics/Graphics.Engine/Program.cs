@@ -52,8 +52,6 @@ void Render(object? sender, TimeEventArgs e)
     commandBuffer.Begin();
     commandBuffer.BeginRendering(swapChain.FrameBuffer, ClearValue.Default(color: Vector4.UnitX));
 
-    // render code...
-
     commandBuffer.EndRendering();
     commandBuffer.End();
     commandBuffer.Commit();

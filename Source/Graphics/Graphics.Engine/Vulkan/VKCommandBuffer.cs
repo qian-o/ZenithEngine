@@ -78,7 +78,6 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         activeFrameBuffer?.TransitionToFinalLayout(CommandBuffer);
 
         activeFrameBuffer = frameBuffer.VK();
-
         activeFrameBuffer.TransitionToIntermedialLayout(CommandBuffer);
 
         RenderingInfo renderingInfo = activeFrameBuffer.RenderingInfo;
