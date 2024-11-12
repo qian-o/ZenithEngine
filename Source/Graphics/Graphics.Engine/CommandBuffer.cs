@@ -31,6 +31,15 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     public abstract void Commit();
 
     /// <summary>
+    /// Copies data from one buffer to another.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="destination"></param>
+    /// <param name="sourceSizeInBytes"></param>
+    /// <param name="destinationOffsetInBytes"></param>
+    public abstract void CopyBuffer(Buffer source, Buffer destination, uint sourceSizeInBytes, uint destinationOffsetInBytes = 0);
+
+    /// <summary>
     /// Begin rendering to a specific frame buffer.
     /// </summary>
     /// <param name="frameBuffer"></param>
@@ -86,7 +95,9 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     /// <param name="buffer"></param>
     /// <param name="format"></param>
     /// <param name="offset"></param>
-    public abstract void SetIndexBuffer(Buffer buffer, IndexFormat format = IndexFormat.U16Bit, uint offset = 0);
+    public abstract void SetIndexBuffer(Buffer buffer,
+                                        IndexFormat format = IndexFormat.U16Bit,
+                                        uint offset = 0);
 
     /// <summary>
     /// Sets the active Evergine.Common.Graphics.ResourceSet for the given index.
@@ -94,7 +105,9 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     /// <param name="resourceSet"></param>
     /// <param name="index"></param>
     /// <param name="constantBufferOffsets"></param>
-    public abstract void SetResourceSet(ResourceSet resourceSet, uint index = 0, uint[]? constantBufferOffsets = null);
+    public abstract void SetResourceSet(ResourceSet resourceSet,
+                                        uint index = 0,
+                                        uint[]? constantBufferOffsets = null);
 
     /// <summary>
     /// Draws non-indexed, instanced primitives.
@@ -103,7 +116,10 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     /// <param name="instanceCount"></param>
     /// <param name="startVertexLocation"></param>
     /// <param name="startInstanceLocation"></param>
-    public abstract void DrawInstanced(uint vertexCountPerInstance, uint instanceCount, uint startVertexLocation = 0, uint startInstanceLocation = 0);
+    public abstract void DrawInstanced(uint vertexCountPerInstance,
+                                       uint instanceCount,
+                                       uint startVertexLocation = 0,
+                                       uint startInstanceLocation = 0);
 
     /// <summary>
     /// Draws instanced, GPU-generated primitives.
@@ -112,7 +128,10 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     /// <param name="offset"></param>
     /// <param name="drawCount"></param>
     /// <param name="stride"></param>
-    public abstract void DrawInstancedIndirect(Buffer argBuffer, uint offset, uint drawCount, uint stride);
+    public abstract void DrawInstancedIndirect(Buffer argBuffer,
+                                               uint offset,
+                                               uint drawCount,
+                                               uint stride);
 
     /// <summary>
     /// Draws indexed, non-instanced primitives.
@@ -120,7 +139,9 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     /// <param name="indexCount"></param>
     /// <param name="startIndexLocation"></param>
     /// <param name="baseVertexLocation"></param>
-    public abstract void DrawIndexed(uint indexCount, uint startIndexLocation = 0, uint baseVertexLocation = 0);
+    public abstract void DrawIndexed(uint indexCount,
+                                     uint startIndexLocation = 0,
+                                     uint baseVertexLocation = 0);
 
     /// <summary>
     /// Draws indexed, instanced primitives.
@@ -130,7 +151,11 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     /// <param name="startIndexLocation"></param>
     /// <param name="baseVertexLocation"></param>
     /// <param name="startInstanceLocation"></param>
-    public abstract void DrawIndexedInstanced(uint indexCountPerInstance, uint instanceCount, uint startIndexLocation = 0, uint baseVertexLocation = 0, uint startInstanceLocation = 0);
+    public abstract void DrawIndexedInstanced(uint indexCountPerInstance,
+                                              uint instanceCount,
+                                              uint startIndexLocation = 0,
+                                              uint baseVertexLocation = 0,
+                                              uint startInstanceLocation = 0);
 
     /// <summary>
     /// Draw indexed, instanced, GPU-generated primitives.
@@ -139,7 +164,10 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     /// <param name="offset"></param>
     /// <param name="drawCount"></param>
     /// <param name="stride"></param>
-    public abstract void DrawIndexedInstancedIndirect(Buffer argBuffer, uint offset, uint drawCount, uint stride);
+    public abstract void DrawIndexedInstancedIndirect(Buffer argBuffer,
+                                                      uint offset,
+                                                      uint drawCount,
+                                                      uint stride);
 
     /// <summary>
     /// Execute commands in a compute shader from a thread group.

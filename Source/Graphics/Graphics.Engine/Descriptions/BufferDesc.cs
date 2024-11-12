@@ -14,6 +14,15 @@ public unsafe struct BufferDesc
     /// </summary>
     public BufferUsage Usage { get; set; }
 
+    public static BufferDesc Default(uint sizeInBytes, BufferUsage usage = BufferUsage.Dynamic)
+    {
+        return new()
+        {
+            SizeInBytes = sizeInBytes,
+            Usage = usage
+        };
+    }
+
     public static BufferDesc Default<T>(int length, BufferUsage usage) where T : unmanaged
     {
         return new()

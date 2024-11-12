@@ -1,4 +1,6 @@
-﻿using Graphics.Core.Helpers;
+﻿using System.Runtime.CompilerServices;
+using Graphics.Core.Helpers;
+using Graphics.Engine.Enums;
 using Graphics.Engine.Exceptions;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Vulkan;
@@ -23,6 +25,71 @@ internal unsafe partial class VKContext
     public KhrAccelerationStructure? KhrAccelerationStructure { get; private set; }
 
     public KhrDeferredHostOperations? KhrDeferredHostOperations { get; private set; }
+
+    public BufferPool BufferPool { get; private set; } = null!;
+
+    public VKCommandProcessor CommandProcessor { get; private set; } = null!;
+
+    public override void UpdateBufferData(Buffer buffer,
+                                          nint source,
+                                          uint sourceSizeInBytes,
+                                          uint destinationOffsetInBytes = 0)
+    {
+        if (sourceSizeInBytes + destinationOffsetInBytes > buffer.Desc.SizeInBytes)
+        {
+            throw new BackendException("Source size is too large.");
+        }
+
+        if (buffer.Desc.Usage.HasFlag(BufferUsage.Dynamic))
+        {
+            MappedResource mappedResource = MapMemory(buffer, MapMode.Write);
+
+            Unsafe.CopyBlock((void*)(mappedResource.Data + destinationOffsetInBytes),
+                             (void*)source,
+                             sourceSizeInBytes);
+
+            UnmapMemory(buffer);
+        }
+        else
+        {
+            Buffer stagingBuffer = BufferPool.Buffer(sourceSizeInBytes);
+
+            UpdateBufferData(stagingBuffer, source, sourceSizeInBytes);
+
+            CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
+
+            commandBuffer.Begin();
+
+            commandBuffer.CopyBuffer(stagingBuffer, buffer, sourceSizeInBytes, destinationOffsetInBytes);
+
+            commandBuffer.End();
+
+            commandBuffer.Commit();
+
+            CommandProcessor.Submit();
+            CommandProcessor.WaitIdle();
+
+            BufferPool.Return(stagingBuffer);
+        }
+    }
+
+    public override MappedResource MapMemory(Buffer buffer, MapMode mode)
+    {
+        void* data;
+        Vk.MapMemory(Device,
+                     buffer.VK().DeviceMemory.DeviceMemory,
+                     0,
+                     buffer.Desc.SizeInBytes,
+                     0,
+                     &data).ThrowCode();
+
+        return new MappedResource(buffer, mode, (nint)data, buffer.Desc.SizeInBytes);
+    }
+
+    public override void UnmapMemory(Buffer buffer)
+    {
+        Vk.UnmapMemory(Device, buffer.VK().DeviceMemory.DeviceMemory);
+    }
 
     private void InitDevice()
     {
@@ -99,6 +166,8 @@ internal unsafe partial class VKContext
         KhrRayTracingPipeline = extensions.Contains(KhrRayTracingPipeline.ExtensionName) ? Vk.GetExtension<KhrRayTracingPipeline>(Instance, Device) : null;
         KhrAccelerationStructure = extensions.Contains(KhrAccelerationStructure.ExtensionName) ? Vk.GetExtension<KhrAccelerationStructure>(Instance, Device) : null;
         KhrDeferredHostOperations = extensions.Contains(KhrDeferredHostOperations.ExtensionName) ? Vk.GetExtension<KhrDeferredHostOperations>(Instance, Device) : null;
+        BufferPool = new(this);
+        CommandProcessor = new(this, CommandProcessorType.Transfer);
     }
 
     private void DestroyDevice()

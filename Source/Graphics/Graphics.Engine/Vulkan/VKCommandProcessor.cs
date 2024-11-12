@@ -32,19 +32,22 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
 
     public override CommandBuffer CommandBuffer()
     {
-        VKCommandBuffer commandBuffer;
-
-        if (availableBuffers.Count == 0)
+        lock (this)
         {
-            commandBuffer = new VKCommandBuffer(Context, this);
-        }
-        else
-        {
-            commandBuffer = availableBuffers.Dequeue();
-            commandBuffer.Reset();
-        }
+            VKCommandBuffer commandBuffer;
 
-        return commandBuffer;
+            if (availableBuffers.Count == 0)
+            {
+                commandBuffer = new VKCommandBuffer(Context, this);
+            }
+            else
+            {
+                commandBuffer = availableBuffers.Dequeue();
+                commandBuffer.Reset();
+            }
+
+            return commandBuffer;
+        }
     }
 
     public override void Submit()
@@ -80,12 +83,15 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
 
     public void CommitCommandBuffer(VKCommandBuffer commandBuffer)
     {
-        if (waitSubmitBuffers.Length == waitSubmitBufferCount)
+        lock (this)
         {
-            Array.Resize(ref waitSubmitBuffers, waitSubmitBuffers.Length + 60);
-        }
+            if (waitSubmitBuffers.Length == waitSubmitBufferCount)
+            {
+                Array.Resize(ref waitSubmitBuffers, waitSubmitBuffers.Length + 60);
+            }
 
-        waitSubmitBuffers[waitSubmitBufferCount++] = commandBuffer;
+            waitSubmitBuffers[waitSubmitBufferCount++] = commandBuffer;
+        }
     }
 
     protected override void SetName(string name)

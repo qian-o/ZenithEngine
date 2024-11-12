@@ -73,6 +73,42 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         Processor.CommitCommandBuffer(this);
     }
 
+    public override void CopyBuffer(Buffer source,
+                                    Buffer destination,
+                                    uint sourceSizeInBytes,
+                                    uint destinationOffsetInBytes = 0)
+    {
+        VkBuffer srcBuffer = source.VK().Buffer;
+        VkBuffer dstBuffer = destination.VK().Buffer;
+
+        BufferCopy copyRegion = new()
+        {
+            SrcOffset = 0,
+            DstOffset = destinationOffsetInBytes,
+            Size = sourceSizeInBytes
+        };
+
+        Context.Vk.CmdCopyBuffer(CommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+        MemoryBarrier barrier = new()
+        {
+            SType = StructureType.MemoryBarrier,
+            SrcAccessMask = AccessFlags.MemoryWriteBit,
+            DstAccessMask = AccessFlags.VertexAttributeReadBit
+        };
+
+        Context.Vk.CmdPipelineBarrier(CommandBuffer,
+                                      PipelineStageFlags.TransferBit,
+                                      PipelineStageFlags.AllGraphicsBit,
+                                      DependencyFlags.None,
+                                      1,
+                                      &barrier,
+                                      1,
+                                      null,
+                                      0,
+                                      null);
+    }
+
     public override void BeginRendering(FrameBuffer frameBuffer, ClearValue clearValue)
     {
         activeFrameBuffer?.TransitionToFinalLayout(CommandBuffer);
@@ -263,7 +299,9 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         Context.Vk.CmdBindVertexBuffers(CommandBuffer, slot, 1, &vkBuffer, &vkOffset);
     }
 
-    public override void SetIndexBuffer(Buffer buffer, IndexFormat format = IndexFormat.U16Bit, uint offset = 0)
+    public override void SetIndexBuffer(Buffer buffer,
+                                        IndexFormat format = IndexFormat.U16Bit,
+                                        uint offset = 0)
     {
         VkBuffer vkBuffer = buffer.VK().Buffer;
 
@@ -277,7 +315,9 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         Context.Vk.CmdBindIndexBuffer(CommandBuffer, vkBuffer, offset, vkFormat);
     }
 
-    public override void SetResourceSet(ResourceSet resourceSet, uint index = 0, uint[]? constantBufferOffsets = null)
+    public override void SetResourceSet(ResourceSet resourceSet,
+                                        uint index = 0,
+                                        uint[]? constantBufferOffsets = null)
     {
         VKResourceSet vKResourceSet = resourceSet.VK();
 
@@ -311,29 +351,44 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         }
     }
 
-    public override void DrawInstanced(uint vertexCountPerInstance, uint instanceCount, uint startVertexLocation = 0, uint startInstanceLocation = 0)
+    public override void DrawInstanced(uint vertexCountPerInstance,
+                                       uint instanceCount,
+                                       uint startVertexLocation = 0,
+                                       uint startInstanceLocation = 0)
     {
         Context.Vk.CmdDraw(CommandBuffer, vertexCountPerInstance, instanceCount, startVertexLocation, startInstanceLocation);
     }
 
-    public override void DrawInstancedIndirect(Buffer argBuffer, uint offset, uint drawCount, uint stride)
+    public override void DrawInstancedIndirect(Buffer argBuffer,
+                                               uint offset,
+                                               uint drawCount,
+                                               uint stride)
     {
         VkBuffer vkBuffer = argBuffer.VK().Buffer;
 
         Context.Vk.CmdDrawIndirect(CommandBuffer, vkBuffer, offset, drawCount, stride);
     }
 
-    public override void DrawIndexed(uint indexCount, uint startIndexLocation = 0, uint baseVertexLocation = 0)
+    public override void DrawIndexed(uint indexCount,
+                                     uint startIndexLocation = 0,
+                                     uint baseVertexLocation = 0)
     {
         Context.Vk.CmdDrawIndexed(CommandBuffer, indexCount, 1, startIndexLocation, (int)baseVertexLocation, 0);
     }
 
-    public override void DrawIndexedInstanced(uint indexCountPerInstance, uint instanceCount, uint startIndexLocation = 0, uint baseVertexLocation = 0, uint startInstanceLocation = 0)
+    public override void DrawIndexedInstanced(uint indexCountPerInstance,
+                                              uint instanceCount,
+                                              uint startIndexLocation = 0,
+                                              uint baseVertexLocation = 0,
+                                              uint startInstanceLocation = 0)
     {
         Context.Vk.CmdDrawIndexed(CommandBuffer, indexCountPerInstance, instanceCount, startIndexLocation, (int)baseVertexLocation, startInstanceLocation);
     }
 
-    public override void DrawIndexedInstancedIndirect(Buffer argBuffer, uint offset, uint drawCount, uint stride)
+    public override void DrawIndexedInstancedIndirect(Buffer argBuffer,
+                                                      uint offset,
+                                                      uint drawCount,
+                                                      uint stride)
     {
         VkBuffer vkBuffer = argBuffer.VK().Buffer;
 

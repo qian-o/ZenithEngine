@@ -14,6 +14,15 @@ public abstract class Context : DisposableObject
 
     public abstract void CreateDevice(bool useValidationLayers = false);
 
+    public abstract void UpdateBufferData(Buffer buffer,
+                                          nint source,
+                                          uint sourceSizeInBytes,
+                                          uint destinationOffsetInBytes = 0);
+
+    public abstract MappedResource MapMemory(Buffer buffer, MapMode mode);
+
+    public abstract void UnmapMemory(Buffer buffer);
+
     public static Context Create(Backend backend)
     {
         return backend switch
