@@ -1,4 +1,5 @@
 ﻿using Graphics.Engine.Descriptions;
+using Graphics.Engine.Enums;
 using Graphics.Engine.Helpers;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Vulkan;
@@ -109,6 +110,74 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
     public TextureView? DepthStencilTarget { get; }
 
     public RenderingInfo RenderingInfo { get; }
+
+    public void TransitionToIntermedialLayout(VkCommandBuffer commandBuffer)
+    {
+        foreach (FrameBufferAttachmentDesc colorTarget in Desc.ColorTargets)
+        {
+            colorTarget.Target.VK().TransitionImageLayout(commandBuffer,
+                                                          ImageLayout.ColorAttachmentOptimal,
+                                                          colorTarget.MipLevel,
+                                                          1,
+                                                          colorTarget.Face,
+                                                          1);
+        }
+
+        if (Desc.DepthStencilTarget != null)
+        {
+            FrameBufferAttachmentDesc depthStencilTarget = Desc.DepthStencilTarget!.Value;
+
+            depthStencilTarget.Target.VK().TransitionImageLayout(commandBuffer,
+                                                                 ImageLayout.DepthStencilAttachmentOptimal,
+                                                                 depthStencilTarget.MipLevel,
+                                                                 1,
+                                                                 depthStencilTarget.Face,
+                                                                 1);
+        }
+    }
+
+    public void TransitionToFinalLayout(VkCommandBuffer commandBuffer)
+    {
+        foreach (FrameBufferAttachmentDesc colorTarget in Desc.ColorTargets)
+        {
+            ImageLayout imageLayout = ImageLayout.Undefined;
+
+            if (colorTarget.Target.Desc.Usage.HasFlag(TextureUsage.Sampled))
+            {
+                imageLayout = ImageLayout.ShaderReadOnlyOptimal;
+            }
+            else if (colorTarget.Target.Desc.Usage.HasFlag(TextureUsage.RenderTarget))
+            {
+                imageLayout = ImageLayout.PresentSrcKhr;
+            }
+
+            if (imageLayout != ImageLayout.Undefined)
+            {
+                colorTarget.Target.VK().TransitionImageLayout(commandBuffer,
+                                                              imageLayout,
+                                                              colorTarget.MipLevel,
+                                                              1,
+                                                              colorTarget.Face,
+                                                              1);
+            }
+        }
+
+        if (Desc.DepthStencilTarget != null)
+        {
+            FrameBufferAttachmentDesc depthStencilTarget = Desc.DepthStencilTarget!.Value;
+
+            if (depthStencilTarget.Target.Desc.Usage.HasFlag(TextureUsage.Sampled))
+            {
+                depthStencilTarget.Target.VK().TransitionImageLayout(commandBuffer,
+                                                                     ImageLayout.ShaderReadOnlyOptimal,
+                                                                     depthStencilTarget.MipLevel,
+                                                                     1,
+                                                                     depthStencilTarget.Face,
+                                                                     1);
+            }
+
+        }
+    }
 
     protected override void SetName(string name)
     {

@@ -25,8 +25,8 @@ internal sealed unsafe class VKTextureView : TextureView
                 AspectMask = Formats.GetImageAspectFlags(texture.Usage),
                 BaseMipLevel = desc.BaseMipLevel,
                 LevelCount = desc.MipLevels,
-                BaseArrayLayer = isCube ? (uint)desc.BaseFace : 0u,
-                LayerCount = isCube ? desc.FaceCount : 1u
+                BaseArrayLayer = isCube ? (uint)desc.BaseFace : 0,
+                LayerCount = isCube ? desc.FaceCount : 1
             }
         };
 

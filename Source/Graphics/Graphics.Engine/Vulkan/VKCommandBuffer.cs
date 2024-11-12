@@ -8,6 +8,8 @@ namespace Graphics.Engine.Vulkan;
 
 internal sealed unsafe class VKCommandBuffer : CommandBuffer
 {
+    private VKFrameBuffer? current;
+
     public VKCommandBuffer(Context context, VKCommandProcessor processor) : base(context)
     {
         Processor = processor;
@@ -54,6 +56,8 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         };
 
         Context.Vk.BeginCommandBuffer(CommandBuffer, &beginInfo).ThrowCode();
+
+        current = null;
     }
 
     public override void Reset()
@@ -68,7 +72,13 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
     public override void BeginRendering(FrameBuffer frameBuffer, ClearValue clearValue)
     {
-        RenderingInfo renderingInfo = frameBuffer.VK().RenderingInfo;
+        current?.TransitionToFinalLayout(CommandBuffer);
+
+        current = frameBuffer.VK();
+
+        current.TransitionToIntermedialLayout(CommandBuffer);
+
+        RenderingInfo renderingInfo = current.RenderingInfo;
 
         Context.Vk.CmdBeginRendering(CommandBuffer, &renderingInfo);
 
@@ -149,6 +159,8 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
     public override void EndRendering()
     {
         Context.Vk.CmdEndRendering(CommandBuffer);
+
+        current?.TransitionToFinalLayout(CommandBuffer);
     }
 
     public override void SetViewports(Viewport[] viewports)

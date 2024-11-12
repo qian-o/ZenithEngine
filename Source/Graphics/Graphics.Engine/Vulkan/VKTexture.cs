@@ -71,10 +71,12 @@ internal sealed unsafe class VKTexture : Texture
                                       ImageLayout newLayout,
                                       uint baseMipLevel,
                                       uint levelCount,
-                                      uint baseArrayLayer,
-                                      uint layerCount)
+                                      CubeMapFace baseFace,
+                                      uint faceCount)
     {
-        uint index = baseArrayLayer * Desc.MipLevels + baseMipLevel;
+        bool isCube = Desc.Type == TextureType.TextureCube;
+
+        uint index = isCube ? (uint)baseFace * Desc.MipLevels + baseMipLevel : baseMipLevel;
 
         ImageMemoryBarrier barrier = new()
         {
@@ -87,8 +89,8 @@ internal sealed unsafe class VKTexture : Texture
                 AspectMask = Formats.GetImageAspectFlags(newLayout),
                 BaseMipLevel = baseMipLevel,
                 LevelCount = levelCount,
-                BaseArrayLayer = baseArrayLayer,
-                LayerCount = layerCount
+                BaseArrayLayer = isCube ? (uint)baseFace : 0,
+                LayerCount = isCube ? faceCount : 1
             }
         };
 
