@@ -1,4 +1,5 @@
-﻿using Graphics.Engine;
+﻿using System.Numerics;
+using Graphics.Engine;
 using Graphics.Engine.Descriptions;
 using Graphics.Engine.Enums;
 using Graphics.Windowing;
@@ -47,7 +48,7 @@ void Render(object? sender, TimeEventArgs e)
     CommandBuffer commandBuffer = commandProcessor.CommandBuffer();
 
     commandBuffer.Begin();
-    commandBuffer.BeginRendering(swapChain.FrameBuffer, ClearValue.Default);
+    commandBuffer.BeginRendering(swapChain.FrameBuffer, ClearValue.Default(color: Vector4.UnitX));
 
     // render code...
 

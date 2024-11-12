@@ -322,6 +322,38 @@ internal sealed class Formats
         return imageUsageFlags;
     }
 
+    public static ImageAspectFlags GetImageAspectFlags(TextureUsage usage)
+    {
+        ImageAspectFlags flags = ImageAspectFlags.None;
+
+        if (usage.HasFlag(TextureUsage.DepthStencil))
+        {
+            flags |= ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit;
+        }
+        else
+        {
+            flags |= ImageAspectFlags.ColorBit;
+        }
+
+        return flags;
+    }
+
+    public static ImageAspectFlags GetImageAspectFlags(ImageLayout imageLayout)
+    {
+        ImageAspectFlags flags = ImageAspectFlags.None;
+
+        if (imageLayout == ImageLayout.DepthStencilAttachmentOptimal)
+        {
+            flags |= ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit;
+        }
+        else
+        {
+            flags |= ImageAspectFlags.ColorBit;
+        }
+
+        return flags;
+    }
+
     public static ImageViewType GetImageViewType(TextureType type)
     {
         return type switch

@@ -43,7 +43,7 @@ internal sealed unsafe class VKTexture : Texture
 
         Context.Vk.BindImageMemory(Context.Device, image, DeviceMemory.DeviceMemory, 0).ThrowCode();
 
-        Layouts = new ImageLayout[desc.Depth * desc.MipLevels * createInfo.ArrayLayers];
+        Layouts = new ImageLayout[createInfo.ArrayLayers * desc.MipLevels];
         Array.Fill(Layouts, ImageLayout.Preinitialized);
 
         Image = image;
@@ -51,10 +51,11 @@ internal sealed unsafe class VKTexture : Texture
 
     public VKTexture(Context context,
                      VkImage image,
+                     uint arrayLayers,
                      ref readonly TextureDesc desc) : base(context, in desc)
     {
         Image = image;
-        Layouts = new ImageLayout[desc.Depth * desc.MipLevels];
+        Layouts = new ImageLayout[arrayLayers * desc.MipLevels];
         Array.Fill(Layouts, ImageLayout.Undefined);
     }
 
@@ -65,6 +66,49 @@ internal sealed unsafe class VKTexture : Texture
     public VKDeviceMemory? DeviceMemory { get; }
 
     public ImageLayout[] Layouts { get; }
+
+    public void TransitionImageLayout(VkCommandBuffer commandBuffer,
+                                      ImageLayout newLayout,
+                                      uint baseMipLevel,
+                                      uint levelCount,
+                                      uint baseArrayLayer,
+                                      uint layerCount)
+    {
+        uint index = baseArrayLayer * Desc.MipLevels + baseMipLevel;
+
+        ImageMemoryBarrier barrier = new()
+        {
+            SType = StructureType.ImageMemoryBarrier,
+            OldLayout = Layouts[index],
+            NewLayout = newLayout,
+            Image = Image,
+            SubresourceRange = new ImageSubresourceRange
+            {
+                AspectMask = Formats.GetImageAspectFlags(newLayout),
+                BaseMipLevel = baseMipLevel,
+                LevelCount = levelCount,
+                BaseArrayLayer = baseArrayLayer,
+                LayerCount = layerCount
+            }
+        };
+
+        VKHelpers.GetPipelineStageFlagsForImageLayout(ref barrier,
+                                                      out PipelineStageFlags src,
+                                                      out PipelineStageFlags dst);
+
+        Context.Vk.CmdPipelineBarrier(commandBuffer,
+                                      src,
+                                      dst,
+                                      DependencyFlags.None,
+                                      0,
+                                      null,
+                                      0,
+                                      null,
+                                      1,
+                                      &barrier);
+
+        Layouts[index] = newLayout;
+    }
 
     protected override void SetName(string name)
     {

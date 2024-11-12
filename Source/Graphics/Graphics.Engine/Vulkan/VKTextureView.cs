@@ -22,7 +22,7 @@ internal sealed unsafe class VKTextureView : TextureView
             Format = Formats.GetPixelFormat(texture.Format),
             SubresourceRange = new ImageSubresourceRange
             {
-                AspectMask = texture.Usage.HasFlag(TextureUsage.DepthStencil) ? ImageAspectFlags.DepthBit : ImageAspectFlags.ColorBit,
+                AspectMask = Formats.GetImageAspectFlags(texture.Usage),
                 BaseMipLevel = desc.BaseMipLevel,
                 LevelCount = desc.MipLevels,
                 BaseArrayLayer = isCube ? (uint)desc.BaseFace : 0u,

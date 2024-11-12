@@ -172,7 +172,7 @@ internal sealed unsafe class VKSwapChain : SwapChain
                                                           Formats.GetPixelFormat(createInfo.ImageFormat));
             colorDesc.Usage = TextureUsage.RenderTarget;
 
-            VKTexture colorTarget = new(Context, images[i], ref colorDesc);
+            VKTexture colorTarget = new(Context, images[i], 1, ref colorDesc);
 
             FrameBufferDesc frameBufferDesc = FrameBufferDesc.Default(depthStencilTarget, colorTarget);
 

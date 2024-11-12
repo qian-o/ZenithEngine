@@ -1,4 +1,5 @@
-﻿using Graphics.Engine.Enums;
+﻿using System.Numerics;
+using Graphics.Engine.Enums;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Maths;
 using Silk.NET.Vulkan;
@@ -70,6 +71,79 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         RenderingInfo renderingInfo = frameBuffer.VK().RenderingInfo;
 
         Context.Vk.CmdBeginRendering(CommandBuffer, &renderingInfo);
+
+        if (clearValue.Options.HasFlag(ClearOptions.Color))
+        {
+            for (int i = 0; i < clearValue.ColorValues.Length; i++)
+            {
+                Vector4 color = clearValue.ColorValues[i];
+
+                ClearAttachment clearAttachment = new()
+                {
+                    AspectMask = ImageAspectFlags.ColorBit,
+                    ColorAttachment = (uint)i,
+                    ClearValue = new()
+                    {
+                        Color = new()
+                        {
+                            Float32_0 = color.X,
+                            Float32_1 = color.Y,
+                            Float32_2 = color.Z,
+                            Float32_3 = color.W
+                        }
+                    }
+                };
+
+                ClearRect clearRect = new()
+                {
+                    BaseArrayLayer = 0,
+                    LayerCount = 1,
+                    Rect = renderingInfo.RenderArea
+                };
+
+                Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
+            }
+        }
+
+        bool clearDepth = clearValue.Options.HasFlag(ClearOptions.Depth);
+        bool clearStencil = clearValue.Options.HasFlag(ClearOptions.Stencil);
+
+        if (frameBuffer.Desc.DepthStencilTarget != null && (clearDepth || clearStencil))
+        {
+            ImageAspectFlags aspectMask = 0;
+
+            if (clearDepth)
+            {
+                aspectMask |= ImageAspectFlags.DepthBit;
+            }
+
+            if (clearStencil)
+            {
+                aspectMask |= ImageAspectFlags.StencilBit;
+            }
+
+            ClearAttachment clearAttachment = new()
+            {
+                AspectMask = aspectMask,
+                ClearValue = new()
+                {
+                    DepthStencil = new()
+                    {
+                        Depth = clearValue.Depth,
+                        Stencil = clearValue.Stencil
+                    }
+                }
+            };
+
+            ClearRect clearRect = new()
+            {
+                BaseArrayLayer = 0,
+                LayerCount = 1,
+                Rect = renderingInfo.RenderArea
+            };
+
+            Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
+        }
     }
 
     public override void EndRendering()
