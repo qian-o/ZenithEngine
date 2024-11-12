@@ -1,7 +1,6 @@
 ﻿using System.Numerics;
 using Graphics.Core.Helpers;
 using Graphics.Engine.Enums;
-using Graphics.Engine.Helpers;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Maths;
 using Silk.NET.Vulkan;
@@ -113,12 +112,6 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
                 Texture colorTarget = current.ColorTargets[i].Desc.Target;
 
-                Utils.GetMipDimensions(colorTarget.Desc.Width,
-                                       colorTarget.Desc.Height,
-                                       current.ColorTargets[i].Desc.BaseMipLevel,
-                                       out uint width,
-                                       out uint height);
-
                 ClearRect clearRect = new()
                 {
                     BaseArrayLayer = 0,
@@ -132,8 +125,8 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
                         },
                         Extent = new()
                         {
-                            Width = width,
-                            Height = height
+                            Width = colorTarget.Desc.Width,
+                            Height = colorTarget.Desc.Height
                         }
                     }
                 };
@@ -171,12 +164,6 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
 
             Texture depthStencilTarget = current.DepthStencilTarget.Desc.Target;
 
-            Utils.GetMipDimensions(depthStencilTarget.Desc.Width,
-                                   depthStencilTarget.Desc.Height,
-                                   current.DepthStencilTarget.Desc.BaseMipLevel,
-                                   out uint width,
-                                   out uint height);
-
             ClearRect clearRect = new()
             {
                 BaseArrayLayer = 0,
@@ -190,14 +177,17 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
                     },
                     Extent = new()
                     {
-                        Width = width,
-                        Height = height
+                        Width = depthStencilTarget.Desc.Width,
+                        Height = depthStencilTarget.Desc.Height
                     }
                 }
             };
 
             Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
         }
+
+        SetFullViewports();
+        SetFullScissorRectangles();
     }
 
     public override void EndRendering()
@@ -241,12 +231,20 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         Context.Vk.CmdSetScissor(CommandBuffer, 0, (uint)vkScissors.Length, vkScissors.AsPointer());
     }
 
-    public override void SetFullViewports()
+    public override void SetFullViewports(float minDepth = 0, float maxDepth = 1)
     {
+        Viewport[] viewports = new Viewport[current!.ColorTargets.Length];
+        Array.Fill(viewports, new Viewport(0, 0, current.Width, current.Height, minDepth, maxDepth));
+
+        SetViewports(viewports);
     }
 
     public override void SetFullScissorRectangles()
     {
+        Rectangle<int>[] scissors = new Rectangle<int>[current!.ColorTargets.Length];
+        Array.Fill(scissors, new Rectangle<int>(0, 0, (int)current.Width, (int)current.Height));
+
+        SetScissorRectangles(scissors);
     }
 
     public override void SetPipeline(Pipeline pipeline)

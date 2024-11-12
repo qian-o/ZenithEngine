@@ -57,7 +57,9 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     /// <summary>
     /// Sets full viewports for this command buffer.
     /// </summary>
-    public abstract void SetFullViewports();
+    /// <param name="minDepth"></param>
+    /// <param name="maxDepth"></param>
+    public abstract void SetFullViewports(float minDepth = 0, float maxDepth = 1);
 
     /// <summary>
     /// Sets full scissor rectangles for this command buffer.
