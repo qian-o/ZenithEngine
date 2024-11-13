@@ -30,7 +30,7 @@ public abstract class ShellPage : ContentPage
 
     private void ShellPage_Clicked(object? sender, EventArgs e)
     {
-        if (Application.Current!.MainPage is AppShell appShell)
+        if (Application.Current!.Windows[0].Page is AppShell appShell)
         {
             appShell.FlyoutIsPresented = true;
         }
