@@ -2,18 +2,18 @@
 
 public abstract class DisposableObject : IDisposable
 {
-    private volatile uint _isDisposed;
+    private volatile uint isDisposed;
 
     ~DisposableObject()
     {
         Dispose();
     }
 
-    public bool IsDisposed => _isDisposed != 0;
+    public bool IsDisposed => isDisposed != 0;
 
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
+        if (Interlocked.Exchange(ref isDisposed, 1) != 0)
         {
             return;
         }
