@@ -86,12 +86,15 @@ internal unsafe partial class VKContext
 
     public override void SyncUpToGpu()
     {
-        if (BufferPool.IsUsed)
+        lock (this)
         {
-            CommandProcessor.Submit();
-            CommandProcessor.WaitIdle();
+            if (BufferPool.IsUsed)
+            {
+                CommandProcessor.Submit();
+                CommandProcessor.WaitIdle();
 
-            BufferPool.Release();
+                BufferPool.Release();
+            }
         }
     }
 
