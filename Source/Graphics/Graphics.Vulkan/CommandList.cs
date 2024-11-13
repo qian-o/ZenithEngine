@@ -1,17 +1,17 @@
-﻿using System.Runtime.CompilerServices;
-using Graphics.Core;
+﻿using Graphics.Core;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
 using Silk.NET.Vulkan;
+using System.Runtime.CompilerServices;
 using Viewport = Graphics.Core.Viewport;
 
 namespace Graphics.Vulkan;
 
 public unsafe class CommandList : VulkanObject<CommandBuffer>
 {
-    private readonly object _disposablesLock;
+    private readonly Lock _disposablesLock;
     private readonly List<DisposableObject> _disposables;
-    private readonly object _stagingResourcesLock;
+    private readonly Lock _stagingResourcesLock;
     private readonly List<DeviceBuffer> _availableStagingBuffers;
     private readonly List<DeviceBuffer> _usedStagingBuffers;
 
