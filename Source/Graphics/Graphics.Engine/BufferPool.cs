@@ -7,42 +7,62 @@ internal sealed class BufferPool(Context context) : DeviceResource(context)
     private const uint MinBufferSize = 1024 * 4;
     private const uint MaxBufferCount = 100;
 
-    private readonly List<Buffer> buffers = [];
+    private readonly List<Buffer> availableBuffers = [];
+    private readonly List<Buffer> usedBuffers = [];
+
+    public bool IsUsed => usedBuffers.Count > 0;
 
     public Buffer Buffer(uint sizeInBytes)
     {
         lock (this)
         {
-            foreach (Buffer buffer in buffers)
-            {
-                if (buffer.Desc.SizeInBytes >= sizeInBytes)
-                {
-                    buffers.Remove(buffer);
+            Buffer? buffer = null;
 
-                    return buffer;
+            foreach (Buffer availableBuffer in availableBuffers)
+            {
+                if (availableBuffer.Desc.SizeInBytes >= sizeInBytes)
+                {
+                    availableBuffers.Remove(availableBuffer);
+
+                    buffer = availableBuffer;
                 }
             }
 
-            uint size = Math.Max(MinBufferSize, sizeInBytes);
+            if (buffer == null)
+            {
+                uint size = Math.Max(MinBufferSize, sizeInBytes);
 
-            BufferDesc desc = BufferDesc.Default(size);
+                BufferDesc desc = BufferDesc.Default(size);
 
-            return Context.Factory.CreateBuffer(in desc);
+                buffer = Context.Factory.CreateBuffer(in desc);
+            }
+
+            usedBuffers.Add(buffer);
+
+            return buffer;
         }
     }
 
-    public void Return(Buffer buffer)
+    public void Release()
     {
         lock (this)
         {
-            if (buffers.Count >= MaxBufferCount)
+            foreach (Buffer usedBuffer in usedBuffers)
             {
-                buffer.Dispose();
-
-                return;
+                availableBuffers.Add(usedBuffer);
             }
 
-            buffers.Add(buffer);
+            usedBuffers.Clear();
+
+            if (availableBuffers.Count > MaxBufferCount)
+            {
+                foreach (Buffer buffer in availableBuffers.Take((int)MaxBufferCount))
+                {
+                    buffer.Dispose();
+                }
+
+                availableBuffers.RemoveAll(item => item.IsDisposed);
+            }
         }
     }
 
@@ -52,14 +72,13 @@ internal sealed class BufferPool(Context context) : DeviceResource(context)
 
     protected override void Destroy()
     {
-        lock (this)
-        {
-            foreach (Buffer buffer in buffers)
-            {
-                buffer.Dispose();
-            }
+        Release();
 
-            buffers.Clear();
+        foreach (Buffer buffer in availableBuffers)
+        {
+            buffer.Dispose();
         }
+
+        availableBuffers.Clear();
     }
 }

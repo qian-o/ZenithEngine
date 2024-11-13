@@ -38,14 +38,14 @@ internal unsafe partial class VKContext
 
         commandBuffer.Begin();
 
-        commandBuffer.UpdateBufferData(buffer, source, sourceSizeInBytes, destinationOffsetInBytes);
+        commandBuffer.UpdateBufferData(buffer,
+                                       source,
+                                       sourceSizeInBytes,
+                                       destinationOffsetInBytes);
 
         commandBuffer.End();
 
         commandBuffer.Commit();
-
-        CommandProcessor.Submit();
-        CommandProcessor.WaitIdle();
     }
 
     public override void UpdateTextureData(Texture texture,
@@ -53,7 +53,17 @@ internal unsafe partial class VKContext
                                            uint sourceSizeInBytes,
                                            uint destinationOffsetInBytes = 0)
     {
-        // TODO: Implement
+        CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
+
+        commandBuffer.Begin();
+
+        commandBuffer.UpdateTextureData(texture,
+                                        source,
+                                        sourceSizeInBytes,
+                                        destinationOffsetInBytes);
+
+        commandBuffer.End();
+        commandBuffer.Commit();
     }
 
     public override MappedResource MapMemory(Buffer buffer, MapMode mode)
@@ -72,6 +82,17 @@ internal unsafe partial class VKContext
     public override void UnmapMemory(Buffer buffer)
     {
         Vk.UnmapMemory(Device, buffer.VK().DeviceMemory.DeviceMemory);
+    }
+
+    public override void SyncUpToGpu()
+    {
+        if (BufferPool.IsUsed)
+        {
+            CommandProcessor.Submit();
+            CommandProcessor.WaitIdle();
+
+            BufferPool.Release();
+        }
     }
 
     private void InitDevice()

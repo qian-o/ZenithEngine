@@ -94,6 +94,54 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         vkSource.CopyTo(CommandBuffer, vkDestination, sourceSizeInBytes, destinationOffsetInBytes);
     }
 
+    public override void UpdateTextureData(Texture texture,
+                                           nint source,
+                                           uint sourceSizeInBytes,
+                                           uint destinationOffsetInBytes = 0)
+    {
+        VKTexture vkTexture = texture.VK();
+
+        vkTexture.SetData(CommandBuffer, source, sourceSizeInBytes, destinationOffsetInBytes);
+    }
+
+    public override void CopyTexture(Texture source,
+                                     uint sourceX,
+                                     uint sourceY,
+                                     uint sourceZ,
+                                     uint sourceMipLevel,
+                                     CubeMapFace sourceBaseFace,
+                                     Texture destination,
+                                     uint destinationX,
+                                     uint destinationY,
+                                     uint destinationZ,
+                                     uint destinationMipLevel,
+                                     CubeMapFace destinationBaseFace,
+                                     uint width,
+                                     uint height,
+                                     uint depth,
+                                     uint faceCount)
+    {
+        VKTexture vkSource = source.VK();
+        VKTexture vkDestination = destination.VK();
+
+        vkSource.CopyTo(CommandBuffer,
+                        sourceX,
+                        sourceY,
+                        sourceZ,
+                        sourceMipLevel,
+                        sourceBaseFace,
+                        vkDestination,
+                        destinationX,
+                        destinationY,
+                        destinationZ,
+                        destinationMipLevel,
+                        destinationBaseFace,
+                        width,
+                        height,
+                        depth,
+                        faceCount);
+    }
+
     public override void BeginRendering(FrameBuffer frameBuffer, ClearValue clearValue)
     {
         activeFrameBuffer?.TransitionToFinalLayout(CommandBuffer);

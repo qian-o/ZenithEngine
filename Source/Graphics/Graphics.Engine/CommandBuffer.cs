@@ -55,6 +55,54 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
                                     uint destinationOffsetInBytes = 0);
 
     /// <summary>
+    /// Updates the data in a texture.
+    /// </summary>
+    /// <param name="texture"></param>
+    /// <param name="source"></param>
+    /// <param name="sourceSizeInBytes"></param>
+    /// <param name="destinationOffsetInBytes"></param>
+    public abstract void UpdateTextureData(Texture texture,
+                                           nint source,
+                                           uint sourceSizeInBytes,
+                                           uint destinationOffsetInBytes = 0);
+
+    /// <summary>
+    /// Copies data from a buffer to a texture.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="sourceX"></param>
+    /// <param name="sourceY"></param>
+    /// <param name="sourceZ"></param>
+    /// <param name="sourceMipLevel"></param>
+    /// <param name="sourceBaseFace"></param>
+    /// <param name="destination"></param>
+    /// <param name="destinationX"></param>
+    /// <param name="destinationY"></param>
+    /// <param name="destinationZ"></param>
+    /// <param name="destinationMipLevel"></param>
+    /// <param name="destinationBaseFace"></param>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <param name="depth"></param>
+    /// <param name="faceCount"></param>
+    public abstract void CopyTexture(Texture source,
+                                     uint sourceX,
+                                     uint sourceY,
+                                     uint sourceZ,
+                                     uint sourceMipLevel,
+                                     CubeMapFace sourceBaseFace,
+                                     Texture destination,
+                                     uint destinationX,
+                                     uint destinationY,
+                                     uint destinationZ,
+                                     uint destinationMipLevel,
+                                     CubeMapFace destinationBaseFace,
+                                     uint width,
+                                     uint height,
+                                     uint depth,
+                                     uint faceCount);
+
+    /// <summary>
     /// Begin rendering to a specific frame buffer.
     /// </summary>
     /// <param name="frameBuffer"></param>

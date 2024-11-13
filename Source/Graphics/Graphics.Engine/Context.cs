@@ -28,6 +28,8 @@ public abstract class Context : DisposableObject
 
     public abstract void UnmapMemory(Buffer buffer);
 
+    public abstract void SyncUpToGpu();
+
     public static Context Create(Backend backend)
     {
         return backend switch

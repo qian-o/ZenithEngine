@@ -11,7 +11,8 @@ public abstract class CommandProcessor(Context context) : DeviceResource(context
     /// <summary>
     /// Submits the command buffer to be executed by the GPU.
     /// </summary>
-    public abstract void Submit();
+    /// <param name="waitContextProcessors"></param>
+    public abstract void Submit(bool waitContextProcessors = true);
 
     /// <summary>
     /// Waits for the GPU to finish executing all commands.

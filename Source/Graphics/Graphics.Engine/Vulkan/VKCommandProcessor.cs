@@ -13,7 +13,8 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
     private int waitSubmitBufferCount;
     private VKCommandBuffer[] waitSubmitBuffers = [];
 
-    public VKCommandProcessor(Context context, CommandProcessorType type) : base(context)
+    public VKCommandProcessor(Context context,
+                              CommandProcessorType type) : base(context)
     {
         FamilyIndex = type switch
         {
@@ -50,8 +51,13 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
         }
     }
 
-    public override void Submit()
+    public override void Submit(bool waitContextProcessors = true)
     {
+        if (waitContextProcessors)
+        {
+            Context.SyncUpToGpu();
+        }
+
         for (int i = 0; i < waitSubmitBufferCount; i++)
         {
             VKCommandBuffer vKCommandBuffer = waitSubmitBuffers[i];

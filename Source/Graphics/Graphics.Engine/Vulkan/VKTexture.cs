@@ -118,6 +118,32 @@ internal sealed unsafe class VKTexture : Texture
         TransitionImageLayout(commandBuffer, newLayout, 0, Desc.MipLevels, CubeMapFace.PositiveX, 6);
     }
 
+    public void SetData(VkCommandBuffer commandBuffer,
+                        nint source,
+                        uint sourceSizeInBytes,
+                        uint destinationOffsetInBytes)
+    {
+    }
+
+    public void CopyTo(VkCommandBuffer commandBuffer,
+                       uint sourceX,
+                       uint sourceY,
+                       uint sourceZ,
+                       uint sourceMipLevel,
+                       CubeMapFace sourceBaseFace,
+                       VKTexture vkDestination,
+                       uint destinationX,
+                       uint destinationY,
+                       uint destinationZ,
+                       uint destinationMipLevel,
+                       CubeMapFace destinationBaseFace,
+                       uint width,
+                       uint height,
+                       uint depth,
+                       uint faceCount)
+    {
+    }
+
     protected override void SetName(string name)
     {
         Context.SetDebugName(ObjectType.Image, Image.Handle, name);
