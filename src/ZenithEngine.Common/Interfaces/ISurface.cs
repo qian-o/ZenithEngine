@@ -1,4 +1,4 @@
-﻿namespace ZenithEngine.Common;
+﻿namespace ZenithEngine.Common.Interfaces;
 
 public unsafe interface ISurface
 {
