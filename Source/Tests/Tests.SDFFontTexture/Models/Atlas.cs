@@ -1,7 +1,10 @@
-﻿namespace Tests.SDFFontTexture.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace Tests.SDFFontTexture.Models;
 
 internal sealed class Atlas
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public AtlasType Type { get; set; }
 
     public int DistanceRange { get; set; }
@@ -15,6 +18,4 @@ internal sealed class Atlas
     public int Height { get; set; }
 
     public string? YOrigin { get; set; }
-
-    public Grid? Grid { get; set; }
 }

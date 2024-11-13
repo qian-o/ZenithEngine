@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" />
 		<PackageReference Include="OxyPlot.SkiaSharp" />
 		<PackageReference Include="SharpGLTF.Core" />
 		<PackageReference Include="SharpGLTF.Toolkit" />
 		<PackageReference Include="SkiaSharp.Skottie" />
 		<PackageReference Include="StbImageSharp" />
+		<PackageReference Include="System.Text.Json" />
 	</ItemGroup>
 
 	<ItemGroup>

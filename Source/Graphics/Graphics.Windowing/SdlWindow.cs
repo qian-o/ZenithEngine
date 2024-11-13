@@ -12,7 +12,7 @@ namespace Graphics.Windowing;
 public unsafe class SdlWindow : WindowImplementationBase
 {
     private Window* window;
-    private SdlVkSurface? vkSurface;
+    private SdlVkSurface? surface;
 
     private string title = "SdlWindow";
     private WindowState state = WindowState.Normal;
@@ -330,11 +330,11 @@ public unsafe class SdlWindow : WindowImplementationBase
         }
     }
 
-    public override IVkSurface VkSurface
+    public override IVkSurface Surface
     {
         get
         {
-            return vkSurface ??= new SdlVkSurface(window);
+            return surface ??= new SdlVkSurface(window);
         }
     }
 
@@ -376,7 +376,7 @@ public unsafe class SdlWindow : WindowImplementationBase
     {
         if (Uninitialize())
         {
-            vkSurface?.Dispose();
+            surface?.Dispose();
 
             base.Close();
         }
@@ -527,7 +527,10 @@ public unsafe class SdlWindow : WindowImplementationBase
                 break;
             case WindowEventID.Minimized:
             case WindowEventID.Maximized:
+                StateChanged?.Invoke(this, new ValueEventArgs<WindowState>(State));
+                break;
             case WindowEventID.Restored:
+                SizeChanged?.Invoke(this, new ValueEventArgs<Vector2D<int>>(Size));
                 StateChanged?.Invoke(this, new ValueEventArgs<WindowState>(State));
                 break;
             case WindowEventID.Close:

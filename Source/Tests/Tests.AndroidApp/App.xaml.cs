@@ -19,6 +19,6 @@ public partial class App : Application
     {
         InitializeComponent();
 
-        MainPage = new AppShell();
+        Windows[0].Page = new AppShell();
     }
 }

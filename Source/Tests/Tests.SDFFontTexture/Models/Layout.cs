@@ -1,29 +1,30 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Text.Json;
 
 namespace Tests.SDFFontTexture.Models;
 
-internal sealed class Layout
+internal sealed class Layout(Atlas atlas, Metrics metrics, Glyph[] glyphs)
 {
-    public Atlas? Atlas { get; set; }
+    private static readonly JsonSerializerOptions jsonSerializerOptions = new(JsonSerializerOptions.Default)
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
 
-    public Metrics? Metrics { get; set; }
+    public Atlas Atlas { get; } = atlas;
 
-    public Glyph[]? Glyphs { get; set; }
+    public Metrics Metrics { get; } = metrics;
+
+    public Glyph[] Glyphs { get; } = glyphs;
 
     public string? PngPath { get; set; }
 
     public bool IsValid => Atlas != null && Metrics != null && Glyphs != null && Glyphs.Length > 0;
 
-    public static Layout Parse(string json, string pngPath)
+    public static Layout Get(string json, string pngPath)
     {
-        JObject layoutObject = JObject.Parse(json);
+        Layout layout = JsonSerializer.Deserialize<Layout>(json, jsonSerializerOptions)!;
 
-        return new Layout
-        {
-            Atlas = layoutObject["atlas"]?.ToObject<Atlas>(),
-            Metrics = layoutObject["metrics"]?.ToObject<Metrics>(),
-            Glyphs = layoutObject["glyphs"]?.ToObject<Glyph[]>(),
-            PngPath = pngPath
-        };
+        layout.PngPath = pngPath;
+
+        return layout;
     }
 }

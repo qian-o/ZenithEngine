@@ -15,5 +15,10 @@ public enum TextureType
     /// <summary>
     /// A three-dimensional Texture.
     /// </summary>
-    Texture3D
+    Texture3D,
+
+    /// <summary>
+    /// A cube Texture.
+    /// </summary>
+    TextureCube
 }

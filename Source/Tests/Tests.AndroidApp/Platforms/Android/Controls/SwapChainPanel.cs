@@ -17,7 +17,7 @@ namespace Tests.AndroidApp.Platforms.Android.Controls;
 internal sealed unsafe class VkSurface(ANativeWindow* window) : IVkSurface, IDisposable
 {
     private readonly Vk _vk = Vk.GetApi();
-    private readonly Alloter _alloter = new();
+    private readonly Allocator _alloter = new();
 
     ~VkSurface()
     {
@@ -50,7 +50,7 @@ internal sealed unsafe class VkSurface(ANativeWindow* window) : IVkSurface, IDis
     {
         count = 2;
 
-        return _alloter.Allocate([KhrSurface.ExtensionName, KhrAndroidSurface.ExtensionName]);
+        return _alloter.Alloc([KhrSurface.ExtensionName, KhrAndroidSurface.ExtensionName]);
     }
 
     public void Dispose()

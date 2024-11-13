@@ -14,19 +14,19 @@ public enum ShaderStages
     Vertex = 1 << 0,
 
     /// <summary>
+    /// The hull shader stage.
+    /// </summary>
+    Hull = 1 << 1,
+
+    /// <summary>
+    /// The domain shader stage.
+    /// </summary>
+    Domain = 1 << 2,
+
+    /// <summary>
     /// The geometry shader stage.
     /// </summary>
-    Geometry = 1 << 1,
-
-    /// <summary>
-    /// The tessellation control (or hull) shader stage.
-    /// </summary>
-    TessellationControl = 1 << 2,
-
-    /// <summary>
-    /// The tessellation evaluation (or domain) shader stage.
-    /// </summary>
-    TessellationEvaluation = 1 << 3,
+    Geometry = 1 << 3,
 
     /// <summary>
     /// The pixel shader stage.
@@ -66,10 +66,5 @@ public enum ShaderStages
     /// <summary>
     /// The callable shader stage.
     /// </summary>
-    Callable = 1 << 11,
-
-    /// <summary>
-    /// The library shader stage.
-    /// </summary>
-    Library = 1 << 12
+    Callable = 1 << 11
 }

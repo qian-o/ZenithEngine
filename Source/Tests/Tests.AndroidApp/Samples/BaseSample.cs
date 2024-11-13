@@ -5,10 +5,10 @@ namespace Tests.AndroidApp.Samples;
 
 public abstract class BaseSample : ISample
 {
-    private readonly object updateLock = new();
+    private readonly Lock updateLock = new();
     private readonly Queue<Action<object[]>> updateTasks = new();
     private readonly Queue<object[]> updateObjects = new();
-    private readonly object renderLock = new();
+    private readonly Lock renderLock = new();
     private readonly Queue<Action<CommandList, object[]>> renderTasks = new();
     private readonly Queue<object[]> renderObjects = new();
 

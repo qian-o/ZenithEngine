@@ -40,7 +40,7 @@ public abstract class WindowImplementationBase : IWindow
 
     public abstract bool IsFocused { get; }
 
-    public abstract IVkSurface VkSurface { get; }
+    public abstract IVkSurface Surface { get; }
     #endregion
 
     #region Abstract Events

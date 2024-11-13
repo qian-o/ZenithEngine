@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Engine.Enums;
 
-public enum ResourceKind
+public enum ResourceType
 {
     /// <summary>
     /// Bind as constant buffer.
@@ -8,19 +8,24 @@ public enum ResourceKind
     ConstantBuffer,
 
     /// <summary>
-    /// Bind as read-write storage buffer.
+    /// Bind as read-only storage buffer.
     /// </summary>
-    StorageBuffer,
+    StructuredBuffer,
 
     /// <summary>
-    /// Bind as sampled texture.
+    /// Bind as read-write storage buffer.
     /// </summary>
-    SampledImage,
+    StructuredBufferReadWrite,
+
+    /// <summary>
+    /// Bind as read-only texture.
+    /// </summary>
+    Texture,
 
     /// <summary>
     /// Bind as read-write texture.
     /// </summary>
-    StorageImage,
+    TextureReadWrite,
 
     /// <summary>
     /// Bind as sampler.

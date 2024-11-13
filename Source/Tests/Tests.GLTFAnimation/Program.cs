@@ -1,7 +1,4 @@
-﻿using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
-using Graphics.Core;
+﻿using Graphics.Core;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using Graphics.Vulkan.Helpers;
@@ -9,10 +6,14 @@ using Graphics.Windowing;
 using Graphics.Windowing.Events;
 using SharpGLTF.Animations;
 using SharpGLTF.Materials;
+using SharpGLTF.Memory;
 using SharpGLTF.Schema2;
 using SharpGLTF.Validation;
 using Silk.NET.Maths;
 using StbImageSharp;
+using System.Numerics;
+using System.Runtime.InteropServices;
+using System.Text;
 using GAnimation = SharpGLTF.Schema2.Animation;
 using GMaterial = SharpGLTF.Schema2.Material;
 using GNode = SharpGLTF.Schema2.Node;
@@ -203,7 +204,7 @@ internal sealed unsafe class Program
     {
         context = new();
         device = context.CreateGraphicsDevice(context.GetBestPhysicalDevice());
-        swapchain = device.Factory.CreateSwapchain(new SwapchainDescription(mainWindow.VkSurface!, device.GetBestDepthFormat()));
+        swapchain = device.Factory.CreateSwapchain(new SwapchainDescription(mainWindow.Surface!, device.GetBestDepthFormat()));
 
         string hlsl = File.ReadAllText("Assets/Shaders/GLTF.hlsl");
 
@@ -589,7 +590,7 @@ internal sealed unsafe class Program
                     {
                         indexCount = primitive.IndexAccessor.Count;
 
-                        IList<uint>? indexBuffer = primitive.IndexAccessor.AsIndicesArray();
+                        IntegerArray indexBuffer = primitive.IndexAccessor.AsIndicesArray();
 
                         for (int i = 0; i < indexCount; i++)
                         {

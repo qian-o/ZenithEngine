@@ -4,6 +4,7 @@ using Graphics.Core;
 using Graphics.Vulkan;
 using Graphics.Vulkan.Descriptions;
 using SharpGLTF.Materials;
+using SharpGLTF.Memory;
 using SharpGLTF.Schema2;
 using StbImageSharp;
 using Tests.AndroidApp.Controls;
@@ -380,7 +381,7 @@ public class GLTFScene : BaseSample
                     {
                         indexCount = primitive.IndexAccessor.Count;
 
-                        IList<uint>? indexBuffer = primitive.IndexAccessor.AsIndicesArray();
+                        IntegerArray indexBuffer = primitive.IndexAccessor.AsIndicesArray();
 
                         for (int i = 0; i < indexCount; i++)
                         {

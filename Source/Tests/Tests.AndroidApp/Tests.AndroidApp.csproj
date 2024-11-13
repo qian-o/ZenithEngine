@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net8.0-android34.0</TargetFrameworks>
+		<TargetFrameworks>net9.0-android35.0</TargetFrameworks>
 		<OutputType>Exe</OutputType>
 		<UseMaui>true</UseMaui>
 		<SingleProject>true</SingleProject>
@@ -19,18 +19,7 @@
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" />
 		<PackageReference Include="SkiaSharp.Views.Maui.Controls" />
-		<PackageReference Include="Xamarin.AndroidX.Activity" />
-		<PackageReference Include="Xamarin.AndroidX.Activity.Ktx" />
-		<PackageReference Include="Xamarin.AndroidX.Collection" />
-		<PackageReference Include="Xamarin.AndroidX.Collection.Ktx" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Common" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" />
+		<PackageReference Include="System.Text.Json" />
 	</ItemGroup>
 
 	<ItemGroup>

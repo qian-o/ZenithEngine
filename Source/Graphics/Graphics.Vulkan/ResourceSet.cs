@@ -80,7 +80,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                 allocateInfo.AddNext(out DescriptorSetVariableDescriptorCountAllocateInfo variableDescriptorCountAllocateInfo);
 
                 variableDescriptorCountAllocateInfo.DescriptorSetCount = 1;
-                variableDescriptorCountAllocateInfo.PDescriptorCounts = Alloter.Allocate(Layout.MaxDescriptorCount);
+                variableDescriptorCountAllocateInfo.PDescriptorCounts = Alloter.Alloc(Layout.MaxDescriptorCount);
             }
 
             VkRes.Vk.AllocateDescriptorSets(VkRes.VkDevice, &allocateInfo, out descriptorSet).ThrowCode();
@@ -350,7 +350,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
         if (IsDescriptorBuffer(type))
         {
-            DescriptorBufferInfo* bufferInfos = Alloter.Allocate<DescriptorBufferInfo>(bindableResources.Length);
+            DescriptorBufferInfo* bufferInfos = Alloter.Alloc<DescriptorBufferInfo>(bindableResources.Length);
 
             for (int i = 0; i < bindableResources.Length; i++)
             {
@@ -370,7 +370,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
         {
             bool isSampled = type == DescriptorType.SampledImage;
 
-            DescriptorImageInfo* imageInfos = Alloter.Allocate<DescriptorImageInfo>(bindableResources.Length);
+            DescriptorImageInfo* imageInfos = Alloter.Alloc<DescriptorImageInfo>(bindableResources.Length);
 
             for (int i = 0; i < bindableResources.Length; i++)
             {
@@ -396,7 +396,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
         }
         else if (IsDescriptorSampler(type))
         {
-            DescriptorImageInfo* imageInfos = Alloter.Allocate<DescriptorImageInfo>(bindableResources.Length);
+            DescriptorImageInfo* imageInfos = Alloter.Alloc<DescriptorImageInfo>(bindableResources.Length);
 
             for (int i = 0; i < bindableResources.Length; i++)
             {
@@ -418,7 +418,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
                 AccelerationStructureCount = (uint)bindableResources.Length
             };
 
-            AccelerationStructureKHR* accelerationStructures = Alloter.Allocate<AccelerationStructureKHR>(bindableResources.Length);
+            AccelerationStructureKHR* accelerationStructures = Alloter.Alloc<AccelerationStructureKHR>(bindableResources.Length);
 
             for (int i = 0; i < bindableResources.Length; i++)
             {
@@ -429,7 +429,7 @@ public unsafe class ResourceSet : VulkanObject<ulong>
 
             writeDescriptorSetAS.PAccelerationStructures = accelerationStructures;
 
-            writeDescriptorSet.PNext = Alloter.Allocate(writeDescriptorSetAS);
+            writeDescriptorSet.PNext = Alloter.Alloc(writeDescriptorSetAS);
         }
         else
         {

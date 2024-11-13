@@ -13,7 +13,7 @@ public unsafe class Context : DisposableObject
 {
     private const string ValidationLayerName = "VK_LAYER_KHRONOS_validation";
 
-    private readonly Alloter _alloter;
+    private readonly Allocator _alloter;
     private readonly Vk _vk;
     private readonly VkInstance _instance;
     private readonly KhrSurface _surface;
@@ -106,7 +106,7 @@ public unsafe class Context : DisposableObject
             transferQueueFamilyIndex
         ];
 
-        DeviceQueueCreateInfo* createInfos = _alloter.Allocate<DeviceQueueCreateInfo>(queueFamilyIndices.Count);
+        DeviceQueueCreateInfo* createInfos = _alloter.Alloc<DeviceQueueCreateInfo>(queueFamilyIndices.Count);
 
         for (int i = 0; i < queueFamilyIndices.Count; i++)
         {
@@ -127,7 +127,7 @@ public unsafe class Context : DisposableObject
             QueueCreateInfoCount = (uint)queueFamilyIndices.Count,
             PQueueCreateInfos = createInfos,
             EnabledExtensionCount = (uint)extensions.Length,
-            PpEnabledExtensionNames = _alloter.Allocate(extensions)
+            PpEnabledExtensionNames = _alloter.Alloc(extensions)
         };
 
         createInfo.AddNext(out PhysicalDeviceFeatures2 features2)
@@ -224,7 +224,7 @@ public unsafe class Context : DisposableObject
         {
             LayerProperties layer = availableLayers[i];
 
-            if (Alloter.GetString(layer.LayerName) == ValidationLayerName)
+            if (Allocator.GetString(layer.LayerName) == ValidationLayerName)
             {
                 return true;
             }
@@ -243,9 +243,9 @@ public unsafe class Context : DisposableObject
         ApplicationInfo applicationInfo = new()
         {
             SType = StructureType.ApplicationInfo,
-            PApplicationName = _alloter.Allocate("Graphics"),
+            PApplicationName = _alloter.Alloc("Graphics"),
             ApplicationVersion = new Version32(1, 0, 0),
-            PEngineName = _alloter.Allocate("Graphics"),
+            PEngineName = _alloter.Alloc("Graphics"),
             EngineVersion = new Version32(1, 0, 0),
             ApiVersion = ApiVersion
         };
@@ -264,13 +264,13 @@ public unsafe class Context : DisposableObject
         if (Debugging)
         {
             createInfo.EnabledLayerCount = 1;
-            createInfo.PpEnabledLayerNames = _alloter.Allocate([ValidationLayerName]);
+            createInfo.PpEnabledLayerNames = _alloter.Alloc([ValidationLayerName]);
         }
 
         string[] extensions = GetInstanceExtensions();
 
         createInfo.EnabledExtensionCount = (uint)extensions.Length;
-        createInfo.PpEnabledExtensionNames = _alloter.Allocate(extensions);
+        createInfo.PpEnabledExtensionNames = _alloter.Alloc(extensions);
 
         VkInstance instance;
         _vk.CreateInstance(&createInfo, null, &instance).ThrowCode("Failed to create instance!");

@@ -2,7 +2,7 @@
 
 internal sealed class Glyph
 {
-    public int UniCode { get; set; }
+    public int Unicode { get; set; }
 
     public float Advance { get; set; }
 

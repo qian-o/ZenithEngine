@@ -1,6 +1,6 @@
 ﻿namespace Graphics.Engine.Enums;
 
-public enum ComparisonKind
+public enum ComparisonFunction
 {
     /// <summary>
     /// The comparison never succeeds.

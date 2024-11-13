@@ -41,7 +41,7 @@ public interface IWindow
 
     bool IsFocused { get; }
 
-    IVkSurface VkSurface { get; }
+    IVkSurface Surface { get; }
 
     double Time { get; }
 

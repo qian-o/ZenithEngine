@@ -1,7 +1,7 @@
 ﻿namespace Graphics.Engine.Enums;
 
 [Flags]
-public enum ColorWriteMask
+public enum ColorWriteChannels
 {
     /// <summary>
     /// No color component will be written to.

@@ -71,7 +71,7 @@ internal sealed unsafe class MainView : View
         _device = device;
         _imGuiController = imGuiController;
 
-        _layout = Layout.Parse(File.ReadAllText("Assets/msyh.json"), "Assets/msyh.png");
+        _layout = Layout.Get(File.ReadAllText("Assets/msyh.json"), "Assets/msyh.png");
 
         byte[] bytes = File.ReadAllBytes(_layout.PngPath!);
 
@@ -166,8 +166,8 @@ internal sealed unsafe class MainView : View
             float offset = 0.0f;
             foreach (char @char in str)
             {
-                Glyph? glyph = _layout.Glyphs!.FirstOrDefault(x => x.UniCode == @char);
-                glyph ??= _layout.Glyphs!.First(x => x.UniCode == '?');
+                Glyph? glyph = _layout.Glyphs!.FirstOrDefault(x => x.Unicode == @char);
+                glyph ??= _layout.Glyphs!.First(x => x.Unicode == '?');
 
                 if (glyph.PlaneBounds.Width > 0)
                 {

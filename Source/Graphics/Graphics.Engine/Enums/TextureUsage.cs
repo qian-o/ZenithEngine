@@ -29,12 +29,7 @@ public enum TextureUsage
     DepthStencil = 1 << 3,
 
     /// <summary>
-    /// The Texture is a two-dimensional cubemap.
-    /// </summary>
-    Cubemap = 1 << 4,
-
-    /// <summary>
     /// The Texture supports automatic generation of mipmaps.
     /// </summary>
-    GenerateMipmaps = 1 << 5
+    GenerateMipmaps = 1 << 4
 }
