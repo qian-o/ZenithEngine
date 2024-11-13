@@ -29,6 +29,7 @@
     <PackageVersion Include="SkiaSharp.Skottie" Version="2.88.9" />
     <PackageVersion Include="SkiaSharp.Views.Maui.Controls" Version="2.88.9" />
     <PackageVersion Include="StbImageSharp" Version="2.30.15" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.0" />
     <PackageVersion Include="Vortice.Dxc" Version="3.6.2" />
   </ItemGroup>
 </Project>

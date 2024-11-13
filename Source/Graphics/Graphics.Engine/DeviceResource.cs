@@ -17,10 +17,7 @@ public abstract class DeviceResource(Context context) : IDisposable
 
     public string Name
     {
-        get
-        {
-            return name;
-        }
+        get => name;
         set
         {
             if (name == value)

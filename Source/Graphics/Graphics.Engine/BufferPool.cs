@@ -2,7 +2,7 @@
 
 namespace Graphics.Engine;
 
-internal class BufferPool(Context context) : DeviceResource(context)
+internal sealed class BufferPool(Context context) : DeviceResource(context)
 {
     private const uint MinBufferSize = 1024 * 4;
     private const uint MaxBufferCount = 100;
@@ -13,7 +13,7 @@ internal class BufferPool(Context context) : DeviceResource(context)
     {
         lock (this)
         {
-            foreach (var buffer in buffers)
+            foreach (Buffer buffer in buffers)
             {
                 if (buffer.Desc.SizeInBytes >= sizeInBytes)
                 {
@@ -54,7 +54,7 @@ internal class BufferPool(Context context) : DeviceResource(context)
     {
         lock (this)
         {
-            foreach (var buffer in buffers)
+            foreach (Buffer buffer in buffers)
             {
                 buffer.Dispose();
             }
