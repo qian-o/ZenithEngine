@@ -1,5 +1,5 @@
-﻿using System.Numerics;
-using Graphics.Engine.Enums;
+﻿using Graphics.Engine.Enums;
+using System.Numerics;
 
 namespace Graphics.Engine;
 

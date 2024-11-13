@@ -1,10 +1,10 @@
-﻿using System.Numerics;
-using Graphics.Engine;
+﻿using Graphics.Engine;
 using Graphics.Engine.Descriptions;
 using Graphics.Engine.Enums;
 using Graphics.Windowing;
 using Graphics.Windowing.Events;
 using Silk.NET.Maths;
+using System.Numerics;
 
 // 1. Use Dynamic Rendering instead of RenderPass.
 // 2. Reduce unnecessary assignment operations.

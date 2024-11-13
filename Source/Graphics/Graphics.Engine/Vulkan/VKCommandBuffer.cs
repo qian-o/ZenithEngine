@@ -1,9 +1,9 @@
-﻿using System.Numerics;
-using Graphics.Core.Helpers;
+﻿using Graphics.Core.Helpers;
 using Graphics.Engine.Enums;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Maths;
 using Silk.NET.Vulkan;
+using System.Numerics;
 using VkViewport = Silk.NET.Vulkan.Viewport;
 
 namespace Graphics.Engine.Vulkan;
