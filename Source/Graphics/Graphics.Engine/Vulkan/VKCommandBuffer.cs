@@ -97,64 +97,33 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
     public override void UpdateTextureData(Texture texture,
                                            nint source,
                                            uint sourceSizeInBytes,
-                                           uint sourceX,
-                                           uint sourceY,
-                                           uint sourceZ,
-                                           uint sourceMipLevel,
-                                           CubeMapFace sourceBaseFace,
-                                           uint width,
-                                           uint height,
-                                           uint depth)
+                                           TextureRegion region)
     {
         VKTexture vkTexture = texture.VK();
 
-        vkTexture.SetData(CommandBuffer,
-                          source,
-                          sourceSizeInBytes,
-                          sourceX,
-                          sourceY,
-                          sourceZ,
-                          sourceMipLevel,
-                          sourceBaseFace,
-                          width,
-                          height,
-                          depth);
+        vkTexture.SetData(CommandBuffer, source, sourceSizeInBytes, region);
     }
 
     public override void CopyTexture(Texture source,
-                                     uint sourceX,
-                                     uint sourceY,
-                                     uint sourceZ,
-                                     uint sourceMipLevel,
-                                     CubeMapFace sourceBaseFace,
+                                     TextureRegion sourceRegion,
                                      Texture destination,
-                                     uint destinationX,
-                                     uint destinationY,
-                                     uint destinationZ,
-                                     uint destinationMipLevel,
-                                     CubeMapFace destinationBaseFace,
-                                     uint width,
-                                     uint height,
-                                     uint depth)
+                                     TextureRegion destinationRegion)
     {
         VKTexture vkSource = source.VK();
         VKTexture vkDestination = destination.VK();
 
-        vkSource.CopyTo(CommandBuffer,
-                        sourceX,
-                        sourceY,
-                        sourceZ,
-                        sourceMipLevel,
-                        sourceBaseFace,
-                        vkDestination,
-                        destinationX,
-                        destinationY,
-                        destinationZ,
-                        destinationMipLevel,
-                        destinationBaseFace,
-                        width,
-                        height,
-                        depth);
+        vkSource.CopyTo(CommandBuffer, sourceRegion, vkDestination, destinationRegion);
+    }
+
+    public override void ResolveTexture(Texture source,
+                                        TextureRegion sourceRegion,
+                                        Texture destination,
+                                        TextureRegion destinationRegion)
+    {
+        VKTexture vkSource = source.VK();
+        VKTexture vkDestination = destination.VK();
+
+        vkSource.ResolveTo(CommandBuffer, sourceRegion, vkDestination, destinationRegion);
     }
 
     public override void BeginRendering(FrameBuffer frameBuffer, ClearValue clearValue)

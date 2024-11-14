@@ -60,25 +60,11 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     /// <param name="texture"></param>
     /// <param name="source"></param>
     /// <param name="sourceSizeInBytes"></param>
-    /// <param name="sourceX"></param>
-    /// <param name="sourceY"></param>
-    /// <param name="sourceZ"></param>
-    /// <param name="sourceMipLevel"></param>
-    /// <param name="sourceBaseFace"></param>
-    /// <param name="width"></param>
-    /// <param name="height"></param>
-    /// <param name="depth"></param>
+    /// <param name="region"></param>
     public abstract void UpdateTextureData(Texture texture,
                                            nint source,
                                            uint sourceSizeInBytes,
-                                           uint sourceX,
-                                           uint sourceY,
-                                           uint sourceZ,
-                                           uint sourceMipLevel,
-                                           CubeMapFace sourceBaseFace,
-                                           uint width,
-                                           uint height,
-                                           uint depth);
+                                           TextureRegion region);
 
     /// <summary>
     /// Copies data from a buffer to a texture.
@@ -98,21 +84,23 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     /// <param name="width"></param>
     /// <param name="height"></param>
     /// <param name="depth"></param>
+    /// <param name="faceCount"></param>
     public abstract void CopyTexture(Texture source,
-                                     uint sourceX,
-                                     uint sourceY,
-                                     uint sourceZ,
-                                     uint sourceMipLevel,
-                                     CubeMapFace sourceBaseFace,
+                                     TextureRegion sourceRegion,
                                      Texture destination,
-                                     uint destinationX,
-                                     uint destinationY,
-                                     uint destinationZ,
-                                     uint destinationMipLevel,
-                                     CubeMapFace destinationBaseFace,
-                                     uint width,
-                                     uint height,
-                                     uint depth);
+                                     TextureRegion destinationRegion);
+
+    /// <summary>
+    /// Resolve a multisampled texture into a non-multisampled texture.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="sourceRegion"></param>
+    /// <param name="destination"></param>
+    /// <param name="destinationRegion"></param>
+    public abstract void ResolveTexture(Texture source,
+                                        TextureRegion sourceRegion,
+                                        Texture destination,
+                                        TextureRegion destinationRegion);
 
     /// <summary>
     /// Begin rendering to a specific frame buffer.
