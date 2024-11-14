@@ -2,6 +2,7 @@
 using Graphics.Engine;
 using Graphics.Engine.Descriptions;
 using Graphics.Engine.Enums;
+using Graphics.Engine.Helpers;
 using Graphics.Windowing;
 using Graphics.Windowing.Events;
 using Silk.NET.Maths;
@@ -51,7 +52,9 @@ unsafe void Loaded(object? sender, EventArgs e)
     texture1 = context.Factory.CreateTexture(in textureDesc1);
     texture1.Name = "Texture1";
 
-    TextureDesc textureDesc2 = TextureDesc.DefaultCube(512, 512, 1);
+    TextureDesc textureDesc2 = TextureDesc.Default2D((uint)imageResult.Width,
+                                                     (uint)imageResult.Height,
+                                                     Utils.GetMipLevels((uint)imageResult.Width, (uint)imageResult.Height));
     texture2 = context.Factory.CreateTexture(in textureDesc2);
     texture2.Name = "Texture2";
 
@@ -74,18 +77,11 @@ void Render(object? sender, TimeEventArgs e)
     commandBuffer.Begin();
 
     TextureRegion source = TextureRegion.Default(texture1);
-    TextureRegion destination = TextureRegion.Default(texture2);
 
-    for (int i = 0; i < 6; i++)
+    for (uint i = 0; i < texture2.Desc.MipLevels; i++)
     {
-        commandBuffer.CopyTexture(texture1,
-                                  source,
-                                  texture2,
-                                  destination);
-
-        destination.Face++;
+        commandBuffer.CopyTexture(texture1, source, texture2, TextureRegion.Default(texture2, i));
     }
-
 
     commandBuffer.BeginRendering(swapChain.FrameBuffer, ClearValue.Default(color: Vector4.UnitX));
 
