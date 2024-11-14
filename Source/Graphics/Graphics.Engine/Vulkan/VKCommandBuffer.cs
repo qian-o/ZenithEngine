@@ -116,14 +116,14 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
     }
 
     public override void ResolveTexture(Texture source,
-                                        TextureRegion sourceRegion,
+                                        TexturePosition sourcePosition,
                                         Texture destination,
-                                        TextureRegion destinationRegion)
+                                        TexturePosition destinationPosition)
     {
         VKTexture vkSource = source.VK();
         VKTexture vkDestination = destination.VK();
 
-        vkSource.ResolveTo(CommandBuffer, sourceRegion, vkDestination, destinationRegion);
+        vkSource.ResolveTo(CommandBuffer, sourcePosition, vkDestination, destinationPosition);
     }
 
     public override void BeginRendering(FrameBuffer frameBuffer, ClearValue clearValue)

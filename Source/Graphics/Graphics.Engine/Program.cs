@@ -1,9 +1,11 @@
-﻿using Graphics.Engine;
+﻿using Graphics.Core.Helpers;
+using Graphics.Engine;
 using Graphics.Engine.Descriptions;
 using Graphics.Engine.Enums;
 using Graphics.Windowing;
 using Graphics.Windowing.Events;
 using Silk.NET.Maths;
+using StbImageSharp;
 using System.Numerics;
 
 // 1. Use Dynamic Rendering instead of RenderPass.
@@ -11,6 +13,7 @@ using System.Numerics;
 // 3. Use slang instead of HLSL.
 // 4. Silk.NET 3.0 use VkStruct == NULL.
 // 5. Use Silk.NET.Maths instead of System.Numerics.
+// 6. Remove TextureView.
 
 using Context context = Context.Create(Backend.Vulkan);
 
@@ -19,6 +22,8 @@ context.CreateDevice(true);
 using CommandProcessor commandProcessor = context.Factory.CreateCommandProcessor();
 
 SwapChain swapChain = null!;
+Texture texture1 = null!;
+Texture texture2 = null!;
 
 SdlWindow window = new();
 window.Loaded += Loaded;
@@ -33,10 +38,27 @@ WindowManager.Loop();
 
 swapChain.Dispose();
 
-void Loaded(object? sender, EventArgs e)
+unsafe void Loaded(object? sender, EventArgs e)
 {
     SwapChainDesc swapChainDesc = SwapChainDesc.Default(window.Surface);
     swapChain = context.Factory.CreateSwapChain(in swapChainDesc);
+
+    using FileStream fileStream = File.OpenRead(@"C:\Users\13247\Desktop\硝子.png");
+
+    ImageResult imageResult = ImageResult.FromStream(fileStream, ColorComponents.RedGreenBlueAlpha);
+
+    TextureDesc textureDesc1 = TextureDesc.Default2D((uint)imageResult.Width, (uint)imageResult.Height, 1);
+    texture1 = context.Factory.CreateTexture(in textureDesc1);
+    texture1.Name = "Texture1";
+
+    TextureDesc textureDesc2 = TextureDesc.DefaultCube(512, 512, 1);
+    texture2 = context.Factory.CreateTexture(in textureDesc2);
+    texture2.Name = "Texture2";
+
+    context.UpdateTextureData(texture1,
+                              (nint)imageResult.Data.AsPointer(),
+                              (uint)imageResult.Data.Length,
+                              TextureRegion.Default(texture1));
 
     Console.WriteLine("Initialization completed.");
 }
@@ -50,6 +72,21 @@ void Render(object? sender, TimeEventArgs e)
     CommandBuffer commandBuffer = commandProcessor.CommandBuffer();
 
     commandBuffer.Begin();
+
+    TextureRegion source = TextureRegion.Default(texture1);
+    TextureRegion destination = TextureRegion.Default(texture2);
+
+    for (int i = 0; i < 6; i++)
+    {
+        commandBuffer.CopyTexture(texture1,
+                                  source,
+                                  texture2,
+                                  destination);
+
+        destination.Face++;
+    }
+
+
     commandBuffer.BeginRendering(swapChain.FrameBuffer, ClearValue.Default(color: Vector4.UnitX));
 
     commandBuffer.EndRendering();
@@ -70,4 +107,6 @@ void SizeChanged(object? sender, ValueEventArgs<Vector2D<int>> e)
 void Unloaded(object? sender, EventArgs e)
 {
     swapChain.Dispose();
+    texture1.Dispose();
+    texture2.Dispose();
 }

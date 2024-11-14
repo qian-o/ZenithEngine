@@ -94,13 +94,13 @@ public abstract class CommandBuffer(Context context) : DeviceResource(context)
     /// Resolve a multisampled texture into a non-multisampled texture.
     /// </summary>
     /// <param name="source"></param>
-    /// <param name="sourceRegion"></param>
+    /// <param name="sourcePosition"></param>
     /// <param name="destination"></param>
-    /// <param name="destinationRegion"></param>
+    /// <param name="destinationPosition"></param>
     public abstract void ResolveTexture(Texture source,
-                                        TextureRegion sourceRegion,
+                                        TexturePosition sourcePosition,
                                         Texture destination,
-                                        TextureRegion destinationRegion);
+                                        TexturePosition destinationPosition);
 
     /// <summary>
     /// Begin rendering to a specific frame buffer.

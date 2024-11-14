@@ -51,14 +51,7 @@ internal unsafe partial class VKContext
     public override void UpdateTextureData(Texture texture,
                                            nint source,
                                            uint sourceSizeInBytes,
-                                           uint sourceX,
-                                           uint sourceY,
-                                           uint sourceZ,
-                                           uint sourceMipLevel,
-                                           CubeMapFace sourceBaseFace,
-                                           uint width,
-                                           uint height,
-                                           uint depth)
+                                           TextureRegion region)
     {
         CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
 
@@ -67,14 +60,7 @@ internal unsafe partial class VKContext
         commandBuffer.UpdateTextureData(texture,
                                         source,
                                         sourceSizeInBytes,
-                                        sourceX,
-                                        sourceY,
-                                        sourceZ,
-                                        sourceMipLevel,
-                                        sourceBaseFace,
-                                        width,
-                                        height,
-                                        depth);
+                                        region);
 
         commandBuffer.End();
         commandBuffer.Commit();
@@ -193,6 +179,9 @@ internal unsafe partial class VKContext
 
     private void DestroyDevice()
     {
+        CommandProcessor.Dispose();
+        BufferPool.Dispose();
+
         Vk.DestroyDevice(Device, null);
     }
 
