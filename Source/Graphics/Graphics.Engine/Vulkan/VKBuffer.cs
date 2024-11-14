@@ -182,7 +182,54 @@ internal sealed unsafe class VKBuffer : Buffer
                        uint sourceOffset = 0,
                        uint destinationOffset = 0)
     {
-        // TODO: Implement
+        BufferCopy bufferCopy = new()
+        {
+            Size = size,
+            SrcOffset = sourceOffset,
+            DstOffset = destinationOffset
+        };
+
+        BufferMemoryBarrier memoryBarrier = new()
+        {
+            SType = StructureType.BufferMemoryBarrier,
+            Buffer = Buffer,
+            Size = Vk.WholeSize,
+            SrcAccessMask = AccessFlags.None,
+            DstAccessMask = AccessFlags.TransferWriteBit,
+            SrcQueueFamilyIndex = Vk.QueueFamilyIgnored,
+            DstQueueFamilyIndex = Vk.QueueFamilyIgnored
+        };
+
+        Context.Vk.CmdPipelineBarrier(commandBuffer,
+                                      PipelineStageFlags.AllCommandsBit,
+                                      PipelineStageFlags.TransferBit,
+                                      DependencyFlags.ByRegionBit,
+                                      0,
+                                      null,
+                                      1,
+                                      &memoryBarrier,
+                                      0,
+                                      null);
+
+        Context.Vk.CmdCopyBuffer(commandBuffer,
+                                 Buffer,
+                                 destination.Buffer,
+                                 1,
+                                 &bufferCopy);
+
+        memoryBarrier.SrcAccessMask = AccessFlags.TransferWriteBit;
+        memoryBarrier.DstAccessMask = AccessFlags.None;
+
+        Context.Vk.CmdPipelineBarrier(commandBuffer,
+                                      PipelineStageFlags.TransferBit,
+                                      PipelineStageFlags.AllCommandsBit,
+                                      DependencyFlags.ByRegionBit,
+                                      0,
+                                      null,
+                                      1,
+                                      &memoryBarrier,
+                                      0,
+                                      null);
     }
 
     protected override void SetName(string name)
