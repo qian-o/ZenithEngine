@@ -31,12 +31,12 @@ public enum BufferUsage
     IndirectBuffer = 1 << 4,
 
     /// <summary>
-    /// Indicates will be updated with new data very frequently.
-    /// </summary>
-    Dynamic = 1 << 5,
-
-    /// <summary>
     /// Indicates will be used in a RayTracing acceleration structure.
     /// </summary>
-    AccelerationStructure = 1 << 6
+    AccelerationStructure = 1 << 5,
+
+    /// <summary>
+    /// Indicates will be updated with new data very frequently.
+    /// </summary>
+    Dynamic = 1 << 6
 }
