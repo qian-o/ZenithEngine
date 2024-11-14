@@ -45,21 +45,24 @@ internal sealed class BufferPool(Context context) : DeviceResource(context)
 
     public void Release()
     {
-        foreach (Buffer usedBuffer in usedBuffers)
+        lock (this)
         {
-            availableBuffers.Add(usedBuffer);
-        }
-
-        usedBuffers.Clear();
-
-        if (availableBuffers.Count > MaxBufferCount)
-        {
-            foreach (Buffer buffer in availableBuffers.Take((int)MaxBufferCount))
+            foreach (Buffer usedBuffer in usedBuffers)
             {
-                buffer.Dispose();
+                availableBuffers.Add(usedBuffer);
             }
 
-            availableBuffers.RemoveAll(item => item.IsDisposed);
+            usedBuffers.Clear();
+
+            if (availableBuffers.Count > MaxBufferCount)
+            {
+                foreach (Buffer buffer in availableBuffers.Take((int)MaxBufferCount))
+                {
+                    buffer.Dispose();
+                }
+
+                availableBuffers.RemoveAll(item => item.IsDisposed);
+            }
         }
     }
 

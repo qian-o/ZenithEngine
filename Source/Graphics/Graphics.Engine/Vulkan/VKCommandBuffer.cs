@@ -97,11 +97,28 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
     public override void UpdateTextureData(Texture texture,
                                            nint source,
                                            uint sourceSizeInBytes,
-                                           uint destinationOffsetInBytes = 0)
+                                           uint sourceX,
+                                           uint sourceY,
+                                           uint sourceZ,
+                                           uint sourceMipLevel,
+                                           CubeMapFace sourceBaseFace,
+                                           uint width,
+                                           uint height,
+                                           uint depth)
     {
         VKTexture vkTexture = texture.VK();
 
-        vkTexture.SetData(CommandBuffer, source, sourceSizeInBytes, destinationOffsetInBytes);
+        vkTexture.SetData(CommandBuffer,
+                          source,
+                          sourceSizeInBytes,
+                          sourceX,
+                          sourceY,
+                          sourceZ,
+                          sourceMipLevel,
+                          sourceBaseFace,
+                          width,
+                          height,
+                          depth);
     }
 
     public override void CopyTexture(Texture source,
@@ -118,8 +135,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
                                      CubeMapFace destinationBaseFace,
                                      uint width,
                                      uint height,
-                                     uint depth,
-                                     uint faceCount)
+                                     uint depth)
     {
         VKTexture vkSource = source.VK();
         VKTexture vkDestination = destination.VK();
@@ -138,8 +154,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
                         destinationBaseFace,
                         width,
                         height,
-                        depth,
-                        faceCount);
+                        depth);
     }
 
     public override void BeginRendering(FrameBuffer frameBuffer, ClearValue clearValue)

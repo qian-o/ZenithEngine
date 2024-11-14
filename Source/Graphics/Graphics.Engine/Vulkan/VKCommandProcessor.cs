@@ -53,33 +53,36 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
 
     public override void Submit(bool isSyncUpToGpu = true)
     {
-        if (isSyncUpToGpu)
+        lock (this)
         {
-            Context.SyncUpToGpu();
-        }
-
-        for (int i = 0; i < waitSubmitBufferCount; i++)
-        {
-            VKCommandBuffer vKCommandBuffer = waitSubmitBuffers[i];
-
-            VkCommandBuffer commandBuffer = vKCommandBuffer.CommandBuffer;
-            PipelineStageFlags pipelineStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
-
-            SubmitInfo submitInfo = new()
+            if (isSyncUpToGpu)
             {
-                SType = StructureType.SubmitInfo,
-                CommandBufferCount = 1,
-                PCommandBuffers = &commandBuffer,
-                PWaitDstStageMask = &pipelineStageFlags
-            };
+                Context.SyncUpToGpu();
+            }
 
-            Context.Vk.QueueSubmit(queue, 1, &submitInfo, default);
+            for (int i = 0; i < waitSubmitBufferCount; i++)
+            {
+                VKCommandBuffer vKCommandBuffer = waitSubmitBuffers[i];
 
-            availableBuffers.Enqueue(vKCommandBuffer);
+                VkCommandBuffer commandBuffer = vKCommandBuffer.CommandBuffer;
+                PipelineStageFlags pipelineStageFlags = PipelineStageFlags.ColorAttachmentOutputBit;
+
+                SubmitInfo submitInfo = new()
+                {
+                    SType = StructureType.SubmitInfo,
+                    CommandBufferCount = 1,
+                    PCommandBuffers = &commandBuffer,
+                    PWaitDstStageMask = &pipelineStageFlags
+                };
+
+                Context.Vk.QueueSubmit(queue, 1, &submitInfo, default);
+
+                availableBuffers.Enqueue(vKCommandBuffer);
+            }
+
+            waitSubmitBufferCount = 0;
+            Array.Clear(waitSubmitBuffers, 0, waitSubmitBuffers.Length);
         }
-
-        waitSubmitBufferCount = 0;
-        Array.Clear(waitSubmitBuffers, 0, waitSubmitBuffers.Length);
     }
 
     public override void WaitIdle()

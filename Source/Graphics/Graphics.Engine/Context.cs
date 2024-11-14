@@ -22,7 +22,14 @@ public abstract class Context : DisposableObject
     public abstract void UpdateTextureData(Texture texture,
                                            nint source,
                                            uint sourceSizeInBytes,
-                                           uint destinationOffsetInBytes = 0);
+                                           uint sourceX,
+                                           uint sourceY,
+                                           uint sourceZ,
+                                           uint sourceMipLevel,
+                                           CubeMapFace sourceBaseFace,
+                                           uint width,
+                                           uint height,
+                                           uint depth);
 
     public abstract MappedResource MapMemory(Buffer buffer, MapMode mode);
 
