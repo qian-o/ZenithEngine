@@ -103,7 +103,76 @@ internal sealed unsafe class VKBuffer : Buffer
         }
         else
         {
-            // TODO: Implement
+            Buffer buffer = Context.BufferPool.Buffer(sourceSizeInBytes);
+
+            MappedResource mappedResource = Context.MapMemory(buffer, MapMode.Write);
+
+            Unsafe.CopyBlock((void*)mappedResource.Data,
+                             (void*)source,
+                             sourceSizeInBytes);
+
+            Context.UnmapMemory(buffer);
+
+            BufferCopy bufferCopy = new()
+            {
+                Size = sourceSizeInBytes,
+                SrcOffset = 0,
+                DstOffset = destinationOffsetInBytes
+            };
+
+            BufferMemoryBarrier memoryBarrier = new()
+            {
+                SType = StructureType.BufferMemoryBarrier,
+                Buffer = Buffer,
+                Size = Vk.WholeSize,
+                SrcAccessMask = AccessFlags.None,
+                DstAccessMask = AccessFlags.TransferWriteBit,
+                SrcQueueFamilyIndex = Vk.QueueFamilyIgnored,
+                DstQueueFamilyIndex = Vk.QueueFamilyIgnored
+            };
+
+            Context.Vk.CmdPipelineBarrier(commandBuffer,
+                                          PipelineStageFlags.AllCommandsBit,
+                                          PipelineStageFlags.TransferBit,
+                                          DependencyFlags.None,
+                                          0,
+                                          null,
+                                          1,
+                                          &memoryBarrier,
+                                          0,
+                                          null);
+
+            Context.Vk.CmdCopyBuffer(commandBuffer,
+                                     buffer.VK().Buffer,
+                                     Buffer,
+                                     1,
+                                     &bufferCopy);
+
+            memoryBarrier.SrcAccessMask = AccessFlags.TransferWriteBit;
+
+            if (Desc.Usage.HasFlag(BufferUsage.VertexBuffer) || Desc.Usage.HasFlag(BufferUsage.IndexBuffer))
+            {
+                memoryBarrier.DstAccessMask = AccessFlags.IndexReadBit;
+            }
+            else if (Desc.Usage.HasFlag(BufferUsage.ConstantBuffer))
+            {
+                memoryBarrier.DstAccessMask = AccessFlags.UniformReadBit;
+            }
+            else
+            {
+                memoryBarrier.DstAccessMask = AccessFlags.ShaderReadBit;
+            }
+
+            Context.Vk.CmdPipelineBarrier(commandBuffer,
+                                          PipelineStageFlags.TransferBit,
+                                          PipelineStageFlags.AllCommandsBit,
+                                          DependencyFlags.None,
+                                          0,
+                                          null,
+                                          1,
+                                          &memoryBarrier,
+                                          0,
+                                          null);
         }
     }
 

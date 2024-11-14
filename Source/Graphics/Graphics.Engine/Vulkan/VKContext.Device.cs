@@ -90,7 +90,7 @@ internal unsafe partial class VKContext
         {
             if (BufferPool.IsUsed)
             {
-                CommandProcessor.Submit();
+                CommandProcessor.Submit(false);
                 CommandProcessor.WaitIdle();
 
                 BufferPool.Release();

@@ -51,9 +51,9 @@ internal sealed unsafe class VKCommandProcessor : CommandProcessor
         }
     }
 
-    public override void Submit(bool waitContextProcessors = true)
+    public override void Submit(bool isSyncUpToGpu = true)
     {
-        if (waitContextProcessors)
+        if (isSyncUpToGpu)
         {
             Context.SyncUpToGpu();
         }
