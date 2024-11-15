@@ -1,4 +1,4 @@
-﻿namespace ZenithEngine.Common;
+﻿namespace ZenithEngine.Common.Graphics;
 
 public abstract class GraphicsResource(GraphicsContext context) : IDisposable
 {
@@ -11,19 +11,20 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
         get => name;
         set
         {
-            if (name == value)
+            if (name != value)
             {
-                return;
+                name = value;
+
+                SetName(value);
             }
-
-            name = value;
-
-            SetName(value);
         }
     }
 
     public bool IsDisposed => isDisposed != 0;
 
+    /// <summary>
+    /// Graphics context.
+    /// </summary>
     protected GraphicsContext Context { get; } = context;
 
     /// <summary>
