@@ -55,31 +55,29 @@ public struct SamplerDesc
     /// </summary>
     public SamplerBorderColor BorderColor { get; set; }
 
-    public static SamplerDesc Default(bool isLinear, uint anisotropy = 0)
+    public static SamplerDesc Default(AddressMode addressModeU = AddressMode.Wrap,
+                                      AddressMode addressModeV = AddressMode.Wrap,
+                                      AddressMode addressModeW = AddressMode.Wrap,
+                                      SamplerFilter filter = SamplerFilter.MinLinearMagLinearMipLinear,
+                                      ComparisonFunction? comparisonFunction = null,
+                                      uint maximumAnisotropy = 0,
+                                      uint minimumLod = 0,
+                                      uint maximumLod = uint.MaxValue,
+                                      int lodBias = 0,
+                                      SamplerBorderColor borderColor = SamplerBorderColor.TransparentBlack)
     {
-        SamplerFilter filter;
-
-        if (anisotropy > 0)
-        {
-            filter = SamplerFilter.Anisotropic;
-        }
-        else
-        {
-            filter = isLinear ? SamplerFilter.MinLinearMagLinearMipLinear : SamplerFilter.MinPointMagPointMipPoint;
-        }
-
         return new()
         {
-            AddressModeU = AddressMode.Wrap,
-            AddressModeV = AddressMode.Wrap,
-            AddressModeW = AddressMode.Wrap,
+            AddressModeU = addressModeU,
+            AddressModeV = addressModeV,
+            AddressModeW = addressModeW,
             Filter = filter,
-            ComparisonFunction = null,
-            MaximumAnisotropy = anisotropy,
-            MinimumLod = 0,
-            MaximumLod = uint.MaxValue,
-            LodBias = 0,
-            BorderColor = SamplerBorderColor.TransparentBlack
+            ComparisonFunction = comparisonFunction,
+            MaximumAnisotropy = maximumAnisotropy,
+            MinimumLod = minimumLod,
+            MaximumLod = maximumLod,
+            LodBias = lodBias,
+            BorderColor = borderColor
         };
     }
 }
