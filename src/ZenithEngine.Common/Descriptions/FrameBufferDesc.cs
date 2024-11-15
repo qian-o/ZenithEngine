@@ -1,6 +1,4 @@
-﻿using ZenithEngine.Common.Graphics;
-
-namespace ZenithEngine.Common.Descriptions;
+﻿namespace ZenithEngine.Common.Descriptions;
 
 public struct FrameBufferDesc
 {
@@ -14,13 +12,13 @@ public struct FrameBufferDesc
     /// </summary>
     public FrameBufferAttachmentDesc? DepthStencilTarget { get; set; }
 
-    public static FrameBufferDesc Default(Texture? depthStencilTarget,
-                                          params Texture[] colorTargets)
+    public static FrameBufferDesc Default(FrameBufferAttachmentDesc? depthStencilTarget,
+                                          params FrameBufferAttachmentDesc[] colorTargets)
     {
         return new()
         {
-            ColorTargets = colorTargets.Select(item => FrameBufferAttachmentDesc.Default(item)).ToArray(),
-            DepthStencilTarget = depthStencilTarget is not null ? FrameBufferAttachmentDesc.Default(depthStencilTarget) : null
+            ColorTargets = colorTargets,
+            DepthStencilTarget = depthStencilTarget
         };
     }
 }
