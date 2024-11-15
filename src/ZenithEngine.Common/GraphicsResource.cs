@@ -1,12 +1,10 @@
-﻿namespace ZenithEngine.Common.Graphics;
+﻿namespace ZenithEngine.Common;
 
 public abstract class GraphicsResource(GraphicsContext context) : IDisposable
 {
     private volatile uint isDisposed;
 
     private string name = string.Empty;
-
-    public GraphicsContext Context { get; } = context;
 
     public string Name
     {
@@ -26,10 +24,12 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
 
     public bool IsDisposed => isDisposed != 0;
 
+    protected GraphicsContext Context { get; } = context;
+
     /// <summary>
     /// Persistent memory allocator.
     /// </summary>
-    protected Allocator Allocator { get; } = new();
+    protected MemoryAllocator MemoryAllocator { get; } = new();
 
     public void Dispose()
     {
@@ -40,7 +40,7 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
 
         Destroy();
 
-        Allocator.Dispose();
+        MemoryAllocator.Dispose();
 
         GC.SuppressFinalize(this);
     }

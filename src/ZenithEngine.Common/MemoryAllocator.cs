@@ -5,7 +5,7 @@ namespace ZenithEngine.Common;
 /// <summary>
 /// Provides a persistent memory allocator.
 /// </summary>
-public unsafe class Allocator : DisposableObject
+public unsafe class MemoryAllocator : DisposableObject
 {
     private readonly Lock @lock = new();
     private readonly List<nint> blocks = [];
