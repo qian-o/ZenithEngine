@@ -1,11 +1,12 @@
 <Project>
-
+	
 	<PropertyGroup>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
-
+	
 	<ItemGroup>
+		<PackageVersion Include="Silk.NET.Maths" Version="2.22.0" />
 		<PackageVersion Include="System.Text.Json" Version="9.0.0" />
 	</ItemGroup>
-
+	
 </Project>
