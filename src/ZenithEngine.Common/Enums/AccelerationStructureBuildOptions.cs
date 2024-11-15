@@ -1,7 +1,7 @@
 ﻿namespace ZenithEngine.Common.Enums;
 
 [Flags]
-public enum AccelStructBuildOptions
+public enum AccelerationStructureBuildOptions
 {
     None = 0,
 

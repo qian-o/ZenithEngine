@@ -15,5 +15,5 @@ public class AccelerationStructureInstance(BottomLevelAS bottomLevel)
 
     public Matrix4X4<float> Transform { get; set; }
 
-    public AccelStructInstanceOptions Options { get; set; }
+    public AccelerationStructureInstanceOptions Options { get; set; }
 }

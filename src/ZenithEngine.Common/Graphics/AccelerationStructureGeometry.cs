@@ -4,5 +4,5 @@ namespace ZenithEngine.Common.Graphics;
 
 public abstract class AccelerationStructureGeometry
 {
-    public AccelStructGeometryOptions Options { get; set; }
+    public AccelerationStructureGeometryOptions Options { get; set; }
 }

@@ -9,11 +9,11 @@ public struct TopLevelASDesc
 
     public uint Offset { get; set; }
 
-    public AccelStructBuildOptions Options { get; set; }
+    public AccelerationStructureBuildOptions Options { get; set; }
 
     public static TopLevelASDesc Default(AccelerationStructureInstance[] instances,
                                          uint offset = 0,
-                                         AccelStructBuildOptions options = AccelStructBuildOptions.PreferFastBuild)
+                                         AccelerationStructureBuildOptions options = AccelerationStructureBuildOptions.PreferFastBuild)
     {
         return new()
         {
