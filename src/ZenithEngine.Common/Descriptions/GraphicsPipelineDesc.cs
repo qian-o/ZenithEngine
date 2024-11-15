@@ -35,21 +35,20 @@ public struct GraphicsPipelineDesc
     /// </summary>
     public OutputDesc Outputs { get; set; }
 
-    public static GraphicsPipelineDesc Default(LayoutDesc[] inputLayouts,
+    public static GraphicsPipelineDesc Default(GraphicsShaderDesc shaders,
+                                               LayoutDesc[] inputLayouts,
                                                OutputDesc outputs,
                                                RenderStateDesc? renderStates = null,
-                                               GraphicsShaderDesc? shaders = null,
                                                ResourceLayout[]? resourceLayouts = null,
                                                PrimitiveTopology primitiveTopology = PrimitiveTopology.TriangleList)
     {
         renderStates ??= RenderStateDesc.Default();
-        shaders ??= GraphicsShaderDesc.Default();
         resourceLayouts ??= [];
 
         return new()
         {
             RenderStates = renderStates.Value,
-            Shaders = shaders.Value,
+            Shaders = shaders,
             InputLayouts = inputLayouts,
             ResourceLayouts = resourceLayouts,
             PrimitiveTopology = primitiveTopology,
