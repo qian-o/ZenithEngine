@@ -1,5 +1,4 @@
 ﻿using Graphics.Engine.Descriptions;
-using Graphics.Engine.Enums;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 
@@ -12,21 +11,19 @@ internal sealed unsafe class VKTextureView : TextureView
     {
         TextureDesc texture = desc.Target.Desc;
 
-        bool isCube = texture.Type == TextureType.TextureCube;
-
         ImageViewCreateInfo createInfo = new()
         {
             SType = StructureType.ImageViewCreateInfo,
             ViewType = Formats.GetImageViewType(texture.Type),
             Image = desc.Target.VK().Image,
-            Format = Formats.GetPixelFormat(texture.Format),
+            Format = Formats.GetPixelFormat(desc.Format),
             SubresourceRange = new ImageSubresourceRange
             {
                 AspectMask = Formats.GetImageAspectFlags(texture.Usage),
                 BaseMipLevel = desc.BaseMipLevel,
                 LevelCount = desc.MipLevels,
-                BaseArrayLayer = isCube ? (uint)desc.BaseFace : 0,
-                LayerCount = isCube ? desc.FaceCount : 1
+                BaseArrayLayer = (uint)desc.BaseFace,
+                LayerCount = desc.FaceCount
             }
         };
 

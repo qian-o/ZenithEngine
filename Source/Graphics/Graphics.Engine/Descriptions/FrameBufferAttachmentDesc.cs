@@ -10,6 +10,11 @@ public struct FrameBufferAttachmentDesc
     public Texture Target { get; set; }
 
     /// <summary>
+    /// The format of the texture.
+    /// </summary>
+    public PixelFormat Format { get; set; }
+
+    /// <summary>
     /// If the target is a cube map, the face to render to. (Cube Map exclusive)
     /// </summary>
     public CubeMapFace Face { get; set; }
@@ -24,6 +29,7 @@ public struct FrameBufferAttachmentDesc
         return new()
         {
             Target = target,
+            Format = target.Desc.Format,
             Face = CubeMapFace.PositiveX,
             MipLevel = 0
         };

@@ -12,8 +12,6 @@ internal sealed unsafe class VKTexture : Texture
     public VKTexture(Context context,
                      ref readonly TextureDesc desc) : base(context, in desc)
     {
-        bool isCube = desc.Type == TextureType.TextureCube;
-
         ImageCreateInfo createInfo = new()
         {
             SType = StructureType.ImageCreateInfo,
@@ -26,13 +24,13 @@ internal sealed unsafe class VKTexture : Texture
                 Depth = desc.Depth
             },
             MipLevels = desc.MipLevels,
-            ArrayLayers = isCube ? 6u : 1u,
+            ArrayLayers = VKHelpers.GetArrayLayers(desc),
             Samples = Formats.GetSampleCountFlags(desc.SampleCount),
             Tiling = ImageTiling.Optimal,
             Usage = Formats.GetImageUsageFlags(desc.Usage),
             SharingMode = SharingMode.Exclusive,
             InitialLayout = ImageLayout.Preinitialized,
-            Flags = isCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
+            Flags = desc.Type == TextureType.TextureCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
         };
 
         VkImage image;
@@ -53,11 +51,10 @@ internal sealed unsafe class VKTexture : Texture
 
     public VKTexture(Context context,
                      VkImage image,
-                     uint arrayLayers,
                      ref readonly TextureDesc desc) : base(context, in desc)
     {
         Image = image;
-        Layouts = new ImageLayout[arrayLayers * desc.MipLevels];
+        Layouts = new ImageLayout[VKHelpers.GetArrayLayers(desc) * desc.MipLevels];
         Array.Fill(Layouts, ImageLayout.Undefined);
     }
 
@@ -73,17 +70,11 @@ internal sealed unsafe class VKTexture : Texture
     {
         get
         {
-            bool isCube = Desc.Type == TextureType.TextureCube;
-            uint index = isCube ? ((uint)baseFace * Desc.MipLevels) + baseMipLevel : baseMipLevel;
-
-            return Layouts[index];
+            return Layouts[((uint)baseFace * Desc.MipLevels) + baseMipLevel];
         }
         set
         {
-            bool isCube = Desc.Type == TextureType.TextureCube;
-            uint index = isCube ? ((uint)baseFace * Desc.MipLevels) + baseMipLevel : baseMipLevel;
-
-            Layouts[index] = value;
+            Layouts[((uint)baseFace * Desc.MipLevels) + baseMipLevel] = value;
         }
     }
 
@@ -101,8 +92,6 @@ internal sealed unsafe class VKTexture : Texture
             return;
         }
 
-        bool isCube = Desc.Type == TextureType.TextureCube;
-
         ImageMemoryBarrier barrier = new()
         {
             SType = StructureType.ImageMemoryBarrier,
@@ -114,8 +103,8 @@ internal sealed unsafe class VKTexture : Texture
                 AspectMask = Formats.GetImageAspectFlags(newLayout),
                 BaseMipLevel = baseMipLevel,
                 LevelCount = levelCount,
-                BaseArrayLayer = isCube ? (uint)baseFace : 0,
-                LayerCount = isCube ? faceCount : 1
+                BaseArrayLayer = (uint)baseFace,
+                LayerCount = faceCount
             }
         };
 
@@ -140,7 +129,12 @@ internal sealed unsafe class VKTexture : Texture
     public void TransitionImageLayout(VkCommandBuffer commandBuffer,
                                       ImageLayout newLayout)
     {
-        TransitionImageLayout(commandBuffer, newLayout, 0, Desc.MipLevels, CubeMapFace.PositiveX, 6);
+        TransitionImageLayout(commandBuffer,
+                              newLayout,
+                              0,
+                              Desc.MipLevels,
+                              CubeMapFace.PositiveX,
+                              VKHelpers.GetArrayLayers(Desc));
     }
 
     public void SetData(VkCommandBuffer commandBuffer,

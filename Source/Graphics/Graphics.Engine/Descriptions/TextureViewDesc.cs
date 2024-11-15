@@ -10,14 +10,9 @@ public struct TextureViewDesc
     public Texture Target { get; set; }
 
     /// <summary>
-    /// If it is a cube map, it indicates the starting face to view. (Cube Map exclusive)
+    /// The format of the view.
     /// </summary>
-    public CubeMapFace BaseFace { get; set; }
-
-    /// <summary>
-    /// Number of faces to view. (Cube Map exclusive)
-    /// </summary>
-    public uint FaceCount { get; set; }
+    public PixelFormat Format { get; set; }
 
     /// <summary>
     /// The base mip level visible in the view. Must be less than the number of mip levels in the target Texture.
@@ -29,15 +24,26 @@ public struct TextureViewDesc
     /// </summary>
     public uint MipLevels { get; set; }
 
+    /// <summary>
+    /// If it is a cube map, it indicates the starting face to view. (Cube Map exclusive)
+    /// </summary>
+    public CubeMapFace BaseFace { get; set; }
+
+    /// <summary>
+    /// Number of faces to view. (Cube Map exclusive)
+    /// </summary>
+    public uint FaceCount { get; set; }
+
     public static TextureViewDesc Default(Texture target)
     {
         return new()
         {
             Target = target,
-            BaseFace = CubeMapFace.PositiveX,
-            FaceCount = 6,
+            Format = target.Desc.Format,
             BaseMipLevel = 0,
-            MipLevels = target.Desc.MipLevels
+            MipLevels = target.Desc.MipLevels,
+            BaseFace = CubeMapFace.PositiveX,
+            FaceCount = 1
         };
     }
 }

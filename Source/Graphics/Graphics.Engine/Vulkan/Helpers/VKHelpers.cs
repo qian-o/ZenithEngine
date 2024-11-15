@@ -6,6 +6,16 @@ namespace Graphics.Engine.Vulkan.Helpers;
 
 internal static class VKHelpers
 {
+    public static uint GetArrayLayers(TextureDesc desc)
+    {
+        if (desc.Type == TextureType.TextureCube)
+        {
+            return 6;
+        }
+
+        return 1;
+    }
+
     public static uint GetBinding(LayoutElementDesc element)
     {
         return element.Type switch

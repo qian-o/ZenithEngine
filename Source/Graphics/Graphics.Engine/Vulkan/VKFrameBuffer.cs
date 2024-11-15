@@ -22,10 +22,11 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
             TextureViewDesc textureViewDesc = new()
             {
                 Target = attachmentDesc.Target,
-                BaseFace = attachmentDesc.Face,
-                FaceCount = 1,
+                Format = attachmentDesc.Format,
                 BaseMipLevel = attachmentDesc.MipLevel,
-                MipLevels = 1
+                MipLevels = 1,
+                BaseFace = attachmentDesc.Face,
+                FaceCount = 1
             };
 
             ColorTargets[i] = context.Factory.CreateTextureView(in textureViewDesc);
@@ -38,10 +39,11 @@ internal sealed unsafe class VKFrameBuffer : FrameBuffer
             TextureViewDesc textureViewDesc = new()
             {
                 Target = attachmentDesc.Target,
-                BaseFace = attachmentDesc.Face,
-                FaceCount = 1,
+                Format = attachmentDesc.Format,
                 BaseMipLevel = attachmentDesc.MipLevel,
-                MipLevels = 1
+                MipLevels = 1,
+                BaseFace = attachmentDesc.Face,
+                FaceCount = 1
             };
 
             DepthStencilTarget = context.Factory.CreateTextureView(in textureViewDesc);
