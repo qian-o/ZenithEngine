@@ -130,10 +130,7 @@ public unsafe class Surface : Control
         }
 
         image.Lock();
-
-        image.SetBackBuffer(D3DResourceType.IDirect3DSurface9, (nint)d3d9Surface.Handle);
         image.AddDirtyRect(new Int32Rect(0, 0, image.PixelWidth, image.PixelHeight));
-
         image.Unlock();
 
         drawingContext.DrawImage(image, new WRect(0, 0, ActualWidth, ActualHeight));
@@ -199,6 +196,10 @@ public unsafe class Surface : Control
                                             PixelFormat.B8G8R8A8UNorm);
 
         textureView = App.Factory.CreateTextureView(texture);
+
+        image.Lock();
+        image.SetBackBuffer(D3DResourceType.IDirect3DSurface9, (nint)d3d9Surface.Handle);
+        image.Unlock();
 
         Resized?.Invoke(this, EventArgs.Empty);
     }
