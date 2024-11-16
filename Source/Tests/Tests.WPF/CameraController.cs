@@ -6,20 +6,9 @@ using Tests.Core.Helpers;
 
 namespace Tests.WPF;
 
-public class CameraController
+public class CameraController(Control control)
 {
-    private readonly Control control;
-
     private Vector2? lastMousePosition;
-
-    public CameraController(Control control)
-    {
-        control.MouseDown += Control_MouseDown;
-        control.MouseUp += Control_MouseUp;
-        control.MouseMove += Control_MouseMove;
-
-        this.control = control;
-    }
 
     public void Update(float deltaTime)
     {
@@ -54,31 +43,24 @@ public class CameraController
         {
             Position += Up * deltaTime * speed;
         }
-    }
 
-    private void Control_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-        if (e.ChangedButton == MouseButton.Right)
+        if (Mouse.RightButton == MouseButtonState.Pressed)
         {
-            Point position = e.GetPosition(control);
+            if (lastMousePosition == null)
+            {
+                Point position = Mouse.GetPosition(control);
 
-            lastMousePosition = new Vector2((float)position.X, (float)position.Y);
+                lastMousePosition = new Vector2((float)position.X, (float)position.Y);
+            }
         }
-    }
-
-    private void Control_MouseUp(object sender, MouseButtonEventArgs e)
-    {
-        if (e.ChangedButton == MouseButton.Right)
+        else
         {
             lastMousePosition = null;
         }
-    }
 
-    private void Control_MouseMove(object sender, MouseEventArgs e)
-    {
         if (lastMousePosition.HasValue)
         {
-            Point position = e.GetPosition(control);
+            Point position = Mouse.GetPosition(control);
 
             Vector2 pos = new((float)position.X, (float)position.Y);
 
