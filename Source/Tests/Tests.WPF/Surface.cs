@@ -49,6 +49,8 @@ public unsafe class Surface : Control
 
     public Surface()
     {
+        Effect = new GammaCorrectionEffect();
+
         d3d11.CreateDevice(default(ComPtr<IDXGIAdapter>),
                            D3DDriverType.Hardware,
                            0,

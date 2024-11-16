@@ -11,21 +11,12 @@ public class CameraController
     private readonly Control control;
 
     private Vector2? lastMousePosition;
-    private bool wDown;
-    private bool sDown;
-    private bool aDown;
-    private bool dDown;
-    private bool qDown;
-    private bool eDown;
 
     public CameraController(Control control)
     {
-        control.Focusable = true;
         control.MouseDown += Control_MouseDown;
         control.MouseUp += Control_MouseUp;
         control.MouseMove += Control_MouseMove;
-        control.KeyDown += Control_KeyDown;
-        control.KeyUp += Control_KeyUp;
 
         this.control = control;
     }
@@ -34,32 +25,32 @@ public class CameraController
     {
         const float speed = 0.5f;
 
-        if (wDown)
+        if (Keyboard.IsKeyDown(Key.W))
         {
             Position += Forward * deltaTime * speed;
         }
 
-        if (sDown)
+        if (Keyboard.IsKeyDown(Key.S))
         {
             Position -= Forward * deltaTime * speed;
         }
 
-        if (aDown)
+        if (Keyboard.IsKeyDown(Key.A))
         {
             Position -= Right * deltaTime * speed;
         }
 
-        if (dDown)
+        if (Keyboard.IsKeyDown(Key.D))
         {
             Position += Right * deltaTime * speed;
         }
 
-        if (qDown)
+        if (Keyboard.IsKeyDown(Key.Q))
         {
             Position -= Up * deltaTime * speed;
         }
 
-        if (eDown)
+        if (Keyboard.IsKeyDown(Key.E))
         {
             Position += Up * deltaTime * speed;
         }
@@ -73,8 +64,6 @@ public class CameraController
 
             lastMousePosition = new Vector2((float)position.X, (float)position.Y);
         }
-
-        control.Focus();
     }
 
     private void Control_MouseUp(object sender, MouseButtonEventArgs e)
@@ -119,56 +108,6 @@ public class CameraController
             Up = Vector3.Normalize(Vector3.Cross(Right, Forward));
 
             lastMousePosition = pos;
-        }
-    }
-
-    private void Control_KeyDown(object sender, KeyEventArgs e)
-    {
-        switch (e.Key)
-        {
-            case Key.W:
-                wDown = true;
-                break;
-            case Key.S:
-                sDown = true;
-                break;
-            case Key.A:
-                aDown = true;
-                break;
-            case Key.D:
-                dDown = true;
-                break;
-            case Key.Q:
-                qDown = true;
-                break;
-            case Key.E:
-                eDown = true;
-                break;
-        }
-    }
-
-    private void Control_KeyUp(object sender, KeyEventArgs e)
-    {
-        switch (e.Key)
-        {
-            case Key.W:
-                wDown = false;
-                break;
-            case Key.S:
-                sDown = false;
-                break;
-            case Key.A:
-                aDown = false;
-                break;
-            case Key.D:
-                dDown = false;
-                break;
-            case Key.Q:
-                qDown = false;
-                break;
-            case Key.E:
-                eDown = false;
-                break;
         }
     }
 

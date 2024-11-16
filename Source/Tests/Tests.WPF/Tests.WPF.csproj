@@ -22,4 +22,12 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Remove="Assets\Shaders\GammaCorrectionEffect.ps" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Resource Include="Assets\Shaders\GammaCorrectionEffect.ps" />
+	</ItemGroup>
+
 </Project>

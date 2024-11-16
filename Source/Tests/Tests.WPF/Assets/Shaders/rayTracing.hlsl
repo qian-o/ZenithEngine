@@ -161,11 +161,6 @@ Vertex getVertex(StructuredBuffer<Vertex> vertexBuffer, StructuredBuffer<uint> i
     return result;
 }
 
-float3 SrgbToLinear(float3 srgb)
-{
-    return srgb * (srgb * (srgb * 0.305306011f + 0.682171111f) + 0.012522878f);
-}
-
 float3 hitWorldPosition()
 {
     return WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
@@ -436,10 +431,8 @@ void rayGen()
     {
         outputTexture[LaunchID.xy] = 0;
     }
-    
-    color = lerp(outputTexture[LaunchID.xy], float4(color.rgb, 1), other.pathTracerAccumulationFactor);
-    
-    outputTexture[LaunchID.xy] = color;
+
+    outputTexture[LaunchID.xy] = lerp(outputTexture[LaunchID.xy], float4(color.rgb, 1), other.pathTracerAccumulationFactor);
 }
 
 [shader("miss")]

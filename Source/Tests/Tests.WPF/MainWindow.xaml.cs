@@ -323,7 +323,7 @@ public unsafe partial class MainWindow : Window
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        Content = surface = new();
+        Main.Child = surface = new();
 
         surface.Resized += Surface_Resized;
         surface.Rendering += Surface_Rendering;
@@ -338,7 +338,7 @@ public unsafe partial class MainWindow : Window
         surface.Rendering -= Surface_Rendering;
         surface.Resized -= Surface_Resized;
 
-        Content = null;
+        Main.Child = null;
     }
 
     private void Init()
@@ -568,6 +568,43 @@ public unsafe partial class MainWindow : Window
 
     private void Uninit()
     {
+        _pipeline.Dispose();
+        _resourceSet4.Dispose();
+        _resourceLayout4.Dispose();
+        _resourceSet3.Dispose();
+        _resourceLayout3.Dispose();
+        _resourceSet2.Dispose();
+        _resourceLayout2.Dispose();
+        _resourceSet1.Dispose();
+        _resourceLayout1.Dispose();
+        _resourceSet0.Dispose();
+        _resourceLayout0.Dispose();
+        _topLevel.Dispose();
+        _bottomLevel.Dispose();
+        _geometryNodesBuffer.Dispose();
+        _lightsBuffer.Dispose();
+        _otherBuffer.Dispose();
+        _cameraBuffer.Dispose();
+
+        foreach (DeviceBuffer indexBuffer in _indexBuffers)
+        {
+            indexBuffer.Dispose();
+        }
+
+        foreach (DeviceBuffer vertexBuffer in _vertexBuffers)
+        {
+            vertexBuffer.Dispose();
+        }
+
+        foreach (TextureView textureView in _textureViews)
+        {
+            textureView.Dispose();
+        }
+
+        foreach (Texture texture in _textures)
+        {
+            texture.Dispose();
+        }
     }
 
     private void Surface_Rendering(CommandList arg1, TimeEventArgs arg2)

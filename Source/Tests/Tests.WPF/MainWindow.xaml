@@ -8,5 +8,6 @@
         Height="450"
         Width="800">
     <Grid>
+        <Border x:Name="Main" />
     </Grid>
 </Window>
