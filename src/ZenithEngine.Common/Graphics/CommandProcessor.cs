@@ -16,8 +16,10 @@ public abstract class CommandProcessor(GraphicsContext context,
     /// <summary>
     /// Submits the command buffer to be executed by the GPU.
     /// </summary>
-    /// <param name="isSyncTransfer">isSyncTransfer</param>
-    public abstract void Submit(bool isSyncTransfer = true);
+    /// <param name="isSyncTransferTasks">
+    /// Whether to call the SyncTransferTasks function in the Graphics Context.
+    /// </param>
+    public abstract void Submit(bool isSyncTransferTasks = true);
 
     /// <summary>
     /// Waits for the GPU to finish executing all commands.
