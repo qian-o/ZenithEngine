@@ -49,6 +49,7 @@ public unsafe class Surface : Control
 
     public Surface()
     {
+        Focusable = true;
         Effect = new GammaCorrectionEffect();
 
         d3d11.CreateDevice(default(ComPtr<IDXGIAdapter>),
@@ -136,6 +137,13 @@ public unsafe class Surface : Control
         image.Unlock();
 
         drawingContext.DrawImage(image, new WRect(0, 0, ActualWidth, ActualHeight));
+    }
+
+    protected override void OnMouseDown(System.Windows.Input.MouseButtonEventArgs e)
+    {
+        base.OnMouseDown(e);
+
+        Focus();
     }
 
     private void DestroyResources()

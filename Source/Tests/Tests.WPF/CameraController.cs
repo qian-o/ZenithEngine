@@ -12,6 +12,11 @@ public class CameraController(Control control)
 
     public void Update(float deltaTime)
     {
+        if (!control.IsFocused)
+        {
+            return;
+        }
+
         const float speed = 0.5f;
 
         if (Keyboard.IsKeyDown(Key.W))
