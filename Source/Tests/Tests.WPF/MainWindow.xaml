@@ -7,7 +7,27 @@
         Title="MainWindow"
         Height="450"
         Width="800">
-    <Grid>
-        <Border x:Name="Main" />
-    </Grid>
+    <DockPanel>
+        <StackPanel Orientation="Vertical"
+                    DockPanel.Dock="Top">
+
+            <DockPanel Margin="4">
+                <TextBlock Text="Path Tracer Num Samples"
+                           VerticalAlignment="Center" />
+                <TextBox x:Name="PathTracerNumSamples"
+                         Text="256"
+                         Margin="4,0,0,0"
+                         DockPanel.Dock="Right" />
+            </DockPanel>
+
+        </StackPanel>
+
+        <Grid>
+            <Border x:Name="Main" />
+
+            <ProgressBar x:Name="Progress"
+                         Height="10"
+                         VerticalAlignment="Bottom" />
+        </Grid>
+    </DockPanel>
 </Window>

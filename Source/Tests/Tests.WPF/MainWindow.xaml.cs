@@ -564,6 +564,8 @@ public unsafe partial class MainWindow : Window
 
             _pathTracerSampleIndex++;
         }
+
+        Progress.Value = (int)(_pathTracerSampleIndex / (float)_pathTracerNumSamples * 100);
     }
 
     private void Uninit()
