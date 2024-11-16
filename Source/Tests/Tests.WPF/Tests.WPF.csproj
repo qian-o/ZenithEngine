@@ -1,8 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
 	<PropertyGroup>
+		<TargetFramework>net9.0-windows</TargetFramework>
 		<OutputType>Exe</OutputType>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<UseWPF>true</UseWPF>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Silk.NET.Direct3D11" />
+	  <PackageReference Include="Silk.NET.Direct3D9" />
+	  <PackageReference Include="Silk.NET.DXGI" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Tests.Core\Tests.Core.csproj" />
@@ -14,7 +22,4 @@
 		</None>
 	</ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="System.Text.Json" />
-	</ItemGroup>
 </Project>
