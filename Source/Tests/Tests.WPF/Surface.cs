@@ -93,9 +93,20 @@ public unsafe class Surface : Control
 
         if (lastRenderTime != args.RenderingTime)
         {
-            InvalidateVisual();
+            if (texture != null)
+            {
+                commandList.Begin();
+
+                Rendering?.Invoke(commandList, new TimeEventArgs(lastRenderTime.TotalSeconds - stopwatch.Elapsed.TotalSeconds, stopwatch.Elapsed.TotalSeconds));
+
+                commandList.End();
+
+                App.Device.SubmitCommands(commandList);
+            }
 
             lastRenderTime = args.RenderingTime;
+
+            InvalidateVisual();
         }
     }
 
@@ -119,17 +130,6 @@ public unsafe class Surface : Control
         }
 
         image.Lock();
-
-        if (texture != null)
-        {
-            commandList.Begin();
-
-            Rendering?.Invoke(commandList, new TimeEventArgs(lastRenderTime.TotalSeconds - stopwatch.Elapsed.TotalSeconds, stopwatch.Elapsed.TotalSeconds));
-
-            commandList.End();
-
-            App.Device.SubmitCommands(commandList);
-        }
 
         image.SetBackBuffer(D3DResourceType.IDirect3DSurface9, (nint)d3d9Surface.Handle);
         image.AddDirtyRect(new Int32Rect(0, 0, image.PixelWidth, image.PixelHeight));
@@ -194,9 +194,9 @@ public unsafe class Surface : Control
         sharedHandle = (nint)d3d11shared;
 
         texture = App.Factory.CreateTexture(sharedHandle,
-                                                   width,
-                                                   height,
-                                                   PixelFormat.B8G8R8A8UNorm);
+                                            width,
+                                            height,
+                                            PixelFormat.B8G8R8A8UNorm);
 
         textureView = App.Factory.CreateTextureView(texture);
 
