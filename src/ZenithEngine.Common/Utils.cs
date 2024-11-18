@@ -4,11 +4,6 @@ namespace ZenithEngine.Common;
 
 public static class Utils
 {
-    public static uint Lerp(uint a, uint b, float step)
-    {
-        return (uint)(a + ((b - a) * step));
-    }
-
     public static uint GetMipLevels(uint width, uint height)
     {
         return (uint)MathF.Floor(MathF.Log2(MathF.Max(width, height))) + 1;
