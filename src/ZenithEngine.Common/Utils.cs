@@ -44,7 +44,7 @@ public static class Utils
             ElementFormat.UByte1 or
             ElementFormat.Byte1 or
             ElementFormat.UByte1Normalized or
-            ElementFormat.Byte1Normalized => 1u,
+            ElementFormat.Byte1Normalized => 1,
 
             ElementFormat.UByte2 or
             ElementFormat.Byte2 or
@@ -54,13 +54,13 @@ public static class Utils
             ElementFormat.Short1 or
             ElementFormat.UShort1Normalized or
             ElementFormat.Short1Normalized or
-            ElementFormat.Half1 => 2u,
+            ElementFormat.Half1 => 2,
 
             ElementFormat.UByte3 or
             ElementFormat.Byte3 or
             ElementFormat.UByte3Normalized or
             ElementFormat.Byte3Normalized or
-            ElementFormat.Half3 => 3u,
+            ElementFormat.Half3 => 3,
 
             ElementFormat.UByte4 or
             ElementFormat.Byte4 or
@@ -73,12 +73,12 @@ public static class Utils
             ElementFormat.Half2 or
             ElementFormat.Float1 or
             ElementFormat.UInt1 or
-            ElementFormat.Int1 => 4u,
+            ElementFormat.Int1 => 4,
 
             ElementFormat.UShort3 or
             ElementFormat.Short3 or
             ElementFormat.UShort3Normalized or
-            ElementFormat.Short3Normalized => 6u,
+            ElementFormat.Short3Normalized => 6,
 
             ElementFormat.UShort4 or
             ElementFormat.Short4 or
@@ -87,15 +87,15 @@ public static class Utils
             ElementFormat.Half4 or
             ElementFormat.Float2 or
             ElementFormat.UInt2 or
-            ElementFormat.Int2 => 8u,
+            ElementFormat.Int2 => 8,
 
             ElementFormat.Float3 or
             ElementFormat.UInt3 or
-            ElementFormat.Int3 => 12u,
+            ElementFormat.Int3 => 12,
 
             ElementFormat.Float4 or
             ElementFormat.UInt4 or
-            ElementFormat.Int4 => 16u,
+            ElementFormat.Int4 => 16,
 
             _ => throw new InvalidOperationException("VertexElementFormat doesn't supported.")
         };
