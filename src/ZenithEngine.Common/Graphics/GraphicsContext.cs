@@ -12,15 +12,15 @@ public abstract class GraphicsContext : DisposableObject
 
     public abstract void CreateDevice(bool useDebugLayer = false);
 
-    public abstract void UpdateBufferData(Buffer buffer,
-                                          nint source,
-                                          uint sourceSizeInBytes,
-                                          uint destinationOffsetInBytes = 0);
+    public abstract void UpdateBuffer(Buffer buffer,
+                                      nint source,
+                                      uint sourceSizeInBytes,
+                                      uint destinationOffsetInBytes = 0);
 
-    public abstract void UpdateTextureData(Texture texture,
-                                           nint source,
-                                           uint sourceSizeInBytes,
-                                           TextureRegion region);
+    public abstract void UpdateTexture(Texture texture,
+                                       nint source,
+                                       uint sourceSizeInBytes,
+                                       TextureRegion region);
 
     public abstract MappedResource MapMemory(Buffer buffer, MapMode mode);
 
