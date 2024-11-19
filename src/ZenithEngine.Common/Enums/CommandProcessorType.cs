@@ -5,7 +5,7 @@ public enum CommandProcessorType
     /// <summary>
     /// The command processor is a graphics and compute command processor.
     /// </summary>
-    Graphics,
+    Direct,
 
     /// <summary>
     /// The command processor is a copy command processor.
