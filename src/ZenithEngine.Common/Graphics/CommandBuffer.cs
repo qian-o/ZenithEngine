@@ -6,6 +6,7 @@ namespace ZenithEngine.Common.Graphics;
 
 public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(context)
 {
+    #region Command Buffer Management
     /// <summary>
     /// Begin recording commands.
     /// </summary>
@@ -25,7 +26,9 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     /// Reset the command buffer.
     /// </summary>
     public abstract void Reset();
+    #endregion
 
+    #region Buffer Operations
     /// <summary>
     /// Update the buffer with the source data.
     /// </summary>
@@ -49,20 +52,9 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
                                     Buffer destination,
                                     uint sourceSizeInBytes,
                                     uint destinationOffsetInBytes = 0);
+    #endregion
 
-    /// <summary>
-    /// Transition the texture to the specified usage.
-    /// </summary>
-    /// <param name="texture">The texture to transition.</param>
-    /// <param name="usage">The texture usage.</param>
-    public abstract void TransitionTexture(Texture texture, TextureUsage usage);
-
-    /// <summary>
-    /// Generate mipmaps for the texture.
-    /// </summary>
-    /// <param name="texture">The texture to generate mipmaps.</param>
-    public abstract void GenerateMipmaps(Texture texture);
-
+    #region Texture Operations
     /// <summary>
     /// Update the texture with the source data.
     /// </summary>
@@ -88,6 +80,12 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
                                      TextureRegion destinationRegion);
 
     /// <summary>
+    /// Generate mipmaps for the texture.
+    /// </summary>
+    /// <param name="texture">The texture to generate mipmaps.</param>
+    public abstract void GenerateMipmaps(Texture texture);
+
+    /// <summary>
     /// Resolve the multisampled source texture to the destination texture.
     /// </summary>
     /// <param name="source">The source texture.</param>
@@ -99,6 +97,15 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
                                         Texture destination,
                                         TexturePosition destinationPosition);
 
+    /// <summary>
+    /// Transition the texture to the specified usage.
+    /// </summary>
+    /// <param name="texture">The texture to transition.</param>
+    /// <param name="usage">The texture usage.</param>
+    public abstract void TransitionTexture(Texture texture, TextureUsage usage);
+    #endregion
+
+    #region Rendering Operations
     /// <summary>
     /// Begin rendering to the frame buffer.
     /// </summary>
@@ -177,7 +184,9 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     public abstract void SetResourceSet(ResourceSet resourceSet,
                                         uint index = 0,
                                         uint[]? constantBufferOffsets = null);
+    #endregion
 
+    #region Drawing Operations
     /// <summary>
     /// Draw the instanced primitives.
     /// </summary>
@@ -237,7 +246,9 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
                                                       uint offset,
                                                       uint drawCount,
                                                       uint stride);
+    #endregion
 
+    #region Compute Operations
     /// <summary>
     /// Dispatch the compute shader.
     /// </summary>
@@ -245,7 +256,9 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     /// <param name="groupCountY">The number of groups dispatched in the y direction.</param>
     /// <param name="groupCountZ">The number of groups dispatched in the z direction.</param>
     public abstract void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ);
+    #endregion
 
+    #region Acceleration Structure Operations
     /// <summary>
     /// Performs a bottom level acceleration structure build on the GPU.
     /// </summary>
@@ -266,7 +279,9 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     /// <param name="tlas">The top level acceleration structure to refit.</param>
     /// <param name="newDesc">The new top level acceleration structure description.</param>
     public abstract void UpdateAccelerationStructure(ref TopLevelAS tlas, TopLevelASDesc newDesc);
+    #endregion
 
+    #region Ray Tracing Operations
     /// <summary>
     /// Dispatches rays on the GPU.
     /// </summary>
@@ -274,4 +289,5 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     /// <param name="height">The height of the ray tracing output.</param>
     /// <param name="depth">The depth of the ray tracing output.</param>
     public abstract void DispatchRays(uint width, uint height, uint depth);
+    #endregion
 }
