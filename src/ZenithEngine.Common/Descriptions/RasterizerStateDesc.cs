@@ -48,8 +48,8 @@ public struct RasterizerStateDesc
                                               FillMode fillMode = FillMode.Solid,
                                               FrontFace frontFace = FrontFace.CounterClockwise,
                                               int depthBias = 0,
-                                              float depthBiasClamp = 0.0f,
-                                              float slopeScaledDepthBias = 0.0f,
+                                              float depthBiasClamp = 0,
+                                              float slopeScaledDepthBias = 0,
                                               bool depthClipEnabled = true,
                                               bool scissorEnabled = false)
     {
