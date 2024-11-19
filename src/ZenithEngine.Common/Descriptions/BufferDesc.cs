@@ -13,4 +13,13 @@ public struct BufferDesc
     /// Indicates the intended use of the buffer.
     /// </summary>
     public BufferUsage Usage { get; set; }
+
+    public static BufferDesc Default(uint sizeInBytes, BufferUsage usage = BufferUsage.Dynamic)
+    {
+        return new()
+        {
+            SizeInBytes = sizeInBytes,
+            Usage = usage
+        };
+    }
 }

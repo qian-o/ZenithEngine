@@ -323,6 +323,11 @@ public unsafe class Context : DisposableObject
     {
         string[] extensions = [KhrSwapchain.ExtensionName];
 
+        if (OperatingSystem.IsWindows())
+        {
+            extensions = [.. extensions, KhrExternalMemoryWin32.ExtensionName];
+        }
+
         if (physicalDevice.DescriptorBufferSupported)
         {
             extensions = [.. extensions, ExtDescriptorBuffer.ExtensionName];

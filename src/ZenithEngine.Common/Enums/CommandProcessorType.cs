@@ -3,17 +3,12 @@
 public enum CommandProcessorType
 {
     /// <summary>
-    /// The command processor is a graphics command processor.
+    /// The command processor is a graphics and compute command processor.
     /// </summary>
     Graphics,
 
     /// <summary>
-    /// The command processor is a compute command processor.
+    /// The command processor is a copy command processor.
     /// </summary>
-    Compute,
-
-    /// <summary>
-    /// The command processor is a transfer command processor.
-    /// </summary>
-    Transfer
+    Copy
 }

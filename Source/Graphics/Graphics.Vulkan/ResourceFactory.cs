@@ -1,4 +1,5 @@
-﻿using Graphics.Vulkan.Descriptions;
+﻿using Graphics.Core;
+using Graphics.Vulkan.Descriptions;
 
 namespace Graphics.Vulkan;
 
@@ -24,6 +25,11 @@ public class ResourceFactory
     }
 
     public Texture CreateTexture(TextureDescription description) => CreateTexture(in description);
+
+    public Texture CreateTexture(nint win32Handle, uint width, uint height, PixelFormat format)
+    {
+        return new Texture(_vkRes, win32Handle, width, height, format);
+    }
 
     public TextureView CreateTextureView(Texture target)
     {

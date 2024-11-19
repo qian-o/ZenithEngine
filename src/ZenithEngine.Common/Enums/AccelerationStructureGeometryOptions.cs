@@ -1,7 +1,7 @@
 ﻿namespace ZenithEngine.Common.Enums;
 
 [Flags]
-public enum AccelStructGeometryOptions
+public enum AccelerationStructureGeometryOptions
 {
     None = 0,
 

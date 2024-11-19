@@ -91,6 +91,62 @@ public unsafe class Texture : VulkanObject<VkImage>, IBindableResource
         ArrayLayers = 1;
     }
 
+    internal Texture(VulkanResources vkRes,
+                     nint win32Handle,
+                     uint width,
+                     uint height,
+                     PixelFormat format) : base(vkRes, ObjectType.Image)
+    {
+        ImageCreateInfo createInfo = new
+        (
+            imageType: ImageType.Type2D,
+            format: Formats.GetPixelFormat(format, false),
+            extent: new Extent3D(width, height, 1),
+            mipLevels: 1,
+            arrayLayers: 1,
+            samples: SampleCountFlags.Count1Bit,
+            tiling: ImageTiling.Optimal,
+            usage: ImageUsageFlags.TransferDstBit | ImageUsageFlags.TransferSrcBit | ImageUsageFlags.SampledBit | ImageUsageFlags.StorageBit | ImageUsageFlags.ColorAttachmentBit,
+            sharingMode: SharingMode.Exclusive,
+            initialLayout: ImageLayout.Undefined
+        );
+
+        createInfo.AddNext(out ExternalMemoryImageCreateInfo externalMemoryImageCreateInfo);
+        externalMemoryImageCreateInfo.HandleTypes = ExternalMemoryHandleTypeFlags.D3D11TextureKmtBit;
+
+        VkImage image;
+        VkRes.Vk.CreateImage(VkRes.VkDevice, &createInfo, null, &image).ThrowCode();
+
+        MemoryRequirements memoryRequirements;
+        VkRes.Vk.GetImageMemoryRequirements(VkRes.VkDevice, image, &memoryRequirements);
+
+        DeviceMemory deviceMemory = new(VkRes,
+                                        win32Handle,
+                                        in memoryRequirements,
+                                        MemoryPropertyFlags.DeviceLocalBit);
+
+        VkRes.Vk.BindImageMemory(VkRes.VkDevice, image, deviceMemory.Handle, 0).ThrowCode();
+
+        ImageLayout[] imageLayouts = new ImageLayout[1];
+        Array.Fill(imageLayouts, ImageLayout.Undefined);
+
+        Handle = image;
+        Type = TextureType.Texture2D;
+        Format = format;
+        VkFormat = createInfo.Format;
+        SampleCount = TextureSampleCount.Count1;
+        VkSampleCount = createInfo.Samples;
+        Usage = TextureUsage.RenderTarget;
+        ImageLayouts = imageLayouts;
+        DeviceMemory = deviceMemory;
+        IsSwapchainImage = false;
+        Width = width;
+        Height = height;
+        Depth = 1;
+        MipLevels = 1;
+        ArrayLayers = 1;
+    }
+
     internal override VkImage Handle { get; }
 
     internal TextureType Type { get; }
