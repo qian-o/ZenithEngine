@@ -105,7 +105,30 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     public abstract void TransitionTexture(Texture texture, TextureUsage usage);
     #endregion
 
-    #region Rendering Operations
+    #region Acceleration Structure Operations
+    /// <summary>
+    /// Performs a bottom level acceleration structure build on the GPU.
+    /// </summary>
+    /// <param name="desc">The bottom level acceleration structure description.</param>
+    /// <returns>The built acceleration structure.</returns>
+    public abstract BottomLevelAS BuildAccelerationStructure(BottomLevelASDesc desc);
+
+    /// <summary>
+    /// Performs a top level acceleration structure build on the GPU.
+    /// </summary>
+    /// <param name="desc">The top level acceleration structure description.</param>
+    /// <returns>The built acceleration structure.</returns>
+    public abstract TopLevelAS BuildAccelerationStructure(TopLevelASDesc desc);
+
+    /// <summary>
+    /// Refit a top level acceleration structure on the GPU.
+    /// </summary>
+    /// <param name="tlas">The top level acceleration structure to refit.</param>
+    /// <param name="newDesc">The new top level acceleration structure description.</param>
+    public abstract void UpdateAccelerationStructure(ref TopLevelAS tlas, TopLevelASDesc newDesc);
+    #endregion
+
+    #region Graphics Operations
     /// <summary>
     /// Begin rendering to the frame buffer.
     /// </summary>
@@ -256,29 +279,6 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     /// <param name="groupCountY">The number of groups dispatched in the y direction.</param>
     /// <param name="groupCountZ">The number of groups dispatched in the z direction.</param>
     public abstract void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ);
-    #endregion
-
-    #region Acceleration Structure Operations
-    /// <summary>
-    /// Performs a bottom level acceleration structure build on the GPU.
-    /// </summary>
-    /// <param name="desc">The bottom level acceleration structure description.</param>
-    /// <returns>The built acceleration structure.</returns>
-    public abstract BottomLevelAS BuildAccelerationStructure(BottomLevelASDesc desc);
-
-    /// <summary>
-    /// Performs a top level acceleration structure build on the GPU.
-    /// </summary>
-    /// <param name="desc">The top level acceleration structure description.</param>
-    /// <returns>The built acceleration structure.</returns>
-    public abstract TopLevelAS BuildAccelerationStructure(TopLevelASDesc desc);
-
-    /// <summary>
-    /// Refit a top level acceleration structure on the GPU.
-    /// </summary>
-    /// <param name="tlas">The top level acceleration structure to refit.</param>
-    /// <param name="newDesc">The new top level acceleration structure description.</param>
-    public abstract void UpdateAccelerationStructure(ref TopLevelAS tlas, TopLevelASDesc newDesc);
     #endregion
 
     #region Ray Tracing Operations
