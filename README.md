@@ -19,18 +19,18 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 
 ## TODO
 - ZenithEngine
-- [ ] Use `slnx` instead of `sln` for Visual Studio solution.
-- [ ] Add `ZenithEngine.D3D12` project.
-- [x] Add `ZenithEngine.Vulkan` project.
-- [ ] Add `ZenithEngine.Windowing` project.
-- [ ] Add `ZenithEngine.ShaderCompiler` project.
-- [ ] Add `ZenithEngine.ImGui` project.
-- [ ] Add `ZenithEngine.ImGui.MultipleWindows` project.
-- [ ] Add `ZenithEngine.Material` project.
+	- [ ] Use `slnx` instead of `sln` for Visual Studio solution.
+	- [ ] Add `ZenithEngine.D3D12` project.
+	- [x] Add `ZenithEngine.Vulkan` project.
+	- [ ] Add `ZenithEngine.Windowing` project.
+	- [ ] Add `ZenithEngine.ShaderCompiler` project.
+	- [ ] Add `ZenithEngine.ImGui` project.
+	- [ ] Add `ZenithEngine.ImGui.MultipleWindows` project.
+	- [ ] Add `ZenithEngine.Material` project.
 
 - ZenithEngine.Common
-- [ ] Add `ComputePipelineDesc` and `ComputePipeline` classes.
-- [ ] Add `RayTracingPipelineDesc` and `RayTracingPipeline` classes.
+	- [ ] Add `ComputePipelineDesc` and `ComputePipeline` classes.
+	- [ ] Add `RayTracingPipelineDesc` and `RayTracingPipeline` classes.
 
 ## Proposed Features
 - [ ] Bindless resources.
