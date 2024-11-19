@@ -9,7 +9,7 @@ public abstract class ResourceFactory(GraphicsContext context)
 
     public abstract Buffer CreateBuffer(ref readonly BufferDesc desc);
 
-    public abstract CommandProcessor CreateCommandProcessor(CommandProcessorType type = CommandProcessorType.Graphics);
+    public abstract CommandProcessor CreateCommandProcessor(CommandProcessorType type = CommandProcessorType.Direct);
 
     public abstract ComputePipeline CreateComputePipeline(ref readonly ComputePipelineDesc desc);
 
