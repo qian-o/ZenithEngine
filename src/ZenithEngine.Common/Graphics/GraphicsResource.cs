@@ -15,7 +15,7 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
             {
                 name = value;
 
-                SetName(value);
+                DebugName(value);
             }
         }
     }
@@ -46,7 +46,7 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected abstract void SetName(string name);
+    protected abstract void DebugName(string name);
 
     protected abstract void Destroy();
 }
