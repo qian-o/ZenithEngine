@@ -42,3 +42,6 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - [ ] Bindless resources.
 - [ ] SPIR-V reflection.
 - [ ] Graphics API shared resources.
+
+## Code Standard
+- Prefer using `(static item => item.Property)` Lambda expressions.
