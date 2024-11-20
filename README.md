@@ -10,12 +10,15 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 | Vulkan     | 🚧 |
 
 ## UI Backends
-| Platform | Supported |
-| -------- | --------- |
-| WPF      | 🚧 |
-| WinUI    | 🚧 |
-| Avalonia | 🚧 |
-| MAUI     | 🚧 |
+| Platform     | D3D12 | Vulkan |
+| --------     | ----- | ------ |
+| WPF          | 🚧 | 🚧 |
+| WinUI        | 🚧 | 🚧 |
+| Avalonia     | 🚧 | 🚧 |
+| MAUI-Android | 🚧 | 🚧 |
+| MAUI-iOS     | 🚧 | 🚧 |
+| MAUI-MacOS   | 🚧 | 🚧 |
+| MAUI-Windows | 🚧 | 🚧 |
 
 ## TODO
 - ZenithEngine
@@ -31,6 +34,9 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - ZenithEngine.Common
 	- [ ] Add `ComputePipelineDesc` and `ComputePipeline` classes.
 	- [ ] Add `RayTracingPipelineDesc` and `RayTracingPipeline` classes.
+
+- ZenithEngine.Vulkan
+	- [ ] Add `VKGraphicsContext` class.
 
 ## Proposed Features
 - [ ] Bindless resources.
