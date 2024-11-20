@@ -4,10 +4,10 @@
 Zenith Engine is a modern, cross-platform graphics rendering engine written in C#.
 
 ## Graphics Backends
-| API        | Supported |
-| ---        | --------- |
-| D3D12      | 🚧 |
-| Vulkan     | 🚧 |
+| API    | Supported |
+| ---    | --------- |
+| D3D12  | 🚧 |
+| Vulkan | 🚧 |
 
 ## UI Framework Support
 | Platform     | D3D12 | Vulkan |
