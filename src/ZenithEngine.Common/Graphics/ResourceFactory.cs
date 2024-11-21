@@ -25,9 +25,9 @@ public abstract class ResourceFactory(GraphicsContext context)
 
     public abstract FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc);
 
-    public abstract ComputePipeline CreateComputePipeline(ref readonly ComputePipelineDesc desc);
-
     public abstract GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc);
+
+    public abstract ComputePipeline CreateComputePipeline(ref readonly ComputePipelineDesc desc);
 
     public abstract RayTracingPipeline CreateRayTracingPipeline(ref readonly RayTracingPipelineDesc desc);
 

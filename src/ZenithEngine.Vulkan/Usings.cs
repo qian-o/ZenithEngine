@@ -1,0 +1,1 @@
+﻿global using Buffer = ZenithEngine.Common.Graphics.Buffer;
