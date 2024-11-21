@@ -7,8 +7,6 @@ public abstract class ResourceFactory(GraphicsContext context)
 {
     public GraphicsContext Context { get; } = context;
 
-    public abstract CommandProcessor CreateCommandProcessor(CommandProcessorType type = CommandProcessorType.Direct);
-
     public abstract SwapChain CreateSwapChain(ref readonly SwapChainDesc desc);
 
     public abstract Buffer CreateBuffer(ref readonly BufferDesc desc);
@@ -32,4 +30,6 @@ public abstract class ResourceFactory(GraphicsContext context)
     public abstract GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc);
 
     public abstract RayTracingPipeline CreateRayTracingPipeline(ref readonly RayTracingPipelineDesc desc);
+
+    public abstract CommandProcessor CreateCommandProcessor(CommandProcessorType type = CommandProcessorType.Direct);
 }
