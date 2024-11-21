@@ -25,6 +25,12 @@ public abstract class GraphicsContext : DisposableObject
         CopyProcessor = Factory.CreateCommandProcessor(CommandProcessorType.Copy);
     }
 
+    public abstract void CreateDeviceInternal(bool useDebugLayer);
+
+    public abstract MappedResource MapMemory(Buffer buffer, MapMode mode);
+
+    public abstract void UnmapMemory(Buffer buffer);
+
     public void UpdateBuffer(Buffer buffer,
                              nint source,
                              uint sourceSizeInBytes,
@@ -82,12 +88,6 @@ public abstract class GraphicsContext : DisposableObject
         CopyProcessor?.Dispose();
         CopyProcessor = null;
     }
-
-    public abstract void CreateDeviceInternal(bool useDebugLayer);
-
-    public abstract MappedResource MapMemory(Buffer buffer, MapMode mode);
-
-    public abstract void UnmapMemory(Buffer buffer);
 
     protected abstract void DestroyInternal();
 
