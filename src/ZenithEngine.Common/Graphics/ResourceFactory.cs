@@ -17,6 +17,8 @@ public abstract class ResourceFactory(GraphicsContext context)
 
     public abstract GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc);
 
+    public abstract RayTracingPipeline CreateRayTracingPipeline(ref readonly RayTracingPipelineDesc desc);
+
     public abstract ResourceLayout CreateResourceLayout(ref readonly ResourceLayoutDesc desc);
 
     public abstract ResourceSet CreateResourceSet(ref readonly ResourceSetDesc desc);
