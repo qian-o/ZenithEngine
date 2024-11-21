@@ -1,4 +1,5 @@
-﻿using ZenithEngine.Common.Enums;
+﻿using Silk.NET.Vulkan;
+using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Vulkan;
@@ -7,10 +8,13 @@ internal class VKGraphicsContext : GraphicsContext
 {
     public VKGraphicsContext()
     {
+        Vk = Vk.GetApi();
         Backend = Backend.Vulkan;
         Capabilities = new VKDeviceCapabilities();
         Factory = new VKResourceFactory(this);
     }
+
+    public Vk Vk { get; }
 
     public override Backend Backend { get; }
 
@@ -35,6 +39,6 @@ internal class VKGraphicsContext : GraphicsContext
 
     protected override void DestroyInternal()
     {
-        throw new NotImplementedException();
+        Vk.Dispose();
     }
 }
