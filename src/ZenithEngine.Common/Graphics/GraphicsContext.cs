@@ -26,7 +26,7 @@ public abstract class GraphicsContext : DisposableObject
 
     public abstract void UnmapMemory(Buffer buffer);
 
-    public abstract void SyncTransferTasks();
+    public abstract void SyncCopyTasks();
 
     public static GraphicsContext Create(Backend backend)
     {
