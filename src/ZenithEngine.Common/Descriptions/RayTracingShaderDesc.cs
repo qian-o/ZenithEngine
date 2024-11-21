@@ -4,7 +4,7 @@ namespace ZenithEngine.Common.Descriptions;
 
 public struct RayTracingShaderDesc
 {
-    public Shader? RayGen { get; set; }
+    public Shader RayGen { get; set; }
 
     public Shader[] Miss { get; set; }
 
@@ -12,7 +12,7 @@ public struct RayTracingShaderDesc
 
     public static RayTracingShaderDesc Default(Shader rayGen,
                                                Shader[] miss,
-                                               params HitGroupDesc[] hitGroups)
+                                               HitGroupDesc[] hitGroups)
     {
         return new()
         {

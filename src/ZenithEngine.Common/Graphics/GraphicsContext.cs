@@ -12,6 +12,10 @@ public abstract class GraphicsContext : DisposableObject
 
     public abstract void CreateDevice(bool useDebugLayer = false);
 
+    public abstract MappedResource MapMemory(Buffer buffer, MapMode mode);
+
+    public abstract void UnmapMemory(Buffer buffer);
+
     public abstract void UpdateBuffer(Buffer buffer,
                                       nint source,
                                       uint sourceSizeInBytes,
@@ -21,10 +25,6 @@ public abstract class GraphicsContext : DisposableObject
                                        nint source,
                                        uint sourceSizeInBytes,
                                        TextureRegion region);
-
-    public abstract MappedResource MapMemory(Buffer buffer, MapMode mode);
-
-    public abstract void UnmapMemory(Buffer buffer);
 
     public abstract void SyncCopyTasks();
 

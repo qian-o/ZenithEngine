@@ -46,12 +46,12 @@ public enum ShaderStages
     Miss = 1 << 7,
 
     /// <summary>
-    /// The closest-hit shader stage.
+    /// The closest hit shader stage.
     /// </summary>
     ClosestHit = 1 << 8,
 
     /// <summary>
-    /// The any-hit shader stage.
+    /// The any hit shader stage.
     /// </summary>
     AnyHit = 1 << 9,
 
