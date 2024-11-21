@@ -28,9 +28,14 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
     protected GraphicsContext Context { get; } = context;
 
     /// <summary>
-    /// Persistent memory allocator.
+    /// Current resource lifecycle persistent memory allocator.
     /// </summary>
     protected MemoryAllocator MemoryAllocator { get; } = new();
+
+    /// <summary>
+    /// Command recording period available temporary buffer allocator.
+    /// </summary>
+    protected BufferAllocator BufferAllocator => Context.BufferAllocator!;
 
     public void Dispose()
     {

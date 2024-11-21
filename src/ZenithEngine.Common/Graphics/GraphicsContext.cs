@@ -11,11 +11,11 @@ public abstract class GraphicsContext : DisposableObject
 
     public abstract ResourceFactory Factory { get; }
 
+    public BufferAllocator? BufferAllocator { get; private set; }
+
+    public CommandProcessor? CopyProcessor { get; private set; }
+
     protected Lock Lock { get; } = new Lock();
-
-    protected BufferAllocator? BufferAllocator { get; private set; }
-
-    protected CommandProcessor? CopyProcessor { get; private set; }
 
     public void CreateDevice(bool useDebugLayer = false)
     {
