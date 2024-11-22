@@ -36,7 +36,7 @@ internal unsafe partial class VKGraphicsContext
         {
             QueueFlags flags = properties[i].QueueFlags;
 
-            if (flags.HasFlag(QueueFlags.GraphicsBit | QueueFlags.ComputeBit))
+            if (flags.HasFlag(QueueFlags.GraphicsBit | QueueFlags.ComputeBit | QueueFlags.TransferBit))
             {
                 DirectQueueFamilyIndex = i;
             }
@@ -107,7 +107,12 @@ internal unsafe partial class VKGraphicsContext
 
         if (Capabilities.IsRayQuerySupported || Capabilities.IsRayTracingSupported)
         {
-            extensions = [.. extensions, KhrAccelerationStructure.ExtensionName, KhrDeferredHostOperations.ExtensionName];
+            extensions =
+            [
+                .. extensions,
+                KhrAccelerationStructure.ExtensionName,
+                KhrDeferredHostOperations.ExtensionName
+            ];
         }
 
         createInfo.EnabledExtensionCount = (uint)extensions.Length;

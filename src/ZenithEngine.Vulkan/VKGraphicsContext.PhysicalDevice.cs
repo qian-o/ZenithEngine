@@ -9,12 +9,12 @@ internal unsafe partial class VKGraphicsContext
 
     public uint FindMemoryTypeIndex(uint typeBits, MemoryPropertyFlags flags)
     {
-        PhysicalDeviceMemoryProperties memoryProperties;
-        Vk.GetPhysicalDeviceMemoryProperties(PhysicalDevice, &memoryProperties);
+        PhysicalDeviceMemoryProperties properties;
+        Vk.GetPhysicalDeviceMemoryProperties(PhysicalDevice, &properties);
 
-        for (int i = 0; i < memoryProperties.MemoryTypeCount; i++)
+        for (int i = 0; i < properties.MemoryTypeCount; i++)
         {
-            MemoryType memoryType = memoryProperties.MemoryTypes[i];
+            MemoryType memoryType = properties.MemoryTypes[i];
 
             if ((typeBits & (1 << i)) != 0 && memoryType.PropertyFlags.HasFlag(flags))
             {
@@ -28,7 +28,7 @@ internal unsafe partial class VKGraphicsContext
     private void InitPhysicalDevice()
     {
         uint physicalDeviceCount = 0;
-        Vk.EnumeratePhysicalDevices(Instance, &physicalDeviceCount, null);
+        Vk.EnumeratePhysicalDevices(Instance, &physicalDeviceCount, null).ThrowIfError();
 
         if (physicalDeviceCount == 0)
         {

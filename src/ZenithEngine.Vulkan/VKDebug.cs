@@ -92,7 +92,7 @@ internal unsafe class VKDebug : DisposableObject
             };
 
             DebugUtilsMessengerEXT messengerEXT;
-            utils!.CreateDebugUtilsMessenger(instance, &createInfo, null, &messengerEXT);
+            utils!.CreateDebugUtilsMessenger(instance, &createInfo, null, &messengerEXT).ThrowIfError();
 
             utilsCallback = messengerEXT;
         }
@@ -110,7 +110,7 @@ internal unsafe class VKDebug : DisposableObject
             };
 
             DebugReportCallbackEXT callbackEXT;
-            report!.CreateDebugReportCallback(instance, &createInfo, null, &callbackEXT);
+            report!.CreateDebugReportCallback(instance, &createInfo, null, &callbackEXT).ThrowIfError();
 
             reportCallback = callbackEXT;
         }
@@ -135,7 +135,7 @@ internal unsafe class VKDebug : DisposableObject
                 PObjectName = (byte*)allocator.AllocAnsi(name)
             };
 
-            utils!.SetDebugUtilsObjectName(device, &nameInfo);
+            utils!.SetDebugUtilsObjectName(device, &nameInfo).ThrowIfError();
         }
         else if (debugMarkerSupported)
         {
@@ -147,7 +147,7 @@ internal unsafe class VKDebug : DisposableObject
                 PObjectName = (byte*)allocator.AllocAnsi(name)
             };
 
-            marker!.DebugMarkerSetObjectName(device, &nameInfo);
+            marker!.DebugMarkerSetObjectName(device, &nameInfo).ThrowIfError();
         }
     }
 

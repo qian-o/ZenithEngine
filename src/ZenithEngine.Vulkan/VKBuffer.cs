@@ -54,10 +54,10 @@ internal unsafe class VKBuffer : Buffer
 
         Context.Vk.CreateBuffer(Context.Device, &createInfo, null, out Buffer).ThrowIfError();
 
-        MemoryRequirements memoryRequirements;
-        Context.Vk.GetBufferMemoryRequirements(Context.Device, Buffer, &memoryRequirements);
+        MemoryRequirements requirements;
+        Context.Vk.GetBufferMemoryRequirements(Context.Device, Buffer, &requirements);
 
-        DeviceMemory = new(Context, memoryRequirements, desc.Usage.HasFlag(BufferUsage.Dynamic));
+        DeviceMemory = new(Context, requirements, desc.Usage.HasFlag(BufferUsage.Dynamic));
 
         Context.Vk.BindBufferMemory(Context.Device, Buffer, DeviceMemory.DeviceMemory, 0).ThrowIfError();
 

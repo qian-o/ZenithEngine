@@ -16,14 +16,20 @@ internal unsafe class VKDeviceCapabilities : DeviceCapabilities
 
     public void Init(VKGraphicsContext context)
     {
-        uint extensionPropertyCount = 0;
-        context.Vk.EnumerateDeviceExtensionProperties(context.PhysicalDevice, (string)null!, &extensionPropertyCount, null);
+        uint propertyCount = 0;
+        context.Vk.EnumerateDeviceExtensionProperties(context.PhysicalDevice,
+                                                      (string)null!,
+                                                      &propertyCount,
+                                                      null).ThrowIfError();
 
-        ExtensionProperties[] extensionProperties = new ExtensionProperties[extensionPropertyCount];
-        context.Vk.EnumerateDeviceExtensionProperties(context.PhysicalDevice, (string)null!, &extensionPropertyCount, extensionProperties);
+        ExtensionProperties[] properties = new ExtensionProperties[propertyCount];
+        context.Vk.EnumerateDeviceExtensionProperties(context.PhysicalDevice,
+                                                      (string)null!,
+                                                      &propertyCount,
+                                                      properties).ThrowIfError();
 
-        isRayQuerySupported = SupportsExtension(extensionProperties, KhrRayQuery.ExtensionName);
-        isRayTracingSupported = SupportsExtension(extensionProperties, KhrRayTracingPipeline.ExtensionName);
+        isRayQuerySupported = SupportsExtension(properties, KhrRayQuery.ExtensionName);
+        isRayTracingSupported = SupportsExtension(properties, KhrRayTracingPipeline.ExtensionName);
     }
 
     private static bool SupportsExtension(ExtensionProperties[] extensionProperties, string extensionName)
