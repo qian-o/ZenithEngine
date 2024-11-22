@@ -5,11 +5,6 @@ namespace ZenithEngine.Common;
 
 public static class Utils
 {
-    public static string PtrToStringAnsi(nint ptr)
-    {
-        return Marshal.PtrToStringAnsi(ptr) ?? string.Empty;
-    }
-
     public static uint GetMipLevels(uint width, uint height)
     {
         return (uint)MathF.Floor(MathF.Log2(MathF.Max(width, height))) + 1;
@@ -105,5 +100,10 @@ public static class Utils
 
             _ => throw new InvalidOperationException("VertexElementFormat doesn't supported.")
         };
+    }
+
+    public static string PtrToStringAnsi(nint ptr)
+    {
+        return Marshal.PtrToStringAnsi(ptr) ?? string.Empty;
     }
 }

@@ -71,9 +71,9 @@ internal unsafe class VKGraphicsContext : GraphicsContext
         ApplicationInfo appInfo = new()
         {
             SType = StructureType.ApplicationInfo,
-            PApplicationName = (byte*)allocator.Alloc("Zenith Engine"),
+            PApplicationName = (byte*)allocator.AllocAnsi("Zenith Engine"),
             ApplicationVersion = new Version32(1, 0, 0),
-            PEngineName = (byte*)allocator.Alloc("Zenith Engine"),
+            PEngineName = (byte*)allocator.AllocAnsi("Zenith Engine"),
             EngineVersion = new Version32(1, 0, 0),
             ApiVersion = Version
         };
@@ -112,7 +112,7 @@ internal unsafe class VKGraphicsContext : GraphicsContext
             }
 
             createInfo.EnabledLayerCount = 1;
-            createInfo.PpEnabledLayerNames = (byte**)allocator.Alloc([ValidationLayerName]);
+            createInfo.PpEnabledLayerNames = (byte**)allocator.AllocAnsi([ValidationLayerName]);
         }
 
         string[] extensions = [KhrSurface.ExtensionName];
@@ -144,7 +144,7 @@ internal unsafe class VKGraphicsContext : GraphicsContext
         }
 
         createInfo.EnabledExtensionCount = (uint)extensions.Length;
-        createInfo.PpEnabledExtensionNames = (byte**)allocator.Alloc(extensions);
+        createInfo.PpEnabledExtensionNames = (byte**)allocator.AllocAnsi(extensions);
 
         Vk.CreateInstance(&createInfo, null, out Instance).ThrowIfError();
 

@@ -29,7 +29,7 @@ public unsafe class MemoryAllocator : DisposableObject
         return (T*)Alloc((uint)(sizeof(T) * count));
     }
 
-    public char* Alloc(string value)
+    public char* AllocAnsi(string value)
     {
         byte[] bytes = Encoding.ASCII.GetBytes(value);
 
@@ -40,13 +40,13 @@ public unsafe class MemoryAllocator : DisposableObject
         return chars;
     }
 
-    public char** Alloc(string[] values)
+    public char** AllocAnsi(string[] values)
     {
         nint* ptr = Alloc<nint>(values.Length);
 
         for (int i = 0; i < values.Length; i++)
         {
-            ptr[i] = (nint)Alloc(values[i]);
+            ptr[i] = (nint)AllocAnsi(values[i]);
         }
 
         return (char**)ptr;
