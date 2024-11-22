@@ -56,6 +56,11 @@ internal unsafe class VKGraphicsContext : GraphicsContext
 
     protected override void DestroyInternal()
     {
+        KhrSurface?.Dispose();
+        Debug?.Dispose();
+
+        Vk.DestroyInstance(Instance, null);
+
         Vk.Dispose();
     }
 
