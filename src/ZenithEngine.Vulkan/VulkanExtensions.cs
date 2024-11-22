@@ -15,23 +15,23 @@ internal static class VulkanExtensions
         }
     }
 
-    public static T GetExtension<T>(this Vk vk, VkInstance instance) where T : NativeExtension<Vk>
+    public static T? TryGetExtension<T>(this Vk vk, VkInstance instance) where T : NativeExtension<Vk>
     {
-        if (!vk.TryGetInstanceExtension(instance, out T ext))
+        if (vk.TryGetInstanceExtension(instance, out T ext))
         {
-            throw new InvalidOperationException($"Failed to load extension {typeof(T).Name}!");
+            return ext;
         }
 
-        return ext;
+        return null;
     }
 
-    public static T GetExtension<T>(this Vk vk, VkInstance instance, VkDevice device) where T : NativeExtension<Vk>
+    public static T? TryGetExtension<T>(this Vk vk, VkInstance instance, VkDevice device) where T : NativeExtension<Vk>
     {
-        if (!vk.TryGetDeviceExtension(instance, device, out T ext))
+        if (vk.TryGetDeviceExtension(instance, device, out T ext))
         {
-            throw new InvalidOperationException($"Failed to load extension {typeof(T).Name}!");
+            return ext;
         }
 
-        return ext;
+        return null;
     }
 }
