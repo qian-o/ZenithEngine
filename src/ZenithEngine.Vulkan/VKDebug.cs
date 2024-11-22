@@ -10,14 +10,14 @@ internal unsafe class VKDebug : DisposableObject
 {
     private static readonly bool debugUtils;
     private static readonly bool debugReport;
-    private static readonly bool setObjectName;
+    private static readonly bool debugMarker;
 
     private readonly VkInstance instance;
-    private readonly ExtDebugUtils? extDebugUtils;
-    private readonly ExtDebugReport? extDebugReport;
-    private readonly ExtDebugMarker? extDebugMarker;
-    private readonly DebugUtilsMessengerEXT? callbackUtils;
-    private readonly DebugReportCallbackEXT? callbackReport;
+    private readonly ExtDebugUtils? utils;
+    private readonly ExtDebugReport? report;
+    private readonly ExtDebugMarker? marker;
+    private readonly DebugUtilsMessengerEXT? utilsCallback;
+    private readonly DebugReportCallbackEXT? reportCallback;
 
     static VKDebug()
     {
@@ -36,7 +36,6 @@ internal unsafe class VKDebug : DisposableObject
             if (name == ExtDebugUtils.ExtensionName)
             {
                 debugUtils = true;
-                setObjectName = true;
             }
             else if (name == ExtDebugReport.ExtensionName)
             {
@@ -44,7 +43,7 @@ internal unsafe class VKDebug : DisposableObject
             }
             else if (name == ExtDebugMarker.ExtensionName)
             {
-                setObjectName = true;
+                debugMarker = true;
             }
         }
 
@@ -61,7 +60,7 @@ internal unsafe class VKDebug : DisposableObject
                 ExtensionNames = [ExtDebugReport.ExtensionName];
             }
 
-            if (setObjectName)
+            if (debugMarker)
             {
                 ExtensionNames = [.. ExtensionNames, ExtDebugMarker.ExtensionName];
             }
@@ -74,22 +73,22 @@ internal unsafe class VKDebug : DisposableObject
 
         if (debugUtils)
         {
-            extDebugUtils = context.Vk.GetExtension<ExtDebugUtils>(instance);
+            utils = context.Vk.GetExtension<ExtDebugUtils>(instance);
         }
         else
         {
             if (debugReport)
             {
-                extDebugReport = context.Vk.GetExtension<ExtDebugReport>(instance);
+                report = context.Vk.GetExtension<ExtDebugReport>(instance);
             }
 
-            if (setObjectName)
+            if (debugMarker)
             {
-                extDebugMarker = context.Vk.GetExtension<ExtDebugMarker>(instance);
+                marker = context.Vk.GetExtension<ExtDebugMarker>(instance);
             }
         }
 
-        if (extDebugUtils is not null)
+        if (utils is not null)
         {
             DebugUtilsMessengerCreateInfoEXT createInfo = new()
             {
@@ -106,11 +105,11 @@ internal unsafe class VKDebug : DisposableObject
             };
 
             DebugUtilsMessengerEXT messengerEXT;
-            extDebugUtils.CreateDebugUtilsMessenger(instance, &createInfo, null, &messengerEXT);
+            utils.CreateDebugUtilsMessenger(instance, &createInfo, null, &messengerEXT);
 
-            callbackUtils = messengerEXT;
+            utilsCallback = messengerEXT;
         }
-        else if (extDebugReport is not null)
+        else if (report is not null)
         {
             DebugReportCallbackCreateInfoEXT createInfo = new()
             {
@@ -124,9 +123,9 @@ internal unsafe class VKDebug : DisposableObject
             };
 
             DebugReportCallbackEXT callbackEXT;
-            extDebugReport.CreateDebugReportCallback(instance, &createInfo, null, &callbackEXT);
+            report.CreateDebugReportCallback(instance, &createInfo, null, &callbackEXT);
 
-            callbackReport = callbackEXT;
+            reportCallback = callbackEXT;
         }
     }
 
@@ -139,7 +138,7 @@ internal unsafe class VKDebug : DisposableObject
     {
         using MemoryAllocator allocator = new();
 
-        if (extDebugUtils is not null)
+        if (utils is not null)
         {
             DebugUtilsObjectNameInfoEXT nameInfo = new()
             {
@@ -149,10 +148,10 @@ internal unsafe class VKDebug : DisposableObject
                 PObjectName = (byte*)allocator.Alloc(name)
             };
 
-            extDebugUtils.SetDebugUtilsObjectName(device, &nameInfo);
+            utils.SetDebugUtilsObjectName(device, &nameInfo);
         }
 
-        if (extDebugMarker is not null)
+        if (marker is not null)
         {
             DebugMarkerObjectNameInfoEXT nameInfo = new()
             {
@@ -162,25 +161,25 @@ internal unsafe class VKDebug : DisposableObject
                 PObjectName = (byte*)allocator.Alloc(name)
             };
 
-            extDebugMarker.DebugMarkerSetObjectName(device, &nameInfo);
+            marker.DebugMarkerSetObjectName(device, &nameInfo);
         }
     }
 
     protected override void Destroy()
     {
-        if (callbackReport.HasValue)
+        if (reportCallback.HasValue)
         {
-            extDebugReport!.DestroyDebugReportCallback(instance, callbackReport.Value, null);
+            report!.DestroyDebugReportCallback(instance, reportCallback.Value, null);
         }
 
-        if (callbackUtils.HasValue)
+        if (utilsCallback.HasValue)
         {
-            extDebugUtils!.DestroyDebugUtilsMessenger(instance, callbackUtils.Value, null);
+            utils!.DestroyDebugUtilsMessenger(instance, utilsCallback.Value, null);
         }
 
-        extDebugMarker?.Dispose();
-        extDebugReport?.Dispose();
-        extDebugUtils?.Dispose();
+        marker?.Dispose();
+        report?.Dispose();
+        utils?.Dispose();
     }
 
     private uint MessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
