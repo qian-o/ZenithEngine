@@ -57,9 +57,9 @@ internal unsafe class VKBuffer : Buffer
         MemoryRequirements memoryRequirements;
         Context.Vk.GetBufferMemoryRequirements(Context.Device, Buffer, &memoryRequirements);
 
-        Memory = new(Context, memoryRequirements, desc.Usage.HasFlag(BufferUsage.Dynamic));
+        DeviceMemory = new(Context, memoryRequirements, desc.Usage.HasFlag(BufferUsage.Dynamic));
 
-        Context.Vk.BindBufferMemory(Context.Device, Buffer, Memory.DeviceMemory, 0).ThrowIfError();
+        Context.Vk.BindBufferMemory(Context.Device, Buffer, DeviceMemory.DeviceMemory, 0).ThrowIfError();
 
         BufferDeviceAddressInfo addressInfo = new()
         {
@@ -72,7 +72,7 @@ internal unsafe class VKBuffer : Buffer
 
     public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    public VKDeviceMemory Memory { get; }
+    public VKDeviceMemory DeviceMemory { get; }
 
     public ulong Address { get; }
 
@@ -80,7 +80,7 @@ internal unsafe class VKBuffer : Buffer
     {
         Context.SetDebugName(ObjectType.Buffer, Buffer.Handle, name);
 
-        Memory.Name = $"{name} Memory";
+        DeviceMemory.Name = $"{name} DeviceMemory";
     }
 
     protected override void Destroy()

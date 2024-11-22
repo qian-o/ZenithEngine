@@ -48,12 +48,20 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
     public override MappedResource MapMemory(Buffer buffer, MapMode mode)
     {
-        throw new NotImplementedException();
+        void* data;
+        Vk.MapMemory(Device,
+                     buffer.VK().DeviceMemory.DeviceMemory,
+                     0,
+                     buffer.Desc.SizeInBytes,
+                     0,
+                     &data).ThrowIfError();
+
+        return new MappedResource(buffer, mode, (nint)data, buffer.Desc.SizeInBytes);
     }
 
     public override void UnmapMemory(Buffer buffer)
     {
-        throw new NotImplementedException();
+        Vk.UnmapMemory(Device, buffer.VK().DeviceMemory.DeviceMemory);
     }
 
     public void SetDebugName(ObjectType objectType, ulong handle, string name)

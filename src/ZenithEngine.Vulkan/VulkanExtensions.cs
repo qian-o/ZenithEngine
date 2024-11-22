@@ -34,4 +34,14 @@ internal static class VulkanExtensions
 
         return null;
     }
+
+    public static VKBuffer VK(this Buffer buffer)
+    {
+        if (buffer is not VKBuffer)
+        {
+            throw new ZenithEngineException(Backend.Vulkan, "Buffer is not a Vulkan buffer");
+        }
+
+        return (VKBuffer)buffer;
+    }
 }
