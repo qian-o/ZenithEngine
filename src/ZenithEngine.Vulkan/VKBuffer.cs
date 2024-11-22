@@ -53,13 +53,34 @@ internal unsafe class VKBuffer : Buffer
         }
 
         Context.Vk.CreateBuffer(Context.Device, &createInfo, null, out Buffer).ThrowIfError();
+
+        MemoryRequirements memoryRequirements;
+        Context.Vk.GetBufferMemoryRequirements(Context.Device, Buffer, &memoryRequirements);
+
+        Memory = new(Context, memoryRequirements, desc.Usage.HasFlag(BufferUsage.Dynamic));
+
+        Context.Vk.BindBufferMemory(Context.Device, Buffer, Memory.DeviceMemory, 0).ThrowIfError();
+
+        BufferDeviceAddressInfo addressInfo = new()
+        {
+            SType = StructureType.BufferDeviceAddressInfo,
+            Buffer = Buffer
+        };
+
+        Address = Context.Vk.GetBufferDeviceAddress(Context.Device, &addressInfo);
     }
 
     public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
+    public VKDeviceMemory Memory { get; }
+
+    public ulong Address { get; }
+
     protected override void DebugName(string name)
     {
         Context.SetDebugName(ObjectType.Buffer, Buffer.Handle, name);
+
+        Memory.Name = $"{name} Memory";
     }
 
     protected override void Destroy()

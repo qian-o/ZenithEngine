@@ -7,14 +7,16 @@ internal unsafe partial class VKGraphicsContext
 {
     public VkPhysicalDevice PhysicalDevice;
 
-    public uint FindMemoryTypeIndex(uint typeFilter, MemoryPropertyFlags flags)
+    public uint FindMemoryTypeIndex(uint typeBits, MemoryPropertyFlags flags)
     {
         PhysicalDeviceMemoryProperties memoryProperties;
         Vk.GetPhysicalDeviceMemoryProperties(PhysicalDevice, &memoryProperties);
 
         for (int i = 0; i < memoryProperties.MemoryTypeCount; i++)
         {
-            if ((typeFilter & (1 << i)) != 0 && memoryProperties.MemoryTypes[i].PropertyFlags.HasFlag(flags))
+            MemoryType memoryType = memoryProperties.MemoryTypes[i];
+
+            if ((typeBits & (1 << i)) != 0 && memoryType.PropertyFlags.HasFlag(flags))
             {
                 return (uint)i;
             }

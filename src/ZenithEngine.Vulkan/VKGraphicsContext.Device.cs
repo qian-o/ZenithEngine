@@ -36,11 +36,12 @@ internal unsafe partial class VKGraphicsContext
         {
             QueueFlags flags = properties[i].QueueFlags;
 
-            if (flags.HasFlag(QueueFlags.GraphicsBit) && flags.HasFlag(QueueFlags.ComputeBit))
+            if (flags.HasFlag(QueueFlags.GraphicsBit | QueueFlags.ComputeBit))
             {
                 DirectQueueFamilyIndex = i;
             }
-            else if (flags.HasFlag(QueueFlags.TransferBit))
+
+            if (flags.HasFlag(QueueFlags.TransferBit))
             {
                 CopyQueueFamilyIndex = i;
             }
