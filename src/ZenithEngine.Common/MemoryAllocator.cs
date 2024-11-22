@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text;
 
 namespace ZenithEngine.Common;
 
@@ -23,44 +24,29 @@ public unsafe class MemoryAllocator : DisposableObject
         return ptr;
     }
 
-    public T* Alloc<T>() where T : unmanaged
+    public T* Alloc<T>(int count = 1) where T : unmanaged
     {
-        return (T*)Alloc((uint)sizeof(T));
+        return (T*)Alloc((uint)(sizeof(T) * count));
     }
 
-    public T* Alloc<T>(int count) where T : unmanaged
+    public char* Alloc(string value)
     {
-        return (T*)Alloc((uint)sizeof(T) * count);
+        byte[] bytes = Encoding.ASCII.GetBytes(value);
+
+        char* chars = Alloc<char>(bytes.Length + 1);
+        Marshal.Copy(bytes, 0, (nint)chars, bytes.Length);
+        chars[bytes.Length] = '\0';
+
+        return chars;
     }
 
-    public T* Alloc<T>(params T[] values) where T : unmanaged
-    {
-        T* ptr = Alloc<T>(values.Length);
-
-        for (int i = 0; i < values.Length; i++)
-        {
-            ptr[i] = values[i];
-        }
-
-        return ptr;
-    }
-
-    public char** Alloc(params string[] values)
+    public char** Alloc(string[] values)
     {
         nint* ptr = Alloc<nint>(values.Length);
 
         for (int i = 0; i < values.Length; i++)
         {
-            char* str = Alloc<char>(values[i].Length + 1);
-
-            for (int j = 0; j < values[i].Length; j++)
-            {
-                str[j] = values[i][j];
-            }
-
-            str[values[i].Length] = '\0';
-
-            ptr[i] = (nint)str;
+            ptr[i] = (nint)Alloc(values[i]);
         }
 
         return (char**)ptr;
@@ -73,12 +59,7 @@ public unsafe class MemoryAllocator : DisposableObject
         NativeMemory.Free(ptr);
     }
 
-    public void Free<T>(T* ptr) where T : unmanaged
-    {
-        Free((void*)ptr);
-    }
-
-    public void Free<T>(T** ptr, int count) where T : unmanaged
+    public void Free(char** ptr, int count)
     {
         for (int i = 0; i < count; i++)
         {

@@ -1,39 +1,42 @@
 ﻿using System.Globalization;
 using System.Text;
-using Graphics.Core;
-using Graphics.Core.Helpers;
-using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
+using ZenithEngine.Common;
 
-namespace Graphics.Engine.Vulkan;
+namespace ZenithEngine.Vulkan;
 
-internal sealed unsafe class VKDebug : DisposableObject
+internal unsafe class VKDebug : DisposableObject
 {
     private static readonly bool debugUtils;
     private static readonly bool debugReport;
     private static readonly bool setObjectName;
+
+    private readonly VkInstance instance;
+    private readonly ExtDebugUtils? extDebugUtils;
+    private readonly ExtDebugReport? extDebugReport;
+    private readonly ExtDebugMarker? extDebugMarker;
+    private readonly DebugUtilsMessengerEXT? callbackUtils;
+    private readonly DebugReportCallbackEXT? callbackReport;
 
     static VKDebug()
     {
         using Vk vk = Vk.GetApi();
 
         uint extensionCount = 0;
-        vk.EnumerateInstanceExtensionProperties((string)null!, &extensionCount, null);
+        vk.EnumerateInstanceExtensionProperties((string)null!, &extensionCount, null).ThrowIfError();
 
-        ExtensionProperties[] availableExtensions = new ExtensionProperties[(int)extensionCount];
-        vk.EnumerateInstanceExtensionProperties((string)null!, &extensionCount, availableExtensions);
+        ExtensionProperties[] extensions = new ExtensionProperties[extensionCount];
+        vk.EnumerateInstanceExtensionProperties((string)null!, &extensionCount, extensions).ThrowIfError();
 
-        foreach (ExtensionProperties extension in availableExtensions)
+        foreach (ExtensionProperties extension in extensions)
         {
-            string name = Allocator.GetString(extension.ExtensionName);
+            string name = Utils.PtrToStringAnsi((nint)extension.ExtensionName);
 
             if (name == ExtDebugUtils.ExtensionName)
             {
                 debugUtils = true;
                 setObjectName = true;
-
-                break;
             }
             else if (name == ExtDebugReport.ExtensionName)
             {
@@ -45,44 +48,49 @@ internal sealed unsafe class VKDebug : DisposableObject
             }
         }
 
-        debugReport = !debugUtils && debugReport;
-        setObjectName = !debugUtils && setObjectName;
-
         if (debugUtils)
         {
             ExtensionNames = [ExtDebugUtils.ExtensionName];
         }
         else
         {
+            ExtensionNames = [];
+
             if (debugReport)
             {
                 ExtensionNames = [ExtDebugReport.ExtensionName];
+            }
 
-                if (setObjectName)
-                {
-                    ExtensionNames = [.. ExtensionNames, ExtDebugMarker.ExtensionName];
-                }
+            if (setObjectName)
+            {
+                ExtensionNames = [.. ExtensionNames, ExtDebugMarker.ExtensionName];
             }
         }
     }
 
-    private readonly Allocator allocator = new();
-
-    private readonly VkInstance instance;
-    private readonly ExtDebugUtils? extDebugUtils;
-    private readonly ExtDebugReport? extDebugReport;
-    private readonly ExtDebugMarker? extDebugMarker;
-    private readonly DebugUtilsMessengerEXT? debugUtilsMessengerEXT;
-    private readonly DebugReportCallbackEXT? debugReportCallbackEXT;
-
-    public VKDebug(VKContext context)
+    public VKDebug(VKGraphicsContext context)
     {
         instance = context.Instance;
 
         if (debugUtils)
         {
             extDebugUtils = context.Vk.GetExtension<ExtDebugUtils>(instance);
+        }
+        else
+        {
+            if (debugReport)
+            {
+                extDebugReport = context.Vk.GetExtension<ExtDebugReport>(instance);
+            }
 
+            if (setObjectName)
+            {
+                extDebugMarker = context.Vk.GetExtension<ExtDebugMarker>(instance);
+            }
+        }
+
+        if (extDebugUtils is not null)
+        {
             DebugUtilsMessengerCreateInfoEXT createInfo = new()
             {
                 SType = StructureType.DebugUtilsMessengerCreateInfoExt,
@@ -94,23 +102,16 @@ internal sealed unsafe class VKDebug : DisposableObject
                               | DebugUtilsMessageTypeFlagsEXT.ValidationBitExt
                               | DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt
                               | DebugUtilsMessageTypeFlagsEXT.DeviceAddressBindingBitExt,
-                PfnUserCallback = (PfnDebugUtilsMessengerCallbackEXT)DebugMessageCallback
+                PfnUserCallback = (PfnDebugUtilsMessengerCallbackEXT)MessageCallback
             };
 
-            DebugUtilsMessengerEXT debugUtilsMessenger;
-            extDebugUtils.CreateDebugUtilsMessenger(instance, &createInfo, null, &debugUtilsMessenger);
+            DebugUtilsMessengerEXT messengerEXT;
+            extDebugUtils.CreateDebugUtilsMessenger(instance, &createInfo, null, &messengerEXT);
 
-            debugUtilsMessengerEXT = debugUtilsMessenger;
+            callbackUtils = messengerEXT;
         }
-        else if (debugReport)
+        else if (extDebugReport is not null)
         {
-            extDebugReport = context.Vk.GetExtension<ExtDebugReport>(instance);
-
-            if (setObjectName)
-            {
-                extDebugMarker = context.Vk.GetExtension<ExtDebugMarker>(instance);
-            }
-
             DebugReportCallbackCreateInfoEXT createInfo = new()
             {
                 SType = StructureType.DebugReportCallbackCreateInfoExt,
@@ -119,41 +120,46 @@ internal sealed unsafe class VKDebug : DisposableObject
                         | DebugReportFlagsEXT.PerformanceWarningBitExt
                         | DebugReportFlagsEXT.ErrorBitExt
                         | DebugReportFlagsEXT.DebugBitExt,
-                PfnCallback = (PfnDebugReportCallbackEXT)DebugMessageCallback
+                PfnCallback = (PfnDebugReportCallbackEXT)MessageCallback
             };
 
-            DebugReportCallbackEXT debugReportCallback;
-            extDebugReport.CreateDebugReportCallback(instance, &createInfo, null, &debugReportCallback);
+            DebugReportCallbackEXT callbackEXT;
+            extDebugReport.CreateDebugReportCallback(instance, &createInfo, null, &callbackEXT);
 
-            debugReportCallbackEXT = debugReportCallback;
+            callbackReport = callbackEXT;
         }
     }
 
-    public static string[] ExtensionNames { get; } = [];
+    public static string[] ExtensionNames { get; }
 
-    public void SetObjectName(VkDevice device, ObjectType objectType, ulong objectHandle, string objectName)
+    public void SetObjectName(VkDevice device,
+                              ObjectType type,
+                              ulong handle,
+                              string name)
     {
-        if (extDebugUtils != null)
+        using MemoryAllocator allocator = new();
+
+        if (extDebugUtils is not null)
         {
             DebugUtilsObjectNameInfoEXT nameInfo = new()
             {
                 SType = StructureType.DebugUtilsObjectNameInfoExt,
-                ObjectType = objectType,
-                ObjectHandle = objectHandle,
-                PObjectName = allocator.Alloc(objectName)
+                ObjectType = type,
+                ObjectHandle = handle,
+                PObjectName = (byte*)allocator.Alloc(name)
             };
 
             extDebugUtils.SetDebugUtilsObjectName(device, &nameInfo);
         }
 
-        if (extDebugMarker != null)
+        if (extDebugMarker is not null)
         {
             DebugMarkerObjectNameInfoEXT nameInfo = new()
             {
                 SType = StructureType.DebugMarkerObjectNameInfoExt,
-                ObjectType = (DebugReportObjectTypeEXT)objectType,
-                Object = objectHandle,
-                PObjectName = allocator.Alloc(objectName)
+                ObjectType = (DebugReportObjectTypeEXT)type,
+                Object = handle,
+                PObjectName = (byte*)allocator.Alloc(name)
             };
 
             extDebugMarker.DebugMarkerSetObjectName(device, &nameInfo);
@@ -162,34 +168,32 @@ internal sealed unsafe class VKDebug : DisposableObject
 
     protected override void Destroy()
     {
-        if (debugReportCallbackEXT.HasValue)
+        if (callbackReport.HasValue)
         {
-            extDebugReport!.DestroyDebugReportCallback(instance, debugReportCallbackEXT.Value, null);
+            extDebugReport!.DestroyDebugReportCallback(instance, callbackReport.Value, null);
         }
 
-        if (debugUtilsMessengerEXT.HasValue)
+        if (callbackUtils.HasValue)
         {
-            extDebugUtils!.DestroyDebugUtilsMessenger(instance, debugUtilsMessengerEXT.Value, null);
+            extDebugUtils!.DestroyDebugUtilsMessenger(instance, callbackUtils.Value, null);
         }
 
         extDebugMarker?.Dispose();
         extDebugReport?.Dispose();
         extDebugUtils?.Dispose();
-
-        allocator.Dispose();
     }
 
-    private uint DebugMessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
-                                      DebugUtilsMessageTypeFlagsEXT messageTypes,
-                                      DebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                      void* pUserData)
+    private uint MessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
+                                 DebugUtilsMessageTypeFlagsEXT messageTypes,
+                                 DebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                 void* pUserData)
     {
-        string message = Allocator.GetString(pCallbackData->PMessage);
+        string message = Utils.PtrToStringAnsi((nint)pCallbackData->PMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{messageSeverity}] [{messageTypes}]");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Allocator.GetString(pCallbackData->PMessageIdName)}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Utils.PtrToStringAnsi((nint)pCallbackData->PMessageIdName)}");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Number: {pCallbackData->MessageIdNumber}");
         foreach (string str in strings)
         {
@@ -208,35 +212,35 @@ internal sealed unsafe class VKDebug : DisposableObject
         return Vk.False;
     }
 
-    private uint DebugMessageCallback(uint flags,
-                                      DebugReportObjectTypeEXT objectType,
-                                      ulong @object,
-                                      nuint location,
-                                      int messageCode,
-                                      byte* pLayerPrefix,
-                                      byte* pMessage,
-                                      void* pUserData)
+    private uint MessageCallback(uint flags,
+                                 DebugReportObjectTypeEXT objectType,
+                                 ulong @object,
+                                 nuint location,
+                                 int messageCode,
+                                 byte* pLayerPrefix,
+                                 byte* pMessage,
+                                 void* pUserData)
     {
-        string message = Allocator.GetString(pMessage);
+        string message = Utils.PtrToStringAnsi((nint)pMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{(DebugReportFlagsEXT)flags}] [{objectType}]");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Location: {location}");
         stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Message Code: {messageCode}");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Layer Prefix: {Allocator.GetString(pLayerPrefix)}");
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Layer Prefix: {Utils.PtrToStringAnsi((nint)pLayerPrefix)}");
         foreach (string str in strings)
         {
             stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");
         }
 
-        PrintMessage(stringBuilder.ToString(), flags switch
+        PrintMessage(stringBuilder.ToString(), (DebugReportFlagsEXT)flags switch
         {
-            (uint)DebugReportFlagsEXT.InformationBitExt => ConsoleColor.Blue,
-            (uint)DebugReportFlagsEXT.WarningBitExt => ConsoleColor.Yellow,
-            (uint)DebugReportFlagsEXT.PerformanceWarningBitExt => ConsoleColor.DarkYellow,
-            (uint)DebugReportFlagsEXT.ErrorBitExt => ConsoleColor.Red,
-            (uint)DebugReportFlagsEXT.DebugBitExt => ConsoleColor.DarkGray,
+            DebugReportFlagsEXT.InformationBitExt => ConsoleColor.Blue,
+            DebugReportFlagsEXT.WarningBitExt => ConsoleColor.Yellow,
+            DebugReportFlagsEXT.PerformanceWarningBitExt => ConsoleColor.DarkYellow,
+            DebugReportFlagsEXT.ErrorBitExt => ConsoleColor.Red,
+            DebugReportFlagsEXT.DebugBitExt => ConsoleColor.DarkGray,
             _ => Console.ForegroundColor
         });
 
