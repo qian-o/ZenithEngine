@@ -56,6 +56,11 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         throw new NotImplementedException();
     }
 
+    public void SetDebugName(ObjectType objectType, ulong handle, string name)
+    {
+        Debug?.SetObjectName(Device, objectType, handle, name);
+    }
+
     protected override void DestroyInternal()
     {
         DestroyDevice();

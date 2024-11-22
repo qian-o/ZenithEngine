@@ -13,7 +13,7 @@ internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override Buffer CreateBuffer(ref readonly BufferDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKBuffer(Context, in desc);
     }
 
     public override Texture CreateTexture(ref readonly TextureDesc desc)
