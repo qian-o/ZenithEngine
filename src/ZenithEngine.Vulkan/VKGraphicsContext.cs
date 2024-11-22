@@ -71,7 +71,7 @@ internal unsafe class VKGraphicsContext : GraphicsContext
         ApplicationInfo appInfo = new()
         {
             SType = StructureType.ApplicationInfo,
-            PApplicationName = (byte*)allocator.AllocAnsi("Zenith Engine"),
+            PApplicationName = (byte*)allocator.AllocAnsi(AppDomain.CurrentDomain.FriendlyName),
             ApplicationVersion = new Version32(1, 0, 0),
             PEngineName = (byte*)allocator.AllocAnsi("Zenith Engine"),
             EngineVersion = new Version32(1, 0, 0),
