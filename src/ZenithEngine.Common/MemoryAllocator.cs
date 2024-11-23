@@ -29,6 +29,18 @@ public unsafe class MemoryAllocator : DisposableObject
         return (T*)Alloc((uint)(sizeof(T) * count));
     }
 
+    public T* Alloc<T>(T[] values) where T : unmanaged
+    {
+        T* ptr = Alloc<T>(values.Length);
+
+        for (int i = 0; i < values.Length; i++)
+        {
+            ptr[i] = values[i];
+        }
+
+        return ptr;
+    }
+
     public byte* AllocAnsi(string value)
     {
         byte[] bytes = Encoding.ASCII.GetBytes(value);
