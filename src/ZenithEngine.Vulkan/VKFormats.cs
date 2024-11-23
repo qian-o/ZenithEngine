@@ -175,6 +175,18 @@ internal class VKFormats
         return flags;
     }
 
+    public static ImageLayout GetImageLayout(TextureUsage usage)
+    {
+        return usage switch
+        {
+            TextureUsage.Sampled => ImageLayout.ShaderReadOnlyOptimal,
+            TextureUsage.Storage => ImageLayout.General,
+            TextureUsage.RenderTarget => ImageLayout.ColorAttachmentOptimal,
+            TextureUsage.DepthStencil => ImageLayout.DepthStencilAttachmentOptimal,
+            _ => throw new ArgumentOutOfRangeException(nameof(usage))
+        };
+    }
+
     public static SampleCountFlags GetSampleCountFlags(TextureSampleCount count)
     {
         return count switch
