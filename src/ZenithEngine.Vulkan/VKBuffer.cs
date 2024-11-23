@@ -85,6 +85,8 @@ internal unsafe class VKBuffer : Buffer
 
     protected override void Destroy()
     {
+        DeviceMemory.Dispose();
+
         Context.Vk.DestroyBuffer(Context.Device, Buffer, null);
     }
 }
