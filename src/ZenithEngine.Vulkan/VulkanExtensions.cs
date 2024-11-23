@@ -52,6 +52,17 @@ internal static class VulkanExtensions
         {
             throw new ZenithEngineException(Backend.Vulkan, "Texture is not a Vulkan texture");
         }
+
         return (VKTexture)texture;
+    }
+
+    public static VKTextureView VK(this TextureView textureView)
+    {
+        if (textureView is not VKTextureView)
+        {
+            throw new ZenithEngineException(Backend.Vulkan, "TextureView is not a Vulkan texture view");
+        }
+
+        return (VKTextureView)textureView;
     }
 }
