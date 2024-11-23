@@ -7,15 +7,15 @@ internal readonly struct VKResourceCounts(uint uniformBufferCount,
                                           uint samplerCount,
                                           uint accelerationStructureCount)
 {
-    public uint UniformBufferCount { get; } = uniformBufferCount;
+    public readonly uint UniformBufferCount = uniformBufferCount;
 
-    public uint StorageBufferCount { get; } = storageBufferCount;
+    public readonly uint StorageBufferCount = storageBufferCount;
 
-    public uint SampledImageCount { get; } = sampledImageCount;
+    public readonly uint SampledImageCount = sampledImageCount;
 
-    public uint StorageImageCount { get; } = storageImageCount;
+    public readonly uint StorageImageCount = storageImageCount;
 
-    public uint SamplerCount { get; } = samplerCount;
+    public readonly uint SamplerCount = samplerCount;
 
-    public uint AccelerationStructureCount { get; } = accelerationStructureCount;
+    public readonly uint AccelerationStructureCount = accelerationStructureCount;
 }
