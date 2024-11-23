@@ -19,7 +19,7 @@ internal unsafe class VKTextureView : TextureView
             Image = desc.Target.VK().Image,
             ViewType = VKFormats.GetImageViewType(textureDesc.Type),
             Format = VKFormats.GetPixelFormat(desc.Format),
-            SubresourceRange = new ImageSubresourceRange
+            SubresourceRange = new()
             {
                 AspectMask = VKFormats.GetImageAspectFlags(textureDesc.Usage),
                 BaseMipLevel = desc.BaseMipLevel,

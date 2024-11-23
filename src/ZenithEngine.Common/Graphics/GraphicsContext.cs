@@ -15,13 +15,13 @@ public abstract class GraphicsContext : DisposableObject
 
     public CommandProcessor? CopyProcessor { get; private set; }
 
-    protected Lock Lock { get; } = new Lock();
+    protected Lock Lock { get; } = new();
 
     public void CreateDevice(bool useDebugLayer = false)
     {
         CreateDeviceInternal(useDebugLayer);
 
-        BufferAllocator = new BufferAllocator(this);
+        BufferAllocator = new(this);
         CopyProcessor = Factory.CreateCommandProcessor(CommandProcessorType.Copy);
     }
 

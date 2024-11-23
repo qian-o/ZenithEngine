@@ -25,7 +25,7 @@ internal unsafe class VKResourceLayout : ResourceLayout
         {
             LayoutElementDesc element = desc.Elements[i];
 
-            bindings[i] = new DescriptorSetLayoutBinding()
+            bindings[i] = new()
             {
                 Binding = VKHelpers.GetBinding(element),
                 DescriptorType = VKFormats.GetDescriptorType(element.Type, element.Options),
@@ -71,12 +71,12 @@ internal unsafe class VKResourceLayout : ResourceLayout
 
         MemoryAllocator.Free(bindings);
 
-        Counts = new VKResourceCounts(uniformBufferCount,
-                                      storageBufferCount,
-                                      sampledImageCount,
-                                      storageImageCount,
-                                      samplerCount,
-                                      accelerationStructureCount);
+        Counts = new(uniformBufferCount,
+                     storageBufferCount,
+                     sampledImageCount,
+                     storageImageCount,
+                     samplerCount,
+                     accelerationStructureCount);
     }
 
     public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;

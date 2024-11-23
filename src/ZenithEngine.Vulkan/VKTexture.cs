@@ -19,7 +19,7 @@ internal unsafe class VKTexture : Texture
             SType = StructureType.ImageCreateInfo,
             ImageType = VKFormats.GetImageType(desc.Type),
             Format = VKFormats.GetPixelFormat(desc.Format),
-            Extent = new Extent3D
+            Extent = new()
             {
                 Width = desc.Width,
                 Height = desc.Height,
@@ -40,7 +40,7 @@ internal unsafe class VKTexture : Texture
         MemoryRequirements requirements;
         Context.Vk.GetImageMemoryRequirements(Context.Device, Image, &requirements);
 
-        DeviceMemory = new VKDeviceMemory(Context, requirements, false);
+        DeviceMemory = new(Context, requirements, false);
 
         Context.Vk.BindImageMemory(Context.Device, Image, DeviceMemory.DeviceMemory, 0).ThrowIfError();
 

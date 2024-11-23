@@ -18,8 +18,9 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
     {
         Vk = Vk.GetApi();
         Backend = Backend.Vulkan;
-        Capabilities = new VKDeviceCapabilities();
-        Factory = new VKResourceFactory(this);
+        Capabilities = new();
+        Factory = new(this);
+        DescriptorSetAllocator = new(this);
     }
 
     public Vk Vk { get; }
@@ -33,6 +34,8 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
     public override VKDeviceCapabilities Capabilities { get; }
 
     public override VKResourceFactory Factory { get; }
+
+    public VKDescriptorSetAllocator DescriptorSetAllocator { get; }
 
     public override void CreateDeviceInternal(bool useDebugLayer)
     {
@@ -56,7 +59,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
                      0,
                      &data).ThrowIfError();
 
-        return new MappedResource(buffer, mode, (nint)data, buffer.Desc.SizeInBytes);
+        return new(buffer, mode, (nint)data, buffer.Desc.SizeInBytes);
     }
 
     public override void UnmapMemory(Buffer buffer)
@@ -165,7 +168,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
         Vk.CreateInstance(&createInfo, null, out Instance).ThrowIfError();
 
-        Debug = useDebugLayer ? new VKDebug(this) : null;
+        Debug = useDebugLayer ? new(this) : null;
         KhrSurface = Vk.TryGetExtension<KhrSurface>(Instance);
     }
 }
