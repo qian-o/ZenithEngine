@@ -2,6 +2,7 @@
 using Silk.NET.Vulkan;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
+using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Vulkan;
 
@@ -43,5 +44,14 @@ internal static class VulkanExtensions
         }
 
         return (VKBuffer)buffer;
+    }
+
+    public static VKTexture VK(this Texture texture)
+    {
+        if (texture is not VKTexture)
+        {
+            throw new ZenithEngineException(Backend.Vulkan, "Texture is not a Vulkan texture");
+        }
+        return (VKTexture)texture;
     }
 }

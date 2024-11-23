@@ -11,20 +11,20 @@ internal static class VKHelpers
         return desc.Type == TextureType.TextureCube ? 6u : 1u;
     }
 
-    public static uint GetBinding(LayoutElementDesc element)
+    public static uint GetBinding(LayoutElementDesc desc)
     {
-        return element.Type switch
+        return desc.Type switch
         {
-            ResourceType.ConstantBuffer => element.Slot,
+            ResourceType.ConstantBuffer => desc.Slot,
 
             ResourceType.StructuredBufferReadWrite or
-            ResourceType.TextureReadWrite => element.Slot + 20,
+            ResourceType.TextureReadWrite => desc.Slot + 20,
 
-            ResourceType.Sampler => element.Slot + 40,
+            ResourceType.Sampler => desc.Slot + 40,
 
             ResourceType.StructuredBuffer or
             ResourceType.Texture or
-            ResourceType.AccelerationStructure => element.Slot + 60,
+            ResourceType.AccelerationStructure => desc.Slot + 60,
 
             _ => 0
         };

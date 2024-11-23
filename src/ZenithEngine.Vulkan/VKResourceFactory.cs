@@ -18,7 +18,7 @@ internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override Texture CreateTexture(ref readonly TextureDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKTexture(Context, in desc);
     }
 
     public override TextureView CreateTextureView(ref readonly TextureViewDesc desc)
