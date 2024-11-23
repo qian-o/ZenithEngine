@@ -8,7 +8,6 @@ namespace ZenithEngine.Vulkan;
 internal unsafe class VKShader : Shader
 {
     public VkShaderModule ShaderModule;
-    public PipelineShaderStageCreateInfo PipelineShaderStageCreateInfo;
 
     public VKShader(GraphicsContext context,
                     ref readonly ShaderDesc desc) : base(context, in desc)
@@ -20,7 +19,10 @@ internal unsafe class VKShader : Shader
             PCode = (uint*)MemoryAllocator.Alloc(desc.ShaderBytes)
         };
 
-        Context.Vk.CreateShaderModule(Context.Device, &createInfo, null, out ShaderModule).ThrowIfError();
+        Context.Vk.CreateShaderModule(Context.Device,
+                                      &createInfo,
+                                      null,
+                                      out ShaderModule).ThrowIfError();
 
         MemoryAllocator.Free(createInfo.PCode);
 
@@ -34,6 +36,8 @@ internal unsafe class VKShader : Shader
     }
 
     public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+
+    public PipelineShaderStageCreateInfo PipelineShaderStageCreateInfo { get; }
 
     protected override void DebugName(string name)
     {
