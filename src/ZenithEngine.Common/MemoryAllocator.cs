@@ -26,7 +26,11 @@ public unsafe class MemoryAllocator : DisposableObject
 
     public T* Alloc<T>(int count = 1) where T : unmanaged
     {
-        return (T*)Alloc((uint)(sizeof(T) * count));
+        T* ptr = (T*)Alloc((uint)(sizeof(T) * count));
+
+        ptr[0] = default;
+
+        return ptr;
     }
 
     public T* Alloc<T>(T[] values) where T : unmanaged

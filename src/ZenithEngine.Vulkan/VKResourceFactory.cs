@@ -48,7 +48,7 @@ internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKFrameBuffer(Context, in desc);
     }
 
     public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc)

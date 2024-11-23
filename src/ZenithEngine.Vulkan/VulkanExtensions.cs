@@ -105,4 +105,14 @@ internal static class VulkanExtensions
 
         return (VKResourceSet)resourceSet;
     }
+
+    public static VKFrameBuffer VK(this FrameBuffer frameBuffer)
+    {
+        if (frameBuffer is not VKFrameBuffer)
+        {
+            throw new ZenithEngineException(Backend.Vulkan, "FrameBuffer is not a Vulkan frame buffer");
+        }
+
+        return (VKFrameBuffer)frameBuffer;
+    }
 }
