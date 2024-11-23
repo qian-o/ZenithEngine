@@ -24,10 +24,14 @@ internal unsafe class VKDebug : DisposableObject
         using Vk vk = Vk.GetApi();
 
         uint extensionCount = 0;
-        vk.EnumerateInstanceExtensionProperties((string)null!, &extensionCount, null).ThrowIfError();
+        vk.EnumerateInstanceExtensionProperties((string)null!,
+                                                &extensionCount,
+                                                null).ThrowIfError();
 
         ExtensionProperties[] extensions = new ExtensionProperties[extensionCount];
-        vk.EnumerateInstanceExtensionProperties((string)null!, &extensionCount, extensions).ThrowIfError();
+        vk.EnumerateInstanceExtensionProperties((string)null!,
+                                                &extensionCount,
+                                                extensions).ThrowIfError();
 
         foreach (ExtensionProperties extension in extensions)
         {

@@ -32,7 +32,8 @@ internal unsafe class VKDeviceCapabilities : DeviceCapabilities
         isRayTracingSupported = SupportsExtension(properties, KhrRayTracingPipeline.ExtensionName);
     }
 
-    private static bool SupportsExtension(ExtensionProperties[] extensionProperties, string extensionName)
+    private static bool SupportsExtension(ExtensionProperties[] extensionProperties,
+                                          string extensionName)
     {
         foreach (ExtensionProperties extensionProperty in extensionProperties)
         {
