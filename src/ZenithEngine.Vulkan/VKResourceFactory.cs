@@ -28,7 +28,7 @@ internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override Sampler CreateSampler(ref readonly SamplerDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKSampler(Context, in desc);
     }
 
     public override Shader CreateShader(ref readonly ShaderDesc desc)

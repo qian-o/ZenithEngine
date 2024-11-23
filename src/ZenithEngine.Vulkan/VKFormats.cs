@@ -204,54 +204,54 @@ internal class VKFormats
     public static void GetFilter(SamplerFilter filter,
                                  out Filter minFilter,
                                  out Filter magFilter,
-                                 out SamplerMipmapMode mipmapMode)
+                                 out SamplerMipmapMode mode)
     {
         switch (filter)
         {
             case SamplerFilter.MinPointMagPointMipPoint:
                 minFilter = Filter.Nearest;
                 magFilter = Filter.Nearest;
-                mipmapMode = SamplerMipmapMode.Nearest;
+                mode = SamplerMipmapMode.Nearest;
                 break;
             case SamplerFilter.MinPointMagPointMipLinear:
                 minFilter = Filter.Nearest;
                 magFilter = Filter.Nearest;
-                mipmapMode = SamplerMipmapMode.Linear;
+                mode = SamplerMipmapMode.Linear;
                 break;
             case SamplerFilter.MinPointMagLinearMipPoint:
                 minFilter = Filter.Nearest;
                 magFilter = Filter.Linear;
-                mipmapMode = SamplerMipmapMode.Nearest;
+                mode = SamplerMipmapMode.Nearest;
                 break;
             case SamplerFilter.MinPointMagLinearMipLinear:
                 minFilter = Filter.Nearest;
                 magFilter = Filter.Linear;
-                mipmapMode = SamplerMipmapMode.Linear;
+                mode = SamplerMipmapMode.Linear;
                 break;
             case SamplerFilter.MinLinearMagPointMipPoint:
                 minFilter = Filter.Linear;
                 magFilter = Filter.Nearest;
-                mipmapMode = SamplerMipmapMode.Nearest;
+                mode = SamplerMipmapMode.Nearest;
                 break;
             case SamplerFilter.MinLinearMagPointMipLinear:
                 minFilter = Filter.Linear;
                 magFilter = Filter.Nearest;
-                mipmapMode = SamplerMipmapMode.Linear;
+                mode = SamplerMipmapMode.Linear;
                 break;
             case SamplerFilter.MinLinearMagLinearMipPoint:
                 minFilter = Filter.Linear;
                 magFilter = Filter.Linear;
-                mipmapMode = SamplerMipmapMode.Nearest;
+                mode = SamplerMipmapMode.Nearest;
                 break;
             case SamplerFilter.MinLinearMagLinearMipLinear:
                 minFilter = Filter.Linear;
                 magFilter = Filter.Linear;
-                mipmapMode = SamplerMipmapMode.Linear;
+                mode = SamplerMipmapMode.Linear;
                 break;
             case SamplerFilter.Anisotropic:
                 minFilter = Filter.Linear;
                 magFilter = Filter.Linear;
-                mipmapMode = SamplerMipmapMode.Linear;
+                mode = SamplerMipmapMode.Linear;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(filter));

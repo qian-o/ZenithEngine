@@ -65,4 +65,14 @@ internal static class VulkanExtensions
 
         return (VKTextureView)textureView;
     }
+
+    public static VKSampler VK(this Sampler sampler)
+    {
+        if (sampler is not VKSampler)
+        {
+            throw new ZenithEngineException(Backend.Vulkan, "Sampler is not a Vulkan sampler");
+        }
+
+        return (VKSampler)sampler;
+    }
 }
