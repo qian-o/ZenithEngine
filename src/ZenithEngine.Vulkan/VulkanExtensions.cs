@@ -75,4 +75,14 @@ internal static class VulkanExtensions
 
         return (VKSampler)sampler;
     }
+
+    public static VKShader VK(this Shader shader)
+    {
+        if (shader is not VKShader)
+        {
+            throw new ZenithEngineException(Backend.Vulkan, "Shader is not a Vulkan shader");
+        }
+
+        return (VKShader)shader;
+    }
 }

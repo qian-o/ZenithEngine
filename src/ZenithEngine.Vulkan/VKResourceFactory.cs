@@ -33,7 +33,7 @@ internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override Shader CreateShader(ref readonly ShaderDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKShader(Context, in desc);
     }
 
     public override ResourceLayout CreateResourceLayout(ref readonly ResourceLayoutDesc desc)

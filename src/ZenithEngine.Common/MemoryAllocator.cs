@@ -29,18 +29,18 @@ public unsafe class MemoryAllocator : DisposableObject
         return (T*)Alloc((uint)(sizeof(T) * count));
     }
 
-    public char* AllocAnsi(string value)
+    public byte* AllocAnsi(string value)
     {
         byte[] bytes = Encoding.ASCII.GetBytes(value);
 
-        char* chars = Alloc<char>(bytes.Length + 1);
+        byte* chars = Alloc<byte>(bytes.Length + 1);
+
         Marshal.Copy(bytes, 0, (nint)chars, bytes.Length);
-        chars[bytes.Length] = '\0';
 
         return chars;
     }
 
-    public char** AllocAnsi(string[] values)
+    public byte** AllocAnsi(string[] values)
     {
         nint* ptr = Alloc<nint>(values.Length);
 
@@ -49,7 +49,7 @@ public unsafe class MemoryAllocator : DisposableObject
             ptr[i] = (nint)AllocAnsi(values[i]);
         }
 
-        return (char**)ptr;
+        return (byte**)ptr;
     }
 
     public void Free(void* ptr)
@@ -59,7 +59,7 @@ public unsafe class MemoryAllocator : DisposableObject
         NativeMemory.Free(ptr);
     }
 
-    public void Free(char** ptr, int count)
+    public void Free(byte** ptr, int count)
     {
         for (int i = 0; i < count; i++)
         {

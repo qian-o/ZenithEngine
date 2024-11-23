@@ -132,7 +132,7 @@ internal unsafe class VKDebug : DisposableObject
                 SType = StructureType.DebugUtilsObjectNameInfoExt,
                 ObjectType = type,
                 ObjectHandle = handle,
-                PObjectName = (byte*)allocator.AllocAnsi(name)
+                PObjectName = allocator.AllocAnsi(name)
             };
 
             utils!.SetDebugUtilsObjectName(device, &nameInfo).ThrowIfError();
@@ -144,7 +144,7 @@ internal unsafe class VKDebug : DisposableObject
                 SType = StructureType.DebugMarkerObjectNameInfoExt,
                 ObjectType = (DebugReportObjectTypeEXT)type,
                 Object = handle,
-                PObjectName = (byte*)allocator.AllocAnsi(name)
+                PObjectName = allocator.AllocAnsi(name)
             };
 
             marker!.DebugMarkerSetObjectName(device, &nameInfo).ThrowIfError();
