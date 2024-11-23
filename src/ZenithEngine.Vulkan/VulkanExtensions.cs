@@ -85,4 +85,24 @@ internal static class VulkanExtensions
 
         return (VKShader)shader;
     }
+
+    public static VKResourceLayout VK(this ResourceLayout resourceLayout)
+    {
+        if (resourceLayout is not VKResourceLayout)
+        {
+            throw new ZenithEngineException(Backend.Vulkan, "ResourceLayout is not a Vulkan resource layout");
+        }
+
+        return (VKResourceLayout)resourceLayout;
+    }
+
+    public static VKResourceSet VK(this ResourceSet resourceSet)
+    {
+        if (resourceSet is not VKResourceSet)
+        {
+            throw new ZenithEngineException(Backend.Vulkan, "ResourceSet is not a Vulkan resource set");
+        }
+
+        return (VKResourceSet)resourceSet;
+    }
 }
