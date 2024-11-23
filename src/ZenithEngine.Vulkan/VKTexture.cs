@@ -42,7 +42,10 @@ internal unsafe class VKTexture : Texture
 
         DeviceMemory = new(Context, requirements, false);
 
-        Context.Vk.BindImageMemory(Context.Device, Image, DeviceMemory.DeviceMemory, 0).ThrowIfError();
+        Context.Vk.BindImageMemory(Context.Device,
+                                   Image,
+                                   DeviceMemory.DeviceMemory,
+                                   0).ThrowIfError();
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
     }

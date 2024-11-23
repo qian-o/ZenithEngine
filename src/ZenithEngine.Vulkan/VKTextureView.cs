@@ -29,7 +29,10 @@ internal unsafe class VKTextureView : TextureView
             }
         };
 
-        Context.Vk.CreateImageView(Context.Device, &createInfo, null, out ImageView).ThrowIfError();
+        Context.Vk.CreateImageView(Context.Device,
+                                   &createInfo,
+                                   null,
+                                   out ImageView).ThrowIfError();
     }
 
     public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;

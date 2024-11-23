@@ -59,7 +59,10 @@ internal unsafe class VKBuffer : Buffer
 
         DeviceMemory = new(Context, requirements, desc.Usage.HasFlag(BufferUsage.Dynamic));
 
-        Context.Vk.BindBufferMemory(Context.Device, Buffer, DeviceMemory.DeviceMemory, 0).ThrowIfError();
+        Context.Vk.BindBufferMemory(Context.Device,
+                                    Buffer,
+                                    DeviceMemory.DeviceMemory,
+                                    0).ThrowIfError();
 
         BufferDeviceAddressInfo addressInfo = new()
         {

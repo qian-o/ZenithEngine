@@ -22,7 +22,9 @@ internal unsafe class VKDescriptorSetAllocator(VKGraphicsContext context) : Disp
         };
 
         VkDescriptorSet set;
-        context.Vk.AllocateDescriptorSets(context.Device, &allocateInfo, &set).ThrowIfError();
+        context.Vk.AllocateDescriptorSets(context.Device,
+                                          &allocateInfo,
+                                          &set).ThrowIfError();
 
         return new VKDescriptorAllocationToken(pool, set);
     }

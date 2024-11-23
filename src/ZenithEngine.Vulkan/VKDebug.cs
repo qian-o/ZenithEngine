@@ -92,7 +92,10 @@ internal unsafe class VKDebug : DisposableObject
             };
 
             DebugUtilsMessengerEXT messengerEXT;
-            utils!.CreateDebugUtilsMessenger(instance, &createInfo, null, &messengerEXT).ThrowIfError();
+            utils!.CreateDebugUtilsMessenger(instance,
+                                             &createInfo,
+                                             null,
+                                             &messengerEXT).ThrowIfError();
 
             utilsCallback = messengerEXT;
         }
@@ -110,7 +113,10 @@ internal unsafe class VKDebug : DisposableObject
             };
 
             DebugReportCallbackEXT callbackEXT;
-            report!.CreateDebugReportCallback(instance, &createInfo, null, &callbackEXT).ThrowIfError();
+            report!.CreateDebugReportCallback(instance,
+                                              &createInfo,
+                                              null,
+                                              &callbackEXT).ThrowIfError();
 
             reportCallback = callbackEXT;
         }
@@ -177,9 +183,16 @@ internal unsafe class VKDebug : DisposableObject
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{messageSeverity}] [{messageTypes}]");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Name: {Utils.PtrToStringAnsi((nint)pCallbackData->PMessageIdName)}");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Number: {pCallbackData->MessageIdNumber}");
+
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture,
+                                 $"[{messageSeverity}] [{messageTypes}]");
+
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture,
+                                 $"Name: {Utils.PtrToStringAnsi((nint)pCallbackData->PMessageIdName)}");
+
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture,
+                                 $"Number: {pCallbackData->MessageIdNumber}");
+
         foreach (string str in strings)
         {
             stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");
@@ -210,10 +223,19 @@ internal unsafe class VKDebug : DisposableObject
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{(DebugReportFlagsEXT)flags}] [{objectType}]");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Location: {location}");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Message Code: {messageCode}");
-        stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"Layer Prefix: {Utils.PtrToStringAnsi((nint)pLayerPrefix)}");
+
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture,
+                                 $"[{(DebugReportFlagsEXT)flags}] [{objectType}]");
+
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture,
+                                 $"Location: {location}");
+
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture,
+                                 $"Message Code: {messageCode}");
+
+        stringBuilder.AppendLine(CultureInfo.InvariantCulture,
+                                 $"Layer Prefix: {Utils.PtrToStringAnsi((nint)pLayerPrefix)}");
+
         foreach (string str in strings)
         {
             stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");
