@@ -28,7 +28,10 @@ public unsafe class MemoryAllocator : DisposableObject
     {
         T* ptr = (T*)Alloc((uint)(sizeof(T) * count));
 
-        ptr[0] = default;
+        for (int i = 0; i < count; i++)
+        {
+            ptr[i] = default;
+        }
 
         return ptr;
     }
