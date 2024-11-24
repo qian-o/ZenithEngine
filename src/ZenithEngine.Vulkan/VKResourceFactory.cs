@@ -58,7 +58,7 @@ internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override ComputePipeline CreateComputePipeline(ref readonly ComputePipelineDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKComputePipeline(Context, in desc);
     }
 
     public override RayTracingPipeline CreateRayTracingPipeline(ref readonly RayTracingPipelineDesc desc)

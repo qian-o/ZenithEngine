@@ -321,5 +321,6 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
     protected override void Destroy()
     {
         Context.Vk.DestroyPipeline(Context.Device, Pipeline, null);
+        Context.Vk.DestroyPipelineLayout(Context.Device, PipelineLayout, null);
     }
 }

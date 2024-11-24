@@ -125,4 +125,14 @@ internal static class VulkanExtensions
 
         return (VKGraphicsPipeline)pipeline;
     }
+
+    public static VKComputePipeline VK(this ComputePipeline pipeline)
+    {
+        if (pipeline is not VKComputePipeline)
+        {
+            throw new ZenithEngineException(Backend.Vulkan, "ComputePipeline is not a Vulkan compute pipeline");
+        }
+
+        return (VKComputePipeline)pipeline;
+    }
 }
