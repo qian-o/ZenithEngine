@@ -51,7 +51,7 @@ internal unsafe class VKDescriptorSetAllocator(VKGraphicsContext context) : Disp
     {
         @lock.Enter();
 
-        VKDescriptorPool? pool = pools.FirstOrDefault(p => p.CanAlloc(counts));
+        VKDescriptorPool? pool = pools.FirstOrDefault(item => item.CanAlloc(counts));
 
         if (pool is null)
         {

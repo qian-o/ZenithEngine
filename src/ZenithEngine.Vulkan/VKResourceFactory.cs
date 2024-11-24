@@ -53,7 +53,7 @@ internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKGraphicsPipeline(Context, in desc);
     }
 
     public override ComputePipeline CreateComputePipeline(ref readonly ComputePipelineDesc desc)

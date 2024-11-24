@@ -115,4 +115,14 @@ internal static class VulkanExtensions
 
         return (VKFrameBuffer)frameBuffer;
     }
+
+    public static VKGraphicsPipeline VK(this GraphicsPipeline pipeline)
+    {
+        if (pipeline is not VKGraphicsPipeline)
+        {
+            throw new ZenithEngineException(Backend.Vulkan, "GraphicsPipeline is not a Vulkan graphics pipeline");
+        }
+
+        return (VKGraphicsPipeline)pipeline;
+    }
 }
