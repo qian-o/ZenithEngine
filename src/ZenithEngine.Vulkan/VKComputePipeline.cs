@@ -39,6 +39,8 @@ internal unsafe class VKComputePipeline : ComputePipeline
                                             out PipelineLayout).ThrowIfError();
 
             createInfo.Layout = PipelineLayout;
+
+            MemoryAllocator.Free(setLayouts);
         }
 
         Context.Vk.CreateComputePipelines(Context.Device,

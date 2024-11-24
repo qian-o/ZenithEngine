@@ -50,9 +50,18 @@ internal unsafe class VKTexture : Texture
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
     }
 
+    public VKTexture(GraphicsContext context,
+                     ref readonly TextureDesc desc,
+                     VkImage image) : base(context, in desc)
+    {
+        imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
+
+        Image = image;
+    }
+
     public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    public VKDeviceMemory DeviceMemory { get; }
+    public VKDeviceMemory? DeviceMemory { get; }
 
     public ImageLayout this[uint mipLevel, CubeMapFace face]
     {
@@ -70,12 +79,15 @@ internal unsafe class VKTexture : Texture
     {
         Context.SetDebugName(ObjectType.Image, Image.Handle, name);
 
-        DeviceMemory.Name = $"{name} DeviceMemory";
+        if (DeviceMemory is not null)
+        {
+            DeviceMemory.Name = $"{name} DeviceMemory";
+        }
     }
 
     protected override void Destroy()
     {
-        DeviceMemory.Dispose();
+        DeviceMemory?.Dispose();
 
         Context.Vk.DestroyImage(Context.Device, Image, null);
     }

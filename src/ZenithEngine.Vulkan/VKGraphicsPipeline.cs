@@ -125,27 +125,27 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
         {
             List<PipelineShaderStageCreateInfo> shaderStages = [];
 
-            if (desc.Shaders.Vertex != null)
+            if (desc.Shaders.Vertex is not null)
             {
                 shaderStages.Add(desc.Shaders.Vertex.VK().PipelineShaderStageCreateInfo);
             }
 
-            if (desc.Shaders.Hull != null)
+            if (desc.Shaders.Hull is not null)
             {
                 shaderStages.Add(desc.Shaders.Hull.VK().PipelineShaderStageCreateInfo);
             }
 
-            if (desc.Shaders.Domain != null)
+            if (desc.Shaders.Domain is not null)
             {
                 shaderStages.Add(desc.Shaders.Domain.VK().PipelineShaderStageCreateInfo);
             }
 
-            if (desc.Shaders.Geometry != null)
+            if (desc.Shaders.Geometry is not null)
             {
                 shaderStages.Add(desc.Shaders.Geometry.VK().PipelineShaderStageCreateInfo);
             }
 
-            if (desc.Shaders.Pixel != null)
+            if (desc.Shaders.Pixel is not null)
             {
                 shaderStages.Add(desc.Shaders.Pixel.VK().PipelineShaderStageCreateInfo);
             }
@@ -309,6 +309,8 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
                                            &createInfo,
                                            null,
                                            out Pipeline).ThrowIfError();
+
+        MemoryAllocator.Release();
     }
 
     public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;

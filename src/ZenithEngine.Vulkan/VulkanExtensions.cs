@@ -36,6 +36,16 @@ internal static class VulkanExtensions
         return null;
     }
 
+    public static VKSwapChain VK(this SwapChain swapChain)
+    {
+        if (swapChain is not VKSwapChain)
+        {
+            throw new ZenithEngineException(Backend.Vulkan, "SwapChain is not a Vulkan swap chain");
+        }
+
+        return (VKSwapChain)swapChain;
+    }
+
     public static VKBuffer VK(this Buffer buffer)
     {
         if (buffer is not VKBuffer)

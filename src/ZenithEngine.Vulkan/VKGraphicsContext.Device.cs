@@ -12,6 +12,10 @@ internal unsafe partial class VKGraphicsContext
 
     public uint CopyQueueFamilyIndex { get; private set; }
 
+    public VkQueue DirectQueue { get; private set; }
+
+    public VkQueue CopyQueue { get; private set; }
+
     public bool SharingEnabled { get; private set; }
 
     public KhrSwapchain? KhrSwapchain { get; private set; }
@@ -141,6 +145,8 @@ internal unsafe partial class VKGraphicsContext
 
         Vk.CreateDevice(PhysicalDevice, &createInfo, null, out Device).ThrowIfError();
 
+        DirectQueue = Vk.GetDeviceQueue(Device, DirectQueueFamilyIndex, 0);
+        CopyQueue = Vk.GetDeviceQueue(Device, CopyQueueFamilyIndex, 0);
         KhrSwapchain = Vk.TryGetExtension<KhrSwapchain>(Instance, Device);
         KhrRayTracingPipeline = Vk.TryGetExtension<KhrRayTracingPipeline>(Instance, Device);
         KhrAccelerationStructure = Vk.TryGetExtension<KhrAccelerationStructure>(Instance, Device);

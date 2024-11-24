@@ -37,15 +37,10 @@ internal static class VKHelpers
         src = PipelineStageFlags.None;
         dst = PipelineStageFlags.None;
 
-        if (barrier.OldLayout == ImageLayout.Undefined)
+        if (barrier.OldLayout == ImageLayout.Undefined || barrier.OldLayout == ImageLayout.Preinitialized)
         {
             barrier.SrcAccessMask = AccessFlags.None;
             src = PipelineStageFlags.TopOfPipeBit;
-        }
-        else if (barrier.OldLayout == ImageLayout.Preinitialized)
-        {
-            barrier.SrcAccessMask = AccessFlags.HostWriteBit;
-            src = PipelineStageFlags.HostBit;
         }
         else if (barrier.OldLayout == ImageLayout.TransferSrcOptimal)
         {
@@ -87,17 +82,7 @@ internal static class VKHelpers
             throw new InvalidOperationException("Unsupported layout transition.");
         }
 
-        if (barrier.NewLayout == ImageLayout.Undefined)
-        {
-            barrier.DstAccessMask = AccessFlags.None;
-            dst = PipelineStageFlags.TopOfPipeBit;
-        }
-        else if (barrier.NewLayout == ImageLayout.Preinitialized)
-        {
-            barrier.DstAccessMask = AccessFlags.HostWriteBit;
-            dst = PipelineStageFlags.HostBit;
-        }
-        else if (barrier.NewLayout == ImageLayout.TransferSrcOptimal)
+        if (barrier.NewLayout == ImageLayout.TransferSrcOptimal)
         {
             barrier.DstAccessMask = AccessFlags.TransferReadBit;
             dst = PipelineStageFlags.TransferBit;

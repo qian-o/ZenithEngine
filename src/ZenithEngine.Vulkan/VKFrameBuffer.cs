@@ -155,7 +155,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             ColorTargets[i].Name = $"{name} Color Target[{i}]";
         }
 
-        if (DepthStencilTarget != null)
+        if (DepthStencilTarget is not null)
         {
             DepthStencilTarget.Name = $"{name} Depth Stencil Target";
         }

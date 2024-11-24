@@ -8,7 +8,7 @@ internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(cont
 {
     public override SwapChain CreateSwapChain(ref readonly SwapChainDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKSwapChain(Context, in desc);
     }
 
     public override Buffer CreateBuffer(ref readonly BufferDesc desc)
