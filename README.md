@@ -33,6 +33,8 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 
 - ZenithEngine.Vulkan
 	- [ ] Complete Vulkan API bindings.
+		- [ ] Add `CommandProcessor` and `CommandBuffer`.
+		- [ ] Improve `VKFrameBuffer`'s `TransitionToIntermedialLayout` and `TransitionToFinalLayout` methods.
 
 ## Proposed Features
 - [ ] Bindless resources.
