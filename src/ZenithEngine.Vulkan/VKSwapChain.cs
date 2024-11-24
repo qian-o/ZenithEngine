@@ -1,39 +1,35 @@
 ﻿using Silk.NET.Vulkan;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
-using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Vulkan;
 
 internal unsafe class VKSwapChain : SwapChain
 {
-    private readonly VKFence fence;
     private readonly SurfaceKHR surface;
+    private readonly VKSwapChainFrameBuffer swapChainFrameBuffer;
 
-    private SwapchainKHR swapchain;
-    private Texture? depthStencilTarget;
-    private FrameBuffer[] frameBuffers = [];
-    private uint imageIndex;
+    public SwapchainKHR Swapchain;
 
     public VKSwapChain(GraphicsContext context,
                        ref readonly SwapChainDesc desc) : base(context, in desc)
     {
-        fence = new(Context);
         surface = new(desc.Target.CreateSurfaceByVulkan(Context.Instance.Handle, (AllocationCallbacks*)null));
+        swapChainFrameBuffer = new(Context, this);
 
         InitSwapChain();
-        AcquireNextImage();
+        swapChainFrameBuffer.AcquireNextImage();
     }
 
     public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    public override FrameBuffer FrameBuffer => frameBuffers[imageIndex];
+    public override FrameBuffer FrameBuffer => swapChainFrameBuffer.FrameBuffer;
 
     public override void Present()
     {
-        fixed (SwapchainKHR* pSwapChain = &swapchain)
-        fixed (uint* pImageIndex = &imageIndex)
+        fixed (SwapchainKHR* pSwapChain = &Swapchain)
+        fixed (uint* pImageIndex = &swapChainFrameBuffer.CurrentIndex)
         {
             PresentInfoKHR presentInfo = new()
             {
@@ -55,24 +51,22 @@ internal unsafe class VKSwapChain : SwapChain
             }
         }
 
-        AcquireNextImage();
+        swapChainFrameBuffer.AcquireNextImage();
     }
 
     public override void Resize()
     {
         InitSwapChain();
-        AcquireNextImage();
     }
 
     protected override void DebugName(string name)
     {
-        Context.SetDebugName(ObjectType.SwapchainKhr, swapchain.Handle, name);
+        Context.SetDebugName(ObjectType.SwapchainKhr, Swapchain.Handle, name);
     }
 
     protected override void Destroy()
     {
         DestroySwapChain();
-        fence.Dispose();
 
         Context.KhrSurface!.DestroySurface(Context.Instance, surface, null);
     }
@@ -136,83 +130,23 @@ internal unsafe class VKSwapChain : SwapChain
         Context.KhrSwapchain!.CreateSwapchain(Context.Device,
                                               &createInfo,
                                               null,
-                                              out swapchain).ThrowIfError();
+                                              out Swapchain).ThrowIfError();
 
-        uint imageCount;
-        Context.KhrSwapchain.GetSwapchainImages(Context.Device,
-                                                swapchain,
-                                                &imageCount,
-                                                null).ThrowIfError();
-
-        VkImage[] images = new VkImage[imageCount];
-        Context.KhrSwapchain.GetSwapchainImages(Context.Device,
-                                                swapchain,
-                                                &imageCount,
-                                                out images[0]).ThrowIfError();
-
-        if (Desc.DepthStencilTargetFormat is not null)
-        {
-            TextureDesc desc = TextureDesc.Default(createInfo.ImageExtent.Width,
-                                                   createInfo.ImageExtent.Height,
-                                                   1,
-                                                   1,
-                                                   format: Desc.DepthStencilTargetFormat.Value,
-                                                   usage: TextureUsage.DepthStencil);
-
-            depthStencilTarget = Context.Factory.CreateTexture(ref desc);
-        }
-
-        frameBuffers = new FrameBuffer[imageCount];
-        for (int i = 0; i < imageCount; i++)
-        {
-            TextureDesc desc = TextureDesc.Default(createInfo.ImageExtent.Width,
-                                                   createInfo.ImageExtent.Height,
-                                                   1,
-                                                   1,
-                                                   format: VKFormats.GetPixelFormat(createInfo.ImageFormat),
-                                                   usage: TextureUsage.RenderTarget);
-
-            VKTexture colorTarget = new(Context, ref desc, images[i]);
-
-            FrameBufferDesc frameBufferDesc = FrameBufferDesc.Default(depthStencilTarget is not null ? FrameBufferAttachmentDesc.Default(depthStencilTarget) : null,
-                                                                      FrameBufferAttachmentDesc.Default(colorTarget));
-
-            frameBuffers[i] = Context.Factory.CreateFrameBuffer(ref frameBufferDesc);
-        }
+        swapChainFrameBuffer.AcquireNextImage();
     }
 
     private void DestroySwapChain()
     {
-        if (swapchain.Handle == 0)
+        if (Swapchain.Handle == 0)
         {
             return;
         }
 
-        foreach (FrameBuffer frameBuffer in frameBuffers)
-        {
-            frameBuffer.Dispose();
-        }
+        swapChainFrameBuffer.DestroyFrameBuffers();
 
-        depthStencilTarget?.Dispose();
+        Context.KhrSwapchain!.DestroySwapchain(Context.Device, Swapchain, null);
 
-        Context.KhrSwapchain!.DestroySwapchain(Context.Device, swapchain, null);
-
-        swapchain = default;
-        depthStencilTarget = null;
-        frameBuffers = [];
-        imageIndex = 0;
-    }
-
-    private void AcquireNextImage()
-    {
-        Context.KhrSwapchain!.AcquireNextImage(Context.Device,
-                                               swapchain,
-                                               ulong.MaxValue,
-                                               default,
-                                               fence.Fence,
-                                               ref imageIndex);
-
-        fence.Wait();
+        Swapchain = default;
     }
 
     private static SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] surfaceFormats)
