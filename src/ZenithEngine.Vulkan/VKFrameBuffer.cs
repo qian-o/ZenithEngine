@@ -148,6 +148,14 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
     public override OutputDesc Output { get; }
 
+    public void TransitionToIntermedialLayout(VkCommandBuffer commandBuffer)
+    {
+    }
+
+    public void TransitionToFinalLayout(VkCommandBuffer commandBuffer)
+    {
+    }
+
     protected override void DebugName(string name)
     {
         for (int i = 0; i < ColorTargets.Length; i++)
