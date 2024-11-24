@@ -26,7 +26,6 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             {
                 SType = StructureType.PipelineRasterizationStateCreateInfo,
                 DepthClampEnable = desc.RenderStates.RasterizerState.DepthClipEnabled,
-                RasterizerDiscardEnable = false,
                 PolygonMode = VKFormats.GetPolygonMode(desc.RenderStates.RasterizerState.FillMode),
                 CullMode = VKFormats.GetCullModeFlags(desc.RenderStates.RasterizerState.CullMode),
                 FrontFace = VKFormats.GetFrontFace(desc.RenderStates.RasterizerState.FrontFace),
@@ -45,7 +44,6 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
                 DepthTestEnable = desc.RenderStates.DepthStencilState.DepthEnabled,
                 DepthWriteEnable = desc.RenderStates.DepthStencilState.DepthWriteEnabled,
                 DepthCompareOp = VKFormats.GetCompareOp(desc.RenderStates.DepthStencilState.DepthFunction),
-                DepthBoundsTestEnable = false,
                 StencilTestEnable = desc.RenderStates.DepthStencilState.StencilEnabled,
                 Front = new()
                 {
@@ -75,9 +73,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
 
             PipelineColorBlendStateCreateInfo colorBlendState = new()
             {
-                SType = StructureType.PipelineColorBlendStateCreateInfo,
-                LogicOpEnable = false,
-                LogicOp = LogicOp.Clear
+                SType = StructureType.PipelineColorBlendStateCreateInfo
             };
 
             BlendStateRenderTargetDesc[] renderTargets =
@@ -235,8 +231,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             PipelineInputAssemblyStateCreateInfo inputAssemblyState = new()
             {
                 SType = StructureType.PipelineInputAssemblyStateCreateInfo,
-                Topology = VKFormats.GetPrimitiveTopology(desc.PrimitiveTopology),
-                PrimitiveRestartEnable = false
+                Topology = VKFormats.GetPrimitiveTopology(desc.PrimitiveTopology)
             };
 
             if (desc.PrimitiveTopology >= PrimitiveTopology.PatchList)
@@ -287,9 +282,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
 
         // Other pipeline states
         {
-            DynamicState* dynamicStates = MemoryAllocator.Alloc<DynamicState>(2);
-            dynamicStates[0] = DynamicState.Viewport;
-            dynamicStates[1] = DynamicState.Scissor;
+            DynamicState* dynamicStates = MemoryAllocator.Alloc([DynamicState.Viewport, DynamicState.Scissor]);
 
             PipelineDynamicStateCreateInfo dynamicState = new()
             {
@@ -304,9 +297,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             {
                 SType = StructureType.PipelineViewportStateCreateInfo,
                 ViewportCount = 1,
-                PViewports = null,
-                ScissorCount = 1,
-                PScissors = null
+                ScissorCount = 1
             };
 
             createInfo.PViewportState = &viewportState;
