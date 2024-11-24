@@ -12,15 +12,15 @@ internal unsafe class VKSwapChain : SwapChain
     private readonly SurfaceKHR surface;
 
     private SwapchainKHR swapchain;
-    private uint imageIndex;
     private Texture? depthStencilTarget;
     private FrameBuffer[] frameBuffers = [];
+    private uint imageIndex;
 
     public VKSwapChain(GraphicsContext context,
                        ref readonly SwapChainDesc desc) : base(context, in desc)
     {
         fence = new(Context);
-        surface = new(desc.Target.CreateSurfaceByVulkan(Context.Instance.Handle));
+        surface = new(desc.Target.CreateSurfaceByVulkan(Context.Instance.Handle, (AllocationCallbacks*)null));
 
         InitSwapChain();
         AcquireNextImage();
@@ -198,9 +198,9 @@ internal unsafe class VKSwapChain : SwapChain
         Context.KhrSwapchain!.DestroySwapchain(Context.Device, swapchain, null);
 
         swapchain = default;
-        imageIndex = 0;
         depthStencilTarget = null;
         frameBuffers = [];
+        imageIndex = 0;
     }
 
     private void AcquireNextImage()
