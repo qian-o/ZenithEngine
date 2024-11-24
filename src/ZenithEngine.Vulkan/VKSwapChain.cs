@@ -9,6 +9,7 @@ internal unsafe class VKSwapChain : SwapChain
 {
     private readonly SurfaceKHR surface;
     private readonly VKSwapChainFrameBuffer swapChainFrameBuffer;
+    private readonly VKFence fence;
 
     public SwapchainKHR Swapchain;
 
@@ -17,19 +18,22 @@ internal unsafe class VKSwapChain : SwapChain
     {
         surface = new(desc.Target.CreateSurfaceByVulkan(Context.Instance.Handle, (AllocationCallbacks*)null));
         swapChainFrameBuffer = new(Context, this);
+        fence = new(Context);
 
         InitSwapChain();
-        swapChainFrameBuffer.AcquireNextImage();
+        AcquireNextImage();
     }
 
     public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+
+    public ref uint CurrentIndex => ref swapChainFrameBuffer.CurrentIndex;
 
     public override FrameBuffer FrameBuffer => swapChainFrameBuffer.FrameBuffer;
 
     public override void Present()
     {
         fixed (SwapchainKHR* pSwapChain = &Swapchain)
-        fixed (uint* pImageIndex = &swapChainFrameBuffer.CurrentIndex)
+        fixed (uint* pImageIndex = &CurrentIndex)
         {
             PresentInfoKHR presentInfo = new()
             {
@@ -51,12 +55,13 @@ internal unsafe class VKSwapChain : SwapChain
             }
         }
 
-        swapChainFrameBuffer.AcquireNextImage();
+        AcquireNextImage();
     }
 
     public override void Resize()
     {
         InitSwapChain();
+        AcquireNextImage();
     }
 
     protected override void DebugName(string name)
@@ -132,7 +137,9 @@ internal unsafe class VKSwapChain : SwapChain
                                               null,
                                               out Swapchain).ThrowIfError();
 
-        swapChainFrameBuffer.AcquireNextImage();
+        swapChainFrameBuffer.InitFrameBuffers(createInfo.ImageExtent.Width,
+                                              createInfo.ImageExtent.Height,
+                                              createInfo.ImageFormat);
     }
 
     private void DestroySwapChain()
@@ -142,11 +149,19 @@ internal unsafe class VKSwapChain : SwapChain
             return;
         }
 
-        swapChainFrameBuffer.DestroyFrameBuffers();
-
         Context.KhrSwapchain!.DestroySwapchain(Context.Device, Swapchain, null);
+    }
 
-        Swapchain = default;
+    private void AcquireNextImage()
+    {
+        Context.KhrSwapchain!.AcquireNextImage(Context.Device,
+                                               Swapchain,
+                                               ulong.MaxValue,
+                                               default,
+                                               fence.Fence,
+                                               ref CurrentIndex);
+
+        fence.Wait();
     }
 
     private static SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] surfaceFormats)

@@ -8,8 +8,6 @@ namespace ZenithEngine.Vulkan;
 internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
                                              VKSwapChain swapChain) : GraphicsResource(context)
 {
-    private readonly VKFence fence = new(context);
-
     public uint CurrentIndex;
 
     private Texture? depthStencilTarget;
@@ -66,33 +64,6 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
         }
     }
 
-    public void DestroyFrameBuffers()
-    {
-        depthStencilTarget?.Dispose();
-
-        foreach (FrameBuffer frameBuffer in frameBuffers)
-        {
-            frameBuffer.Dispose();
-        }
-
-        CurrentIndex = 0;
-
-        depthStencilTarget = null;
-        frameBuffers = [];
-    }
-
-    public void AcquireNextImage()
-    {
-        Context.KhrSwapchain!.AcquireNextImage(Context.Device,
-                                               swapChain.Swapchain,
-                                               ulong.MaxValue,
-                                               default,
-                                               fence.Fence,
-                                               ref CurrentIndex);
-
-        fence.Wait();
-    }
-
     protected override void DebugName(string name)
     {
     }
@@ -100,7 +71,15 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
     protected override void Destroy()
     {
         DestroyFrameBuffers();
+    }
 
-        fence.Dispose();
+    private void DestroyFrameBuffers()
+    {
+        depthStencilTarget?.Dispose();
+
+        foreach (FrameBuffer frameBuffer in frameBuffers)
+        {
+            frameBuffer.Dispose();
+        }
     }
 }
