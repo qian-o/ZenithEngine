@@ -42,7 +42,7 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
                                                    format: swapChain.Desc.DepthStencilTargetFormat.Value,
                                                    usage: TextureUsage.DepthStencil);
 
-            depthStencilTarget = Context.Factory.CreateTexture(ref desc);
+            depthStencilTarget = Context.Factory.CreateTexture(in desc);
         }
 
         frameBuffers = new FrameBuffer[imageCount];
@@ -55,12 +55,12 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
                                                    format: VKFormats.GetPixelFormat(imageFormat),
                                                    usage: TextureUsage.RenderTarget);
 
-            VKTexture colorTarget = new(Context, ref desc, images[i]);
+            VKTexture colorTarget = new(Context, in desc, images[i]);
 
             FrameBufferDesc frameBufferDesc = FrameBufferDesc.Default(depthStencilTarget is not null ? FrameBufferAttachmentDesc.Default(depthStencilTarget) : null,
                                                                       FrameBufferAttachmentDesc.Default(colorTarget));
 
-            frameBuffers[i] = Context.Factory.CreateFrameBuffer(ref frameBufferDesc);
+            frameBuffers[i] = Context.Factory.CreateFrameBuffer(in frameBufferDesc);
         }
     }
 
