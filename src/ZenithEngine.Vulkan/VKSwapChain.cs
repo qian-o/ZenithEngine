@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Silk.NET.Vulkan;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
@@ -7,8 +8,11 @@ using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Vulkan;
 
-internal unsafe class VKSwapChain : SwapChain
+internal unsafe partial class VKSwapChain : SwapChain
 {
+    [LibraryImport("android", EntryPoint = "ANativeWindow_fromSurface")]
+    private static partial nint ANativeWindowFromSurface(nint env, nint surface);
+
     private readonly VKSwapChainFrameBuffer swapChainFrameBuffer;
     private readonly VKFence fence;
 
@@ -130,6 +134,16 @@ internal unsafe class VKSwapChain : SwapChain
                 break;
             case SurfaceType.Android:
                 {
+                    AndroidSurfaceCreateInfoKHR createInfo = new()
+                    {
+                        SType = StructureType.AndroidSurfaceCreateInfoKhr,
+                        Window = (nint*)ANativeWindowFromSurface(Desc.Surface.Handles[0], Desc.Surface.Handles[1])
+                    };
+
+                    Context.KhrAndroidSurface!.CreateAndroidSurface(Context.Instance,
+                                                                    &createInfo,
+                                                                    null,
+                                                                    out Surface).ThrowIfError();
                 }
                 break;
             case SurfaceType.IOS:
