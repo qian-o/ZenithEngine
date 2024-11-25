@@ -1,4 +1,5 @@
-﻿using Silk.NET.Vulkan;
+﻿using System.Diagnostics;
+using Silk.NET.Vulkan;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
@@ -73,8 +74,7 @@ internal unsafe class VKSwapChain : SwapChain
     protected override void Destroy()
     {
         DestroySwapChain();
-
-        Context.KhrSurface!.DestroySurface(Context.Instance, Surface, null);
+        DestroySurface();
     }
 
     private void CreateSurface()
@@ -85,14 +85,47 @@ internal unsafe class VKSwapChain : SwapChain
         {
             case SurfaceType.Win32:
                 {
+                    Win32SurfaceCreateInfoKHR createInfo = new()
+                    {
+                        SType = StructureType.Win32SurfaceCreateInfoKhr,
+                        Hinstance = Process.GetCurrentProcess().Handle,
+                        Hwnd = Desc.Surface.Handles[0]
+                    };
+
+                    Context.KhrWin32Surface!.CreateWin32Surface(Context.Instance,
+                                                                &createInfo,
+                                                                null,
+                                                                out Surface).ThrowIfError();
                 }
                 break;
             case SurfaceType.Wayland:
                 {
+                    WaylandSurfaceCreateInfoKHR createInfo = new()
+                    {
+                        SType = StructureType.WaylandSurfaceCreateInfoKhr,
+                        Display = (nint*)Desc.Surface.Handles[0],
+                        Surface = (nint*)Desc.Surface.Handles[1]
+                    };
+
+                    Context.KhrWaylandSurface!.CreateWaylandSurface(Context.Instance,
+                                                                    &createInfo,
+                                                                    null,
+                                                                    out Surface).ThrowIfError();
                 }
                 break;
             case SurfaceType.Xlib:
                 {
+                    XlibSurfaceCreateInfoKHR createInfo = new()
+                    {
+                        SType = StructureType.XlibSurfaceCreateInfoKhr,
+                        Dpy = (nint*)Desc.Surface.Handles[0],
+                        Window = Desc.Surface.Handles[1]
+                    };
+
+                    Context.KhrXlibSurface!.CreateXlibSurface(Context.Instance,
+                                                              &createInfo,
+                                                              null,
+                                                              out Surface).ThrowIfError();
                 }
                 break;
             case SurfaceType.Android:
@@ -101,10 +134,30 @@ internal unsafe class VKSwapChain : SwapChain
                 break;
             case SurfaceType.IOS:
                 {
+                    IOSSurfaceCreateInfoMVK createInfo = new()
+                    {
+                        SType = StructureType.IosSurfaceCreateInfoMvk,
+                        PView = (void*)Desc.Surface.Handles[0]
+                    };
+
+                    Context.MvkIosSurface!.CreateIossurface(Context.Instance,
+                                                            &createInfo,
+                                                            null,
+                                                            out Surface).ThrowIfError();
                 }
                 break;
             case SurfaceType.MacOS:
                 {
+                    MacOSSurfaceCreateInfoMVK createInfo = new()
+                    {
+                        SType = StructureType.MacosSurfaceCreateInfoMvk,
+                        PView = (void*)Desc.Surface.Handles[0]
+                    };
+
+                    Context.MvkMacosSurface!.CreateMacOssurface(Context.Instance,
+                                                                &createInfo,
+                                                                null,
+                                                                out Surface).ThrowIfError();
                 }
                 break;
             default:

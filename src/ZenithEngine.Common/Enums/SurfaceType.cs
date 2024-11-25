@@ -23,7 +23,7 @@ public enum SurfaceType
     Android,
 
     /// <summary>
-    /// iOS platform.
+    /// IOS platform.
     /// </summary>
     IOS,
 

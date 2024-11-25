@@ -29,6 +29,18 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
     public KhrSurface? KhrSurface { get; private set; }
 
+    public KhrWin32Surface? KhrWin32Surface { get; private set; }
+
+    public KhrWaylandSurface? KhrWaylandSurface { get; private set; }
+
+    public KhrXlibSurface? KhrXlibSurface { get; private set; }
+
+    public KhrAndroidSurface? KhrAndroidSurface { get; private set; }
+
+    public MvkIosSurface? MvkIosSurface { get; private set; }
+
+    public MvkMacosSurface? MvkMacosSurface { get; private set; }
+
     public override Backend Backend { get; }
 
     public override VKDeviceCapabilities Capabilities { get; }
@@ -170,5 +182,11 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
         Debug = useDebugLayer ? new(this) : null;
         KhrSurface = Vk.TryGetExtension<KhrSurface>(Instance);
+        KhrWin32Surface = Vk.TryGetExtension<KhrWin32Surface>(Instance);
+        KhrWaylandSurface = Vk.TryGetExtension<KhrWaylandSurface>(Instance);
+        KhrXlibSurface = Vk.TryGetExtension<KhrXlibSurface>(Instance);
+        KhrAndroidSurface = Vk.TryGetExtension<KhrAndroidSurface>(Instance);
+        MvkIosSurface = Vk.TryGetExtension<MvkIosSurface>(Instance);
+        MvkMacosSurface = Vk.TryGetExtension<MvkMacosSurface>(Instance);
     }
 }
