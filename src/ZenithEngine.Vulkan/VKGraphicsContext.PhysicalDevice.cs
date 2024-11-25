@@ -22,7 +22,7 @@ internal unsafe partial class VKGraphicsContext
             }
         }
 
-        throw new ZenithEngineException(Backend, "Failed to find suitable memory type.");
+        throw new ZenithEngineException("Failed to find suitable memory type.");
     }
 
     private void InitPhysicalDevice()
@@ -32,7 +32,7 @@ internal unsafe partial class VKGraphicsContext
 
         if (physicalDeviceCount == 0)
         {
-            throw new ZenithEngineException(Backend, "No physical devices found.");
+            throw new ZenithEngineException("No physical devices found.");
         }
 
         VkPhysicalDevice[] physicalDevices = new VkPhysicalDevice[physicalDeviceCount];

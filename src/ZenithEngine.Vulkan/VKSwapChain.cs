@@ -1,26 +1,27 @@
 ﻿using Silk.NET.Vulkan;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
+using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Vulkan;
 
 internal unsafe class VKSwapChain : SwapChain
 {
-    private readonly SurfaceKHR surface;
     private readonly VKSwapChainFrameBuffer swapChainFrameBuffer;
     private readonly VKFence fence;
 
+    public SurfaceKHR Surface;
     public SwapchainKHR Swapchain;
 
     public VKSwapChain(GraphicsContext context,
                        ref readonly SwapChainDesc desc) : base(context, in desc)
     {
-        surface = new(desc.Target.CreateSurfaceByVulkan(Context.Instance.Handle, (AllocationCallbacks*)null));
         swapChainFrameBuffer = new(Context, this);
         fence = new(Context);
 
-        InitSwapChain();
+        CreateSurface();
+        CreateSwapChain();
         AcquireNextImage();
     }
 
@@ -60,7 +61,7 @@ internal unsafe class VKSwapChain : SwapChain
 
     public override void Resize()
     {
-        InitSwapChain();
+        CreateSwapChain();
         AcquireNextImage();
     }
 
@@ -73,39 +74,74 @@ internal unsafe class VKSwapChain : SwapChain
     {
         DestroySwapChain();
 
-        Context.KhrSurface!.DestroySurface(Context.Instance, surface, null);
+        Context.KhrSurface!.DestroySurface(Context.Instance, Surface, null);
     }
 
-    private void InitSwapChain()
+    private void CreateSurface()
+    {
+        DestroySurface();
+
+        switch (Desc.Surface.SurfaceType)
+        {
+            case SurfaceType.Win32:
+                {
+                }
+                break;
+            case SurfaceType.Wayland:
+                {
+                }
+                break;
+            case SurfaceType.Xlib:
+                {
+                }
+                break;
+            case SurfaceType.Android:
+                {
+                }
+                break;
+            case SurfaceType.IOS:
+                {
+                }
+                break;
+            case SurfaceType.MacOS:
+                {
+                }
+                break;
+            default:
+                throw new ZenithEngineException("Unsupported surface type.");
+        }
+    }
+
+    private void CreateSwapChain()
     {
         DestroySwapChain();
 
         SurfaceCapabilitiesKHR capabilities;
         Context.KhrSurface!.GetPhysicalDeviceSurfaceCapabilities(Context.PhysicalDevice,
-                                                                 surface,
+                                                                 Surface,
                                                                  &capabilities);
 
         uint formatCount;
         Context.KhrSurface.GetPhysicalDeviceSurfaceFormats(Context.PhysicalDevice,
-                                                           surface,
+                                                           Surface,
                                                            &formatCount,
                                                            null);
 
         SurfaceFormatKHR[] formats = new SurfaceFormatKHR[formatCount];
         Context.KhrSurface.GetPhysicalDeviceSurfaceFormats(Context.PhysicalDevice,
-                                                           surface,
+                                                           Surface,
                                                            &formatCount,
                                                            out formats[0]);
 
         uint modeCount;
         Context.KhrSurface.GetPhysicalDeviceSurfacePresentModes(Context.PhysicalDevice,
-                                                                surface,
+                                                                Surface,
                                                                 &modeCount,
                                                                 null);
 
         PresentModeKHR[] modes = new PresentModeKHR[modeCount];
         Context.KhrSurface.GetPhysicalDeviceSurfacePresentModes(Context.PhysicalDevice,
-                                                                surface,
+                                                                Surface,
                                                                 &modeCount,
                                                                 out modes[0]);
 
@@ -118,7 +154,7 @@ internal unsafe class VKSwapChain : SwapChain
         SwapchainCreateInfoKHR createInfo = new()
         {
             SType = StructureType.SwapchainCreateInfoKhr,
-            Surface = surface,
+            Surface = Surface,
             MinImageCount = desiredImages,
             ImageFormat = ChooseSwapSurfaceFormat(formats).Format,
             ImageColorSpace = ChooseSwapSurfaceFormat(formats).ColorSpace,
@@ -137,19 +173,9 @@ internal unsafe class VKSwapChain : SwapChain
                                               null,
                                               out Swapchain).ThrowIfError();
 
-        swapChainFrameBuffer.InitFrameBuffers(createInfo.ImageExtent.Width,
-                                              createInfo.ImageExtent.Height,
-                                              createInfo.ImageFormat);
-    }
-
-    private void DestroySwapChain()
-    {
-        if (Swapchain.Handle == 0)
-        {
-            return;
-        }
-
-        Context.KhrSwapchain!.DestroySwapchain(Context.Device, Swapchain, null);
+        swapChainFrameBuffer.CreateFrameBuffers(createInfo.ImageExtent.Width,
+                                                createInfo.ImageExtent.Height,
+                                                createInfo.ImageFormat);
     }
 
     private void AcquireNextImage()
@@ -162,6 +188,26 @@ internal unsafe class VKSwapChain : SwapChain
                                                ref CurrentIndex);
 
         fence.Wait();
+    }
+
+    private void DestroySurface()
+    {
+        if (Surface.Handle == 0)
+        {
+            return;
+        }
+
+        Context.KhrSurface!.DestroySurface(Context.Instance, Surface, null);
+    }
+
+    private void DestroySwapChain()
+    {
+        if (Swapchain.Handle == 0)
+        {
+            return;
+        }
+
+        Context.KhrSwapchain!.DestroySwapchain(Context.Device, Swapchain, null);
     }
 
     private static SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] surfaceFormats)

@@ -17,7 +17,7 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
 
     public FrameBuffer FrameBuffer => frameBuffers[CurrentIndex];
 
-    public void InitFrameBuffers(uint width, uint height, Format imageFormat)
+    public void CreateFrameBuffers(uint width, uint height, Format imageFormat)
     {
         DestroyFrameBuffers();
 

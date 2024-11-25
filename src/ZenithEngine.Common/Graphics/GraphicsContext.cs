@@ -67,7 +67,7 @@ public abstract class GraphicsContext : DisposableObject
     {
         if (CopyProcessor is null)
         {
-            throw new ZenithEngineException(Backend, "Device not created.");
+            throw new ZenithEngineException("Device not created.");
         }
 
         Lock.Enter();

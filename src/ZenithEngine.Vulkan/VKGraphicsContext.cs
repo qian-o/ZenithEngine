@@ -128,7 +128,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
             if (!layerFound)
             {
-                throw new ZenithEngineException(Backend, "Validation layer not found.");
+                throw new ZenithEngineException("Validation layer not found.");
             }
 
             createInfo.EnabledLayerCount = 1;
@@ -148,7 +148,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         }
         else if (OperatingSystem.IsLinux())
         {
-            extensions = [.. extensions, KhrXlibSurface.ExtensionName];
+            extensions = [.. extensions, KhrWaylandSurface.ExtensionName, KhrXlibSurface.ExtensionName];
         }
         else if (OperatingSystem.IsAndroid())
         {
