@@ -88,6 +88,12 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
     {
         DestroyDevice();
 
+        MvkMacosSurface?.Dispose();
+        MvkIosSurface?.Dispose();
+        KhrAndroidSurface?.Dispose();
+        KhrXlibSurface?.Dispose();
+        KhrWaylandSurface?.Dispose();
+        KhrWin32Surface?.Dispose();
         KhrSurface?.Dispose();
         Debug?.Dispose();
 
