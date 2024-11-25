@@ -5,5 +5,7 @@ namespace ZenithEngine.Common.Graphics;
 public abstract class RayTracingPipeline(GraphicsContext context,
                                          ref readonly RayTracingPipelineDesc desc) : Pipeline(context)
 {
-    public RayTracingPipelineDesc Desc { get; } = desc;
+    private RayTracingPipelineDesc descInternal = desc;
+
+    public ref RayTracingPipelineDesc Desc => ref descInternal;
 }

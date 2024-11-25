@@ -5,6 +5,7 @@ using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
+using ZenithEngine.Common.Interfaces;
 
 namespace ZenithEngine.Vulkan;
 
@@ -66,6 +67,15 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     public override void Resize()
     {
+        CreateSwapChain();
+        AcquireNextImage();
+    }
+
+    public override void RefreshSurface(ISurface surface)
+    {
+        Desc.Surface = surface;
+
+        CreateSurface();
         CreateSwapChain();
         AcquireNextImage();
     }

@@ -5,5 +5,7 @@ namespace ZenithEngine.Common.Graphics;
 public abstract class Buffer(GraphicsContext context,
                              ref readonly BufferDesc desc) : GraphicsResource(context)
 {
-    public BufferDesc Desc { get; } = desc;
+    private BufferDesc descInternal = desc;
+
+    public ref BufferDesc Desc => ref descInternal;
 }

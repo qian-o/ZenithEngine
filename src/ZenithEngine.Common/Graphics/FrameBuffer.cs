@@ -5,7 +5,9 @@ namespace ZenithEngine.Common.Graphics;
 public abstract class FrameBuffer(GraphicsContext context,
                                   ref readonly FrameBufferDesc desc) : GraphicsResource(context)
 {
-    public FrameBufferDesc Desc { get; } = desc;
+    private FrameBufferDesc descInternal = desc;
+
+    public ref FrameBufferDesc Desc => ref descInternal;
 
     public abstract uint Width { get; }
 

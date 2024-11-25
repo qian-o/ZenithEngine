@@ -5,5 +5,7 @@ namespace ZenithEngine.Common.Graphics;
 public abstract class Sampler(GraphicsContext context,
                               ref readonly SamplerDesc desc) : GraphicsResource(context)
 {
-    public SamplerDesc Desc { get; } = desc;
+    private SamplerDesc descInternal = desc;
+
+    public ref SamplerDesc Desc => ref descInternal;
 }
