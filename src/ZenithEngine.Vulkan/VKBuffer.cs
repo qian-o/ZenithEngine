@@ -85,6 +85,32 @@ internal unsafe class VKBuffer : Buffer
                        uint sourceOffsetInBytes,
                        uint destinationOffsetInBytes)
     {
+        BufferCopy bufferCopy = new()
+        {
+            Size = sizeInBytes,
+            SrcOffset = sourceOffsetInBytes,
+            DstOffset = destinationOffsetInBytes
+        };
+
+        Context.Vk.CmdCopyBuffer(commandBuffer, Buffer, destination.Buffer, 1, &bufferCopy);
+
+        MemoryBarrier barrier = new()
+        {
+            SType = StructureType.MemoryBarrier,
+            SrcAccessMask = AccessFlags.MemoryWriteBit,
+            DstAccessMask = AccessFlags.MemoryReadBit
+        };
+
+        Context.Vk.CmdPipelineBarrier(commandBuffer,
+                                      PipelineStageFlags.TransferBit,
+                                      PipelineStageFlags.AllGraphicsBit,
+                                      DependencyFlags.None,
+                                      1,
+                                      &barrier,
+                                      0,
+                                      null,
+                                      0,
+                                      null);
     }
 
     protected override void DebugName(string name)
