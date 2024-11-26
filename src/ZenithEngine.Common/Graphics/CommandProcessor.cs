@@ -64,6 +64,10 @@ public abstract class CommandProcessor(GraphicsContext context,
     /// </summary>
     public abstract void WaitIdle();
 
+    /// <summary>
+    /// Commits the command buffer to be executed by the GPU.
+    /// </summary>
+    /// <param name="commandBuffer">The command buffer to commit.</param>
     internal void CommitCommandBuffer(CommandBuffer commandBuffer)
     {
         if (executionArray.Length == executionArraySize)
@@ -74,8 +78,16 @@ public abstract class CommandProcessor(GraphicsContext context,
         executionArray[executionArraySize++] = commandBuffer;
     }
 
+    /// <summary>
+    /// Creates a new command buffer.
+    /// </summary>
+    /// <returns></returns>
     protected abstract CommandBuffer CreateCommandBuffer();
 
+    /// <summary>
+    /// Submits the command buffer to be executed by the GPU.
+    /// </summary>
+    /// <param name="commandBuffer">The command buffer to submit.</param>
     protected abstract void SubmitCommandBuffer(CommandBuffer commandBuffer);
 
     protected override void Destroy()

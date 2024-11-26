@@ -40,17 +40,23 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     #region Command Buffer Management
     public override void Begin()
     {
-        throw new NotImplementedException();
+        CommandBufferBeginInfo beginInfo = new()
+        {
+            SType = StructureType.CommandBufferBeginInfo,
+            Flags = CommandBufferUsageFlags.OneTimeSubmitBit
+        };
+
+        Context.Vk.BeginCommandBuffer(CommandBuffer, &beginInfo).ThrowIfError();
     }
 
     public override void End()
     {
-        throw new NotImplementedException();
+        Context.Vk.EndCommandBuffer(CommandBuffer).ThrowIfError();
     }
 
     public override void Reset()
     {
-        throw new NotImplementedException();
+        Context.Vk.ResetCommandBuffer(CommandBuffer, CommandBufferResetFlags.None).ThrowIfError();
     }
     #endregion
 
@@ -120,6 +126,13 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     }
 
     public override void UpdateAccelerationStructure(ref TopLevelAS tlas, ref readonly TopLevelASDesc newDesc)
+    {
+        throw new NotImplementedException();
+    }
+    #endregion
+
+    #region Resource Preparation
+    public override void PrepareResources(ResourceSet resourceSet)
     {
         throw new NotImplementedException();
     }

@@ -132,6 +132,14 @@ public abstract class CommandBuffer(GraphicsContext context,
     public abstract void UpdateAccelerationStructure(ref TopLevelAS tlas, ref readonly TopLevelASDesc newDesc);
     #endregion
 
+    #region Resource Preparation
+    /// <summary>
+    /// Prepare the resources for rendering.
+    /// </summary>
+    /// <param name="resourceSet">The resource set.</param>
+    public abstract void PrepareResources(ResourceSet resourceSet);
+    #endregion
+
     #region Graphics Operations
     /// <summary>
     /// Begin rendering to the frame buffer.
