@@ -48,21 +48,30 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// <param name="source">Unmanaged pointer to the source data.</param>
     /// <param name="sourceSizeInBytes">Size of the source data in bytes.</param>
     /// <param name="destinationOffsetInBytes">Offset in the destination buffer to update.</param>  
-    public abstract void UpdateBuffer(Buffer buffer,
-                                      nint source,
-                                      uint sourceSizeInBytes,
-                                      uint destinationOffsetInBytes = 0);
+    public void UpdateBuffer(Buffer buffer,
+                             nint source,
+                             uint sourceSizeInBytes,
+                             uint destinationOffsetInBytes = 0)
+    {
+        Buffer temporary = BufferAllocator.Buffer(sourceSizeInBytes);
+
+        Context.UpdateBuffer(temporary, source, sourceSizeInBytes);
+
+        CopyBuffer(temporary, buffer, sourceSizeInBytes, 0, destinationOffsetInBytes);
+    }
 
     /// <summary>
     /// Copy the source buffer to the destination buffer.
     /// </summary>
     /// <param name="source">The source buffer.</param>
     /// <param name="destination">The destination buffer.</param>
-    /// <param name="sourceSizeInBytes">Size of the source buffer in bytes.</param>
-    /// <param name="destinationOffsetInBytes">Size of the destination buffer in bytes.</param>
+    /// <param name="sizeInBytes">Size of the source buffer in bytes.</param>
+    /// <param name="sourceOffsetInBytes">Offset in the source buffer to copy.</param>
+    /// <param name="destinationOffsetInBytes">Offset in the destination buffer to update.</param>  
     public abstract void CopyBuffer(Buffer source,
                                     Buffer destination,
-                                    uint sourceSizeInBytes,
+                                    uint sizeInBytes,
+                                    uint sourceOffsetInBytes = 0,
                                     uint destinationOffsetInBytes = 0);
     #endregion
 

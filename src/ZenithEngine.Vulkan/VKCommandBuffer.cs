@@ -62,20 +62,16 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     #endregion
 
     #region Buffer Operations
-    public override void UpdateBuffer(Buffer buffer,
-                                      nint source,
-                                      uint sourceSizeInBytes,
-                                      uint destinationOffsetInBytes = 0)
-    {
-        throw new NotImplementedException();
-    }
-
     public override void CopyBuffer(Buffer source,
                                     Buffer destination,
-                                    uint sourceSizeInBytes,
+                                    uint sizeInBytes,
+                                    uint sourceOffsetInBytes = 0,
                                     uint destinationOffsetInBytes = 0)
     {
-        throw new NotImplementedException();
+        VKBuffer src = source.VK();
+        VKBuffer dst = destination.VK();
+
+        src.CopyTo(CommandBuffer, dst, sizeInBytes, sourceOffsetInBytes, destinationOffsetInBytes);
     }
     #endregion
 
