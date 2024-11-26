@@ -1,6 +1,7 @@
 ﻿using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using ZenithEngine.Common;
+using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Vulkan;
 
@@ -21,6 +22,16 @@ internal unsafe partial class VKGraphicsContext
     public KhrAccelerationStructure? KhrAccelerationStructure { get; private set; }
 
     public KhrDeferredHostOperations? KhrDeferredHostOperations { get; private set; }
+
+    public uint FindQueueFamilyIndex(CommandProcessorType type)
+    {
+        return type switch
+        {
+            CommandProcessorType.Direct => DirectQueueFamilyIndex,
+            CommandProcessorType.Copy => CopyQueueFamilyIndex,
+            _ => throw new ArgumentOutOfRangeException(nameof(type))
+        };
+    }
 
     private void InitDevice()
     {

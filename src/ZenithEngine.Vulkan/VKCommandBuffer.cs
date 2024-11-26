@@ -1,18 +1,42 @@
 ﻿using Silk.NET.Maths;
+using Silk.NET.Vulkan;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
+using ClearValue = ZenithEngine.Common.Graphics.ClearValue;
+using Viewport = ZenithEngine.Common.Graphics.Viewport;
 
 namespace ZenithEngine.Vulkan;
 
-internal class VKCommandBuffer : CommandBuffer
+internal unsafe class VKCommandBuffer : CommandBuffer
 {
+    public VkCommandPool CommandPool;
     public VkCommandBuffer CommandBuffer;
 
     public VKCommandBuffer(GraphicsContext context,
                            CommandProcessor processor) : base(context, processor)
     {
+        CommandPoolCreateInfo createInfo = new()
+        {
+            SType = StructureType.CommandPoolCreateInfo,
+            QueueFamilyIndex = Context.FindQueueFamilyIndex(processor.Type),
+            Flags = CommandPoolCreateFlags.ResetCommandBufferBit
+        };
+
+        Context.Vk.CreateCommandPool(Context.Device, &createInfo, null, out CommandPool).ThrowIfError();
+
+        CommandBufferAllocateInfo allocateInfo = new()
+        {
+            SType = StructureType.CommandBufferAllocateInfo,
+            CommandPool = CommandPool,
+            Level = CommandBufferLevel.Primary,
+            CommandBufferCount = 1
+        };
+
+        Context.Vk.AllocateCommandBuffers(Context.Device, &allocateInfo, out CommandBuffer).ThrowIfError();
     }
+
+    private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     public override void Begin()
     {
@@ -171,11 +195,11 @@ internal class VKCommandBuffer : CommandBuffer
 
     protected override void DebugName(string name)
     {
-        throw new NotImplementedException();
+        Context.SetDebugName(ObjectType.CommandBuffer, (ulong)CommandBuffer.Handle, name);
     }
 
     protected override void Destroy()
     {
-        throw new NotImplementedException();
+        Context.Vk.DestroyCommandPool(Context.Device, CommandPool, null);
     }
 }
