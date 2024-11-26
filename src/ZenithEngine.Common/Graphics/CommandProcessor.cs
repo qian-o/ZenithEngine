@@ -5,7 +5,7 @@ namespace ZenithEngine.Common.Graphics;
 public abstract class CommandProcessor(GraphicsContext context,
                                        CommandProcessorType type) : GraphicsResource(context)
 {
-    private readonly Queue<CommandBuffer> queue = new();
+    private readonly Queue<CommandBuffer> available = new();
 
     private CommandBuffer[] executionArray = new CommandBuffer[64];
     private int executionArraySize;
@@ -20,9 +20,9 @@ public abstract class CommandProcessor(GraphicsContext context,
     {
         CommandBuffer commandBuffer;
 
-        if (queue.Count > 0)
+        if (available.Count > 0)
         {
-            commandBuffer = queue.Dequeue();
+            commandBuffer = available.Dequeue();
             commandBuffer.Reset();
         }
         else
@@ -52,7 +52,7 @@ public abstract class CommandProcessor(GraphicsContext context,
 
             SubmitCommandBuffer(commandBuffer);
 
-            queue.Enqueue(commandBuffer);
+            available.Enqueue(commandBuffer);
         }
 
         Array.Clear(executionArray, 0, executionArraySize);
@@ -77,4 +77,13 @@ public abstract class CommandProcessor(GraphicsContext context,
     protected abstract CommandBuffer CreateCommandBuffer();
 
     protected abstract void SubmitCommandBuffer(CommandBuffer commandBuffer);
+
+    protected override void Destroy()
+    {
+        while (available.Count > 0)
+        {
+            CommandBuffer commandBuffer = available.Dequeue();
+            commandBuffer.Dispose();
+        }
+    }
 }

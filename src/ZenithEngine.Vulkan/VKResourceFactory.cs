@@ -68,6 +68,6 @@ internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override CommandProcessor CreateCommandProcessor(CommandProcessorType type = CommandProcessorType.Direct)
     {
-        throw new NotImplementedException();
+        return new VKCommandProcessor(Context, type);
     }
 }

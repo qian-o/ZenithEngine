@@ -198,31 +198,31 @@ internal unsafe partial class VKSwapChain : SwapChain
         SurfaceCapabilitiesKHR capabilities;
         Context.KhrSurface!.GetPhysicalDeviceSurfaceCapabilities(Context.PhysicalDevice,
                                                                  Surface,
-                                                                 &capabilities);
+                                                                 &capabilities).ThrowIfError();
 
         uint formatCount;
         Context.KhrSurface.GetPhysicalDeviceSurfaceFormats(Context.PhysicalDevice,
                                                            Surface,
                                                            &formatCount,
-                                                           null);
+                                                           null).ThrowIfError();
 
         SurfaceFormatKHR[] formats = new SurfaceFormatKHR[formatCount];
         Context.KhrSurface.GetPhysicalDeviceSurfaceFormats(Context.PhysicalDevice,
                                                            Surface,
                                                            &formatCount,
-                                                           out formats[0]);
+                                                           out formats[0]).ThrowIfError();
 
         uint modeCount;
         Context.KhrSurface.GetPhysicalDeviceSurfacePresentModes(Context.PhysicalDevice,
                                                                 Surface,
                                                                 &modeCount,
-                                                                null);
+                                                                null).ThrowIfError();
 
         PresentModeKHR[] modes = new PresentModeKHR[modeCount];
         Context.KhrSurface.GetPhysicalDeviceSurfacePresentModes(Context.PhysicalDevice,
                                                                 Surface,
                                                                 &modeCount,
-                                                                out modes[0]);
+                                                                out modes[0]).ThrowIfError();
 
         uint desiredImages = capabilities.MinImageCount + 1;
         if (capabilities.MaxImageCount > 0 && desiredImages > capabilities.MaxImageCount)
@@ -264,7 +264,7 @@ internal unsafe partial class VKSwapChain : SwapChain
                                                ulong.MaxValue,
                                                default,
                                                fence.Fence,
-                                               ref CurrentIndex);
+                                               ref CurrentIndex).ThrowIfError();
 
         fence.Wait();
     }
