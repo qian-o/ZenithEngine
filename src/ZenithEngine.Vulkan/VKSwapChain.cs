@@ -54,7 +54,7 @@ internal unsafe partial class VKSwapChain : SwapChain
 
             Result result = Context.KhrSwapchain!.QueuePresent(queue, &presentInfo);
 
-            if (result == Result.ErrorOutOfDateKhr)
+            if (result is Result.ErrorOutOfDateKhr)
             {
                 return;
             }
@@ -293,7 +293,7 @@ internal unsafe partial class VKSwapChain : SwapChain
     {
         foreach (SurfaceFormatKHR availableFormat in surfaceFormats)
         {
-            if (availableFormat.Format == Format.B8G8R8A8Srgb && availableFormat.ColorSpace == ColorSpaceKHR.SpaceSrgbNonlinearKhr)
+            if (availableFormat.Format is Format.B8G8R8A8Srgb && availableFormat.ColorSpace is ColorSpaceKHR.SpaceSrgbNonlinearKhr)
             {
                 return availableFormat;
             }
@@ -324,7 +324,7 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     private static Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities)
     {
-        if (capabilities.CurrentExtent.Width != uint.MaxValue)
+        if (capabilities.CurrentExtent.Width is not uint.MaxValue)
         {
             return capabilities.CurrentExtent;
         }

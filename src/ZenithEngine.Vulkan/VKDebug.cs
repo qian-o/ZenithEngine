@@ -37,15 +37,15 @@ internal unsafe class VKDebug : DisposableObject
         {
             string name = Utils.PtrToStringAnsi((nint)extension.ExtensionName);
 
-            if (name == ExtDebugUtils.ExtensionName)
+            if (name is ExtDebugUtils.ExtensionName)
             {
                 debugUtilsSupported = true;
             }
-            else if (name == ExtDebugReport.ExtensionName)
+            else if (name is ExtDebugReport.ExtensionName)
             {
                 debugReportSupported = true;
             }
-            else if (name == ExtDebugMarker.ExtensionName)
+            else if (name is ExtDebugMarker.ExtensionName)
             {
                 debugMarkerSupported = true;
             }

@@ -32,7 +32,7 @@ internal unsafe class VKTexture : Texture
             Usage = VKFormats.GetImageUsageFlags(desc.Usage),
             SharingMode = Context.SharingEnabled ? SharingMode.Concurrent : SharingMode.Exclusive,
             InitialLayout = ImageLayout.Preinitialized,
-            Flags = desc.Type == TextureType.TextureCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
+            Flags = desc.Type is TextureType.TextureCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
         };
 
         Context.Vk.CreateImage(Context.Device, &createInfo, null, out Image).ThrowIfError();
@@ -77,12 +77,12 @@ internal unsafe class VKTexture : Texture
 
     public void TransitionLayout(VkCommandBuffer commandBuffer,
                                  uint baseMipLevel,
-                                 uint levelCount,
+                                 uint mipLevels,
                                  CubeMapFace baseFace,
                                  uint faceCount,
                                  ImageLayout newLayout)
     {
-        for (int i = 0; i < levelCount; i++)
+        for (int i = 0; i < mipLevels; i++)
         {
             uint mipLevel = baseMipLevel + (uint)i;
 

@@ -9,7 +9,7 @@ internal static class VulkanExtensions
 {
     public static void ThrowIfError(this VkResult result)
     {
-        if (result != VkResult.Success)
+        if (result is not VkResult.Success)
         {
             throw new ZenithEngineException($"Vulkan error: {result}");
         }

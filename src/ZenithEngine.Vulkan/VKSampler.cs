@@ -29,7 +29,7 @@ internal unsafe class VKSampler : Sampler
             AddressModeV = VKFormats.GetSamplerAddressMode(desc.AddressModeV),
             AddressModeW = VKFormats.GetSamplerAddressMode(desc.AddressModeW),
             MipLodBias = desc.LodBias,
-            AnisotropyEnable = desc.Filter == SamplerFilter.Anisotropic,
+            AnisotropyEnable = desc.Filter is SamplerFilter.Anisotropic,
             MaxAnisotropy = desc.MaximumAnisotropy,
             CompareEnable = compareEnable,
             CompareOp = compareEnable ? VKFormats.GetCompareOp(desc.ComparisonFunction!.Value) : CompareOp.Never,

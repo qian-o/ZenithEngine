@@ -37,6 +37,16 @@ internal unsafe class VKTextureView : TextureView
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
+    public void TransitionLayout(VkCommandBuffer commandBuffer, ImageLayout newLayout)
+    {
+        Desc.Target.VK().TransitionLayout(commandBuffer,
+                                          Desc.BaseMipLevel,
+                                          Desc.MipLevels,
+                                          Desc.BaseFace,
+                                          Desc.FaceCount,
+                                          newLayout);
+    }
+
     protected override void DebugName(string name)
     {
         Context.SetDebugName(ObjectType.ImageView, ImageView.Handle, name);

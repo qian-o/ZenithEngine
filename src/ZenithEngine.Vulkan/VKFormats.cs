@@ -764,7 +764,7 @@ internal class VKFormats
     {
         ImageAspectFlags flags = ImageAspectFlags.None;
 
-        if (layout == ImageLayout.DepthStencilAttachmentOptimal)
+        if (layout is ImageLayout.DepthStencilAttachmentOptimal)
         {
             flags |= ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit;
         }

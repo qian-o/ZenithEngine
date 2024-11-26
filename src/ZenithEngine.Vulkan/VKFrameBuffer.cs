@@ -150,10 +150,44 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
     public void TransitionToIntermedialLayout(VkCommandBuffer commandBuffer)
     {
+        foreach (TextureView colorTarget in ColorTargets)
+        {
+            colorTarget.VK().TransitionLayout(commandBuffer, ImageLayout.ColorAttachmentOptimal);
+        }
+
+        DepthStencilTarget?.VK().TransitionLayout(commandBuffer, ImageLayout.DepthStencilAttachmentOptimal);
     }
 
     public void TransitionToFinalLayout(VkCommandBuffer commandBuffer)
     {
+        foreach (TextureView colorTarget in ColorTargets)
+        {
+            Texture texture = colorTarget.Desc.Target;
+
+            ImageLayout imageLayout = ImageLayout.Undefined;
+
+            if (texture.Desc.Usage.HasFlag(TextureUsage.Sampled))
+            {
+                imageLayout = ImageLayout.ShaderReadOnlyOptimal;
+            }
+            else if (texture.Desc.Usage.HasFlag(TextureUsage.RenderTarget))
+            {
+                imageLayout = ImageLayout.PresentSrcKhr;
+            }
+
+            if (imageLayout is not ImageLayout.Undefined)
+            {
+                colorTarget.VK().TransitionLayout(commandBuffer, imageLayout);
+            }
+        }
+
+        if (DepthStencilTarget is not null)
+        {
+            if (DepthStencilTarget.Desc.Target.Desc.Usage.HasFlag(TextureUsage.Sampled))
+            {
+                DepthStencilTarget.VK().TransitionLayout(commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+            }
+        }
     }
 
     protected override void DebugName(string name)

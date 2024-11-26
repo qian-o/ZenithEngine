@@ -53,14 +53,14 @@ internal unsafe class VKResourceSet : ResourceSet
 
                 write.PBufferInfo = &info;
 
-                if (element.Options == ElementOptions.DynamicBinding)
+                if (element.Options is ElementOptions.DynamicBinding)
                 {
                     dynamicCount++;
                 }
             }
             else if (write.DescriptorType is DescriptorType.SampledImage or DescriptorType.StorageImage)
             {
-                bool isSampled = element.Type == ResourceType.Texture;
+                bool isSampled = element.Type is ResourceType.Texture;
 
                 TextureView textureView = (TextureView)resource;
 
