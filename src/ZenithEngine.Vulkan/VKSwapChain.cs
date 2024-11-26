@@ -16,6 +16,7 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     private readonly VKSwapChainFrameBuffer swapChainFrameBuffer;
     private readonly VKFence fence;
+    private readonly VkQueue queue;
 
     public SurfaceKHR Surface;
     public SwapchainKHR Swapchain;
@@ -25,6 +26,7 @@ internal unsafe partial class VKSwapChain : SwapChain
     {
         swapChainFrameBuffer = new(Context, this);
         fence = new(Context);
+        queue = Context.Vk.GetDeviceQueue(Context.Device, Context.DirectQueueFamilyIndex, 0);
 
         CreateSurface();
         CreateSwapChain();
@@ -50,7 +52,7 @@ internal unsafe partial class VKSwapChain : SwapChain
                 PImageIndices = pImageIndex
             };
 
-            Result result = Context.KhrSwapchain!.QueuePresent(Context.DirectQueue, &presentInfo);
+            Result result = Context.KhrSwapchain!.QueuePresent(queue, &presentInfo);
 
             if (result == Result.ErrorOutOfDateKhr)
             {
