@@ -144,4 +144,24 @@ internal static class VulkanExtensions
 
         return (VKComputePipeline)pipeline;
     }
+
+    public static VKCommandProcessor VK(this CommandProcessor processor)
+    {
+        if (processor is not VKCommandProcessor)
+        {
+            throw new ZenithEngineException("CommandProcessor is not a Vulkan command processor");
+        }
+
+        return (VKCommandProcessor)processor;
+    }
+
+    public static VKCommandBuffer VK(this CommandBuffer commandBuffer)
+    {
+        if (commandBuffer is not VKCommandBuffer)
+        {
+            throw new ZenithEngineException("CommandBuffer is not a Vulkan command buffer");
+        }
+
+        return (VKCommandBuffer)commandBuffer;
+    }
 }

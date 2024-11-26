@@ -1,4 +1,5 @@
 ﻿global using Buffer = ZenithEngine.Common.Graphics.Buffer;
+global using CommandBuffer = ZenithEngine.Common.Graphics.CommandBuffer;
 global using Sampler = ZenithEngine.Common.Graphics.Sampler;
 global using VkBuffer = Silk.NET.Vulkan.Buffer;
 global using VkCommandBuffer = Silk.NET.Vulkan.CommandBuffer;

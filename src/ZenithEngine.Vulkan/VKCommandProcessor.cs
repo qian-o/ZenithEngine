@@ -1,11 +1,10 @@
 ﻿using Silk.NET.Vulkan;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
-using CommandBuffer = ZenithEngine.Common.Graphics.CommandBuffer;
 
 namespace ZenithEngine.Vulkan;
 
-internal class VKCommandProcessor : CommandProcessor
+internal unsafe class VKCommandProcessor : CommandProcessor
 {
     private readonly VkQueue queue;
 
@@ -31,12 +30,22 @@ internal class VKCommandProcessor : CommandProcessor
 
     protected override CommandBuffer CreateCommandBuffer()
     {
-        throw new NotImplementedException();
+        return new VKCommandBuffer(Context, this);
     }
 
     protected override void SubmitCommandBuffer(CommandBuffer commandBuffer)
     {
-        throw new NotImplementedException();
+        fixed (VkCommandBuffer* pCommandBuffer = &commandBuffer.VK().CommandBuffer)
+        {
+            SubmitInfo submitInfo = new()
+            {
+                SType = StructureType.SubmitInfo,
+                CommandBufferCount = 1,
+                PCommandBuffers = pCommandBuffer
+            };
+
+            Context.Vk.QueueSubmit(queue, 1, &submitInfo, default).ThrowIfError();
+        }
     }
 
     protected override void DebugName(string name)
