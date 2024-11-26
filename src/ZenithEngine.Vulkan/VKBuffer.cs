@@ -79,6 +79,13 @@ internal unsafe class VKBuffer : Buffer
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
+    public void UpdateBuffer(VkCommandBuffer commandBuffer,
+                             nint source,
+                             uint sourceSizeInBytes,
+                             uint destinationOffsetInBytes = 0)
+    {
+    }
+
     protected override void DebugName(string name)
     {
         Context.SetDebugName(ObjectType.Buffer, Buffer.Handle, name);

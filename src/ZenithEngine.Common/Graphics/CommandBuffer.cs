@@ -7,6 +7,11 @@ namespace ZenithEngine.Common.Graphics;
 public abstract class CommandBuffer(GraphicsContext context,
                                     CommandProcessor processor) : GraphicsResource(context)
 {
+    /// <summary>
+    /// Command recording period available temporary buffer allocator.
+    /// </summary>
+    protected BufferAllocator BufferAllocator { get; } = new(context);
+
     #region Command Buffer Management
     /// <summary>
     /// Begin recording commands.
@@ -302,4 +307,9 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// <param name="depth">The depth of the ray tracing output.</param>
     public abstract void DispatchRays(uint width, uint height, uint depth);
     #endregion
+
+    protected override void Destroy()
+    {
+        BufferAllocator.Dispose();
+    }
 }

@@ -100,6 +100,15 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         Vk.DestroyInstance(Instance, null);
 
         Vk.Dispose();
+
+        Debug = null;
+        KhrSurface = null;
+        KhrWin32Surface = null;
+        KhrWaylandSurface = null;
+        KhrXlibSurface = null;
+        KhrAndroidSurface = null;
+        MvkIosSurface = null;
+        MvkMacosSurface = null;
     }
 
     private void InitInstance(bool useDebugLayer)

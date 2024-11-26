@@ -32,11 +32,6 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
     /// </summary>
     protected MemoryAllocator MemoryAllocator { get; } = new();
 
-    /// <summary>
-    /// Command recording period available temporary buffer allocator.
-    /// </summary>
-    protected BufferAllocator BufferAllocator => Context.BufferAllocator!;
-
     public void Dispose()
     {
         if (Interlocked.Exchange(ref isDisposed, 1) != 0)

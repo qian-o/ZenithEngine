@@ -166,5 +166,10 @@ internal unsafe partial class VKGraphicsContext
         KhrSwapchain?.Dispose();
 
         Vk.DestroyDevice(Device, null);
+
+        KhrSwapchain = null;
+        KhrRayTracingPipeline = null;
+        KhrAccelerationStructure = null;
+        KhrDeferredHostOperations = null;
     }
 }

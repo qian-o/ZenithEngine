@@ -36,7 +36,6 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-
     #region Command Buffer Management
     public override void Begin()
     {
@@ -57,6 +56,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     public override void Reset()
     {
         Context.Vk.ResetCommandBuffer(CommandBuffer, CommandBufferResetFlags.None).ThrowIfError();
+
+        BufferAllocator.Release();
     }
     #endregion
 
@@ -261,6 +262,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
     protected override void Destroy()
     {
+        base.Destroy();
+
         Context.Vk.DestroyCommandPool(Context.Device, CommandPool, null);
     }
 }

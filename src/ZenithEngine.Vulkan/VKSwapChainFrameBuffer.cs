@@ -75,11 +75,14 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
 
     private void DestroyFrameBuffers()
     {
-        depthStencilTarget?.Dispose();
-
         foreach (FrameBuffer frameBuffer in frameBuffers)
         {
             frameBuffer.Dispose();
         }
+
+        depthStencilTarget?.Dispose();
+
+        depthStencilTarget = null;
+        frameBuffers = [];
     }
 }
