@@ -79,40 +79,6 @@ internal unsafe class VKBuffer : Buffer
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    public void CopyTo(VkCommandBuffer commandBuffer,
-                       VKBuffer destination,
-                       uint sizeInBytes,
-                       uint sourceOffsetInBytes,
-                       uint destinationOffsetInBytes)
-    {
-        BufferCopy bufferCopy = new()
-        {
-            Size = sizeInBytes,
-            SrcOffset = sourceOffsetInBytes,
-            DstOffset = destinationOffsetInBytes
-        };
-
-        Context.Vk.CmdCopyBuffer(commandBuffer, Buffer, destination.Buffer, 1, &bufferCopy);
-
-        MemoryBarrier barrier = new()
-        {
-            SType = StructureType.MemoryBarrier,
-            SrcAccessMask = AccessFlags.MemoryWriteBit,
-            DstAccessMask = AccessFlags.MemoryReadBit
-        };
-
-        Context.Vk.CmdPipelineBarrier(commandBuffer,
-                                      PipelineStageFlags.TransferBit,
-                                      PipelineStageFlags.AllGraphicsBit,
-                                      DependencyFlags.None,
-                                      1,
-                                      &barrier,
-                                      0,
-                                      null,
-                                      0,
-                                      null);
-    }
-
     protected override void DebugName(string name)
     {
         Context.SetDebugName(ObjectType.Buffer, Buffer.Handle, name);

@@ -71,7 +71,32 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         VKBuffer src = source.VK();
         VKBuffer dst = destination.VK();
 
-        src.CopyTo(CommandBuffer, dst, sizeInBytes, sourceOffsetInBytes, destinationOffsetInBytes);
+        BufferCopy bufferCopy = new()
+        {
+            Size = sizeInBytes,
+            SrcOffset = sourceOffsetInBytes,
+            DstOffset = destinationOffsetInBytes
+        };
+
+        Context.Vk.CmdCopyBuffer(CommandBuffer, src.Buffer, dst.Buffer, 1, &bufferCopy);
+
+        MemoryBarrier barrier = new()
+        {
+            SType = StructureType.MemoryBarrier,
+            SrcAccessMask = AccessFlags.MemoryWriteBit,
+            DstAccessMask = AccessFlags.MemoryReadBit
+        };
+
+        Context.Vk.CmdPipelineBarrier(CommandBuffer,
+                                      PipelineStageFlags.TransferBit,
+                                      PipelineStageFlags.AllGraphicsBit,
+                                      DependencyFlags.None,
+                                      1,
+                                      &barrier,
+                                      0,
+                                      null,
+                                      0,
+                                      null);
     }
     #endregion
 
@@ -81,7 +106,11 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                        uint sourceSizeInBytes,
                                        TextureRegion region)
     {
-        throw new NotImplementedException();
+        Buffer temporary = BufferAllocator.Buffer(sourceSizeInBytes);
+
+        Context.UpdateBuffer(temporary, source, sourceSizeInBytes);
+
+        VKTexture vkTexture = texture.VK();
     }
 
     public override void CopyTexture(Texture source,
