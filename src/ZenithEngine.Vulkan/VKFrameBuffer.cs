@@ -146,7 +146,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
     public override OutputDesc Output { get; }
 
-    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+    private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     public void TransitionToIntermedialLayout(VkCommandBuffer commandBuffer)
     {

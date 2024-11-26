@@ -35,7 +35,7 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     public override FrameBuffer FrameBuffer => swapChainFrameBuffer.FrameBuffer;
 
-    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+    private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     public override void Present()
     {

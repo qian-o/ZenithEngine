@@ -32,7 +32,7 @@ internal unsafe class VKDeviceMemory : GraphicsResource
                                   out DeviceMemory).ThrowIfError();
     }
 
-    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+    private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     protected override void DebugName(string name)
     {

@@ -87,7 +87,7 @@ internal unsafe class VKDescriptorPool : GraphicsResource
         MemoryAllocator.Free(poolSizes);
     }
 
-    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+    private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     public bool CanAlloc(VKResourceCounts counts)
     {

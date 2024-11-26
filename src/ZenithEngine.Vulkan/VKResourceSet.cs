@@ -117,7 +117,7 @@ internal unsafe class VKResourceSet : ResourceSet
 
     public Texture[] StorageImages { get; }
 
-    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+    private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     protected override void DebugName(string name)
     {
