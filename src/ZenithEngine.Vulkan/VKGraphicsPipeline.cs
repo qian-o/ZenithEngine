@@ -1,7 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Graphics;
-using PrimitiveTopology = ZenithEngine.Common.Enums.PrimitiveTopology;
 
 namespace ZenithEngine.Vulkan;
 

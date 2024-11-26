@@ -1,9 +1,5 @@
 ﻿using Silk.NET.Vulkan;
 using ZenithEngine.Common.Enums;
-using FrontFace = ZenithEngine.Common.Enums.FrontFace;
-using PrimitiveTopology = ZenithEngine.Common.Enums.PrimitiveTopology;
-using VkFrontFace = Silk.NET.Vulkan.FrontFace;
-using VkPrimitiveTopology = Silk.NET.Vulkan.PrimitiveTopology;
 
 namespace ZenithEngine.Vulkan;
 
