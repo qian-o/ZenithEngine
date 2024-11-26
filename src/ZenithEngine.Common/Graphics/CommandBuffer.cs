@@ -26,12 +26,15 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// <summary>
     /// Reset the command buffer.
     /// </summary>
-    public abstract void Reset();
+    public virtual void Reset()
+    {
+        BufferAllocator.Release();
+    }
 
     /// <summary>
     /// Commit the commands to the Command processor.
     /// </summary>
-    public void Commit()
+    public virtual void Commit()
     {
         processor.CommitCommandBuffer(this);
     }

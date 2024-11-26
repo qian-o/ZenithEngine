@@ -57,7 +57,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     {
         Context.Vk.ResetCommandBuffer(CommandBuffer, CommandBufferResetFlags.None).ThrowIfError();
 
-        BufferAllocator.Release();
+        base.Reset();
     }
     #endregion
 
