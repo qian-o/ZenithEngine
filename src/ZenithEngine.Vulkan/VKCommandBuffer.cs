@@ -547,12 +547,12 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     {
         VKResourceSet vkResourceSet = resourceSet.VK();
 
-        foreach (var texture in vkResourceSet.SampledImages.Cast<VKTexture>())
+        foreach (VKTexture texture in vkResourceSet.SampledImages.Cast<VKTexture>())
         {
             texture.TransitionLayout(CommandBuffer, ImageLayout.ShaderReadOnlyOptimal);
         }
 
-        foreach (var texture in vkResourceSet.StorageImages.Cast<VKTexture>())
+        foreach (VKTexture texture in vkResourceSet.StorageImages.Cast<VKTexture>())
         {
             texture.TransitionLayout(CommandBuffer, ImageLayout.General);
         }
