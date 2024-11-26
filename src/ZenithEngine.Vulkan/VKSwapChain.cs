@@ -331,9 +331,9 @@ internal unsafe partial class VKSwapChain : SwapChain
 
         return new Extent2D((uint)Utils.Lerp(capabilities.MinImageExtent.Width,
                                              capabilities.MaxImageExtent.Width,
-                                             0.5f),
+                                             0.5),
                             (uint)Utils.Lerp(capabilities.MinImageExtent.Height,
                                              capabilities.MaxImageExtent.Height,
-                                             0.5f));
+                                             0.5));
     }
 }
