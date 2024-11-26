@@ -75,6 +75,71 @@ internal unsafe class VKTexture : Texture
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
+    public void TransitionLayout(VkCommandBuffer commandBuffer,
+                                 uint baseMipLevel,
+                                 uint levelCount,
+                                 CubeMapFace baseFace,
+                                 uint faceCount,
+                                 ImageLayout newLayout)
+    {
+        for (int i = 0; i < levelCount; i++)
+        {
+            uint mipLevel = baseMipLevel + (uint)i;
+
+            for (int j = 0; j < faceCount; j++)
+            {
+                uint face = (uint)baseFace + (uint)j;
+
+                ImageLayout oldLayout = this[mipLevel, (CubeMapFace)face];
+
+                if (oldLayout == newLayout)
+                {
+                    continue;
+                }
+
+                ImageMemoryBarrier barrier = new()
+                {
+                    SType = StructureType.ImageMemoryBarrier,
+                    OldLayout = oldLayout,
+                    NewLayout = newLayout,
+                    Image = Image,
+                    SubresourceRange = new()
+                    {
+                        AspectMask = VKFormats.GetImageAspectFlags(Desc.Usage),
+                        BaseMipLevel = mipLevel,
+                        LevelCount = 1,
+                        BaseArrayLayer = face,
+                        LayerCount = 1
+                    }
+                };
+
+                VKHelpers.MatchImageLayout(ref barrier, out PipelineStageFlags src, out PipelineStageFlags dst);
+
+                Context.Vk.CmdPipelineBarrier(commandBuffer,
+                                              src,
+                                              dst,
+                                              0,
+                                              null,
+                                              0,
+                                              null,
+                                              1,
+                                              &barrier);
+
+                this[mipLevel, (CubeMapFace)face] = newLayout;
+            }
+        }
+    }
+
+    public void TransitionLayout(VkCommandBuffer commandBuffer, ImageLayout newLayout)
+    {
+        TransitionLayout(commandBuffer,
+                         0,
+                         Desc.MipLevels,
+                         CubeMapFace.PositiveX,
+                         VKHelpers.GetArrayLayers(Desc),
+                         newLayout);
+    }
+
     protected override void DebugName(string name)
     {
         Context.SetDebugName(ObjectType.Image, Image.Handle, name);

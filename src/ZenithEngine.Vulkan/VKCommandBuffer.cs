@@ -111,6 +111,52 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         Context.UpdateBuffer(temporary, source, sourceSizeInBytes);
 
         VKTexture vkTexture = texture.VK();
+
+        ImageLayout oldLayout = vkTexture[region.MipLevel, region.Face];
+
+        vkTexture.TransitionLayout(CommandBuffer,
+                                   region.MipLevel,
+                                   1,
+                                   region.Face,
+                                   1,
+                                   ImageLayout.TransferDstOptimal);
+
+        BufferImageCopy bufferImageCopy = new()
+        {
+            ImageSubresource = new()
+            {
+                AspectMask = VKFormats.GetImageAspectFlags(vkTexture.Desc.Usage),
+                MipLevel = region.MipLevel,
+                BaseArrayLayer = (uint)region.Face,
+                LayerCount = 1
+            },
+            ImageOffset = new()
+            {
+                X = (int)region.X,
+                Y = (int)region.Y,
+                Z = (int)region.Z
+            },
+            ImageExtent = new()
+            {
+                Width = region.Width,
+                Height = region.Height,
+                Depth = region.Depth
+            }
+        };
+
+        Context.Vk.CmdCopyBufferToImage(CommandBuffer,
+                                        temporary.VK().Buffer,
+                                        vkTexture.Image,
+                                        ImageLayout.TransferDstOptimal,
+                                        1,
+                                        &bufferImageCopy);
+
+        vkTexture.TransitionLayout(CommandBuffer,
+                                   region.MipLevel,
+                                   1,
+                                   region.Face,
+                                   1,
+                                   oldLayout);
     }
 
     public override void CopyTexture(Texture source,
@@ -118,12 +164,149 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                      Texture destination,
                                      TextureRegion destinationRegion)
     {
-        throw new NotImplementedException();
+        VKTexture src = source.VK();
+        VKTexture dst = destination.VK();
+
+        ImageLayout srcOldLayout = src[sourceRegion.MipLevel, sourceRegion.Face];
+        ImageLayout dstOldLayout = dst[destinationRegion.MipLevel, destinationRegion.Face];
+
+        src.TransitionLayout(CommandBuffer,
+                             sourceRegion.MipLevel,
+                             1,
+                             sourceRegion.Face,
+                             1,
+                             ImageLayout.TransferSrcOptimal);
+
+        dst.TransitionLayout(CommandBuffer,
+                             destinationRegion.MipLevel,
+                             1,
+                             destinationRegion.Face,
+                             1,
+                             ImageLayout.TransferDstOptimal);
+
+        if (sourceRegion.SizeEquals(destinationRegion))
+        {
+            ImageCopy imageCopy = new()
+            {
+                SrcSubresource = new()
+                {
+                    AspectMask = VKFormats.GetImageAspectFlags(src.Desc.Usage),
+                    MipLevel = sourceRegion.MipLevel,
+                    BaseArrayLayer = (uint)sourceRegion.Face,
+                    LayerCount = 1
+                },
+                SrcOffset = new()
+                {
+                    X = (int)sourceRegion.X,
+                    Y = (int)sourceRegion.Y,
+                    Z = (int)sourceRegion.Z
+                },
+                DstSubresource = new()
+                {
+                    AspectMask = VKFormats.GetImageAspectFlags(dst.Desc.Usage),
+                    MipLevel = destinationRegion.MipLevel,
+                    BaseArrayLayer = (uint)destinationRegion.Face,
+                    LayerCount = 1
+                },
+                DstOffset = new()
+                {
+                    X = (int)destinationRegion.X,
+                    Y = (int)destinationRegion.Y,
+                    Z = (int)destinationRegion.Z
+                },
+                Extent = new()
+                {
+                    Width = sourceRegion.Width,
+                    Height = sourceRegion.Height,
+                    Depth = sourceRegion.Depth
+                }
+            };
+
+            Context.Vk.CmdCopyImage(CommandBuffer,
+                                    src.Image,
+                                    ImageLayout.TransferSrcOptimal,
+                                    dst.Image,
+                                    ImageLayout.TransferDstOptimal,
+                                    1,
+                                    &imageCopy);
+        }
+        else
+        {
+            ImageBlit imageBlit = new()
+            {
+                SrcSubresource = new()
+                {
+                    AspectMask = VKFormats.GetImageAspectFlags(src.Desc.Usage),
+                    MipLevel = sourceRegion.MipLevel,
+                    BaseArrayLayer = (uint)sourceRegion.Face,
+                    LayerCount = 1
+                },
+                SrcOffsets = new()
+                {
+                    Element0 = new()
+                    {
+                        X = (int)sourceRegion.X,
+                        Y = (int)sourceRegion.Y,
+                        Z = (int)sourceRegion.Z
+                    },
+                    Element1 = new()
+                    {
+                        X = (int)sourceRegion.X + (int)sourceRegion.Width,
+                        Y = (int)sourceRegion.Y + (int)sourceRegion.Height,
+                        Z = (int)sourceRegion.Z + (int)sourceRegion.Depth
+                    }
+                },
+                DstSubresource = new()
+                {
+                    AspectMask = VKFormats.GetImageAspectFlags(dst.Desc.Usage),
+                    MipLevel = destinationRegion.MipLevel,
+                    BaseArrayLayer = (uint)destinationRegion.Face,
+                    LayerCount = 1
+                },
+                DstOffsets = new()
+                {
+                    Element0 = new()
+                    {
+                        X = (int)destinationRegion.X,
+                        Y = (int)destinationRegion.Y,
+                        Z = (int)destinationRegion.Z
+                    },
+                    Element1 = new()
+                    {
+                        X = (int)destinationRegion.X + (int)destinationRegion.Width,
+                        Y = (int)destinationRegion.Y + (int)destinationRegion.Height,
+                        Z = (int)destinationRegion.Z + (int)destinationRegion.Depth
+                    }
+                }
+            };
+
+            Context.Vk.CmdBlitImage(CommandBuffer,
+                                    src.Image,
+                                    ImageLayout.TransferSrcOptimal,
+                                    dst.Image,
+                                    ImageLayout.TransferDstOptimal,
+                                    1,
+                                    &imageBlit,
+                                    Filter.Linear);
+        }
+
+        src.TransitionLayout(CommandBuffer,
+                             sourceRegion.MipLevel,
+                             1,
+                             sourceRegion.Face,
+                             1,
+                             srcOldLayout);
+
+        dst.TransitionLayout(CommandBuffer,
+                             destinationRegion.MipLevel,
+                             1,
+                             destinationRegion.Face,
+                             1,
+                             dstOldLayout);
     }
 
     public override void GenerateMipmaps(Texture texture)
     {
-        throw new NotImplementedException();
     }
 
     public override void ResolveTexture(Texture source,
@@ -136,7 +319,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
     public override void TransitionTexture(Texture texture, TextureUsage usage)
     {
-        throw new NotImplementedException();
+        texture.VK().TransitionLayout(CommandBuffer, VKFormats.GetImageLayout(usage));
     }
     #endregion
 
