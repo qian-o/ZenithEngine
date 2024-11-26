@@ -73,11 +73,11 @@ internal unsafe class VKBuffer : Buffer
         Address = Context.Vk.GetBufferDeviceAddress(Context.Device, &addressInfo);
     }
 
-    public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
-
     public VKDeviceMemory DeviceMemory { get; }
 
     public ulong Address { get; }
+
+    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     protected override void DebugName(string name)
     {

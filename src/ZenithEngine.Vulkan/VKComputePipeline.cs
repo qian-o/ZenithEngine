@@ -51,7 +51,7 @@ internal unsafe class VKComputePipeline : ComputePipeline
                                           out Pipeline).ThrowIfError();
     }
 
-    public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     protected override void DebugName(string name)
     {

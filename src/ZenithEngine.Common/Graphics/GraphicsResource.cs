@@ -25,7 +25,7 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
     /// <summary>
     /// Graphics context.
     /// </summary>
-    protected GraphicsContext Context { get; } = context;
+    protected GraphicsContext Context => context;
 
     /// <summary>
     /// Current resource lifecycle persistent memory allocator.

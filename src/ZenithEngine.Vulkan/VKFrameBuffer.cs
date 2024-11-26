@@ -136,8 +136,6 @@ internal unsafe class VKFrameBuffer : FrameBuffer
         Output = OutputDesc.Default(sampleCount, depthStencilFormat, colorFormats);
     }
 
-    public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
-
     public TextureView[] ColorTargets { get; }
 
     public TextureView? DepthStencilTarget { get; }
@@ -147,6 +145,8 @@ internal unsafe class VKFrameBuffer : FrameBuffer
     public override uint Height { get; }
 
     public override OutputDesc Output { get; }
+
+    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     public void TransitionToIntermedialLayout(VkCommandBuffer commandBuffer)
     {

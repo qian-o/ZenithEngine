@@ -111,13 +111,13 @@ internal unsafe class VKResourceSet : ResourceSet
         StorageImages = [.. storageImages];
     }
 
-    public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
-
     public uint DynamicCount { get; }
 
     public Texture[] SampledImages { get; }
 
     public Texture[] StorageImages { get; }
+
+    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     protected override void DebugName(string name)
     {

@@ -70,14 +70,17 @@ public abstract class GraphicsContext : DisposableObject
             throw new ZenithEngineException("Device not created.");
         }
 
-        Lock.Enter();
+        if (BufferAllocator!.IsUsed)
+        {
+            Lock.Enter();
 
-        CopyProcessor.Submit(false);
-        CopyProcessor.WaitIdle();
+            CopyProcessor.Submit(false);
+            CopyProcessor.WaitIdle();
 
-        BufferAllocator!.Release();
+            BufferAllocator.Release();
 
-        Lock.Exit();
+            Lock.Exit();
+        }
     }
 
     protected override void Destroy()

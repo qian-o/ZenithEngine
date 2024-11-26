@@ -13,9 +13,9 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
     private Texture? depthStencilTarget;
     private FrameBuffer[] frameBuffers = [];
 
-    public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
-
     public FrameBuffer FrameBuffer => frameBuffers[CurrentIndex];
+
+    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     public void CreateFrameBuffers(uint width, uint height, Format imageFormat)
     {

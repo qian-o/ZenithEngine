@@ -31,11 +31,11 @@ internal unsafe partial class VKSwapChain : SwapChain
         AcquireNextImage();
     }
 
-    public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
-
     public ref uint CurrentIndex => ref swapChainFrameBuffer.CurrentIndex;
 
     public override FrameBuffer FrameBuffer => swapChainFrameBuffer.FrameBuffer;
+
+    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     public override void Present()
     {

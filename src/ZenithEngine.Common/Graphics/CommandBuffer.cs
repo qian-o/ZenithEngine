@@ -4,7 +4,8 @@ using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Common.Graphics;
 
-public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(context)
+public abstract class CommandBuffer(GraphicsContext context,
+                                    CommandProcessor processor) : GraphicsResource(context)
 {
     #region Command Buffer Management
     /// <summary>
@@ -18,14 +19,17 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     public abstract void End();
 
     /// <summary>
-    /// Commit the commands to the Command processor.
-    /// </summary>
-    public abstract void Commit();
-
-    /// <summary>
     /// Reset the command buffer.
     /// </summary>
     public abstract void Reset();
+
+    /// <summary>
+    /// Commit the commands to the Command processor.
+    /// </summary>
+    public void Commit()
+    {
+        processor.CommitCommandBuffer(this);
+    }
     #endregion
 
     #region Buffer Operations
@@ -111,21 +115,21 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     /// </summary>
     /// <param name="desc">The bottom level acceleration structure description.</param>
     /// <returns>The built acceleration structure.</returns>
-    public abstract BottomLevelAS BuildAccelerationStructure(BottomLevelASDesc desc);
+    public abstract BottomLevelAS BuildAccelerationStructure(ref readonly BottomLevelASDesc desc);
 
     /// <summary>
     /// Performs a top level acceleration structure build on the GPU.
     /// </summary>
     /// <param name="desc">The top level acceleration structure description.</param>
     /// <returns>The built acceleration structure.</returns>
-    public abstract TopLevelAS BuildAccelerationStructure(TopLevelASDesc desc);
+    public abstract TopLevelAS BuildAccelerationStructure(ref readonly TopLevelASDesc desc);
 
     /// <summary>
     /// Refit a top level acceleration structure on the GPU.
     /// </summary>
     /// <param name="tlas">The top level acceleration structure to refit.</param>
     /// <param name="newDesc">The new top level acceleration structure description.</param>
-    public abstract void UpdateAccelerationStructure(ref TopLevelAS tlas, TopLevelASDesc newDesc);
+    public abstract void UpdateAccelerationStructure(ref TopLevelAS tlas, ref readonly TopLevelASDesc newDesc);
     #endregion
 
     #region Graphics Operations

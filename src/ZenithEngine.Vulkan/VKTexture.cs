@@ -59,8 +59,6 @@ internal unsafe class VKTexture : Texture
         Image = image;
     }
 
-    public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
-
     public VKDeviceMemory? DeviceMemory { get; }
 
     public ImageLayout this[uint mipLevel, CubeMapFace face]
@@ -74,6 +72,8 @@ internal unsafe class VKTexture : Texture
             imageLayouts[(mipLevel * VKHelpers.GetArrayLayers(Desc)) + (uint)face] = value;
         }
     }
+
+    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     protected override void DebugName(string name)
     {

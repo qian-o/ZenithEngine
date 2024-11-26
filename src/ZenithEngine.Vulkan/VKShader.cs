@@ -35,9 +35,9 @@ internal unsafe class VKShader : Shader
         };
     }
 
-    public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
-
     public PipelineShaderStageCreateInfo PipelineShaderStageCreateInfo { get; }
+
+    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     protected override void DebugName(string name)
     {

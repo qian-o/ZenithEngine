@@ -25,7 +25,7 @@ internal unsafe class VKFence : GraphicsResource
                                in Fence).ThrowIfError();
     }
 
-    public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     public void Wait()
     {

@@ -313,7 +313,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
         MemoryAllocator.Release();
     }
 
-    public new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+    protected new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     protected override void DebugName(string name)
     {
