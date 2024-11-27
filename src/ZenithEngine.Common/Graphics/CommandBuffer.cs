@@ -211,7 +211,7 @@ public abstract class CommandBuffer(GraphicsContext context,
 
     #region Resource Binding Operations
     /// <summary>
-    /// Set the vertex buffer for rasterization.
+    /// Set the vertex buffer for graphics pipeline.
     /// </summary>
     /// <param name="slot">The vertex buffer slot.</param>
     /// <param name="buffer">Vertex buffer.</param>
@@ -219,14 +219,14 @@ public abstract class CommandBuffer(GraphicsContext context,
     public abstract void SetVertexBuffer(uint slot, Buffer buffer, uint offset = 0);
 
     /// <summary>
-    /// Set the vertex buffers for rasterization.
+    /// Set the vertex buffers for graphics pipeline.
     /// </summary>
     /// <param name="buffers">Array of buffers.</param>
     /// <param name="offsets">Array of offsets.</param>
     public abstract void SetVertexBuffers(Buffer[] buffers, int[] offsets);
 
     /// <summary>
-    /// Set the index buffer for rasterization.
+    /// Set the index buffer for graphics pipeline.
     /// </summary>
     /// <param name="buffer">Index buffer.</param>
     /// <param name="format">Index format.</param>
