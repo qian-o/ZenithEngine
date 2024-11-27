@@ -11,8 +11,6 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
     private readonly List<Buffer> availableBuffers = [];
     private readonly List<Buffer> usedBuffers = [];
 
-    public bool IsUsed => usedBuffers.Count > 0;
-
     public Buffer Buffer(uint sizeInBytes)
     {
         @lock.Enter();

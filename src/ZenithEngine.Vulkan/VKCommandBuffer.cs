@@ -918,8 +918,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
     protected override void Destroy()
     {
-        base.Destroy();
-
         Context.Vk.DestroyCommandPool(Context.Device, CommandPool, null);
+
+        base.Destroy();
     }
 }

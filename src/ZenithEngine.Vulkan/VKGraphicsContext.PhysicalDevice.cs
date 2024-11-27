@@ -68,82 +68,82 @@ internal unsafe partial class VKGraphicsContext
 
         if (features.GeometryShader)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.TessellationShader)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.ShaderInt16)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.ShaderInt64)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.ShaderFloat64)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.SparseBinding)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.SparseResidencyBuffer)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.SparseResidencyImage2D)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.SparseResidencyImage3D)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.SparseResidency2Samples)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.SparseResidency4Samples)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.SparseResidency8Samples)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.SparseResidency16Samples)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.SparseResidencyAliased)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.VariableMultisampleRate)
         {
-            score += 1000;
+            score += 100;
         }
 
         if (features.InheritedQueries)
         {
-            score += 1000;
+            score += 100;
         }
 
         score += properties.ApiVersion;

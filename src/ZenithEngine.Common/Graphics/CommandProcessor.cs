@@ -7,8 +7,8 @@ public abstract class CommandProcessor(GraphicsContext context,
 {
     private readonly Queue<CommandBuffer> available = new();
 
-    private CommandBuffer[] executionArray = new CommandBuffer[64];
-    private int executionArraySize;
+    private CommandBuffer[] execution = new CommandBuffer[64];
+    private int executionSize;
 
     public CommandProcessorType Type { get; } = type;
 
@@ -46,17 +46,17 @@ public abstract class CommandProcessor(GraphicsContext context,
             Context.SyncCopyTasks();
         }
 
-        for (int i = 0; i < executionArraySize; i++)
+        for (int i = 0; i < executionSize; i++)
         {
-            CommandBuffer commandBuffer = executionArray[i];
+            CommandBuffer commandBuffer = execution[i];
 
             SubmitCommandBuffer(commandBuffer);
 
             available.Enqueue(commandBuffer);
         }
 
-        Array.Clear(executionArray, 0, executionArraySize);
-        executionArraySize = 0;
+        Array.Clear(execution, 0, executionSize);
+        executionSize = 0;
     }
 
     /// <summary>
@@ -70,12 +70,12 @@ public abstract class CommandProcessor(GraphicsContext context,
     /// <param name="commandBuffer">The command buffer to commit.</param>
     internal void CommitCommandBuffer(CommandBuffer commandBuffer)
     {
-        if (executionArray.Length == executionArraySize)
+        if (execution.Length == executionSize)
         {
-            Array.Resize(ref executionArray, executionArray.Length + 64);
+            Array.Resize(ref execution, execution.Length + 64);
         }
 
-        executionArray[executionArraySize++] = commandBuffer;
+        execution[executionSize++] = commandBuffer;
     }
 
     /// <summary>
@@ -94,8 +94,7 @@ public abstract class CommandProcessor(GraphicsContext context,
     {
         while (available.Count > 0)
         {
-            CommandBuffer commandBuffer = available.Dequeue();
-            commandBuffer.Dispose();
+            available.Dequeue().Dispose();
         }
     }
 }
