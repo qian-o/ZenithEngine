@@ -1,9 +1,9 @@
-﻿using Graphics.Core.Helpers;
+﻿using System.Numerics;
+using Graphics.Core.Helpers;
 using Graphics.Engine.Enums;
 using Graphics.Engine.Vulkan.Helpers;
 using Silk.NET.Maths;
 using Silk.NET.Vulkan;
-using System.Numerics;
 using VkViewport = Silk.NET.Vulkan.Viewport;
 
 namespace Graphics.Engine.Vulkan;
@@ -133,9 +133,7 @@ internal sealed unsafe class VKCommandBuffer : CommandBuffer
         activeFrameBuffer = frameBuffer.VK();
         activeFrameBuffer.TransitionToIntermedialLayout(CommandBuffer);
 
-        RenderingInfo renderingInfo = activeFrameBuffer.RenderingInfo;
-
-        Context.Vk.CmdBeginRendering(CommandBuffer, &renderingInfo);
+        Context.Vk.CmdBeginRendering(CommandBuffer, in activeFrameBuffer.RenderingInfo);
 
         bool clearColor = clearValue.Options.HasFlag(ClearOptions.Color);
         bool clearDepth = clearValue.Options.HasFlag(ClearOptions.Depth);

@@ -95,7 +95,7 @@ public unsafe class Context : DisposableObject
     {
         float queuePriority = 1.0f;
 
-        uint graphicsQueueFamilyIndex = physicalDevice.GetQueueFamilyIndex(QueueFlags.GraphicsBit);
+        uint graphicsQueueFamilyIndex = physicalDevice.GetQueueFamilyIndex(QueueFlags.GraphicsBit | QueueFlags.ComputeBit);
         uint computeQueueFamilyIndex = physicalDevice.GetQueueFamilyIndex(QueueFlags.ComputeBit);
         uint transferQueueFamilyIndex = physicalDevice.GetQueueFamilyIndex(QueueFlags.TransferBit);
 
@@ -243,7 +243,7 @@ public unsafe class Context : DisposableObject
         ApplicationInfo applicationInfo = new()
         {
             SType = StructureType.ApplicationInfo,
-            PApplicationName = _alloter.Alloc("Graphics"),
+            PApplicationName = _alloter.Alloc(AppDomain.CurrentDomain.FriendlyName),
             ApplicationVersion = new Version32(1, 0, 0),
             PEngineName = _alloter.Alloc("Graphics"),
             EngineVersion = new Version32(1, 0, 0),

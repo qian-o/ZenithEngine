@@ -23,10 +23,5 @@ public enum TextureUsage
     /// <summary>
     /// The Texture can be used as the depth target.
     /// </summary>
-    DepthStencil = 1 << 3,
-
-    /// <summary>
-    /// The Texture supports automatic generation of mipmaps.
-    /// </summary>
-    GenerateMipmaps = 1 << 4
+    DepthStencil = 1 << 3
 }

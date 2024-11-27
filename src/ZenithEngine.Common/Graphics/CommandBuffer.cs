@@ -4,8 +4,14 @@ using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Common.Graphics;
 
-public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(context)
+public abstract class CommandBuffer(GraphicsContext context,
+                                    CommandProcessor processor) : GraphicsResource(context)
 {
+    /// <summary>
+    /// Command recording period available temporary buffer allocator.
+    /// </summary>
+    protected BufferAllocator BufferAllocator { get; } = new(context);
+
     #region Command Buffer Management
     /// <summary>
     /// Begin recording commands.
@@ -18,14 +24,20 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     public abstract void End();
 
     /// <summary>
-    /// Commit the commands to the Command processor.
-    /// </summary>
-    public abstract void Commit();
-
-    /// <summary>
     /// Reset the command buffer.
     /// </summary>
-    public abstract void Reset();
+    public virtual void Reset()
+    {
+        BufferAllocator.Release();
+    }
+
+    /// <summary>
+    /// Commit the commands to the Command processor.
+    /// </summary>
+    public virtual void Commit()
+    {
+        processor.CommitCommandBuffer(this);
+    }
     #endregion
 
     #region Buffer Operations
@@ -36,21 +48,30 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     /// <param name="source">Unmanaged pointer to the source data.</param>
     /// <param name="sourceSizeInBytes">Size of the source data in bytes.</param>
     /// <param name="destinationOffsetInBytes">Offset in the destination buffer to update.</param>  
-    public abstract void UpdateBuffer(Buffer buffer,
-                                      nint source,
-                                      uint sourceSizeInBytes,
-                                      uint destinationOffsetInBytes = 0);
+    public void UpdateBuffer(Buffer buffer,
+                             nint source,
+                             uint sourceSizeInBytes,
+                             uint destinationOffsetInBytes = 0)
+    {
+        Buffer temporary = BufferAllocator.Buffer(sourceSizeInBytes);
+
+        Context.UpdateBuffer(temporary, source, sourceSizeInBytes);
+
+        CopyBuffer(temporary, buffer, sourceSizeInBytes, 0, destinationOffsetInBytes);
+    }
 
     /// <summary>
     /// Copy the source buffer to the destination buffer.
     /// </summary>
     /// <param name="source">The source buffer.</param>
     /// <param name="destination">The destination buffer.</param>
-    /// <param name="sourceSizeInBytes">Size of the source buffer in bytes.</param>
-    /// <param name="destinationOffsetInBytes">Size of the destination buffer in bytes.</param>
+    /// <param name="sizeInBytes">Size of the source buffer in bytes.</param>
+    /// <param name="sourceOffsetInBytes">Offset in the source buffer to copy.</param>
+    /// <param name="destinationOffsetInBytes">Offset in the destination buffer to update.</param>  
     public abstract void CopyBuffer(Buffer source,
                                     Buffer destination,
-                                    uint sourceSizeInBytes,
+                                    uint sizeInBytes,
+                                    uint sourceOffsetInBytes = 0,
                                     uint destinationOffsetInBytes = 0);
     #endregion
 
@@ -111,24 +132,24 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     /// </summary>
     /// <param name="desc">The bottom level acceleration structure description.</param>
     /// <returns>The built acceleration structure.</returns>
-    public abstract BottomLevelAS BuildAccelerationStructure(BottomLevelASDesc desc);
+    public abstract BottomLevelAS BuildAccelerationStructure(ref readonly BottomLevelASDesc desc);
 
     /// <summary>
     /// Performs a top level acceleration structure build on the GPU.
     /// </summary>
     /// <param name="desc">The top level acceleration structure description.</param>
     /// <returns>The built acceleration structure.</returns>
-    public abstract TopLevelAS BuildAccelerationStructure(TopLevelASDesc desc);
+    public abstract TopLevelAS BuildAccelerationStructure(ref readonly TopLevelASDesc desc);
 
     /// <summary>
     /// Refit a top level acceleration structure on the GPU.
     /// </summary>
     /// <param name="tlas">The top level acceleration structure to refit.</param>
     /// <param name="newDesc">The new top level acceleration structure description.</param>
-    public abstract void UpdateAccelerationStructure(ref TopLevelAS tlas, TopLevelASDesc newDesc);
+    public abstract void UpdateAccelerationStructure(ref TopLevelAS tlas, ref readonly TopLevelASDesc newDesc);
     #endregion
 
-    #region Graphics Operations
+    #region Rendering Operations
     /// <summary>
     /// Begin rendering to the frame buffer.
     /// </summary>
@@ -166,15 +187,31 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     /// </summary>
     /// <param name="scissors">Array of scissor rectangles.</param>
     public abstract void SetScissorRectangles(Rectangle<int>[] scissors);
+    #endregion
 
+    #region Pipeline Operations
     /// <summary>
-    /// Set the graphics pipeline for rendering.
+    /// Set the graphics pipeline for command buffer.
     /// </summary>
     /// <param name="pipeline">The graphics pipeline.</param>
     public abstract void SetGraphicsPipeline(GraphicsPipeline pipeline);
 
     /// <summary>
-    /// Set the vertex buffer for rendering.
+    /// Set the compute pipeline for command buffer.
+    /// </summary>
+    /// <param name="pipeline">The compute pipeline.</param>
+    public abstract void SetComputePipeline(ComputePipeline pipeline);
+
+    /// <summary>
+    /// Set the ray tracing pipeline for command buffer.
+    /// </summary>
+    /// <param name="pipeline">The ray tracing pipeline.</param>
+    public abstract void SetRayTracingPipeline(RayTracingPipeline pipeline);
+    #endregion
+
+    #region Resource Binding Operations
+    /// <summary>
+    /// Set the vertex buffer for graphics pipeline.
     /// </summary>
     /// <param name="slot">The vertex buffer slot.</param>
     /// <param name="buffer">Vertex buffer.</param>
@@ -182,14 +219,14 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     public abstract void SetVertexBuffer(uint slot, Buffer buffer, uint offset = 0);
 
     /// <summary>
-    /// Set the vertex buffers for rendering.
+    /// Set the vertex buffers for graphics pipeline.
     /// </summary>
     /// <param name="buffers">Array of buffers.</param>
     /// <param name="offsets">Array of offsets.</param>
     public abstract void SetVertexBuffers(Buffer[] buffers, int[] offsets);
 
     /// <summary>
-    /// Set the index buffer for rendering.
+    /// Set the index buffer for graphics pipeline.
     /// </summary>
     /// <param name="buffer">Index buffer.</param>
     /// <param name="format">Index format.</param>
@@ -199,7 +236,13 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
                                         uint offset = 0);
 
     /// <summary>
-    /// Set the resource set for rendering.
+    /// Prepare resources before pipeline binding.
+    /// </summary>
+    /// <param name="resourceSet">The resource set.</param>
+    public abstract void PrepareResources(ResourceSet resourceSet);
+
+    /// <summary>
+    /// Set the resource set for pipeline binding.
     /// </summary>
     /// <param name="resourceSet">Resource set.</param>
     /// <param name="index">The resource set index.</param>
@@ -290,4 +333,9 @@ public abstract class CommandBuffer(GraphicsContext context) : GraphicsResource(
     /// <param name="depth">The depth of the ray tracing output.</param>
     public abstract void DispatchRays(uint width, uint height, uint depth);
     #endregion
+
+    protected override void Destroy()
+    {
+        BufferAllocator.Dispose();
+    }
 }

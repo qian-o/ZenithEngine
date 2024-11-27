@@ -1,9 +1,10 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Common.Graphics;
 
-public abstract class GraphicsContext : DisposableObject
+public abstract unsafe class GraphicsContext : DisposableObject
 {
     public abstract Backend Backend { get; }
 
@@ -11,34 +12,53 @@ public abstract class GraphicsContext : DisposableObject
 
     public abstract ResourceFactory Factory { get; }
 
-    public BufferAllocator? BufferAllocator { get; private set; }
-
     public CommandProcessor? CopyProcessor { get; private set; }
 
-    protected Lock Lock { get; } = new Lock();
+    protected Lock Lock { get; } = new();
 
     public void CreateDevice(bool useDebugLayer = false)
     {
         CreateDeviceInternal(useDebugLayer);
 
-        BufferAllocator = new BufferAllocator(this);
         CopyProcessor = Factory.CreateCommandProcessor(CommandProcessorType.Copy);
     }
+
+    public abstract void CreateDeviceInternal(bool useDebugLayer);
+
+    public abstract MappedResource MapMemory(Buffer buffer, MapMode mode);
+
+    public abstract void UnmapMemory(Buffer buffer);
 
     public void UpdateBuffer(Buffer buffer,
                              nint source,
                              uint sourceSizeInBytes,
                              uint destinationOffsetInBytes = 0)
     {
-        CommandBuffer commandBuffer = CopyProcessor!.CommandBuffer();
+        if (buffer.Desc.Usage.HasFlag(BufferUsage.Dynamic))
+        {
+            MappedResource mappedResource = MapMemory(buffer, MapMode.Write);
 
-        commandBuffer.Begin();
+            Unsafe.CopyBlock((void*)(mappedResource.Data + destinationOffsetInBytes),
+                             (void*)source,
+                             sourceSizeInBytes);
 
-        commandBuffer.UpdateBuffer(buffer, source, sourceSizeInBytes, destinationOffsetInBytes);
+            UnmapMemory(buffer);
+        }
+        else
+        {
+            CommandBuffer commandBuffer = CopyProcessor!.CommandBuffer();
 
-        commandBuffer.End();
+            commandBuffer.Begin();
 
-        commandBuffer.Commit();
+            commandBuffer.UpdateBuffer(buffer,
+                                       source,
+                                       sourceSizeInBytes,
+                                       destinationOffsetInBytes);
+
+            commandBuffer.End();
+
+            commandBuffer.Commit();
+        }
     }
 
     public void UpdateTexture(Texture texture,
@@ -61,7 +81,7 @@ public abstract class GraphicsContext : DisposableObject
     {
         if (CopyProcessor is null)
         {
-            throw new ZenithEngineException(Backend, "Device not created.");
+            throw new ZenithEngineException("Device not created.");
         }
 
         Lock.Enter();
@@ -69,25 +89,14 @@ public abstract class GraphicsContext : DisposableObject
         CopyProcessor.Submit(false);
         CopyProcessor.WaitIdle();
 
-        BufferAllocator!.Release();
-
         Lock.Exit();
     }
 
     protected override void Destroy()
     {
-        BufferAllocator?.Dispose();
-        BufferAllocator = null;
-
         CopyProcessor?.Dispose();
         CopyProcessor = null;
     }
-
-    public abstract void CreateDeviceInternal(bool useDebugLayer);
-
-    public abstract MappedResource MapMemory(Buffer buffer, MapMode mode);
-
-    public abstract void UnmapMemory(Buffer buffer);
 
     protected abstract void DestroyInternal();
 

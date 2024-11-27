@@ -6,9 +6,9 @@ namespace ZenithEngine.Common.Descriptions;
 public struct SwapChainDesc
 {
     /// <summary>
-    /// The render target.
+    /// The surface to present to.
     /// </summary>
-    public ISurface Target { get; set; }
+    public ISurface Surface { get; set; }
 
     /// <summary>
     /// The pixel format of the depth stencil target.
@@ -20,13 +20,13 @@ public struct SwapChainDesc
     /// </summary>
     public bool VerticalSync { get; set; }
 
-    public static SwapChainDesc Default(ISurface target,
+    public static SwapChainDesc Default(ISurface surface,
                                         PixelFormat? depthStencilTargetFormat = PixelFormat.D24UNormS8UInt,
                                         bool verticalSync = false)
     {
         return new()
         {
-            Target = target,
+            Surface = surface,
             DepthStencilTargetFormat = depthStencilTargetFormat,
             VerticalSync = verticalSync
         };

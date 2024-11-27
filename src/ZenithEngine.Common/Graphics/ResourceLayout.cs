@@ -5,6 +5,8 @@ namespace ZenithEngine.Common.Graphics;
 public abstract class ResourceLayout(GraphicsContext context,
                                      ref readonly ResourceLayoutDesc desc) : GraphicsResource(context)
 {
-    public ResourceLayoutDesc Desc { get; } = desc;
+    private ResourceLayoutDesc descInternal = desc;
+
+    public ref ResourceLayoutDesc Desc => ref descInternal;
 }
 

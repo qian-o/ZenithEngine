@@ -1,8 +1,5 @@
-﻿using ZenithEngine.Common.Enums;
+﻿namespace ZenithEngine.Common;
 
-namespace ZenithEngine.Common;
-
-public class ZenithEngineException(Backend backend, string message) : Exception(message)
+public class ZenithEngineException(string message) : Exception(message)
 {
-    public Backend Backend { get; } = backend;
 }

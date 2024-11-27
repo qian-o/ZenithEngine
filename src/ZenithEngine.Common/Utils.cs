@@ -1,4 +1,6 @@
-﻿using ZenithEngine.Common.Enums;
+﻿using System.Numerics;
+using System.Runtime.InteropServices;
+using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Common;
 
@@ -99,5 +101,20 @@ public static class Utils
 
             _ => throw new InvalidOperationException("VertexElementFormat doesn't supported.")
         };
+    }
+
+    public static string PtrToStringAnsi(nint ptr)
+    {
+        return Marshal.PtrToStringAnsi(ptr) ?? string.Empty;
+    }
+
+    public static T AlignedSize<T>(T size, T alignment) where T : INumberBase<T>, IBitwiseOperators<T, T, T>
+    {
+        return (size + alignment - T.One) & ~(alignment - T.One);
+    }
+
+    public static T Lerp<T>(T start, T end, T value) where T : INumberBase<T>
+    {
+        return start + ((end - start) * value);
     }
 }

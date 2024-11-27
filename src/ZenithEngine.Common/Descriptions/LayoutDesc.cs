@@ -41,7 +41,7 @@ public struct LayoutDesc
 
     public LayoutDesc Add(ElementDesc element)
     {
-        if (element.Offset == ElementDesc.AppendAligned)
+        if (element.Offset is ElementDesc.AppendAligned)
         {
             element.Offset = (int)Stride;
         }
