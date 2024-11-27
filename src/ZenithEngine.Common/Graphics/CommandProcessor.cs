@@ -5,6 +5,7 @@ namespace ZenithEngine.Common.Graphics;
 public abstract class CommandProcessor(GraphicsContext context,
                                        CommandProcessorType type) : GraphicsResource(context)
 {
+    private readonly Lock @lock = new();
     private readonly Queue<CommandBuffer> available = new();
 
     private CommandBuffer[] execution = new CommandBuffer[64];
@@ -18,6 +19,8 @@ public abstract class CommandProcessor(GraphicsContext context,
     /// <returns></returns>
     public CommandBuffer CommandBuffer()
     {
+        using Lock.Scope _ = @lock.EnterScope();
+
         CommandBuffer commandBuffer;
 
         if (available.Count > 0)
@@ -70,6 +73,8 @@ public abstract class CommandProcessor(GraphicsContext context,
     /// <param name="commandBuffer">The command buffer to commit.</param>
     internal void CommitCommandBuffer(CommandBuffer commandBuffer)
     {
+        using Lock.Scope _ = @lock.EnterScope();
+
         if (execution.Length == executionSize)
         {
             Array.Resize(ref execution, execution.Length + 64);
