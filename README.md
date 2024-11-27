@@ -7,7 +7,7 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 | API    | Supported |
 | ---    | --------- |
 | D3D12  | 🚧 |
-| Vulkan | 🚧 |
+| Vulkan | ✅ |
 
 ## UI Framework Support
 | Platform     | D3D12 | Vulkan |
@@ -26,7 +26,7 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [ ] Add `ZenithEngine.D3D12` project.
 	- [x] Add `ZenithEngine.Vulkan` project.
 	- [ ] Add `ZenithEngine.Windowing` project.
-	- [ ] Add `ZenithEngine.ShaderCompiler` project.
+	- [x] Add `ZenithEngine.ShaderCompiler` project.
 	- [ ] Add `ZenithEngine.ImGui` project.
 	- [ ] Add `ZenithEngine.ImGui.MultipleWindows` project.
 	- [ ] Add `ZenithEngine.Material` project.
@@ -37,6 +37,10 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 		- [x] Improve `VKFrameBuffer`'s `TransitionToIntermedialLayout` and `TransitionToFinalLayout` methods.
 		- [x] Complete the remaining methods in `CommandBuffer`.
 		- [ ] Improve acceleration structures and ray tracing pipeline.
+
+- ZenithEngine.ShaderCompiler
+	- [ ] Add HLSL to SPIR-V compiler.
+	- [ ] Add SPIR-V reflection.
 
 ## Proposed Features
 - [ ] Bindless resources.
