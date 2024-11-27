@@ -26,7 +26,7 @@ internal unsafe class VKDescriptorSetAllocator(VKGraphicsContext context) : Disp
                                           &allocateInfo,
                                           &set).ThrowIfError();
 
-        return new VKDescriptorAllocationToken(pool, set);
+        return new(pool, set);
     }
 
     public void Free(VKDescriptorAllocationToken token)

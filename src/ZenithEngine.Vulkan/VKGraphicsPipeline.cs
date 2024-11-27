@@ -93,7 +93,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             {
                 BlendStateRenderTargetDesc renderTarget = desc.RenderStates.BlendState.IndependentBlendEnabled ? renderTargets[i] : renderTargets[0];
 
-                attachments[i] = new PipelineColorBlendAttachmentState
+                attachments[i] = new()
                 {
                     BlendEnable = renderTarget.BlendEnabled,
                     SrcColorBlendFactor = VKFormats.GetBlendFactor(renderTargets[i].SourceBlendColor),
@@ -169,7 +169,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             {
                 LayoutDesc layout = desc.InputLayouts[(int)i];
 
-                bindingDescriptions[i] = new VertexInputBindingDescription
+                bindingDescriptions[i] = new()
                 {
                     Binding = i,
                     Stride = layout.Stride,
@@ -180,7 +180,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
                 {
                     ElementDesc element = layout.Elements[j];
 
-                    attributeDescriptions[attributeIndex] = new VertexInputAttributeDescription
+                    attributeDescriptions[attributeIndex] = new()
                     {
                         Binding = i,
                         Location = (uint)(bindingLocation + j),

@@ -22,49 +22,49 @@ internal unsafe class VKDescriptorPool : GraphicsResource
     {
         DescriptorPoolSize* poolSizes = MemoryAllocator.Alloc<DescriptorPoolSize>(8);
 
-        poolSizes[0] = new DescriptorPoolSize
+        poolSizes[0] = new()
         {
             Type = DescriptorType.UniformBuffer,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[1] = new DescriptorPoolSize
+        poolSizes[1] = new()
         {
             Type = DescriptorType.UniformBufferDynamic,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[2] = new DescriptorPoolSize
+        poolSizes[2] = new()
         {
             Type = DescriptorType.StorageBuffer,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[3] = new DescriptorPoolSize
+        poolSizes[3] = new()
         {
             Type = DescriptorType.StorageBufferDynamic,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[4] = new DescriptorPoolSize
+        poolSizes[4] = new()
         {
             Type = DescriptorType.SampledImage,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[5] = new DescriptorPoolSize
+        poolSizes[5] = new()
         {
             Type = DescriptorType.StorageImage,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[6] = new DescriptorPoolSize
+        poolSizes[6] = new()
         {
             Type = DescriptorType.Sampler,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[7] = new DescriptorPoolSize
+        poolSizes[7] = new()
         {
             Type = DescriptorType.AccelerationStructureKhr,
             DescriptorCount = DescriptorCount
