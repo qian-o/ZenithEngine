@@ -55,6 +55,9 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     public override void End()
     {
         Context.Vk.EndCommandBuffer(CommandBuffer).ThrowIfError();
+
+        activeFrameBuffer = null;
+        activePipeline = null;
     }
 
     public override void Reset()
@@ -813,7 +816,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                              index,
                                              1,
                                              in vkResourceSet.Token.Set,
-                                             vkResourceSet.DynamicCount,
+                                             (uint)offsets.Length,
                                              in offsets[0]);
         }
         else if (activePipeline is VKComputePipeline computePipeline)
@@ -824,7 +827,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                              index,
                                              1,
                                              in vkResourceSet.Token.Set,
-                                             vkResourceSet.DynamicCount,
+                                             (uint)offsets.Length,
                                              in offsets[0]);
         }
     }
