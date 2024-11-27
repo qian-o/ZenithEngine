@@ -8,18 +8,13 @@ namespace ZenithEngine.Common;
 /// </summary>
 public unsafe class MemoryAllocator : DisposableObject
 {
-    private readonly Lock @lock = new();
     private readonly List<nint> blocks = [];
 
     public void* Alloc(uint size)
     {
-        @lock.Enter();
-
         void* ptr = NativeMemory.Alloc(size);
 
         blocks.Add((nint)ptr);
-
-        @lock.Exit();
 
         return ptr;
     }

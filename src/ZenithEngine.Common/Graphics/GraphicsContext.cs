@@ -6,6 +6,8 @@ namespace ZenithEngine.Common.Graphics;
 
 public abstract unsafe class GraphicsContext : DisposableObject
 {
+    private readonly Lock @lock = new();
+
     public abstract Backend Backend { get; }
 
     public abstract DeviceCapabilities Capabilities { get; }
@@ -44,6 +46,8 @@ public abstract unsafe class GraphicsContext : DisposableObject
         }
         else
         {
+            using Lock.Scope _ = @lock.EnterScope();
+
             CommandBuffer commandBuffer = CopyProcessor!.CommandBuffer();
 
             commandBuffer.Begin();
@@ -64,6 +68,8 @@ public abstract unsafe class GraphicsContext : DisposableObject
                               uint sourceSizeInBytes,
                               TextureRegion region)
     {
+        using Lock.Scope _ = @lock.EnterScope();
+
         CommandBuffer commandBuffer = CopyProcessor!.CommandBuffer();
 
         commandBuffer.Begin();
@@ -77,6 +83,8 @@ public abstract unsafe class GraphicsContext : DisposableObject
 
     public void SyncCopyTasks()
     {
+        using Lock.Scope _ = @lock.EnterScope();
+
         CopyProcessor!.Submit(false);
         CopyProcessor.WaitIdle();
     }
