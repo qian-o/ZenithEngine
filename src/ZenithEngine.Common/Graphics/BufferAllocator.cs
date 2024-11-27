@@ -8,8 +8,8 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
     private const uint MaxBufferCount = 100;
 
     private readonly Lock @lock = new();
-    private readonly List<Buffer> availableBuffers = [];
-    private readonly List<Buffer> usedBuffers = [];
+    private readonly List<Buffer> available = [];
+    private readonly List<Buffer> used = [];
 
     public Buffer Buffer(uint sizeInBytes)
     {
@@ -17,13 +17,13 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
 
         Buffer? buffer = null;
 
-        foreach (Buffer item in availableBuffers)
+        foreach (Buffer item in available)
         {
             if (item.Desc.SizeInBytes >= sizeInBytes)
             {
                 buffer = item;
 
-                availableBuffers.Remove(item);
+                available.Remove(item);
 
                 break;
             }
@@ -38,7 +38,7 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
             buffer = context.Factory.CreateBuffer(in desc);
         }
 
-        usedBuffers.Add(buffer);
+        used.Add(buffer);
 
         @lock.Exit();
 
@@ -49,19 +49,19 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
     {
         @lock.Enter();
 
-        if (availableBuffers.Count > MaxBufferCount)
+        if (available.Count > MaxBufferCount)
         {
-            foreach (Buffer item in availableBuffers)
+            foreach (Buffer item in available)
             {
                 item.Dispose();
             }
 
-            availableBuffers.Clear();
+            available.Clear();
         }
 
-        foreach (Buffer item in usedBuffers)
+        foreach (Buffer item in used)
         {
-            availableBuffers.Add(item);
+            available.Add(item);
         }
 
         @lock.Exit();
@@ -69,18 +69,18 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
 
     protected override void Destroy()
     {
-        foreach (Buffer item in availableBuffers)
+        foreach (Buffer item in available)
         {
             item.Dispose();
         }
 
-        availableBuffers.Clear();
+        available.Clear();
 
-        foreach (Buffer item in usedBuffers)
+        foreach (Buffer item in used)
         {
             item.Dispose();
         }
 
-        usedBuffers.Clear();
+        used.Clear();
     }
 }
