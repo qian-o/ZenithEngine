@@ -12,6 +12,9 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     public VkCommandPool CommandPool;
     public VkCommandBuffer CommandBuffer;
 
+    private FrameBuffer? activeFrameBuffer;
+    private Pipeline? activePipeline;
+
     public VKCommandBuffer(GraphicsContext context,
                            CommandProcessor processor) : base(context, processor)
     {
@@ -542,7 +545,236 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     }
     #endregion
 
-    #region Resource Preparation
+    #region Rendering Operations
+    public override void BeginRendering(FrameBuffer frameBuffer, ClearValue clearValue)
+    {
+        EndRendering();
+
+        activeFrameBuffer = frameBuffer;
+
+        VKFrameBuffer vkFrameBuffer = frameBuffer.VK();
+
+        vkFrameBuffer.TransitionToIntermedialLayout(CommandBuffer);
+
+        Context.Vk.CmdBeginRendering(CommandBuffer, in vkFrameBuffer.RenderingInfo);
+
+        bool clearColor = clearValue.Options.HasFlag(ClearOptions.Color);
+        bool clearDepth = clearValue.Options.HasFlag(ClearOptions.Depth);
+        bool clearStencil = clearValue.Options.HasFlag(ClearOptions.Stencil);
+
+        if (clearColor)
+        {
+            for (uint i = 0; i < clearValue.ColorValues.Length; i++)
+            {
+                Vector4D<float> color = clearValue.ColorValues[i];
+
+                ClearAttachment clearAttachment = new()
+                {
+                    AspectMask = ImageAspectFlags.ColorBit,
+                    ColorAttachment = i,
+                    ClearValue = new()
+                    {
+                        Color = new()
+                        {
+                            Float32_0 = color.X,
+                            Float32_1 = color.Y,
+                            Float32_2 = color.Z,
+                            Float32_3 = color.W
+                        }
+                    }
+                };
+
+                ClearRect clearRect = new()
+                {
+                    BaseArrayLayer = 0,
+                    LayerCount = 1,
+                    Rect = new()
+                    {
+                        Extent = new()
+                        {
+                            Width = vkFrameBuffer.Width,
+                            Height = vkFrameBuffer.Height
+                        }
+                    }
+                };
+
+                Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
+            }
+        }
+
+        if (clearDepth || clearStencil)
+        {
+            ClearAttachment clearAttachment = new()
+            {
+                AspectMask = (clearDepth ? ImageAspectFlags.DepthBit : 0)
+                             | (clearStencil ? ImageAspectFlags.StencilBit : 0),
+                ClearValue = new()
+                {
+                    DepthStencil = new()
+                    {
+                        Depth = clearValue.Depth,
+                        Stencil = clearValue.Stencil
+                    }
+                }
+            };
+
+            ClearRect clearRect = new()
+            {
+                BaseArrayLayer = 0,
+                LayerCount = 1,
+                Rect = new()
+                {
+                    Extent = new()
+                    {
+                        Width = vkFrameBuffer.Width,
+                        Height = vkFrameBuffer.Height
+                    }
+                }
+            };
+
+            Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
+        }
+    }
+
+    public override void EndRendering()
+    {
+        if (activeFrameBuffer is null)
+        {
+            return;
+        }
+
+        Context.Vk.CmdEndRendering(CommandBuffer);
+
+        activeFrameBuffer.VK().TransitionToFinalLayout(CommandBuffer);
+
+        activeFrameBuffer = null;
+    }
+
+    public override void SetViewport(uint slot, Viewport viewport)
+    {
+        VkViewport vp = new()
+        {
+            X = viewport.X,
+            Y = viewport.Y + viewport.Height,
+            Width = viewport.Width,
+            Height = -viewport.Height,
+            MinDepth = viewport.MinDepth,
+            MaxDepth = viewport.MaxDepth
+        };
+
+        Context.Vk.CmdSetViewport(CommandBuffer, slot, 1, &vp);
+    }
+
+    public override void SetViewports(Viewport[] viewports)
+    {
+        VkViewport[] vps = viewports.Select(static item => new VkViewport
+        {
+            X = item.X,
+            Y = item.Y + item.Height,
+            Width = item.Width,
+            Height = -item.Height,
+            MinDepth = item.MinDepth,
+            MaxDepth = item.MaxDepth
+        }).ToArray();
+
+        Context.Vk.CmdSetViewport(CommandBuffer, 0, (uint)vps.Length, vps);
+    }
+
+    public override void SetScissorRectangle(uint slot, Rectangle<int> scissor)
+    {
+        Rect2D sc = new()
+        {
+            Offset = new()
+            {
+                X = scissor.Origin.X,
+                Y = scissor.Origin.Y
+            },
+            Extent = new()
+            {
+                Width = (uint)scissor.Size.X,
+                Height = (uint)scissor.Size.Y
+            }
+        };
+
+        Context.Vk.CmdSetScissor(CommandBuffer, slot, 1, &sc);
+    }
+
+    public override void SetScissorRectangles(Rectangle<int>[] scissors)
+    {
+        Rect2D[] scs = scissors.Select(static item => new Rect2D
+        {
+            Offset = new()
+            {
+                X = item.Origin.X,
+                Y = item.Origin.Y
+            },
+            Extent = new()
+            {
+                Width = (uint)item.Size.X,
+                Height = (uint)item.Size.Y
+            }
+        }).ToArray();
+
+        Context.Vk.CmdSetScissor(CommandBuffer, 0, (uint)scs.Length, scs);
+    }
+    #endregion
+
+    #region Pipeline Operations
+    public override void SetGraphicsPipeline(GraphicsPipeline pipeline)
+    {
+        activePipeline = pipeline;
+
+        Context.Vk.CmdBindPipeline(CommandBuffer,
+                                   PipelineBindPoint.Graphics,
+                                   pipeline.VK().Pipeline);
+    }
+
+    public override void SetComputePipeline(ComputePipeline pipeline)
+    {
+        activePipeline = pipeline;
+
+        Context.Vk.CmdBindPipeline(CommandBuffer,
+                                   PipelineBindPoint.Compute,
+                                   pipeline.VK().Pipeline);
+    }
+
+    public override void SetRayTracingPipeline(RayTracingPipeline pipeline)
+    {
+        throw new NotImplementedException();
+    }
+    #endregion
+
+    #region Resource Binding Operations
+    public override void SetVertexBuffer(uint slot, Buffer buffer, uint offset = 0)
+    {
+        ulong longOffset = offset;
+
+        Context.Vk.CmdBindVertexBuffers(CommandBuffer,
+                                        slot,
+                                        1,
+                                        in buffer.VK().Buffer,
+                                        in longOffset);
+    }
+
+    public override void SetVertexBuffers(Buffer[] buffers, int[] offsets)
+    {
+        Context.Vk.CmdBindVertexBuffers(CommandBuffer,
+                                        0,
+                                        (uint)buffers.Length,
+                                        buffers.Select(static item => item.VK().Buffer).ToArray(),
+                                        offsets.Select(static item => (ulong)item).ToArray());
+    }
+
+    public override void SetIndexBuffer(Buffer buffer,
+                                        IndexFormat format = IndexFormat.U16Bit,
+                                        uint offset = 0)
+    {
+        Context.Vk.CmdBindIndexBuffer(CommandBuffer,
+                                      buffer.VK().Buffer,
+                                      offset,
+                                      VKFormats.GetIndexType(format));
+    }
+
     public override void PrepareResources(ResourceSet resourceSet)
     {
         VKResourceSet vkResourceSet = resourceSet.VK();
@@ -557,66 +789,44 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             texture.TransitionLayout(CommandBuffer, ImageLayout.General);
         }
     }
-    #endregion
-
-    #region Graphics Operations
-    public override void BeginRendering(FrameBuffer frameBuffer, ClearValue clearValue)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void EndRendering()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void SetViewport(uint slot, Viewport viewport)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void SetViewports(Viewport[] viewports)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void SetScissorRectangle(uint slot, Rectangle<int> scissor)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void SetScissorRectangles(Rectangle<int>[] scissors)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void SetGraphicsPipeline(GraphicsPipeline pipeline)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void SetVertexBuffer(uint slot, Buffer buffer, uint offset = 0)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void SetVertexBuffers(Buffer[] buffers, int[] offsets)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void SetIndexBuffer(Buffer buffer,
-                                        IndexFormat format = IndexFormat.U16Bit,
-                                        uint offset = 0)
-    {
-        throw new NotImplementedException();
-    }
 
     public override void SetResourceSet(ResourceSet resourceSet,
                                         uint index = 0,
                                         uint[]? constantBufferOffsets = null)
     {
-        throw new NotImplementedException();
+        VKResourceSet vkResourceSet = resourceSet.VK();
+
+        uint[] offsets = new uint[vkResourceSet.DynamicCount];
+        if (constantBufferOffsets is not null)
+        {
+            for (int i = 0; i < vkResourceSet.DynamicCount; i++)
+            {
+                offsets[i] = constantBufferOffsets[i];
+            }
+        }
+
+        if (activePipeline is VKGraphicsPipeline graphicsPipeline)
+        {
+            Context.Vk.CmdBindDescriptorSets(CommandBuffer,
+                                             PipelineBindPoint.Graphics,
+                                             graphicsPipeline.PipelineLayout,
+                                             index,
+                                             1,
+                                             in vkResourceSet.Token.Set,
+                                             vkResourceSet.DynamicCount,
+                                             in offsets[0]);
+        }
+        else if (activePipeline is VKComputePipeline computePipeline)
+        {
+            Context.Vk.CmdBindDescriptorSets(CommandBuffer,
+                                             PipelineBindPoint.Compute,
+                                             computePipeline.PipelineLayout,
+                                             index,
+                                             1,
+                                             in vkResourceSet.Token.Set,
+                                             vkResourceSet.DynamicCount,
+                                             in offsets[0]);
+        }
     }
     #endregion
 
@@ -626,6 +836,11 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                        uint startVertexLocation = 0,
                                        uint startInstanceLocation = 0)
     {
+        Context.Vk.CmdDraw(CommandBuffer,
+                           vertexCountPerInstance,
+                           instanceCount,
+                           startVertexLocation,
+                           startInstanceLocation);
     }
 
     public override void DrawInstancedIndirect(Buffer argBuffer,
@@ -633,14 +848,23 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                                uint drawCount,
                                                uint stride)
     {
-        throw new NotImplementedException();
+        Context.Vk.CmdDrawIndirect(CommandBuffer,
+                                   argBuffer.VK().Buffer,
+                                   offset,
+                                   drawCount,
+                                   stride);
     }
 
     public override void DrawIndexed(uint indexCount,
                                      uint startIndexLocation = 0,
                                      uint baseVertexLocation = 0)
     {
-        throw new NotImplementedException();
+        Context.Vk.CmdDrawIndexed(CommandBuffer,
+                                  indexCount,
+                                  1,
+                                  startIndexLocation,
+                                  (int)baseVertexLocation,
+                                  0);
     }
 
     public override void DrawIndexedInstanced(uint indexCountPerInstance,
@@ -649,7 +873,12 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                               uint baseVertexLocation = 0,
                                               uint startInstanceLocation = 0)
     {
-        throw new NotImplementedException();
+        Context.Vk.CmdDrawIndexed(CommandBuffer,
+                                  indexCountPerInstance,
+                                  instanceCount,
+                                  startIndexLocation,
+                                  (int)baseVertexLocation,
+                                  startInstanceLocation);
     }
 
     public override void DrawIndexedInstancedIndirect(Buffer argBuffer,
@@ -657,14 +886,18 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                                       uint drawCount,
                                                       uint stride)
     {
-        throw new NotImplementedException();
+        Context.Vk.CmdDrawIndexedIndirect(CommandBuffer,
+                                          argBuffer.VK().Buffer,
+                                          offset,
+                                          drawCount,
+                                          stride);
     }
     #endregion
 
     #region Compute Operations
     public override void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ)
     {
-        throw new NotImplementedException();
+        Context.Vk.CmdDispatch(CommandBuffer, groupCountX, groupCountY, groupCountZ);
     }
     #endregion
 

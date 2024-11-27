@@ -149,15 +149,7 @@ public abstract class CommandBuffer(GraphicsContext context,
     public abstract void UpdateAccelerationStructure(ref TopLevelAS tlas, ref readonly TopLevelASDesc newDesc);
     #endregion
 
-    #region Resource Preparation
-    /// <summary>
-    /// Prepare the resources for rendering.
-    /// </summary>
-    /// <param name="resourceSet">The resource set.</param>
-    public abstract void PrepareResources(ResourceSet resourceSet);
-    #endregion
-
-    #region Graphics Operations
+    #region Rendering Operations
     /// <summary>
     /// Begin rendering to the frame buffer.
     /// </summary>
@@ -195,15 +187,31 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// </summary>
     /// <param name="scissors">Array of scissor rectangles.</param>
     public abstract void SetScissorRectangles(Rectangle<int>[] scissors);
+    #endregion
 
+    #region Pipeline Operations
     /// <summary>
-    /// Set the graphics pipeline for rendering.
+    /// Set the graphics pipeline for command buffer.
     /// </summary>
     /// <param name="pipeline">The graphics pipeline.</param>
     public abstract void SetGraphicsPipeline(GraphicsPipeline pipeline);
 
     /// <summary>
-    /// Set the vertex buffer for rendering.
+    /// Set the compute pipeline for command buffer.
+    /// </summary>
+    /// <param name="pipeline">The compute pipeline.</param>
+    public abstract void SetComputePipeline(ComputePipeline pipeline);
+
+    /// <summary>
+    /// Set the ray tracing pipeline for command buffer.
+    /// </summary>
+    /// <param name="pipeline">The ray tracing pipeline.</param>
+    public abstract void SetRayTracingPipeline(RayTracingPipeline pipeline);
+    #endregion
+
+    #region Resource Binding Operations
+    /// <summary>
+    /// Set the vertex buffer for rasterization.
     /// </summary>
     /// <param name="slot">The vertex buffer slot.</param>
     /// <param name="buffer">Vertex buffer.</param>
@@ -211,14 +219,14 @@ public abstract class CommandBuffer(GraphicsContext context,
     public abstract void SetVertexBuffer(uint slot, Buffer buffer, uint offset = 0);
 
     /// <summary>
-    /// Set the vertex buffers for rendering.
+    /// Set the vertex buffers for rasterization.
     /// </summary>
     /// <param name="buffers">Array of buffers.</param>
     /// <param name="offsets">Array of offsets.</param>
     public abstract void SetVertexBuffers(Buffer[] buffers, int[] offsets);
 
     /// <summary>
-    /// Set the index buffer for rendering.
+    /// Set the index buffer for rasterization.
     /// </summary>
     /// <param name="buffer">Index buffer.</param>
     /// <param name="format">Index format.</param>
@@ -228,7 +236,13 @@ public abstract class CommandBuffer(GraphicsContext context,
                                         uint offset = 0);
 
     /// <summary>
-    /// Set the resource set for rendering.
+    /// Prepare resources before pipeline binding.
+    /// </summary>
+    /// <param name="resourceSet">The resource set.</param>
+    public abstract void PrepareResources(ResourceSet resourceSet);
+
+    /// <summary>
+    /// Set the resource set for pipeline binding.
     /// </summary>
     /// <param name="resourceSet">Resource set.</param>
     /// <param name="index">The resource set index.</param>

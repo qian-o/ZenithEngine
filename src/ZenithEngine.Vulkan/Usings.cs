@@ -2,6 +2,7 @@
 global using ClearValue = ZenithEngine.Common.Graphics.ClearValue;
 global using CommandBuffer = ZenithEngine.Common.Graphics.CommandBuffer;
 global using FrontFace = ZenithEngine.Common.Enums.FrontFace;
+global using Pipeline = ZenithEngine.Common.Graphics.Pipeline;
 global using PrimitiveTopology = ZenithEngine.Common.Enums.PrimitiveTopology;
 global using Sampler = ZenithEngine.Common.Graphics.Sampler;
 global using Viewport = ZenithEngine.Common.Graphics.Viewport;
@@ -26,3 +27,4 @@ global using VkQueue = Silk.NET.Vulkan.Queue;
 global using VkResult = Silk.NET.Vulkan.Result;
 global using VkSampler = Silk.NET.Vulkan.Sampler;
 global using VkShaderModule = Silk.NET.Vulkan.ShaderModule;
+global using VkViewport = Silk.NET.Vulkan.Viewport;
