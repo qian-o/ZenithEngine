@@ -48,3 +48,6 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - Class members should be in the following order: Fields, Constructors, Properties, Methods.
 - Modifiers: public > internal > protected > private, non-static > static.
 - The remaining modifiers are sorted by function or business logic.
+
+## Regular Expression Format
+- `,+[\s]+[^\S\r\n]+};` Search for the comma after the last property when simplifying property assignments.

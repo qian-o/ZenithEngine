@@ -257,7 +257,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             {
                 SType = StructureType.PipelineRenderingCreateInfo,
                 ColorAttachmentCount = (uint)desc.Outputs.ColorAttachments.Length,
-                PColorAttachmentFormats = colorAttachmentFormats,
+                PColorAttachmentFormats = colorAttachmentFormats
             };
 
             if (desc.Outputs.DepthStencilAttachment.HasValue)
