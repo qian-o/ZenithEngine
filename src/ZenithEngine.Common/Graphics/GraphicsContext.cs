@@ -12,7 +12,7 @@ public abstract unsafe class GraphicsContext : DisposableObject
 
     public abstract ResourceFactory Factory { get; }
 
-    public CommandProcessor? CopyProcessor { get; private set; }
+    private CommandProcessor? CopyProcessor { get; set; }
 
     public void CreateDevice(bool useDebugLayer = false)
     {
