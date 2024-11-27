@@ -14,8 +14,6 @@ public abstract unsafe class GraphicsContext : DisposableObject
 
     public CommandProcessor? CopyProcessor { get; private set; }
 
-    protected Lock Lock { get; } = new();
-
     public void CreateDevice(bool useDebugLayer = false)
     {
         CreateDeviceInternal(useDebugLayer);
@@ -79,17 +77,8 @@ public abstract unsafe class GraphicsContext : DisposableObject
 
     public void SyncCopyTasks()
     {
-        if (CopyProcessor is null)
-        {
-            throw new ZenithEngineException("Device not created.");
-        }
-
-        Lock.Enter();
-
-        CopyProcessor.Submit(false);
+        CopyProcessor!.Submit(false);
         CopyProcessor.WaitIdle();
-
-        Lock.Exit();
     }
 
     protected override void Destroy()

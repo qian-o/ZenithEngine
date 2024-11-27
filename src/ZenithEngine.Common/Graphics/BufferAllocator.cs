@@ -7,14 +7,11 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
     private const uint MinBufferSize = 1024 * 4;
     private const uint MaxBufferCount = 100;
 
-    private readonly Lock @lock = new();
     private readonly List<Buffer> available = [];
     private readonly List<Buffer> used = [];
 
     public Buffer Buffer(uint sizeInBytes)
     {
-        @lock.Enter();
-
         Buffer? buffer = null;
 
         foreach (Buffer item in available)
@@ -40,15 +37,11 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
 
         used.Add(buffer);
 
-        @lock.Exit();
-
         return buffer;
     }
 
     public void Release()
     {
-        @lock.Enter();
-
         if (available.Count > MaxBufferCount)
         {
             foreach (Buffer item in available)
@@ -63,8 +56,6 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
         {
             available.Add(item);
         }
-
-        @lock.Exit();
     }
 
     protected override void Destroy()
@@ -74,13 +65,12 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
             item.Dispose();
         }
 
-        available.Clear();
-
         foreach (Buffer item in used)
         {
             item.Dispose();
         }
 
+        available.Clear();
         used.Clear();
     }
 }
