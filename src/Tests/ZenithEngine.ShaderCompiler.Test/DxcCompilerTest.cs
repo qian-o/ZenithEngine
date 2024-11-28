@@ -31,6 +31,6 @@ public sealed class DxcCompilerTest
     {
         string source = File.ReadAllText(Path.Combine(assetsPath, "Error.hlsl"));
 
-        Assert.ThrowsException<InvalidOperationException>(() => DxcCompiler.Compile(ShaderStages.Vertex, source, "VSMain"));
+        Assert.ThrowsException<InvalidOperationException>(() => DxcCompiler.Compile(ShaderStages.None, source, "Main"));
     }
 }

@@ -25,14 +25,18 @@ public static unsafe class DxcCompiler
         Dxc.CreateInstance(ref CLSID_DxcCompiler, out DxcCompiler3);
     }
 
-    public static ReadOnlySpan<byte> Compile(ShaderStages stage,
-                                             string source,
-                                             string entryPoint,
-                                             Func<string, ReadOnlySpan<byte>>? includeHandler = null)
+    public static byte[] Compile(ShaderStages stage,
+                                 string source,
+                                 string entryPoint,
+                                 Func<string, ReadOnlySpan<byte>>? includeHandler = null)
     {
         _ = includeHandler;
 
         using MemoryAllocator allocator = new();
+
+        using ComPtr<IDxcResult> result = default;
+        using ComPtr<IDxcBlobUtf8> errorBuffer = default;
+        using ComPtr<IDxcBlob> resultBuffer = default;
 
         string[] arguments = GetArguments(stage, entryPoint);
 
@@ -43,30 +47,26 @@ public static unsafe class DxcCompiler
             Encoding = DXC_CP_ACP
         };
 
-        DxcCompiler3.Compile(ref buffer,
+        DxcCompiler3.Compile(in buffer,
                              (char**)allocator.AllocUni(arguments),
                              (uint)arguments.Length,
                              ref Unsafe.NullRef<IDxcIncludeHandler>(),
-                             out ComPtr<IDxcResult> result);
+                             SilkMarshal.GuidPtrOf<IDxcResult>(),
+                             (void**)resultBuffer.GetAddressOf());
 
         int status = 0;
         result.GetStatus(ref status);
 
         if (status != 0)
         {
-            ComPtr<IDxcBlobUtf8> errorBlob = new();
-            result.GetErrorBuffer(ref errorBlob);
+            result.GetErrorBuffer((IDxcBlobEncoding**)errorBuffer.GetAddressOf());
 
-            throw new InvalidOperationException(errorBlob.GetStringPointerS());
+            throw new InvalidOperationException(Utils.PtrToStringUTF8((nint)errorBuffer.GetBufferPointer()));
         }
 
-        ComPtr<IDxcBlob> blob = new();
-        result.GetResult(ref blob);
+        result.GetResult(resultBuffer.GetAddressOf());
 
-        void* pointer = blob.GetBufferPointer();
-        nuint size = blob.GetBufferSize();
-
-        return new ReadOnlySpan<byte>(pointer, (int)size);
+        return new ReadOnlySpan<byte>(resultBuffer.GetBufferPointer(), (int)resultBuffer.GetBufferSize()).ToArray();
     }
 
     private static string[] GetArguments(ShaderStages stage, string entryPoint)

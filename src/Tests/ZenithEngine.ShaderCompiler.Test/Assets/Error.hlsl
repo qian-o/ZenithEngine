@@ -12,7 +12,7 @@ struct PSInput
     float4 color : COLOR;
 };
 
-PSInput VSMain(VSInput input)
+PSInput Main(VSInput input)
 {
     PSInput output = (PSInput) 0;
     
@@ -21,9 +21,4 @@ PSInput VSMain(VSInput input)
     output.Color = input.color;
     
     return output;
-}
-
-float4 PSMain(PSInput input) : SV_TARGET
-{
-    return input.color;
 }
