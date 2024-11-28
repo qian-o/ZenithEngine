@@ -9,10 +9,10 @@ namespace ZenithEngine.ShaderCompiler;
 
 public static unsafe class DxcCompiler
 {
-    public static readonly Guid CLSID_DxcUtils = new("6245D6AF-66E0-48FD-80B4-4D271796748C");
-    public static readonly Guid CLSID_DxcCompiler = new("73E22D93-E6CE-47F3-B5BF-F0664F39C1B0");
+    private const int DXC_CP_ACP = 0;
 
-    public const int DXC_CP_ACP = 0;
+    private static readonly Guid CLSID_DxcUtils = new("6245D6AF-66E0-48FD-80B4-4D271796748C");
+    private static readonly Guid CLSID_DxcCompiler = new("73E22D93-E6CE-47F3-B5BF-F0664F39C1B0");
 
     public static readonly DXC Dxc;
     public static readonly ComPtr<IDxcUtils> DxcUtils;

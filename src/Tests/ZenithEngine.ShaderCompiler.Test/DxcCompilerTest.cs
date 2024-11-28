@@ -1,10 +1,10 @@
 ﻿namespace ZenithEngine.ShaderCompiler.Test;
 
 [TestClass]
-public sealed class Test1
+public sealed class DxcCompilerTest
 {
     [TestMethod]
-    public void TestMethod1()
+    public void TestCompile()
     {
     }
 }
