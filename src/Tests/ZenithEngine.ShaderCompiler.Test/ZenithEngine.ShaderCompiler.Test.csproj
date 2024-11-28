@@ -9,6 +9,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\ZenithEngine.ShaderCompiler\ZenithEngine.ShaderCompiler.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
 	</ItemGroup>
 
