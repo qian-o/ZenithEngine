@@ -11,7 +11,12 @@ internal unsafe class VKDescriptorSetAllocator(VKGraphicsContext context) : Disp
     public VKDescriptorAllocationToken Alloc(VkDescriptorSetLayout descriptorSetLayout,
                                              VKResourceCounts counts)
     {
-        VKDescriptorPool pool = GetPool(counts);
+        using Lock.Scope _ = @lock.EnterScope();
+
+        if (pools.FirstOrDefault(item => item.CanAlloc(counts)) is not VKDescriptorPool pool)
+        {
+            pools.Add(pool = new(context));
+        }
 
         DescriptorSetAllocateInfo allocateInfo = new()
         {
@@ -45,21 +50,5 @@ internal unsafe class VKDescriptorSetAllocator(VKGraphicsContext context) : Disp
         }
 
         pools.Clear();
-    }
-
-    private VKDescriptorPool GetPool(VKResourceCounts counts)
-    {
-        using Lock.Scope _ = @lock.EnterScope();
-
-        VKDescriptorPool? pool = pools.FirstOrDefault(item => item.CanAlloc(counts));
-
-        if (pool is null)
-        {
-            pool = new(context);
-
-            pools.Add(pool);
-        }
-
-        return pool;
     }
 }
