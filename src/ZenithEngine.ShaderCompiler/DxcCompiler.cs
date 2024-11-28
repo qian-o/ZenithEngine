@@ -49,7 +49,24 @@ public static unsafe class DxcCompiler
                              ref Unsafe.NullRef<IDxcIncludeHandler>(),
                              out ComPtr<IDxcResult> result);
 
-        return [];
+        int status = 0;
+        result.GetStatus(ref status);
+
+        if (status != 0)
+        {
+            ComPtr<IDxcBlobUtf8> errorBlob = new();
+            result.GetErrorBuffer(ref errorBlob);
+
+            throw new InvalidOperationException(errorBlob.GetStringPointerS());
+        }
+
+        ComPtr<IDxcBlob> blob = new();
+        result.GetResult(ref blob);
+
+        var pointer = blob.GetBufferPointer();
+        var size = blob.GetBufferSize();
+
+        return new ReadOnlySpan<byte>(pointer, (int)size);
     }
 
     private static string[] GetArguments(ShaderStages stage, string entryPoint)
