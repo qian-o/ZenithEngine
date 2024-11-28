@@ -87,7 +87,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
                 desc.RenderStates.BlendState.RenderTarget7
             ];
 
-            PipelineColorBlendAttachmentState* attachments = MemoryAllocator.Alloc<PipelineColorBlendAttachmentState>((int)attachmentCount);
+            PipelineColorBlendAttachmentState* attachments = MemoryAllocator.Alloc<PipelineColorBlendAttachmentState>(attachmentCount);
 
             for (uint i = 0; i < attachmentCount; i++)
             {
@@ -160,8 +160,8 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             uint vertexInputBindingCount = (uint)desc.InputLayouts.Length;
             uint vertexInputAttributeCount = (uint)desc.InputLayouts.Sum(static item => item.Elements.Length);
 
-            VertexInputBindingDescription* bindingDescriptions = MemoryAllocator.Alloc<VertexInputBindingDescription>((int)vertexInputBindingCount);
-            VertexInputAttributeDescription* attributeDescriptions = MemoryAllocator.Alloc<VertexInputAttributeDescription>((int)vertexInputAttributeCount);
+            VertexInputBindingDescription* bindingDescriptions = MemoryAllocator.Alloc<VertexInputBindingDescription>(vertexInputBindingCount);
+            VertexInputAttributeDescription* attributeDescriptions = MemoryAllocator.Alloc<VertexInputAttributeDescription>(vertexInputAttributeCount);
 
             uint bindingLocation = 0;
             uint attributeIndex = 0;

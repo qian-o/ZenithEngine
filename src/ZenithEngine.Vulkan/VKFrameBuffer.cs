@@ -19,7 +19,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
         TextureSampleCount sampleCount = TextureSampleCount.Count1;
 
-        RenderingAttachmentInfo* colorAttachmentInfos = MemoryAllocator.Alloc<RenderingAttachmentInfo>(ColorTargets.Length);
+        RenderingAttachmentInfo* colorAttachmentInfos = MemoryAllocator.Alloc<RenderingAttachmentInfo>((uint)ColorTargets.Length);
         RenderingAttachmentInfo* depthStencilAttachmentInfo = null;
 
         PixelFormat[] colorFormats = new PixelFormat[ColorTargets.Length];

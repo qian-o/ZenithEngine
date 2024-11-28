@@ -19,7 +19,7 @@ public unsafe class MemoryAllocator : DisposableObject
         return ptr;
     }
 
-    public T* Alloc<T>(int count = 1) where T : unmanaged
+    public T* Alloc<T>(uint count = 1) where T : unmanaged
     {
         T* ptr = (T*)Alloc((uint)(sizeof(T) * count));
 
@@ -33,7 +33,7 @@ public unsafe class MemoryAllocator : DisposableObject
 
     public T* Alloc<T>(T[] values) where T : unmanaged
     {
-        T* ptr = Alloc<T>(values.Length);
+        T* ptr = Alloc<T>((uint)values.Length);
 
         for (int i = 0; i < values.Length; i++)
         {
@@ -45,18 +45,18 @@ public unsafe class MemoryAllocator : DisposableObject
 
     public byte* AllocAnsi(string value)
     {
+        byte* ptr = Alloc<byte>(Utils.CalcAnsi(value));
+
         byte[] bytes = Encoding.UTF8.GetBytes(value);
 
-        byte* chars = Alloc<byte>(bytes.Length + 1);
+        Marshal.Copy(bytes, 0, (nint)ptr, bytes.Length);
 
-        Marshal.Copy(bytes, 0, (nint)chars, bytes.Length);
-
-        return chars;
+        return ptr;
     }
 
     public byte** AllocAnsi(string[] values)
     {
-        nint* ptr = Alloc<nint>(values.Length);
+        nint* ptr = Alloc<nint>((uint)values.Length);
 
         for (int i = 0; i < values.Length; i++)
         {
@@ -68,18 +68,18 @@ public unsafe class MemoryAllocator : DisposableObject
 
     public byte** AllocUni(string value)
     {
+        byte* ptr = Alloc<byte>(Utils.CalcUni(value));
+
         byte[] bytes = Encoding.Unicode.GetBytes(value);
 
-        byte* chars = Alloc<byte>(bytes.Length + 2);
+        Marshal.Copy(bytes, 0, (nint)ptr, bytes.Length);
 
-        Marshal.Copy(bytes, 0, (nint)chars, bytes.Length);
-
-        return (byte**)chars;
+        return (byte**)ptr;
     }
 
     public byte** AllocUni(string[] values)
     {
-        nint* ptr = Alloc<nint>(values.Length);
+        nint* ptr = Alloc<nint>((uint)values.Length);
 
         for (int i = 0; i < values.Length; i++)
         {

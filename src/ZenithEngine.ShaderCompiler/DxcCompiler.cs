@@ -1,7 +1,9 @@
-﻿using Silk.NET.Core.Native;
+﻿using System.Runtime.CompilerServices;
+using Silk.NET.Core.Native;
 using Silk.NET.Direct3D.Compilers;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
+using DxcBuffer = Silk.NET.Direct3D.Compilers.Buffer;
 
 namespace ZenithEngine.ShaderCompiler;
 
@@ -29,6 +31,19 @@ public static unsafe class DxcCompiler
         using MemoryAllocator allocator = new();
 
         string[] arguments = GetArguments(stage, entryPoint);
+
+        DxcBuffer buffer = new()
+        {
+            Ptr = allocator.AllocAnsi(source),
+            Size = (uint)source.Length + 1,
+            Encoding = 0
+        };
+
+        Compiler.Compile(ref buffer,
+                         (char**)allocator.AllocUni(arguments),
+                         (uint)arguments.Length,
+                         ref Unsafe.NullRef<IDxcIncludeHandler>(),
+                         out ComPtr<IDxcResult> result);
 
         return [];
     }

@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Text;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Common;
@@ -101,6 +102,16 @@ public static class Utils
 
             _ => throw new InvalidOperationException("VertexElementFormat doesn't supported.")
         };
+    }
+
+    public static uint CalcAnsi(string value)
+    {
+        return (uint)(Encoding.UTF8.GetByteCount(value) + 1);
+    }
+
+    public static uint CalcUni(string value)
+    {
+        return (uint)(Encoding.Unicode.GetByteCount(value) + 2);
     }
 
     public static string PtrToStringAnsi(nint ptr)
