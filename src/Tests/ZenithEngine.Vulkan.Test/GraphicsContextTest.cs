@@ -9,14 +9,14 @@ public sealed class GraphicsContextTest
     [TestMethod]
     public void TestCreateDevice()
     {
-		try
+        try
         {
             using GraphicsContext context = GraphicsContext.Create(Backend.Vulkan);
 
             context.CreateDevice(true);
         }
-		catch (Exception)
-		{
+        catch (Exception)
+        {
             Assert.Fail();
         }
     }
