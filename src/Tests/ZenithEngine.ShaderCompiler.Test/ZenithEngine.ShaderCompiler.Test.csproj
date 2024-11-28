@@ -1,0 +1,7 @@
+﻿<Project Sdk="MSTest.Sdk/3.6.3">
+
+	<PropertyGroup>
+		<TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+	</PropertyGroup>
+
+</Project>
