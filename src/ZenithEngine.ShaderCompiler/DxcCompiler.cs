@@ -9,8 +9,6 @@ namespace ZenithEngine.ShaderCompiler;
 
 public static unsafe class DxcCompiler
 {
-    private const int DXC_CP_ACP = 0;
-
     private static readonly Guid CLSID_DxcUtils = new("6245D6AF-66E0-48FD-80B4-4D271796748C");
     private static readonly Guid CLSID_DxcCompiler = new("73E22D93-E6CE-47F3-B5BF-F0664F39C1B0");
 
@@ -28,7 +26,7 @@ public static unsafe class DxcCompiler
     public static byte[] Compile(ShaderStages stage,
                                  string source,
                                  string entryPoint,
-                                 Func<string, ReadOnlySpan<byte>>? includeHandler = null)
+                                 Func<string, byte[]>? includeHandler = null)
     {
         _ = includeHandler;
 
@@ -44,7 +42,7 @@ public static unsafe class DxcCompiler
         {
             Ptr = allocator.AllocAnsi(source),
             Size = Utils.CalcAnsiSizeInBytes(source),
-            Encoding = DXC_CP_ACP
+            Encoding = DXC.CPAcp
         };
 
         DxcCompiler3.Compile(in buffer,
@@ -52,7 +50,7 @@ public static unsafe class DxcCompiler
                              (uint)arguments.Length,
                              ref Unsafe.NullRef<IDxcIncludeHandler>(),
                              SilkMarshal.GuidPtrOf<IDxcResult>(),
-                             (void**)resultBuffer.GetAddressOf());
+                             (void**)result.GetAddressOf());
 
         int status = 0;
         result.GetStatus(ref status);
@@ -97,6 +95,7 @@ public static unsafe class DxcCompiler
         arguments.Add("all");
 
         arguments.Add("-spirv");
+        arguments.Add("-fspv-target-env=vulkan1.3");
 
         return [.. arguments];
     }

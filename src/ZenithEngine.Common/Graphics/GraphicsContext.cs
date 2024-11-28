@@ -6,6 +6,8 @@ namespace ZenithEngine.Common.Graphics;
 
 public abstract unsafe class GraphicsContext : DisposableObject
 {
+    public static readonly Version VulkanApiVersion = new(1, 3, 0);
+
     public abstract Backend Backend { get; }
 
     public abstract DeviceCapabilities Capabilities { get; }

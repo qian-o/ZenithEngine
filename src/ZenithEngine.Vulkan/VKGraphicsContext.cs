@@ -10,8 +10,6 @@ namespace ZenithEngine.Vulkan;
 
 internal unsafe partial class VKGraphicsContext : GraphicsContext
 {
-    public static readonly Version32 Version = Vk.Version13;
-
     public VkInstance Instance;
 
     public VKGraphicsContext()
@@ -122,7 +120,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
             ApplicationVersion = new Version32(1, 0, 0),
             PEngineName = allocator.AllocAnsi("Zenith Engine"),
             EngineVersion = new Version32(1, 0, 0),
-            ApiVersion = Version
+            ApiVersion = (Version32)VulkanApiVersion
         };
 
         InstanceCreateInfo createInfo = new()

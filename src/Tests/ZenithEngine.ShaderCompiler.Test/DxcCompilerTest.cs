@@ -12,13 +12,9 @@ public sealed class DxcCompilerTest
     {
         string source = File.ReadAllText(Path.Combine(assetsPath, "Simple.hlsl"));
 
-        ReadOnlySpan<byte> spv = DxcCompiler.Compile(ShaderStages.Vertex, source, "VSMain");
+        Assert.IsTrue(DxcCompiler.Compile(ShaderStages.Vertex, source, "VSMain").Length > 0);
 
-        Assert.IsTrue(spv.Length > 0);
-
-        spv = DxcCompiler.Compile(ShaderStages.Pixel, source, "PSMain");
-
-        Assert.IsTrue(spv.Length > 0);
+        Assert.IsTrue(DxcCompiler.Compile(ShaderStages.Pixel, source, "PSMain").Length > 0);
     }
 
     [TestMethod]
