@@ -104,29 +104,24 @@ public static class Utils
         };
     }
 
-    public static uint CalcAnsiSizeInBytes(string value)
+    public static uint CalcSizeStringUTF8(string value)
     {
         return (uint)(Encoding.UTF8.GetByteCount(value) + 1);
     }
 
-    public static uint CalcUniSizeInBytes(string value)
+    public static uint CalcSizeByStringUni(string value)
     {
         return (uint)(Encoding.Unicode.GetByteCount(value) + 2);
-    }
-
-    public static string PtrToStringAnsi(nint ptr)
-    {
-        return Marshal.PtrToStringAnsi(ptr) ?? string.Empty;
-    }
-
-    public static string PtrToStringUni(nint ptr)
-    {
-        return Marshal.PtrToStringUni(ptr) ?? string.Empty;
     }
 
     public static string PtrToStringUTF8(nint ptr)
     {
         return Marshal.PtrToStringUTF8(ptr) ?? string.Empty;
+    }
+
+    public static string PtrToStringUni(nint ptr)
+    {
+        return Marshal.PtrToStringUni(ptr) ?? string.Empty;
     }
 
     public static T AlignedSize<T>(T size, T alignment) where T : INumberBase<T>, IBitwiseOperators<T, T, T>

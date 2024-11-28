@@ -37,7 +37,7 @@ internal unsafe class VKDeviceCapabilities : DeviceCapabilities
     {
         foreach (ExtensionProperties extensionProperty in extensionProperties)
         {
-            if (extensionName == Utils.PtrToStringAnsi((nint)extensionProperty.ExtensionName))
+            if (extensionName == Utils.PtrToStringUTF8((nint)extensionProperty.ExtensionName))
             {
                 return true;
             }

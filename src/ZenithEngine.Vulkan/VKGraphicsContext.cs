@@ -116,9 +116,9 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         ApplicationInfo appInfo = new()
         {
             SType = StructureType.ApplicationInfo,
-            PApplicationName = allocator.AllocAnsi(AppDomain.CurrentDomain.FriendlyName),
+            PApplicationName = allocator.AllocUTF8(AppDomain.CurrentDomain.FriendlyName),
             ApplicationVersion = new Version32(1, 0, 0),
-            PEngineName = allocator.AllocAnsi("Zenith Engine"),
+            PEngineName = allocator.AllocUTF8("Zenith Engine"),
             EngineVersion = new Version32(1, 0, 0),
             ApiVersion = (Version32)VulkanApiVersion
         };
@@ -143,7 +143,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
             foreach (LayerProperties layer in layers)
             {
-                if (ValidationLayerName == Utils.PtrToStringAnsi((nint)layer.LayerName))
+                if (ValidationLayerName == Utils.PtrToStringUTF8((nint)layer.LayerName))
                 {
                     layerFound = true;
 
@@ -157,7 +157,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
             }
 
             createInfo.EnabledLayerCount = 1;
-            createInfo.PpEnabledLayerNames = allocator.AllocAnsi([ValidationLayerName]);
+            createInfo.PpEnabledLayerNames = allocator.AllocUTF8([ValidationLayerName]);
         }
 
         string[] extensions = [KhrSurface.ExtensionName];
@@ -189,7 +189,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         }
 
         createInfo.EnabledExtensionCount = (uint)extensions.Length;
-        createInfo.PpEnabledExtensionNames = allocator.AllocAnsi(extensions);
+        createInfo.PpEnabledExtensionNames = allocator.AllocUTF8(extensions);
 
         Vk.CreateInstance(&createInfo, null, out Instance).ThrowIfError();
 

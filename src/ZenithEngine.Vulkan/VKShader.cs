@@ -31,7 +31,7 @@ internal unsafe class VKShader : Shader
             SType = StructureType.PipelineShaderStageCreateInfo,
             Stage = VKFormats.GetShaderStageFlags(desc.Stage),
             Module = ShaderModule,
-            PName = MemoryAllocator.AllocAnsi(desc.EntryPoint)
+            PName = MemoryAllocator.AllocUTF8(desc.EntryPoint)
         };
     }
 

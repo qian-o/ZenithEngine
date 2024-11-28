@@ -8,7 +8,6 @@
 		<PackageVersion Include="MSTest" Version="3.6.3" />
 		<PackageVersion Include="Silk.NET.Direct3D.Compilers" Version="2.22.0" />
 		<PackageVersion Include="Silk.NET.Maths" Version="2.22.0" />
-		<PackageVersion Include="Silk.NET.SPIRV.Reflect" Version="2.22.0" />
 		<PackageVersion Include="Silk.NET.Vulkan" Version="2.22.0" />
 		<PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.22.0" />
 		<PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />

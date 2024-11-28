@@ -40,9 +40,9 @@ public static unsafe class DxcCompiler
 
         DxcBuffer buffer = new()
         {
-            Ptr = allocator.AllocAnsi(source),
-            Size = Utils.CalcAnsiSizeInBytes(source),
-            Encoding = DXC.CPAcp
+            Ptr = allocator.AllocUTF8(source),
+            Size = Utils.CalcSizeStringUTF8(source),
+            Encoding = DXC.CPUtf8
         };
 
         DxcCompiler3.Compile(in buffer,
