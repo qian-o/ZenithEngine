@@ -30,6 +30,8 @@ public static unsafe class DxcCompiler
                                              string entryPoint,
                                              Func<string, ReadOnlySpan<byte>>? includeHandler = null)
     {
+        _ = includeHandler;
+
         using MemoryAllocator allocator = new();
 
         string[] arguments = GetArguments(stage, entryPoint);
