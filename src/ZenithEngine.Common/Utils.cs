@@ -104,12 +104,12 @@ public static class Utils
         };
     }
 
-    public static uint CalcAnsi(string value)
+    public static uint CalcAnsiSizeInBytes(string value)
     {
         return (uint)(Encoding.UTF8.GetByteCount(value) + 1);
     }
 
-    public static uint CalcUni(string value)
+    public static uint CalcUniSizeInBytes(string value)
     {
         return (uint)(Encoding.Unicode.GetByteCount(value) + 2);
     }

@@ -13,14 +13,14 @@ public static unsafe class DxcCompiler
     public static readonly Guid CLSID_DxcCompiler = new("73E22D93-E6CE-47F3-B5BF-F0664F39C1B0");
 
     public static readonly DXC Dxc;
-    public static readonly ComPtr<IDxcUtils> Utils;
-    public static readonly ComPtr<IDxcCompiler3> Compiler;
+    public static readonly ComPtr<IDxcUtils> DxcUtils;
+    public static readonly ComPtr<IDxcCompiler3> DxcCompiler3;
 
     static DxcCompiler()
     {
         Dxc = DXC.GetApi();
-        Dxc.CreateInstance(ref CLSID_DxcUtils, out Utils);
-        Dxc.CreateInstance(ref CLSID_DxcCompiler, out Compiler);
+        Dxc.CreateInstance(ref CLSID_DxcUtils, out DxcUtils);
+        Dxc.CreateInstance(ref CLSID_DxcCompiler, out DxcCompiler3);
     }
 
     public static ReadOnlySpan<byte> Compile(ShaderStages stage,
@@ -35,15 +35,15 @@ public static unsafe class DxcCompiler
         DxcBuffer buffer = new()
         {
             Ptr = allocator.AllocAnsi(source),
-            Size = (uint)source.Length + 1,
+            Size = Utils.CalcAnsiSizeInBytes(source),
             Encoding = 0
         };
 
-        Compiler.Compile(ref buffer,
-                         (char**)allocator.AllocUni(arguments),
-                         (uint)arguments.Length,
-                         ref Unsafe.NullRef<IDxcIncludeHandler>(),
-                         out ComPtr<IDxcResult> result);
+        DxcCompiler3.Compile(ref buffer,
+                             (char**)allocator.AllocUni(arguments),
+                             (uint)arguments.Length,
+                             ref Unsafe.NullRef<IDxcIncludeHandler>(),
+                             out ComPtr<IDxcResult> result);
 
         return [];
     }

@@ -45,7 +45,7 @@ public unsafe class MemoryAllocator : DisposableObject
 
     public byte* AllocAnsi(string value)
     {
-        byte* ptr = Alloc<byte>(Utils.CalcAnsi(value));
+        byte* ptr = Alloc<byte>(Utils.CalcAnsiSizeInBytes(value));
 
         byte[] bytes = Encoding.UTF8.GetBytes(value);
 
@@ -68,7 +68,7 @@ public unsafe class MemoryAllocator : DisposableObject
 
     public byte** AllocUni(string value)
     {
-        byte* ptr = Alloc<byte>(Utils.CalcUni(value));
+        byte* ptr = Alloc<byte>(Utils.CalcUniSizeInBytes(value));
 
         byte[] bytes = Encoding.Unicode.GetBytes(value);
 
