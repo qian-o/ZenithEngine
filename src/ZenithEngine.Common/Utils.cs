@@ -108,6 +108,11 @@ public static class Utils
         return Marshal.PtrToStringAnsi(ptr) ?? string.Empty;
     }
 
+    public static string PtrToStringUni(nint ptr)
+    {
+        return Marshal.PtrToStringUni(ptr) ?? string.Empty;
+    }
+
     public static T AlignedSize<T>(T size, T alignment) where T : INumberBase<T>, IBitwiseOperators<T, T, T>
     {
         return (size + alignment - T.One) & ~(alignment - T.One);
