@@ -63,8 +63,8 @@ public static unsafe class DxcCompiler
         ComPtr<IDxcBlob> blob = new();
         result.GetResult(ref blob);
 
-        var pointer = blob.GetBufferPointer();
-        var size = blob.GetBufferSize();
+        void* pointer = blob.GetBufferPointer();
+        nuint size = blob.GetBufferSize();
 
         return new ReadOnlySpan<byte>(pointer, (int)size);
     }
