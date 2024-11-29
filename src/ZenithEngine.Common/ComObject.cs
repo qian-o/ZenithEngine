@@ -1,9 +1,8 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using ZenithEngine.Common;
 
-namespace ZenithEngine.ShaderCompiler;
+namespace ZenithEngine.Common;
 
 public abstract unsafe class ComObject : DisposableObject
 {

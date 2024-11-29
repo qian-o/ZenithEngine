@@ -32,8 +32,8 @@ public static unsafe class DxcCompiler
         using MemoryAllocator allocator = new();
 
         using ComPtr<IDxcResult> result = default;
-        using ComPtr<IDxcBlobUtf8> errorBuffer = default;
-        using ComPtr<IDxcBlob> resultBuffer = default;
+        using ComPtr<IDxcBlobUtf8> eb = default;
+        using ComPtr<IDxcBlob> rb = default;
 
         string[] arguments = GetArguments(stage, entryPoint);
 
@@ -56,14 +56,14 @@ public static unsafe class DxcCompiler
 
         if (status != 0)
         {
-            result.GetErrorBuffer((IDxcBlobEncoding**)errorBuffer.GetAddressOf());
+            result.GetErrorBuffer((IDxcBlobEncoding**)eb.GetAddressOf());
 
-            throw new InvalidOperationException(Utils.PtrToStringUTF8((nint)errorBuffer.GetBufferPointer()));
+            throw new InvalidOperationException(Utils.PtrToStringUTF8((nint)eb.GetBufferPointer()));
         }
 
-        result.GetResult(resultBuffer.GetAddressOf());
+        result.GetResult(rb.GetAddressOf());
 
-        return new ReadOnlySpan<byte>(resultBuffer.GetBufferPointer(), (int)resultBuffer.GetBufferSize()).ToArray();
+        return new ReadOnlySpan<byte>(rb.GetBufferPointer(), (int)rb.GetBufferSize()).ToArray();
     }
 
     private static string[] GetArguments(ShaderStages stage, string entryPoint)
