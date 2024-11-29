@@ -1,15 +1,15 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Silk.NET.Core.Native;
+using System.Text;
 using Silk.NET.Direct3D.Compilers;
 using ZenithEngine.Common;
 
 namespace ZenithEngine.ShaderCompiler;
 
 [Guid("7f61fc7d-950d-467f-b3e3-3c02fb49187c")]
-internal unsafe class IncludeHandler(Func<string, byte[]>? includeHandler) : ComObject(1)
+internal unsafe class IncludeHandler(Func<string, string>? includeHandler) : ComObject(1)
 {
-    public Func<string, byte[]> Handler { get; } = includeHandler ?? ((_) => []);
+    public Func<string, string> Handler { get; } = includeHandler ?? ((_) => string.Empty);
 
     protected override void InitVTable()
     {
@@ -19,12 +19,14 @@ internal unsafe class IncludeHandler(Func<string, byte[]>? includeHandler) : Com
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
     private static int LoadSource(ObjectHandle* pSelf, nint pFileName, IDxcBlob** includeSourceBlob)
     {
-        byte[] data = pSelf->GetObject<IncludeHandler>().Handler.Invoke(Utils.PtrToStringUni(pFileName));
+        string shader = pSelf->GetObject<IncludeHandler>().Handler.Invoke(Utils.PtrToStringUni(pFileName));
 
-        ComPtr<IDxcBlobEncoding> blob = default;
-        DxcCompiler.DxcUtils.CreateBlob(ref data[0], (uint)data.Length, DXC.CPUtf8, ref blob);
+        byte[] source = Encoding.UTF8.GetBytes(shader);
 
-        includeSourceBlob[0] = (IDxcBlob*)(IDxcBlobEncoding*)blob;
+        DxcCompiler.DxcUtils.CreateBlob(ref source[0],
+                                        (uint)source.Length,
+                                        DXC.CPUtf8,
+                                        (IDxcBlobEncoding**)&includeSourceBlob[0]);
 
         return Ok;
     }

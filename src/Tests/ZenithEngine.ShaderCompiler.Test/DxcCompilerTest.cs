@@ -1,5 +1,4 @@
-﻿using System.Text;
-using ZenithEngine.Common.Enums;
+﻿using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.ShaderCompiler.Test;
 
@@ -25,9 +24,9 @@ public sealed class DxcCompilerTest
         Assert.IsTrue(DxcCompiler.Compile(ShaderStages.Vertex, source, "VSMain", IncludeHandler).Length > 0);
         Assert.IsTrue(DxcCompiler.Compile(ShaderStages.Pixel, source, "PSMain", IncludeHandler).Length > 0);
 
-        static byte[] IncludeHandler(string fileName)
+        static string IncludeHandler(string fileName)
         {
-            return Encoding.UTF8.GetBytes(File.ReadAllText(Path.Combine(assetsPath, fileName)));
+            return File.ReadAllText(Path.Combine(assetsPath, fileName));
         }
     }
 

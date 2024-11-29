@@ -25,7 +25,7 @@ public static unsafe class DxcCompiler
     public static byte[] Compile(ShaderStages stage,
                                  string source,
                                  string entryPoint,
-                                 Func<string, byte[]>? includeHandler = null)
+                                 Func<string, string>? includeHandler = null)
     {
         using IncludeHandler handler = new(includeHandler);
 

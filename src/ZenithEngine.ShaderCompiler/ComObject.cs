@@ -9,7 +9,7 @@ public abstract unsafe class ComObject : DisposableObject
 {
     public struct ObjectHandle
     {
-        public nint LpVtbl;
+        public nint VTable;
 
         public GCHandle ManagedHandle;
 
@@ -36,19 +36,19 @@ public abstract unsafe class ComObject : DisposableObject
         allocator = new();
 
         Handle = allocator.Alloc<ObjectHandle>();
-        Handle->LpVtbl = (nint)allocator.Alloc((uint)((3 + additionalVTableSlots) * sizeof(nint)));
+        Handle->VTable = (nint)allocator.Alloc((uint)((3 + additionalVTableSlots) * sizeof(nint)));
         Handle->ManagedHandle = GCHandle.Alloc(this);
 
-        ((delegate* unmanaged[Stdcall]<ObjectHandle*, Guid*, void**, int>*)Handle->LpVtbl)[0] = &QueryInterface;
-        ((delegate* unmanaged[Stdcall]<ObjectHandle*, ulong>*)Handle->LpVtbl + sizeof(nint))[0] = &AddRef;
-        ((delegate* unmanaged[Stdcall]<ObjectHandle*, ulong>*)Handle->LpVtbl + (sizeof(nint) * 2))[0] = &RemoveRef;
+        ((delegate* unmanaged[Stdcall]<ObjectHandle*, Guid*, void**, int>*)Handle->VTable)[0] = &QueryInterface;
+        ((delegate* unmanaged[Stdcall]<ObjectHandle*, ulong>*)Handle->VTable + sizeof(nint))[0] = &AddRef;
+        ((delegate* unmanaged[Stdcall]<ObjectHandle*, ulong>*)Handle->VTable + (sizeof(nint) * 2))[0] = &RemoveRef;
 
         InitVTable();
     }
 
     protected nint GetVTableSlot(int slot)
     {
-        return Handle->LpVtbl + ((slot + 3) * sizeof(nint));
+        return Handle->VTable + ((slot + 3) * sizeof(nint));
     }
 
     protected abstract void InitVTable();
