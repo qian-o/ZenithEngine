@@ -30,7 +30,7 @@ internal unsafe class IncludeHandler : ObjectInterface
             ComPtr<IDxcBlobEncoding> blob = default;
             DxcCompiler.DxcUtils.CreateBlob(ref data[0], (uint)data.Length, DXC.CPUtf8, ref blob);
 
-            includeSourceBlob[0] = (IDxcBlob*)((IDxcBlobEncoding*)blob);
+            includeSourceBlob[0] = (IDxcBlob*)(IDxcBlobEncoding*)blob;
 
             return HResultOk;
         }

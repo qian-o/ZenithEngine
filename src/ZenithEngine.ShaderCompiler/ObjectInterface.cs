@@ -25,7 +25,7 @@ internal unsafe class ObjectInterface : DisposableObject
         Guid = guid;
 
         Handle = allocator.Alloc<ObjectHandle>();
-        VTable = (VTable*)allocator.Alloc((uint)(sizeof(VTable) + additionalVTableSlots * sizeof(nint)));
+        VTable = (VTable*)allocator.Alloc((uint)(sizeof(VTable) + (additionalVTableSlots * sizeof(nint))));
         AdditionalVTableSlots = ((nint)VTable) + sizeof(VTable);
 
         Handle->VTable = VTable;
@@ -48,7 +48,7 @@ internal unsafe class ObjectInterface : DisposableObject
         try
         {
             ObjectInterface self = pSelf->GetObject<ObjectInterface>();
-            
+
             if (pInterfaceId[0] == self.Guid)
             {
                 pInterface[0] = self.Handle;
