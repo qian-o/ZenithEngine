@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Silk.NET.Core.Native;
+﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D.Compilers;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
@@ -28,7 +27,7 @@ public static unsafe class DxcCompiler
                                  string entryPoint,
                                  Func<string, byte[]>? includeHandler = null)
     {
-        _ = includeHandler;
+        using IncludeHandler handler = new(includeHandler);
 
         using MemoryAllocator allocator = new();
 
@@ -48,7 +47,7 @@ public static unsafe class DxcCompiler
         DxcCompiler3.Compile(in buffer,
                              (char**)allocator.AllocUni(arguments),
                              (uint)arguments.Length,
-                             ref Unsafe.NullRef<IDxcIncludeHandler>(),
+                             (IDxcIncludeHandler*)handler.Handle,
                              SilkMarshal.GuidPtrOf<IDxcResult>(),
                              (void**)result.GetAddressOf());
 
