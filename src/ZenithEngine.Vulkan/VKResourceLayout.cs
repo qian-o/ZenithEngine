@@ -29,7 +29,7 @@ internal unsafe class VKResourceLayout : ResourceLayout
             {
                 Binding = element.Binding,
                 DescriptorType = VKFormats.GetDescriptorType(element.Type, element.Options),
-                DescriptorCount = 1,
+                DescriptorCount = element.Count,
                 StageFlags = VKFormats.GetShaderStageFlags(element.Stages)
             };
 
