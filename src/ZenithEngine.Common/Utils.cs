@@ -7,6 +7,14 @@ namespace ZenithEngine.Common;
 
 public static class Utils
 {
+    public const uint CbvOffset = 0;
+
+    public const uint SrvOffset = 20;
+
+    public const uint SamplersOffset = 40;
+
+    public const uint UavOffset = 60;
+
     public static uint GetMipLevels(uint width, uint height)
     {
         return (uint)MathF.Floor(MathF.Log2(MathF.Max(width, height))) + 1;
@@ -38,6 +46,44 @@ public static class Utils
         mipWidth = Math.Max(1, width >> (int)mipLevel);
         mipHeight = Math.Max(1, height >> (int)mipLevel);
         mipDepth = Math.Max(1, depth >> (int)mipLevel);
+    }
+
+    public static uint GetBinding(ResourceType type, uint slot)
+    {
+        return type switch
+        {
+            ResourceType.ConstantBuffer => slot + CbvOffset,
+
+            ResourceType.StructuredBuffer or
+            ResourceType.Texture or
+            ResourceType.AccelerationStructure => slot + SrvOffset,
+
+            ResourceType.Sampler => slot + SamplersOffset,
+
+            ResourceType.StructuredBufferReadWrite or
+            ResourceType.TextureReadWrite => slot + UavOffset,
+
+            _ => throw new InvalidOperationException("ResourceType doesn't supported.")
+        };
+    }
+
+    public static uint GetSlot(ResourceType type, uint binding)
+    {
+        return type switch
+        {
+            ResourceType.ConstantBuffer => binding - CbvOffset,
+
+            ResourceType.StructuredBuffer or
+            ResourceType.Texture or
+            ResourceType.AccelerationStructure => binding - SrvOffset,
+
+            ResourceType.Sampler => binding - SamplersOffset,
+
+            ResourceType.StructuredBufferReadWrite or
+            ResourceType.TextureReadWrite => binding - UavOffset,
+
+            _ => throw new InvalidOperationException("ResourceType doesn't supported.")
+        };
     }
 
     public static uint GetFormatSizeInBytes(ElementFormat format)

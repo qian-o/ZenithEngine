@@ -29,6 +29,8 @@ struct MVP
 
 ConstantBuffer<MVP> mvp1 : register(b0);
 StructuredBuffer<float4x4> mvp2 : register(t0);
+RWStructuredBuffer<float4> colors : register(u0, space1);
+RWTexture2D<float4> texture : register(u1, space1);
 Texture2D texture1[10] : register(t0, space1);
 Texture2D texture2[] : register(t1, space1);
 SamplerState samplerState[] : register(s0, space2);
@@ -48,6 +50,9 @@ float4 PSMain(PSInput input) : SV_TARGET
 {
     float4 color = texture1[0].Sample(samplerState[0], input.texCoord);
     color *= texture2[0].Sample(samplerState[0], input.texCoord);
+    
+    colors[0] = color;
+    texture[uint2(0, 0)] = color;
     
     return input.color * color;
 }

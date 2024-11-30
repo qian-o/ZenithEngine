@@ -1,4 +1,5 @@
 ﻿using Silk.NET.Vulkan;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -27,7 +28,7 @@ internal unsafe class VKResourceLayout : ResourceLayout
 
             bindings[i] = new()
             {
-                Binding = element.Binding,
+                Binding = Utils.GetBinding(element.Type, element.Slot),
                 DescriptorType = VKFormats.GetDescriptorType(element.Type, element.Options),
                 DescriptorCount = element.Count,
                 StageFlags = VKFormats.GetShaderStageFlags(element.Stages)

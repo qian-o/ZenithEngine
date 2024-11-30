@@ -12,7 +12,8 @@ public class SpvReflectorTest
     {
         string source = File.ReadAllText(Path.Combine(assetsPath, "Simple.hlsl"));
 
-        SpvReflector.Reflect(DxcCompiler.Compile(ShaderStages.Vertex, source, "VSMain"));
-        SpvReflector.Reflect(DxcCompiler.Compile(ShaderStages.Pixel, source, "PSMain"));
+        ReflectResourceLayout layout = SpvReflector.Reflect(DxcCompiler.Compile(ShaderStages.Vertex, source, "VSMain"));
+
+        layout = SpvReflector.Reflect(DxcCompiler.Compile(ShaderStages.Pixel, source, "PSMain"));
     }
 }
