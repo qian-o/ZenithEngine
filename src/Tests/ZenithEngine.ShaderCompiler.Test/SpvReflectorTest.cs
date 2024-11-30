@@ -15,16 +15,8 @@ public class SpvReflectorTest
         // ConstantBuffer<MVP> mvp1 : register(b0);
         // StructuredBuffer<float4x4> mvp2 : register(t0);
         ReflectResourceLayout layout = SpvReflector.Reflect(DxcCompiler.Compile(ShaderStages.Vertex, source, "VSMain"));
-
-        Assert.AreEqual<uint>(0, layout["mvp1"].Space);
-        Assert.AreEqual<uint>(0, layout["mvp1"].Slot);
-        Assert.AreEqual(ResourceType.ConstantBuffer, layout["mvp1"].Type);
-        Assert.AreEqual<uint>(1, layout["mvp1"].Count);
-
-        Assert.AreEqual<uint>(0, layout["mvp2"].Space);
-        Assert.AreEqual<uint>(0, layout["mvp2"].Slot);
-        Assert.AreEqual(ResourceType.StructuredBuffer, layout["mvp2"].Type);
-        Assert.AreEqual<uint>(1, layout["mvp2"].Count);
+        Test(layout["mvp1"], ResourceType.ConstantBuffer, 1, 0, 0);
+        Test(layout["mvp2"], ResourceType.StructuredBuffer, 1, 0, 0);
 
         // RWStructuredBuffer<float4> colors : register(u0, space1);
         // RWTexture2D<float4> texture : register(u1, space1);
@@ -32,30 +24,22 @@ public class SpvReflectorTest
         // Texture2D texture2[] : register(t1, space1);
         // SamplerState samplerState[] : register(s0, space2);
         layout = SpvReflector.Reflect(DxcCompiler.Compile(ShaderStages.Pixel, source, "PSMain"));
+        Test(layout["colors"], ResourceType.StructuredBufferReadWrite, 1, 0, 1);
+        Test(layout["texture"], ResourceType.TextureReadWrite, 1, 1, 1);
+        Test(layout["texture1"], ResourceType.Texture, 10, 0, 1);
+        Test(layout["texture2"], ResourceType.Texture, 0, 1, 1);
+        Test(layout["samplerState"], ResourceType.Sampler, 0, 0, 2);
+    }
 
-        Assert.AreEqual<uint>(1, layout["colors"].Space);
-        Assert.AreEqual<uint>(0, layout["colors"].Slot);
-        Assert.AreEqual(ResourceType.StructuredBufferReadWrite, layout["colors"].Type);
-        Assert.AreEqual<uint>(1, layout["colors"].Count);
-
-        Assert.AreEqual<uint>(1, layout["texture"].Space);
-        Assert.AreEqual<uint>(1, layout["texture"].Slot);
-        Assert.AreEqual(ResourceType.TextureReadWrite, layout["texture"].Type);
-        Assert.AreEqual<uint>(1, layout["texture"].Count);
-
-        Assert.AreEqual<uint>(1, layout["texture1"].Space);
-        Assert.AreEqual<uint>(0, layout["texture1"].Slot);
-        Assert.AreEqual(ResourceType.Texture, layout["texture1"].Type);
-        Assert.AreEqual<uint>(10, layout["texture1"].Count);
-
-        Assert.AreEqual<uint>(1, layout["texture2"].Space);
-        Assert.AreEqual<uint>(1, layout["texture2"].Slot);
-        Assert.AreEqual(ResourceType.Texture, layout["texture2"].Type);
-        Assert.AreEqual<uint>(0, layout["texture2"].Count);
-
-        Assert.AreEqual<uint>(2, layout["samplerState"].Space);
-        Assert.AreEqual<uint>(0, layout["samplerState"].Slot);
-        Assert.AreEqual(ResourceType.Sampler, layout["samplerState"].Type);
-        Assert.AreEqual<uint>(0, layout["samplerState"].Count);
+    private static void Test(ReflectResource resource,
+                             ResourceType type,
+                             uint count,
+                             uint slot,
+                             uint space)
+    {
+        Assert.AreEqual(type, resource.Type);
+        Assert.AreEqual(count, resource.Count);
+        Assert.AreEqual(slot, resource.Slot);
+        Assert.AreEqual(space, resource.Space);
     }
 }
