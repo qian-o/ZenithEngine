@@ -5,9 +5,9 @@ namespace ZenithEngine.Common.Descriptions;
 public struct LayoutElementDesc
 {
     /// <summary>
-    /// The slot of the element.
+    /// The element binding.
     /// </summary>
-    public uint Slot { get; set; }
+    public uint Binding { get; set; }
 
     /// <summary>
     /// shader resource type.
@@ -30,7 +30,7 @@ public struct LayoutElementDesc
     /// </summary>
     public uint Size { get; set; }
 
-    public static LayoutElementDesc Default(uint slot,
+    public static LayoutElementDesc Default(uint binding,
                                             ResourceType type,
                                             ShaderStages stages,
                                             ElementOptions options = ElementOptions.None,
@@ -38,7 +38,7 @@ public struct LayoutElementDesc
     {
         return new()
         {
-            Slot = slot,
+            Binding = binding,
             Type = type,
             Stages = stages,
             Options = options,

@@ -11,25 +11,6 @@ internal static class VKHelpers
         return desc.Type is TextureType.TextureCube ? 6u : 1u;
     }
 
-    public static uint GetBinding(LayoutElementDesc desc)
-    {
-        return desc.Type switch
-        {
-            ResourceType.ConstantBuffer => desc.Slot,
-
-            ResourceType.StructuredBufferReadWrite or
-            ResourceType.TextureReadWrite => desc.Slot + 20,
-
-            ResourceType.Sampler => desc.Slot + 40,
-
-            ResourceType.StructuredBuffer or
-            ResourceType.Texture or
-            ResourceType.AccelerationStructure => desc.Slot + 60,
-
-            _ => 0
-        };
-    }
-
     public static void MatchImageLayout(ref ImageMemoryBarrier barrier,
                                         out PipelineStageFlags src,
                                         out PipelineStageFlags dst)
