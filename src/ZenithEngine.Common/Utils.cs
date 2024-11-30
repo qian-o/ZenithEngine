@@ -15,39 +15,6 @@ public static class Utils
 
     public const uint UavOffset = 60;
 
-    public static uint GetMipLevels(uint width, uint height)
-    {
-        return (uint)MathF.Floor(MathF.Log2(MathF.Max(width, height))) + 1;
-    }
-
-    public static uint GetMipLevels(uint width, uint height, uint depth)
-    {
-        return (uint)MathF.Floor(MathF.Log2(MathF.Max(MathF.Max(width, height), depth))) + 1;
-    }
-
-    public static void GetMipDimensions(uint width,
-                                        uint height,
-                                        uint mipLevel,
-                                        out uint mipWidth,
-                                        out uint mipHeight)
-    {
-        mipWidth = Math.Max(1, width >> (int)mipLevel);
-        mipHeight = Math.Max(1, height >> (int)mipLevel);
-    }
-
-    public static void GetMipDimensions(uint width,
-                                        uint height,
-                                        uint depth,
-                                        uint mipLevel,
-                                        out uint mipWidth,
-                                        out uint mipHeight,
-                                        out uint mipDepth)
-    {
-        mipWidth = Math.Max(1, width >> (int)mipLevel);
-        mipHeight = Math.Max(1, height >> (int)mipLevel);
-        mipDepth = Math.Max(1, depth >> (int)mipLevel);
-    }
-
     public static uint GetBinding(ResourceType type, uint slot)
     {
         return type switch
@@ -84,6 +51,39 @@ public static class Utils
 
             _ => throw new InvalidOperationException("ResourceType doesn't supported.")
         };
+    }
+
+    public static uint GetMipLevels(uint width, uint height)
+    {
+        return (uint)MathF.Floor(MathF.Log2(MathF.Max(width, height))) + 1;
+    }
+
+    public static uint GetMipLevels(uint width, uint height, uint depth)
+    {
+        return (uint)MathF.Floor(MathF.Log2(MathF.Max(MathF.Max(width, height), depth))) + 1;
+    }
+
+    public static void GetMipDimensions(uint width,
+                                        uint height,
+                                        uint mipLevel,
+                                        out uint mipWidth,
+                                        out uint mipHeight)
+    {
+        mipWidth = Math.Max(1, width >> (int)mipLevel);
+        mipHeight = Math.Max(1, height >> (int)mipLevel);
+    }
+
+    public static void GetMipDimensions(uint width,
+                                        uint height,
+                                        uint depth,
+                                        uint mipLevel,
+                                        out uint mipWidth,
+                                        out uint mipHeight,
+                                        out uint mipDepth)
+    {
+        mipWidth = Math.Max(1, width >> (int)mipLevel);
+        mipHeight = Math.Max(1, height >> (int)mipLevel);
+        mipDepth = Math.Max(1, depth >> (int)mipLevel);
     }
 
     public static uint GetFormatSizeInBytes(ElementFormat format)

@@ -24,7 +24,8 @@ public unsafe class ReflectResourceLayout
             {
                 DescriptorBinding* binding = set.Bindings[j];
 
-                ResourceType type = SpvFormats.GetResourceType(binding->DescriptorType, binding->ResourceType);
+                ResourceType type = SpvFormats.GetResourceType(binding->DescriptorType,
+                                                               binding->ResourceType);
 
                 resources.Add(new(set.Set,
                                   Utils.PtrToStringUTF8((nint)binding->Name),
