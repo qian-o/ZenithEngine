@@ -2,6 +2,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Silk.NET.Direct3D.Compilers" />
+		<PackageReference Include="Silk.NET.SPIRV.Reflect" />
 	</ItemGroup>
 
 	<ItemGroup>

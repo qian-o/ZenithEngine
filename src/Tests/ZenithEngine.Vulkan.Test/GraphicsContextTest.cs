@@ -4,7 +4,7 @@ using ZenithEngine.Common.Graphics;
 namespace ZenithEngine.Vulkan.Test;
 
 [TestClass]
-public sealed class GraphicsContextTest
+public class GraphicsContextTest
 {
     [TestMethod]
     public void TestCreateDevice()

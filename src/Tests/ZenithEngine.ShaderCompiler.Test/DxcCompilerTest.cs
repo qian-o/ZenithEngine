@@ -3,7 +3,7 @@
 namespace ZenithEngine.ShaderCompiler.Test;
 
 [TestClass]
-public sealed class DxcCompilerTest
+public class DxcCompilerTest
 {
     private static readonly string assetsPath = Path.Combine(AppContext.BaseDirectory, "Assets");
 
