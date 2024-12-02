@@ -16,7 +16,7 @@ public class ReflectResult
                                                         combinedResources.Count,
                                                         item => item.Name == resource.Name);
 
-                if (index == -1)
+                if (index is -1)
                 {
                     combinedResources.Add(resource);
                 }

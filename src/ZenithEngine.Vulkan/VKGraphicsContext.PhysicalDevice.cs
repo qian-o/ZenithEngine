@@ -30,7 +30,7 @@ internal unsafe partial class VKGraphicsContext
         uint physicalDeviceCount = 0;
         Vk.EnumeratePhysicalDevices(Instance, &physicalDeviceCount, null).ThrowIfError();
 
-        if (physicalDeviceCount == 0)
+        if (physicalDeviceCount is 0)
         {
             throw new ZenithEngineException("No physical devices found.");
         }

@@ -173,7 +173,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
                 {
                     Binding = i,
                     Stride = layout.Stride,
-                    InputRate = layout.StepRate == 0 ? VertexInputRate.Vertex : VertexInputRate.Instance
+                    InputRate = layout.StepRate is 0 ? VertexInputRate.Vertex : VertexInputRate.Instance
                 };
 
                 for (int j = 0; j < layout.Elements.Length; j++)

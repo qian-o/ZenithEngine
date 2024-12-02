@@ -106,7 +106,7 @@ internal unsafe class VKResourceSet : ResourceSet
                 {
                     Buffer = buffer.VK().Buffer,
                     Offset = 0,
-                    Range = element.Size == 0 ? Vk.WholeSize : element.Size
+                    Range = element.Size is 0 ? Vk.WholeSize : element.Size
                 };
 
                 if (element.Options is ElementOptions.DynamicBinding)

@@ -30,7 +30,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             FrameBufferAttachmentDesc attachmentDesc = desc.ColorTargets[i];
             Texture target = attachmentDesc.Target;
 
-            if (i == 0)
+            if (i is 0)
             {
                 sampleCount = target.Desc.SampleCount;
             }
@@ -68,7 +68,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             FrameBufferAttachmentDesc attachmentDesc = desc.DepthStencilTarget!.Value;
             Texture target = attachmentDesc.Target;
 
-            if (ColorTargets.Length == 0)
+            if (ColorTargets.Length is 0)
             {
                 sampleCount = target.Desc.SampleCount;
             }

@@ -105,7 +105,7 @@ public abstract unsafe class GraphicsContext : DisposableObject
         Assembly assembly = Assembly.Load(assemblyName);
         typeName = $"{assemblyName}.{typeName}";
 
-        if (args.Length == 0)
+        if (args.Length is 0)
         {
             return (T)assembly.CreateInstance(typeName)!;
         }
