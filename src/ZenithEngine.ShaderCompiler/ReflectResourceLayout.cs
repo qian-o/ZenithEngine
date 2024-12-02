@@ -12,21 +12,22 @@ public class ReflectResourceLayout
         {
             foreach (ReflectResource resource in cache)
             {
-                if (resources.All(item => item.Name != resource.Name))
+                int index = resources.FindIndex(0,
+                                                resources.Count,
+                                                item => item.Name == resource.Name);
+
+                if (index == -1)
                 {
                     resources.Add(resource);
                 }
                 else
                 {
-                    ReflectResource oldResource = resources.First(item => item.Name == resource.Name);
-
-                    resources.Remove(oldResource);
-                    resources.Add(new(resource.Space,
-                                      resource.Name,
-                                      resource.Slot,
-                                      resource.Type,
-                                      resource.Stages | oldResource.Stages,
-                                      resource.Count));
+                    resources[index] = new(resource.Space,
+                                           resource.Name,
+                                           resource.Slot,
+                                           resource.Type,
+                                           resource.Stages | resources[index].Stages,
+                                           resource.Count);
                 }
             }
         }
