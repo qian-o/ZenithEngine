@@ -1,55 +1,61 @@
-﻿using System.Collections.ObjectModel;
-using Silk.NET.SPIRV.Reflect;
-using ZenithEngine.Common;
-using ZenithEngine.Common.Descriptions;
-using ZenithEngine.Common.Enums;
+﻿namespace ZenithEngine.ShaderCompiler;
 
-namespace ZenithEngine.ShaderCompiler;
-
-public unsafe class ReflectResourceLayout
+public class ReflectResourceLayout
 {
     private readonly ReflectResource[] cache = [];
 
-    internal ReflectResourceLayout(ReflectShaderModule* module)
+    internal ReflectResourceLayout(params ReflectResource[][] caches)
     {
         List<ReflectResource> resources = [];
 
-        ShaderStages stages = SpvFormats.GetShaderStages(module->ShaderStage);
-
-        for (int i = 0; i < module->DescriptorSetCount; i++)
+        foreach (ReflectResource[] cache in caches)
         {
-            ReflectDescriptorSet set = module->DescriptorSets[i];
-
-            for (int j = 0; j < set.BindingCount; j++)
+            foreach (ReflectResource resource in cache)
             {
-                DescriptorBinding* binding = set.Bindings[j];
+                if (resources.All(item => item.Name != resource.Name))
+                {
+                    resources.Add(resource);
+                }
+                else
+                {
+                    ReflectResource oldResource = resources.First(item => item.Name == resource.Name);
 
-                ResourceType type = SpvFormats.GetResourceType(binding->DescriptorType,
-                                                               binding->ResourceType);
-
-                resources.Add(new(set.Set,
-                                  Utils.PtrToStringUTF8((nint)binding->Name),
-                                  Utils.GetSlot(type, binding->Binding),
-                                  type,
-                                  stages,
-                                  binding->Count));
+                    resources.Remove(oldResource);
+                    resources.Add(new(resource.Space,
+                                      resource.Name,
+                                      resource.Slot,
+                                      resource.Type,
+                                      resource.Stages | oldResource.Stages,
+                                      resource.Count));
+                }
             }
         }
 
         cache = [.. resources];
     }
 
-    public ReflectResource this[string name] => cache.FirstOrDefault(item => item.Name == name);
-
-    public ReadOnlyDictionary<uint, ResourceLayoutDesc> GetDescs()
+    public ReflectResource this[string name, uint? setCount = null]
     {
-        Dictionary<uint, ResourceLayoutDesc> descs = [];
-
-        foreach (IGrouping<uint, ReflectResource> space in cache.GroupBy(static item => item.Space))
+        get
         {
-            descs[space.Key] = ResourceLayoutDesc.Default([.. space.Select(static item => item.Desc)]);
-        }
+            if (setCount.HasValue)
+            {
+                ReflectResource resource = cache.FirstOrDefault(item => item.Name == name);
 
-        return new ReadOnlyDictionary<uint, ResourceLayoutDesc>(descs);
+                return new(resource.Space,
+                           resource.Name,
+                           resource.Slot,
+                           resource.Type,
+                           resource.Stages,
+                           setCount.Value);
+            }
+
+            return cache.FirstOrDefault(item => item.Name == name);
+        }
+    }
+
+    public ReflectResourceLayout Merge(ReflectResourceLayout layout)
+    {
+        return new(cache, layout.cache);
     }
 }

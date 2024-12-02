@@ -53,6 +53,7 @@ float4 PSMain(PSInput input) : SV_TARGET
     
     colors[0] = color;
     texture[uint2(0, 0)] = color;
+    texture[uint2(0, 1)] = mvp2[0]._11_11_11_11;
     
     return input.color * color;
 }
