@@ -91,11 +91,10 @@ internal unsafe class VKResourceSet : ResourceSet
                                         List<Texture> sampledImages,
                                         List<Texture> storageImages)
     {
-        if (write.DescriptorType
-            is DescriptorType.UniformBuffer
-            or DescriptorType.UniformBufferDynamic
-            or DescriptorType.StorageBuffer
-            or DescriptorType.StorageBufferDynamic)
+        if (element.Type
+            is ResourceType.ConstantBuffer
+            or ResourceType.StructuredBuffer
+            or ResourceType.StructuredBufferReadWrite)
         {
             DescriptorBufferInfo* infos = allocator.Alloc<DescriptorBufferInfo>(element.Count);
 
@@ -118,7 +117,7 @@ internal unsafe class VKResourceSet : ResourceSet
 
             write.PBufferInfo = infos;
         }
-        else if (write.DescriptorType is DescriptorType.SampledImage or DescriptorType.StorageImage)
+        else if (element.Type is ResourceType.Texture or ResourceType.TextureReadWrite)
         {
             DescriptorImageInfo* infos = allocator.Alloc<DescriptorImageInfo>(element.Count);
 
@@ -147,7 +146,7 @@ internal unsafe class VKResourceSet : ResourceSet
 
             write.PImageInfo = infos;
         }
-        else if (write.DescriptorType is DescriptorType.Sampler)
+        else if (element.Type is ResourceType.Sampler)
         {
             DescriptorImageInfo* infos = allocator.Alloc<DescriptorImageInfo>(element.Count);
 
