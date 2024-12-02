@@ -55,6 +55,8 @@ internal unsafe class VKResourceSet : ResourceSet
                                         0,
                                         (CopyDescriptorSet*)null);
 
+        MemoryAllocator.Release();
+
         DynamicCount = dynamicCount;
         SampledImages = [.. sampledImages];
         StorageImages = [.. storageImages];
