@@ -49,7 +49,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 FaceCount = 1
             };
 
-            ColorTargets[i] = context.Factory.CreateTextureView(in viewDesc);
+            ColorTargets[i] = Context.Factory.CreateTextureView(in viewDesc);
 
             colorAttachmentInfos[i] = new()
             {
@@ -87,7 +87,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 FaceCount = 1
             };
 
-            DepthStencilTarget = context.Factory.CreateTextureView(in viewDesc);
+            DepthStencilTarget = Context.Factory.CreateTextureView(in viewDesc);
 
             depthStencilAttachmentInfo = MemoryAllocator.Alloc<RenderingAttachmentInfo>();
             depthStencilAttachmentInfo->SType = StructureType.RenderingAttachmentInfo;

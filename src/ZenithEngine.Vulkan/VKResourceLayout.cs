@@ -37,23 +37,23 @@ internal unsafe class VKResourceLayout : ResourceLayout
             switch (element.Type)
             {
                 case ResourceType.ConstantBuffer:
-                    uniformBufferCount++;
+                    uniformBufferCount += element.Count;
                     break;
                 case ResourceType.StructuredBuffer:
                 case ResourceType.StructuredBufferReadWrite:
-                    storageBufferCount++;
+                    storageBufferCount += element.Count;
                     break;
                 case ResourceType.Texture:
-                    sampledImageCount++;
+                    sampledImageCount += element.Count;
                     break;
                 case ResourceType.TextureReadWrite:
-                    storageImageCount++;
+                    storageImageCount += element.Count;
                     break;
                 case ResourceType.Sampler:
-                    samplerCount++;
+                    samplerCount += element.Count;
                     break;
                 case ResourceType.AccelerationStructure:
-                    accelerationStructureCount++;
+                    accelerationStructureCount += element.Count;
                     break;
             }
         }
