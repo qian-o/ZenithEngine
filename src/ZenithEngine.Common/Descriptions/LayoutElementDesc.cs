@@ -26,7 +26,6 @@ public struct LayoutElementDesc
 
     /// <summary>
     /// For regular resources, this value is 1, for array resources, this value is the size of the array.
-    /// In Bindless mode, this value is the maximum size of the array.
     /// </summary>
     public uint Count { get; set; }
 

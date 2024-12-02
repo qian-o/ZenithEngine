@@ -23,12 +23,13 @@ internal unsafe class VKResourceSet : ResourceSet
         List<Texture> sampledImages = [];
         List<Texture> storageImages = [];
 
+        uint resourceOffset = 0;
+
         for (uint i = 0; i < writes.Length; i++)
         {
             LayoutElementDesc element = layout.Desc.Elements[i];
-            GraphicsResource resource = desc.Resources[i];
 
-            WriteDescriptorSet write = new()
+            writes[i] = new()
             {
                 SType = StructureType.WriteDescriptorSet,
                 DstSet = Token.Set,
@@ -37,68 +38,15 @@ internal unsafe class VKResourceSet : ResourceSet
                 DescriptorType = VKFormats.GetDescriptorType(element.Type, element.Options)
             };
 
-            if (write.DescriptorType
-                is DescriptorType.UniformBuffer
-                or DescriptorType.UniformBufferDynamic
-                or DescriptorType.StorageBuffer
-                or DescriptorType.StorageBufferDynamic)
-            {
-                Buffer buffer = (Buffer)resource;
+            FillDescriptors(MemoryAllocator,
+                            element,
+                            desc.Resources[(int)resourceOffset..(int)(resourceOffset + element.Count)],
+                            ref writes[i],
+                            ref dynamicCount,
+                            sampledImages,
+                            storageImages);
 
-                DescriptorBufferInfo info = new()
-                {
-                    Buffer = buffer.VK().Buffer,
-                    Offset = 0,
-                    Range = element.Size == 0 ? Vk.WholeSize : element.Size
-                };
-
-                write.PBufferInfo = &info;
-
-                if (element.Options is ElementOptions.DynamicBinding)
-                {
-                    dynamicCount++;
-                }
-            }
-            else if (write.DescriptorType is DescriptorType.SampledImage or DescriptorType.StorageImage)
-            {
-                bool isSampled = element.Type is ResourceType.Texture;
-
-                TextureView textureView = (TextureView)resource;
-
-                DescriptorImageInfo info = new()
-                {
-                    ImageView = textureView.VK().ImageView,
-                    ImageLayout = isSampled ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.General
-                };
-
-                write.PImageInfo = &info;
-
-                if (isSampled)
-                {
-                    sampledImages.Add(textureView.Desc.Target);
-                }
-                else
-                {
-                    storageImages.Add(textureView.Desc.Target);
-                }
-            }
-            else if (write.DescriptorType is DescriptorType.Sampler)
-            {
-                Sampler sampler = (Sampler)resource;
-
-                DescriptorImageInfo info = new()
-                {
-                    Sampler = sampler.VK().Sampler
-                };
-
-                write.PImageInfo = &info;
-            }
-            else
-            {
-                throw new NotSupportedException("Resource type not supported.");
-            }
-
-            writes[i] = write;
+            resourceOffset += element.Count;
         }
 
         Context.Vk.UpdateDescriptorSets(Context.Device,
@@ -131,5 +79,91 @@ internal unsafe class VKResourceSet : ResourceSet
         Array.Clear(SampledImages, 0, SampledImages.Length);
 
         Context.DescriptorSetAllocator.Free(Token);
+    }
+
+    private static void FillDescriptors(MemoryAllocator allocator,
+                                        LayoutElementDesc element,
+                                        GraphicsResource[] resources,
+                                        ref WriteDescriptorSet write,
+                                        ref uint dynamicCount,
+                                        List<Texture> sampledImages,
+                                        List<Texture> storageImages)
+    {
+        if (write.DescriptorType
+            is DescriptorType.UniformBuffer
+            or DescriptorType.UniformBufferDynamic
+            or DescriptorType.StorageBuffer
+            or DescriptorType.StorageBufferDynamic)
+        {
+            DescriptorBufferInfo* infos = allocator.Alloc<DescriptorBufferInfo>(element.Count);
+
+            for (uint i = 0; i < element.Count; i++)
+            {
+                Buffer buffer = (Buffer)resources[i];
+
+                infos[i] = new()
+                {
+                    Buffer = buffer.VK().Buffer,
+                    Offset = 0,
+                    Range = element.Size == 0 ? Vk.WholeSize : element.Size
+                };
+
+                if (element.Options is ElementOptions.DynamicBinding)
+                {
+                    dynamicCount++;
+                }
+            }
+
+            write.PBufferInfo = infos;
+        }
+        else if (write.DescriptorType is DescriptorType.SampledImage or DescriptorType.StorageImage)
+        {
+            DescriptorImageInfo* infos = allocator.Alloc<DescriptorImageInfo>(element.Count);
+
+            bool isSampled = element.Type is ResourceType.Texture;
+            ImageLayout imageLayout = isSampled ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.General;
+
+            for (uint i = 0; i < element.Count; i++)
+            {
+                TextureView textureView = (TextureView)resources[i];
+
+                infos[i] = new()
+                {
+                    ImageView = textureView.VK().ImageView,
+                    ImageLayout = imageLayout
+                };
+
+                if (isSampled)
+                {
+                    sampledImages.Add(textureView.Desc.Target);
+                }
+                else
+                {
+                    storageImages.Add(textureView.Desc.Target);
+                }
+            }
+
+            write.PImageInfo = infos;
+        }
+        else if (write.DescriptorType is DescriptorType.Sampler)
+        {
+            DescriptorImageInfo* infos = allocator.Alloc<DescriptorImageInfo>(element.Count);
+
+            for (uint i = 0; i < element.Count; i++)
+            {
+                Sampler sampler = (Sampler)resources[i];
+
+                infos[i] = new()
+                {
+                    Sampler = sampler.VK().Sampler
+                };
+            }
+
+            write.PImageInfo = infos;
+        }
+        else
+        {
+            throw new NotSupportedException("Resource type not supported.");
+        }
     }
 }
