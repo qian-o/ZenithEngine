@@ -19,7 +19,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
         TextureSampleCount sampleCount = TextureSampleCount.Count1;
 
-        RenderingAttachmentInfo* colorAttachmentInfos = MemoryAllocator.Alloc<RenderingAttachmentInfo>((uint)ColorTargets.Length);
+        RenderingAttachmentInfo* colorAttachmentInfos = Allocator.Alloc<RenderingAttachmentInfo>((uint)ColorTargets.Length);
         RenderingAttachmentInfo* depthStencilAttachmentInfo = null;
 
         PixelFormat[] colorFormats = new PixelFormat[ColorTargets.Length];
@@ -89,7 +89,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
             DepthStencilTarget = Context.Factory.CreateTextureView(in viewDesc);
 
-            depthStencilAttachmentInfo = MemoryAllocator.Alloc<RenderingAttachmentInfo>();
+            depthStencilAttachmentInfo = Allocator.Alloc<RenderingAttachmentInfo>();
             depthStencilAttachmentInfo->SType = StructureType.RenderingAttachmentInfo;
             depthStencilAttachmentInfo->ImageView = DepthStencilTarget!.VK().ImageView;
             depthStencilAttachmentInfo->ImageLayout = ImageLayout.AttachmentOptimal;

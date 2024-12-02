@@ -87,7 +87,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
                 desc.RenderStates.BlendState.RenderTarget7
             ];
 
-            PipelineColorBlendAttachmentState* attachments = MemoryAllocator.Alloc<PipelineColorBlendAttachmentState>(attachmentCount);
+            PipelineColorBlendAttachmentState* attachments = Allocator.Alloc<PipelineColorBlendAttachmentState>(attachmentCount);
 
             for (uint i = 0; i < attachmentCount; i++)
             {
@@ -149,7 +149,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
                 shaderStages.Add(desc.Shaders.Pixel.VK().PipelineShaderStageCreateInfo);
             }
 
-            PipelineShaderStageCreateInfo* stages = MemoryAllocator.Alloc([.. shaderStages]);
+            PipelineShaderStageCreateInfo* stages = Allocator.Alloc([.. shaderStages]);
 
             createInfo.StageCount = (uint)shaderStages.Count;
             createInfo.PStages = stages;
@@ -160,8 +160,8 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             uint vertexInputBindingCount = (uint)desc.InputLayouts.Length;
             uint vertexInputAttributeCount = (uint)desc.InputLayouts.Sum(static item => item.Elements.Length);
 
-            VertexInputBindingDescription* bindingDescriptions = MemoryAllocator.Alloc<VertexInputBindingDescription>(vertexInputBindingCount);
-            VertexInputAttributeDescription* attributeDescriptions = MemoryAllocator.Alloc<VertexInputAttributeDescription>(vertexInputAttributeCount);
+            VertexInputBindingDescription* bindingDescriptions = Allocator.Alloc<VertexInputBindingDescription>(vertexInputBindingCount);
+            VertexInputAttributeDescription* attributeDescriptions = Allocator.Alloc<VertexInputAttributeDescription>(vertexInputAttributeCount);
 
             uint bindingLocation = 0;
             uint attributeIndex = 0;
@@ -208,7 +208,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
 
         // Resource Layouts
         {
-            DescriptorSetLayout* setLayouts = MemoryAllocator.Alloc([.. desc.ResourceLayouts.Select(static item => item.VK().DescriptorSetLayout)]);
+            DescriptorSetLayout* setLayouts = Allocator.Alloc([.. desc.ResourceLayouts.Select(static item => item.VK().DescriptorSetLayout)]);
 
             PipelineLayoutCreateInfo pipelineLayoutCreateInfo = new()
             {
@@ -251,7 +251,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
 
         // Outputs
         {
-            Format* colorAttachmentFormats = MemoryAllocator.Alloc([.. desc.Outputs.ColorAttachments.Select(static item => VKFormats.GetPixelFormat(item))]);
+            Format* colorAttachmentFormats = Allocator.Alloc([.. desc.Outputs.ColorAttachments.Select(static item => VKFormats.GetPixelFormat(item))]);
 
             PipelineRenderingCreateInfo renderingCreateInfo = new()
             {
@@ -281,7 +281,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
 
         // Other pipeline states
         {
-            DynamicState* dynamicStates = MemoryAllocator.Alloc([DynamicState.Viewport, DynamicState.Scissor]);
+            DynamicState* dynamicStates = Allocator.Alloc([DynamicState.Viewport, DynamicState.Scissor]);
 
             PipelineDynamicStateCreateInfo dynamicState = new()
             {
@@ -309,7 +309,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
                                            null,
                                            out Pipeline).ThrowIfError();
 
-        MemoryAllocator.Release();
+        Allocator.Release();
     }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;

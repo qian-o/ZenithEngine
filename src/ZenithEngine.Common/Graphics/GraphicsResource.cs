@@ -30,7 +30,7 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
     /// <summary>
     /// Current resource lifecycle persistent memory allocator.
     /// </summary>
-    protected MemoryAllocator MemoryAllocator { get; } = new();
+    protected MemoryAllocator Allocator { get; } = new();
 
     public void Dispose()
     {
@@ -41,7 +41,7 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
 
         Destroy();
 
-        MemoryAllocator.Dispose();
+        Allocator.Dispose();
 
         GC.SuppressFinalize(this);
     }

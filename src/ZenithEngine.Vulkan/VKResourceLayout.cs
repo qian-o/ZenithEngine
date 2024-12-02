@@ -13,7 +13,7 @@ internal unsafe class VKResourceLayout : ResourceLayout
     public VKResourceLayout(GraphicsContext context,
                             ref readonly ResourceLayoutDesc desc) : base(context, in desc)
     {
-        DescriptorSetLayoutBinding* bindings = MemoryAllocator.Alloc<DescriptorSetLayoutBinding>((uint)desc.Elements.Length);
+        DescriptorSetLayoutBinding* bindings = Allocator.Alloc<DescriptorSetLayoutBinding>((uint)desc.Elements.Length);
 
         uint uniformBufferCount = 0;
         uint storageBufferCount = 0;
@@ -70,7 +70,7 @@ internal unsafe class VKResourceLayout : ResourceLayout
                                              null,
                                              out DescriptorSetLayout).ThrowIfError();
 
-        MemoryAllocator.Free(bindings);
+        Allocator.Free(bindings);
 
         Counts = new(uniformBufferCount,
                      storageBufferCount,

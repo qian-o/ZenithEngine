@@ -24,7 +24,7 @@ internal unsafe class VKComputePipeline : ComputePipeline
 
         // Resource Layouts
         {
-            DescriptorSetLayout* setLayouts = MemoryAllocator.Alloc([.. desc.ResourceLayouts.Select(static item => item.VK().DescriptorSetLayout)]);
+            DescriptorSetLayout* setLayouts = Allocator.Alloc([.. desc.ResourceLayouts.Select(static item => item.VK().DescriptorSetLayout)]);
 
             PipelineLayoutCreateInfo pipelineLayoutCreateInfo = new()
             {
@@ -40,7 +40,7 @@ internal unsafe class VKComputePipeline : ComputePipeline
 
             createInfo.Layout = PipelineLayout;
 
-            MemoryAllocator.Free(setLayouts);
+            Allocator.Free(setLayouts);
         }
 
         Context.Vk.CreateComputePipelines(Context.Device,

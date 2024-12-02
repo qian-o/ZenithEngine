@@ -16,7 +16,7 @@ internal unsafe class VKShader : Shader
         {
             SType = StructureType.ShaderModuleCreateInfo,
             CodeSize = (uint)desc.ShaderBytes.Length,
-            PCode = (uint*)MemoryAllocator.Alloc(desc.ShaderBytes)
+            PCode = (uint*)Allocator.Alloc(desc.ShaderBytes)
         };
 
         Context.Vk.CreateShaderModule(Context.Device,
@@ -24,14 +24,14 @@ internal unsafe class VKShader : Shader
                                       null,
                                       out ShaderModule).ThrowIfError();
 
-        MemoryAllocator.Free(createInfo.PCode);
+        Allocator.Free(createInfo.PCode);
 
         PipelineShaderStageCreateInfo = new()
         {
             SType = StructureType.PipelineShaderStageCreateInfo,
             Stage = VKFormats.GetShaderStageFlags(desc.Stage),
             Module = ShaderModule,
-            PName = MemoryAllocator.AllocUTF8(desc.EntryPoint)
+            PName = Allocator.AllocUTF8(desc.EntryPoint)
         };
     }
 

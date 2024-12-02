@@ -38,7 +38,7 @@ internal unsafe class VKResourceSet : ResourceSet
                 DescriptorType = VKFormats.GetDescriptorType(element.Type, element.Options)
             };
 
-            FillDescriptors(MemoryAllocator,
+            FillDescriptors(Allocator,
                             element,
                             desc.Resources[(int)resourceOffset..(int)(resourceOffset + element.Count)],
                             ref writes[i],
@@ -55,7 +55,7 @@ internal unsafe class VKResourceSet : ResourceSet
                                         0,
                                         (CopyDescriptorSet*)null);
 
-        MemoryAllocator.Release();
+        Allocator.Release();
 
         DynamicCount = dynamicCount;
         SampledImages = [.. sampledImages];

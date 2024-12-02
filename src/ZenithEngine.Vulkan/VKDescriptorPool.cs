@@ -24,7 +24,7 @@ internal unsafe class VKDescriptorPool : GraphicsResource
                          || Context.Capabilities.IsRayQuerySupported;
 
         uint sizeCount = supportAS ? 8u : 7u;
-        DescriptorPoolSize* sizes = MemoryAllocator.Alloc<DescriptorPoolSize>(sizeCount);
+        DescriptorPoolSize* sizes = Allocator.Alloc<DescriptorPoolSize>(sizeCount);
 
         sizes[0] = new()
         {
@@ -91,7 +91,7 @@ internal unsafe class VKDescriptorPool : GraphicsResource
                                         null,
                                         out Pool).ThrowIfError();
 
-        MemoryAllocator.Free(sizes);
+        Allocator.Free(sizes);
     }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
