@@ -90,7 +90,7 @@ public static unsafe class DxcCompiler
         arguments.Add("all");
 
         arguments.Add("-fvk-s-shift");
-        arguments.Add($"{Utils.SamplersOffset}");
+        arguments.Add($"{Utils.SmpOffset}");
         arguments.Add("all");
 
         arguments.Add("-fvk-u-shift");

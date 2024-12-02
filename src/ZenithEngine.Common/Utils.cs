@@ -11,7 +11,7 @@ public static class Utils
 
     public const uint SrvOffset = 20;
 
-    public const uint SamplersOffset = 40;
+    public const uint SmpOffset = 40;
 
     public const uint UavOffset = 60;
 
@@ -25,7 +25,7 @@ public static class Utils
             ResourceType.Texture or
             ResourceType.AccelerationStructure => slot + SrvOffset,
 
-            ResourceType.Sampler => slot + SamplersOffset,
+            ResourceType.Sampler => slot + SmpOffset,
 
             ResourceType.StructuredBufferReadWrite or
             ResourceType.TextureReadWrite => slot + UavOffset,
@@ -44,7 +44,7 @@ public static class Utils
             ResourceType.Texture or
             ResourceType.AccelerationStructure => binding - SrvOffset,
 
-            ResourceType.Sampler => binding - SamplersOffset,
+            ResourceType.Sampler => binding - SmpOffset,
 
             ResourceType.StructuredBufferReadWrite or
             ResourceType.TextureReadWrite => binding - UavOffset,
