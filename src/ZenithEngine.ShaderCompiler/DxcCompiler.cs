@@ -54,7 +54,7 @@ public static unsafe class DxcCompiler
         int status = 0;
         result.GetStatus(ref status);
 
-        if (status != 0)
+        if (status is not 0)
         {
             result.GetErrorBuffer((IDxcBlobEncoding**)eb.GetAddressOf());
 

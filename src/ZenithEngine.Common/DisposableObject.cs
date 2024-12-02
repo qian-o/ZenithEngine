@@ -9,11 +9,11 @@ public abstract class DisposableObject : IDisposable
         Dispose();
     }
 
-    public bool IsDisposed => isDisposed != 0;
+    public bool IsDisposed => isDisposed is not 0;
 
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref isDisposed, 1) != 0)
+        if (Interlocked.Exchange(ref isDisposed, 1) is not 0)
         {
             return;
         }

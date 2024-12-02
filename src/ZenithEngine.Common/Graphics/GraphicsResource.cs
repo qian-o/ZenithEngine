@@ -20,7 +20,7 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
         }
     }
 
-    public bool IsDisposed => isDisposed != 0;
+    public bool IsDisposed => isDisposed is not 0;
 
     /// <summary>
     /// Graphics context.
@@ -34,7 +34,7 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
 
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref isDisposed, 1) != 0)
+        if (Interlocked.Exchange(ref isDisposed, 1) is not 0)
         {
             return;
         }

@@ -16,7 +16,7 @@ internal unsafe partial class VKGraphicsContext
         {
             MemoryType memoryType = properties.MemoryTypes[i];
 
-            if ((typeBits & (1 << i)) != 0 && memoryType.PropertyFlags.HasFlag(flags))
+            if ((typeBits & (1 << i)) is not 0 && memoryType.PropertyFlags.HasFlag(flags))
             {
                 return (uint)i;
             }

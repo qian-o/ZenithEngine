@@ -49,7 +49,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
     public override void CreateDeviceInternal(bool useDebugLayer)
     {
-        if (Instance.Handle != 0)
+        if (Instance.Handle is not 0)
         {
             return;
         }
