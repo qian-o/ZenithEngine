@@ -35,6 +35,12 @@ internal unsafe class VKTexture : Texture
             Flags = desc.Type is TextureType.TextureCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
         };
 
+        if (Context.SharingEnabled)
+        {
+            createInfo.QueueFamilyIndexCount = 2;
+            createInfo.PQueueFamilyIndices = Allocator.Alloc([Context.DirectQueueFamilyIndex, Context.CopyQueueFamilyIndex]);
+        }
+
         Context.Vk.CreateImage(Context.Device, &createInfo, null, out Image).ThrowIfError();
 
         MemoryRequirements requirements;
@@ -48,6 +54,8 @@ internal unsafe class VKTexture : Texture
                                    0).ThrowIfError();
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
+
+        Allocator.Release();
     }
 
     public VKTexture(GraphicsContext context,

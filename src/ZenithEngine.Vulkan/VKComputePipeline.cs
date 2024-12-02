@@ -24,13 +24,11 @@ internal unsafe class VKComputePipeline : ComputePipeline
 
         // Resource Layouts
         {
-            DescriptorSetLayout* setLayouts = Allocator.Alloc([.. desc.ResourceLayouts.Select(static item => item.VK().DescriptorSetLayout)]);
-
             PipelineLayoutCreateInfo pipelineLayoutCreateInfo = new()
             {
                 SType = StructureType.PipelineLayoutCreateInfo,
                 SetLayoutCount = (uint)desc.ResourceLayouts.Length,
-                PSetLayouts = setLayouts
+                PSetLayouts = Allocator.Alloc([.. desc.ResourceLayouts.Select(static item => item.VK().DescriptorSetLayout)])
             };
 
             Context.Vk.CreatePipelineLayout(Context.Device,
@@ -39,8 +37,6 @@ internal unsafe class VKComputePipeline : ComputePipeline
                                             out PipelineLayout).ThrowIfError();
 
             createInfo.Layout = PipelineLayout;
-
-            Allocator.Free(setLayouts);
         }
 
         Context.Vk.CreateComputePipelines(Context.Device,
@@ -49,6 +45,8 @@ internal unsafe class VKComputePipeline : ComputePipeline
                                           &createInfo,
                                           null,
                                           out Pipeline).ThrowIfError();
+
+        Allocator.Release();
     }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;

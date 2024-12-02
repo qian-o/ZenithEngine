@@ -22,6 +22,12 @@ internal unsafe class VKBuffer : Buffer
             SharingMode = Context.SharingEnabled ? SharingMode.Concurrent : SharingMode.Exclusive
         };
 
+        if (Context.SharingEnabled)
+        {
+            createInfo.QueueFamilyIndexCount = 2;
+            createInfo.PQueueFamilyIndices = Allocator.Alloc([Context.DirectQueueFamilyIndex, Context.CopyQueueFamilyIndex]);
+        }
+
         if (desc.Usage.HasFlag(BufferUsage.VertexBuffer))
         {
             createInfo.Usage |= BufferUsageFlags.VertexBufferBit;
@@ -71,6 +77,8 @@ internal unsafe class VKBuffer : Buffer
         };
 
         Address = Context.Vk.GetBufferDeviceAddress(Context.Device, &addressInfo);
+
+        Allocator.Release();
     }
 
     public VKDeviceMemory DeviceMemory { get; }

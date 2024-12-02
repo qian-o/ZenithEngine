@@ -91,7 +91,7 @@ internal unsafe class VKDescriptorPool : GraphicsResource
                                         null,
                                         out Pool).ThrowIfError();
 
-        Allocator.Free(sizes);
+        Allocator.Release();
     }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;

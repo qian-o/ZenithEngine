@@ -70,14 +70,14 @@ internal unsafe class VKResourceLayout : ResourceLayout
                                              null,
                                              out DescriptorSetLayout).ThrowIfError();
 
-        Allocator.Free(bindings);
-
         Counts = new(uniformBufferCount,
                      storageBufferCount,
                      sampledImageCount,
                      storageImageCount,
                      samplerCount,
                      accelerationStructureCount);
+
+        Allocator.Release();
     }
 
     public VKResourceCounts Counts { get; }

@@ -17,7 +17,7 @@ internal unsafe class VKResourceSet : ResourceSet
 
         Token = Context.DescriptorSetAllocator.Alloc(layout.DescriptorSetLayout, layout.Counts);
 
-        WriteDescriptorSet[] writes = new WriteDescriptorSet[desc.Resources.Length];
+        WriteDescriptorSet[] writes = new WriteDescriptorSet[layout.Desc.Elements.Length];
 
         uint dynamicCount = 0;
         List<Texture> sampledImages = [];
@@ -55,11 +55,11 @@ internal unsafe class VKResourceSet : ResourceSet
                                         0,
                                         (CopyDescriptorSet*)null);
 
-        Allocator.Release();
-
         DynamicCount = dynamicCount;
         SampledImages = [.. sampledImages];
         StorageImages = [.. storageImages];
+
+        Allocator.Release();
     }
 
     public uint DynamicCount { get; }

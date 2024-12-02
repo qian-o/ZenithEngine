@@ -1,5 +1,4 @@
 ﻿using Silk.NET.Vulkan;
-using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Graphics;
 
@@ -24,7 +23,7 @@ internal unsafe class VKShader : Shader
                                       null,
                                       out ShaderModule).ThrowIfError();
 
-        Allocator.Free(createInfo.PCode);
+        Allocator.Release();
 
         PipelineShaderStageCreateInfo = new()
         {
