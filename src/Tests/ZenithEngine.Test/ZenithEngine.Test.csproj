@@ -9,6 +9,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\ZenithEngine.ShaderCompiler\ZenithEngine.ShaderCompiler.csproj" />
 		<ProjectReference Include="..\..\ZenithEngine.Vulkan\ZenithEngine.Vulkan.csproj" />
 	</ItemGroup>
 

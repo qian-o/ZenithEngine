@@ -20,7 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5273D256
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenithEngine.ShaderCompiler.Test", "src\Tests\ZenithEngine.ShaderCompiler.Test\ZenithEngine.ShaderCompiler.Test.csproj", "{213D59ED-B586-46F2-B7E6-D4B3909FC6DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenithEngine.Vulkan.Test", "src\Tests\ZenithEngine.Vulkan.Test\ZenithEngine.Vulkan.Test.csproj", "{51E0295A-76D6-4536-8CAD-40A55CA7374B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenithEngine.Test", "src\Tests\ZenithEngine.Test\ZenithEngine.Test.csproj", "{83D3D97C-9EDC-4714-9076-10188F4668A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,16 +44,16 @@ Global
 		{213D59ED-B586-46F2-B7E6-D4B3909FC6DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{213D59ED-B586-46F2-B7E6-D4B3909FC6DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{213D59ED-B586-46F2-B7E6-D4B3909FC6DA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{51E0295A-76D6-4536-8CAD-40A55CA7374B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{51E0295A-76D6-4536-8CAD-40A55CA7374B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{51E0295A-76D6-4536-8CAD-40A55CA7374B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{51E0295A-76D6-4536-8CAD-40A55CA7374B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83D3D97C-9EDC-4714-9076-10188F4668A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83D3D97C-9EDC-4714-9076-10188F4668A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83D3D97C-9EDC-4714-9076-10188F4668A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83D3D97C-9EDC-4714-9076-10188F4668A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{213D59ED-B586-46F2-B7E6-D4B3909FC6DA} = {5273D256-AAC6-49A7-8D8F-DE1BB27838E0}
-		{51E0295A-76D6-4536-8CAD-40A55CA7374B} = {5273D256-AAC6-49A7-8D8F-DE1BB27838E0}
+		{83D3D97C-9EDC-4714-9076-10188F4668A6} = {5273D256-AAC6-49A7-8D8F-DE1BB27838E0}
 	EndGlobalSection
 EndGlobal
