@@ -329,11 +329,7 @@ internal unsafe partial class VKSwapChain : SwapChain
             return capabilities.CurrentExtent;
         }
 
-        return new Extent2D((uint)Utils.Lerp(capabilities.MinImageExtent.Width,
-                                             capabilities.MaxImageExtent.Width,
-                                             0.5),
-                            (uint)Utils.Lerp(capabilities.MinImageExtent.Height,
-                                             capabilities.MaxImageExtent.Height,
-                                             0.5));
+        return new((uint)Utils.Lerp(capabilities.MinImageExtent.Width, capabilities.MaxImageExtent.Width, 0.5),
+                   (uint)Utils.Lerp(capabilities.MinImageExtent.Height, capabilities.MaxImageExtent.Height, 0.5));
     }
 }
