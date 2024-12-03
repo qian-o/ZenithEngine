@@ -23,6 +23,8 @@ internal unsafe partial class VKGraphicsContext
 
     public KhrDeferredHostOperations? KhrDeferredHostOperations { get; private set; }
 
+    public VKDescriptorSetAllocator? DescriptorSetAllocator { get; private set; }
+
     public uint FindQueueFamilyIndex(CommandProcessorType type)
     {
         return type switch
@@ -157,10 +159,12 @@ internal unsafe partial class VKGraphicsContext
         KhrRayTracingPipeline = Vk.TryGetExtension<KhrRayTracingPipeline>(Instance, Device);
         KhrAccelerationStructure = Vk.TryGetExtension<KhrAccelerationStructure>(Instance, Device);
         KhrDeferredHostOperations = Vk.TryGetExtension<KhrDeferredHostOperations>(Instance, Device);
+        DescriptorSetAllocator = new(this);
     }
 
     private void DestroyDevice()
     {
+        DescriptorSetAllocator?.Dispose();
         KhrDeferredHostOperations?.Dispose();
         KhrAccelerationStructure?.Dispose();
         KhrRayTracingPipeline?.Dispose();
@@ -172,5 +176,6 @@ internal unsafe partial class VKGraphicsContext
         KhrRayTracingPipeline = null;
         KhrAccelerationStructure = null;
         KhrDeferredHostOperations = null;
+        DescriptorSetAllocator = null;
     }
 }

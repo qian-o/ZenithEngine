@@ -18,7 +18,6 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         Backend = Backend.Vulkan;
         Capabilities = new();
         Factory = new(this);
-        DescriptorSetAllocator = new(this);
     }
 
     public Vk Vk { get; }
@@ -45,20 +44,6 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
     public override VKResourceFactory Factory { get; }
 
-    public VKDescriptorSetAllocator DescriptorSetAllocator { get; }
-
-    public override void CreateDeviceInternal(bool useDebugLayer)
-    {
-        if (Instance.Handle is not 0)
-        {
-            return;
-        }
-
-        InitInstance(useDebugLayer);
-        InitPhysicalDevice();
-        InitDevice();
-    }
-
     public override MappedResource MapMemory(Buffer buffer, MapMode mode)
     {
         void* data;
@@ -80,6 +65,18 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
     public void SetDebugName(ObjectType objectType, ulong handle, string name)
     {
         Debug?.SetObjectName(Device, objectType, handle, name);
+    }
+
+    protected override void CreateDeviceInternal(bool useDebugLayer)
+    {
+        if (Instance.Handle is not 0)
+        {
+            return;
+        }
+
+        InitInstance(useDebugLayer);
+        InitPhysicalDevice();
+        InitDevice();
     }
 
     protected override void DestroyInternal()

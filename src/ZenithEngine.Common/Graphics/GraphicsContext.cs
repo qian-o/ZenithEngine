@@ -23,8 +23,6 @@ public abstract unsafe class GraphicsContext : DisposableObject
         CopyProcessor = Factory.CreateCommandProcessor(CommandProcessorType.Copy);
     }
 
-    public abstract void CreateDeviceInternal(bool useDebugLayer);
-
     public abstract MappedResource MapMemory(Buffer buffer, MapMode mode);
 
     public abstract void UnmapMemory(Buffer buffer);
@@ -83,13 +81,17 @@ public abstract unsafe class GraphicsContext : DisposableObject
         CopyProcessor.WaitIdle();
     }
 
+    protected abstract void CreateDeviceInternal(bool useDebugLayer);
+
+    protected abstract void DestroyInternal();
+
     protected override void Destroy()
     {
         CopyProcessor?.Dispose();
         CopyProcessor = null;
-    }
 
-    protected abstract void DestroyInternal();
+        DestroyInternal();
+    }
 
     public static GraphicsContext Create(Backend backend)
     {
