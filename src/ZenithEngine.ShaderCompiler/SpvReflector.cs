@@ -25,14 +25,13 @@ public static unsafe class SpvReflector
             {
                 DescriptorBinding* binding = set.Bindings[j];
 
-                ResourceType type = SpvFormats.GetResourceType(binding->DescriptorType,
-                                                               binding->ResourceType);
+                ResourceType type = SpvFormats.GetResourceType(binding->DescriptorType, binding->ResourceType);
 
-                resources.Add(new(set.Set,
-                                  Utils.PtrToStringUTF8((nint)binding->Name),
-                                  Utils.GetSlot(type, binding->Binding),
+                resources.Add(new(stages,
                                   type,
-                                  stages,
+                                  Utils.GetSlot(type, binding->Binding),
+                                  set.Set,
+                                  Utils.PtrToStringUTF8((nint)binding->Name),
                                   binding->Count));
             }
         }

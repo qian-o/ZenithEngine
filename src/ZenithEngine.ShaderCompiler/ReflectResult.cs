@@ -22,11 +22,11 @@ public class ReflectResult
                 }
                 else
                 {
-                    combinedResources[index] = new(resource.Space,
-                                                   resource.Name,
-                                                   resource.Slot,
+                    combinedResources[index] = new(resource.Stages | combinedResources[index].Stages,
                                                    resource.Type,
-                                                   resource.Stages | combinedResources[index].Stages,
+                                                   resource.Slot,
+                                                   resource.Space,
+                                                   resource.Name,
                                                    resource.Count);
                 }
             }
@@ -43,11 +43,11 @@ public class ReflectResult
             {
                 ReflectResource resource = resources.FirstOrDefault(item => item.Name == name);
 
-                return new(resource.Space,
-                           resource.Name,
-                           resource.Slot,
+                return new(resource.Stages,
                            resource.Type,
-                           resource.Stages,
+                           resource.Slot,
+                           resource.Space,
+                           resource.Name,
                            setCount.Value);
             }
 

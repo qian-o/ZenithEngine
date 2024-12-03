@@ -799,10 +799,10 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     {
         VKResourceSet vkResourceSet = resourceSet.VK();
 
-        uint[] offsets = new uint[vkResourceSet.DynamicCount];
+        uint[] offsets = new uint[vkResourceSet.DynamicConstantBufferCount];
         if (constantBufferOffsets is not null)
         {
-            for (int i = 0; i < vkResourceSet.DynamicCount; i++)
+            for (int i = 0; i < vkResourceSet.DynamicConstantBufferCount; i++)
             {
                 offsets[i] = constantBufferOffsets[i];
             }

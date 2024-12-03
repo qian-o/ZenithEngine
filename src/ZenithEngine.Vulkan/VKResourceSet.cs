@@ -19,11 +19,9 @@ internal unsafe class VKResourceSet : ResourceSet
 
         WriteDescriptorSet[] writes = new WriteDescriptorSet[layout.Desc.Elements.Length];
 
-        uint dynamicCount = 0;
+        uint resourceOffset = 0;
         List<Texture> sampledImages = [];
         List<Texture> storageImages = [];
-
-        uint resourceOffset = 0;
 
         for (uint i = 0; i < writes.Length; i++)
         {
@@ -35,14 +33,13 @@ internal unsafe class VKResourceSet : ResourceSet
                 DstSet = Token.Set,
                 DstBinding = Utils.GetBinding(element.Type, element.Slot),
                 DescriptorCount = element.Count,
-                DescriptorType = VKFormats.GetDescriptorType(element.Type, element.Options)
+                DescriptorType = VKFormats.GetDescriptorType(element.Type, element.AllowDynamicOffset)
             };
 
             FillDescriptors(Allocator,
                             element,
                             desc.Resources[(int)resourceOffset..(int)(resourceOffset + element.Count)],
                             ref writes[i],
-                            ref dynamicCount,
                             sampledImages,
                             storageImages);
 
@@ -55,14 +52,14 @@ internal unsafe class VKResourceSet : ResourceSet
                                         0,
                                         (CopyDescriptorSet*)null);
 
-        DynamicCount = dynamicCount;
+        DynamicConstantBufferCount = layout.Desc.DynamicConstantBufferCount;
         SampledImages = [.. sampledImages];
         StorageImages = [.. storageImages];
 
         Allocator.Release();
     }
 
-    public uint DynamicCount { get; }
+    public uint DynamicConstantBufferCount { get; }
 
     public Texture[] SampledImages { get; }
 
@@ -87,7 +84,6 @@ internal unsafe class VKResourceSet : ResourceSet
                                         LayoutElementDesc element,
                                         GraphicsResource[] resources,
                                         ref WriteDescriptorSet write,
-                                        ref uint dynamicCount,
                                         List<Texture> sampledImages,
                                         List<Texture> storageImages)
     {
@@ -106,13 +102,8 @@ internal unsafe class VKResourceSet : ResourceSet
                 {
                     Buffer = buffer.VK().Buffer,
                     Offset = 0,
-                    Range = element.Size is 0 ? Vk.WholeSize : element.Size
+                    Range = element.Range is 0 ? Vk.WholeSize : element.Range
                 };
-
-                if (element.Options is ElementOptions.DynamicBinding)
-                {
-                    dynamicCount++;
-                }
             }
 
             write.PBufferInfo = infos;

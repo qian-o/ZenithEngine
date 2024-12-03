@@ -5,9 +5,9 @@ namespace ZenithEngine.Common.Descriptions;
 public struct LayoutElementDesc
 {
     /// <summary>
-    /// The slot of the element.
+    /// Use the resource of the shader stage.
     /// </summary>
-    public uint Slot { get; set; }
+    public ShaderStages Stages { get; set; }
 
     /// <summary>
     /// shader resource type.
@@ -15,14 +15,9 @@ public struct LayoutElementDesc
     public ResourceType Type { get; set; }
 
     /// <summary>
-    /// Use the resource of the shader stage.
+    /// The slot of the element.
     /// </summary>
-    public ShaderStages Stages { get; set; }
-
-    /// <summary>
-    /// Miscellaneous resource options for this element.
-    /// </summary>
-    public ElementOptions Options { get; set; }
+    public uint Slot { get; set; }
 
     /// <summary>
     /// For regular resources, this value is 1, for array resources, this value is the size of the array.
@@ -30,26 +25,31 @@ public struct LayoutElementDesc
     public uint Count { get; set; }
 
     /// <summary>
+    /// This value indicates whether this resource can have a dynamic offset.
+    /// </summary>
+    public bool AllowDynamicOffset { get; set; }
+
+    /// <summary>
     /// If it is greater than 0, it overrides the size of this resource (in bytes).
     /// Only valid on Buffers.
     /// </summary>
-    public uint Size { get; set; }
+    public uint Range { get; set; }
 
-    public static LayoutElementDesc Default(uint slot,
+    public static LayoutElementDesc Default(ShaderStages stages,
                                             ResourceType type,
-                                            ShaderStages stages,
-                                            ElementOptions options = ElementOptions.None,
+                                            uint slot,
                                             uint count = 1,
-                                            uint size = 0)
+                                            bool allowDynamicOffset = false,
+                                            uint range = 0)
     {
         return new()
         {
-            Slot = slot,
-            Type = type,
             Stages = stages,
-            Options = options,
+            Type = type,
+            Slot = slot,
             Count = count,
-            Size = size
+            AllowDynamicOffset = allowDynamicOffset,
+            Range = range
         };
     }
 }
