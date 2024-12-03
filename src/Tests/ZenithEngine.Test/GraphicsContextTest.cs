@@ -25,7 +25,7 @@ public class GraphicsContextTest
     }
 
     [TestMethod]
-    public void TestShader()
+    public void TestFactory()
     {
         AssertEx.IsConsoleErrorEmpty(() =>
         {
