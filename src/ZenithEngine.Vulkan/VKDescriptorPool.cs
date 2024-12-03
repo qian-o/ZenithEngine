@@ -5,8 +5,8 @@ namespace ZenithEngine.Vulkan;
 
 internal unsafe class VKDescriptorPool : GraphicsResource
 {
-    private const uint MaxSets = 1000;
-    private const uint DescriptorCount = 100;
+    private const uint MaxSets = 100;
+    private const uint DescriptorCount = 1000;
 
     public VkDescriptorPool Pool;
 
@@ -20,62 +20,69 @@ internal unsafe class VKDescriptorPool : GraphicsResource
 
     public VKDescriptorPool(GraphicsContext context) : base(context)
     {
-        DescriptorPoolSize* poolSizes = MemoryAllocator.Alloc<DescriptorPoolSize>(8);
+        bool supportAS = Context.Capabilities.IsRayTracingSupported
+                         || Context.Capabilities.IsRayQuerySupported;
 
-        poolSizes[0] = new()
+        uint sizeCount = supportAS ? 8u : 7u;
+        DescriptorPoolSize* sizes = Allocator.Alloc<DescriptorPoolSize>(sizeCount);
+
+        sizes[0] = new()
         {
             Type = DescriptorType.UniformBuffer,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[1] = new()
+        sizes[1] = new()
         {
             Type = DescriptorType.UniformBufferDynamic,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[2] = new()
+        sizes[2] = new()
         {
             Type = DescriptorType.StorageBuffer,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[3] = new()
+        sizes[3] = new()
         {
             Type = DescriptorType.StorageBufferDynamic,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[4] = new()
+        sizes[4] = new()
         {
             Type = DescriptorType.SampledImage,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[5] = new()
+        sizes[5] = new()
         {
             Type = DescriptorType.StorageImage,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[6] = new()
+        sizes[6] = new()
         {
             Type = DescriptorType.Sampler,
             DescriptorCount = DescriptorCount
         };
 
-        poolSizes[7] = new()
+        if (supportAS)
         {
-            Type = DescriptorType.AccelerationStructureKhr,
-            DescriptorCount = DescriptorCount
-        };
+            sizes[7] = new()
+            {
+                Type = DescriptorType.AccelerationStructureKhr,
+                DescriptorCount = DescriptorCount
+            };
+        }
 
         DescriptorPoolCreateInfo createInfo = new()
         {
             SType = StructureType.DescriptorPoolCreateInfo,
             MaxSets = MaxSets,
-            PoolSizeCount = 8,
-            PPoolSizes = poolSizes,
+            PoolSizeCount = sizeCount,
+            PPoolSizes = sizes,
             Flags = DescriptorPoolCreateFlags.FreeDescriptorSetBit
         };
 
@@ -84,7 +91,7 @@ internal unsafe class VKDescriptorPool : GraphicsResource
                                         null,
                                         out Pool).ThrowIfError();
 
-        MemoryAllocator.Free(poolSizes);
+        Allocator.Release();
     }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;

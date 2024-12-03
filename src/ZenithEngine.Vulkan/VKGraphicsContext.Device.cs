@@ -127,11 +127,12 @@ internal unsafe partial class VKGraphicsContext
         }
 
         createInfo.EnabledExtensionCount = (uint)extensions.Length;
-        createInfo.PpEnabledExtensionNames = allocator.AllocAnsi(extensions);
+        createInfo.PpEnabledExtensionNames = allocator.AllocUTF8(extensions);
 
         createInfo.AddNext(out PhysicalDeviceFeatures2 features2)
                   .AddNext(out PhysicalDeviceVulkan13Features _)
-                  .AddNext(out PhysicalDeviceBufferDeviceAddressFeatures _);
+                  .AddNext(out PhysicalDeviceVulkan12Features _)
+                  .AddNext(out PhysicalDeviceVulkan11Features _);
 
         if (Capabilities.IsRayQuerySupported)
         {

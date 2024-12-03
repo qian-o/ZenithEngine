@@ -20,7 +20,7 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
         }
     }
 
-    public bool IsDisposed => isDisposed != 0;
+    public bool IsDisposed => isDisposed is not 0;
 
     /// <summary>
     /// Graphics context.
@@ -30,18 +30,18 @@ public abstract class GraphicsResource(GraphicsContext context) : IDisposable
     /// <summary>
     /// Current resource lifecycle persistent memory allocator.
     /// </summary>
-    protected MemoryAllocator MemoryAllocator { get; } = new();
+    protected MemoryAllocator Allocator { get; } = new();
 
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref isDisposed, 1) != 0)
+        if (Interlocked.Exchange(ref isDisposed, 1) is not 0)
         {
             return;
         }
 
         Destroy();
 
-        MemoryAllocator.Dispose();
+        Allocator.Dispose();
 
         GC.SuppressFinalize(this);
     }

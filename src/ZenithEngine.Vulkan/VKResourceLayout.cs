@@ -1,4 +1,5 @@
 ﻿using Silk.NET.Vulkan;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -12,7 +13,7 @@ internal unsafe class VKResourceLayout : ResourceLayout
     public VKResourceLayout(GraphicsContext context,
                             ref readonly ResourceLayoutDesc desc) : base(context, in desc)
     {
-        DescriptorSetLayoutBinding* bindings = MemoryAllocator.Alloc<DescriptorSetLayoutBinding>(desc.Elements.Length);
+        DescriptorSetLayoutBinding* bindings = Allocator.Alloc<DescriptorSetLayoutBinding>((uint)desc.Elements.Length);
 
         uint uniformBufferCount = 0;
         uint storageBufferCount = 0;
@@ -27,32 +28,32 @@ internal unsafe class VKResourceLayout : ResourceLayout
 
             bindings[i] = new()
             {
-                Binding = VKHelpers.GetBinding(element),
+                Binding = Utils.GetBinding(element.Type, element.Slot),
                 DescriptorType = VKFormats.GetDescriptorType(element.Type, element.Options),
-                DescriptorCount = 1,
+                DescriptorCount = element.Count,
                 StageFlags = VKFormats.GetShaderStageFlags(element.Stages)
             };
 
             switch (element.Type)
             {
                 case ResourceType.ConstantBuffer:
-                    uniformBufferCount++;
+                    uniformBufferCount += element.Count;
                     break;
                 case ResourceType.StructuredBuffer:
                 case ResourceType.StructuredBufferReadWrite:
-                    storageBufferCount++;
+                    storageBufferCount += element.Count;
                     break;
                 case ResourceType.Texture:
-                    sampledImageCount++;
+                    sampledImageCount += element.Count;
                     break;
                 case ResourceType.TextureReadWrite:
-                    storageImageCount++;
+                    storageImageCount += element.Count;
                     break;
                 case ResourceType.Sampler:
-                    samplerCount++;
+                    samplerCount += element.Count;
                     break;
                 case ResourceType.AccelerationStructure:
-                    accelerationStructureCount++;
+                    accelerationStructureCount += element.Count;
                     break;
             }
         }
@@ -69,14 +70,14 @@ internal unsafe class VKResourceLayout : ResourceLayout
                                              null,
                                              out DescriptorSetLayout).ThrowIfError();
 
-        MemoryAllocator.Free(bindings);
-
         Counts = new(uniformBufferCount,
                      storageBufferCount,
                      sampledImageCount,
                      storageImageCount,
                      samplerCount,
                      accelerationStructureCount);
+
+        Allocator.Release();
     }
 
     public VKResourceCounts Counts { get; }

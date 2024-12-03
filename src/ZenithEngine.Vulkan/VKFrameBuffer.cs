@@ -19,7 +19,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
         TextureSampleCount sampleCount = TextureSampleCount.Count1;
 
-        RenderingAttachmentInfo* colorAttachmentInfos = MemoryAllocator.Alloc<RenderingAttachmentInfo>(ColorTargets.Length);
+        RenderingAttachmentInfo* colorAttachmentInfos = Allocator.Alloc<RenderingAttachmentInfo>((uint)ColorTargets.Length);
         RenderingAttachmentInfo* depthStencilAttachmentInfo = null;
 
         PixelFormat[] colorFormats = new PixelFormat[ColorTargets.Length];
@@ -30,7 +30,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             FrameBufferAttachmentDesc attachmentDesc = desc.ColorTargets[i];
             Texture target = attachmentDesc.Target;
 
-            if (i == 0)
+            if (i is 0)
             {
                 sampleCount = target.Desc.SampleCount;
             }
@@ -49,7 +49,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 FaceCount = 1
             };
 
-            ColorTargets[i] = context.Factory.CreateTextureView(in viewDesc);
+            ColorTargets[i] = Context.Factory.CreateTextureView(in viewDesc);
 
             colorAttachmentInfos[i] = new()
             {
@@ -68,7 +68,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             FrameBufferAttachmentDesc attachmentDesc = desc.DepthStencilTarget!.Value;
             Texture target = attachmentDesc.Target;
 
-            if (ColorTargets.Length == 0)
+            if (ColorTargets.Length is 0)
             {
                 sampleCount = target.Desc.SampleCount;
             }
@@ -87,9 +87,9 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 FaceCount = 1
             };
 
-            DepthStencilTarget = context.Factory.CreateTextureView(in viewDesc);
+            DepthStencilTarget = Context.Factory.CreateTextureView(in viewDesc);
 
-            depthStencilAttachmentInfo = MemoryAllocator.Alloc<RenderingAttachmentInfo>();
+            depthStencilAttachmentInfo = Allocator.Alloc<RenderingAttachmentInfo>();
             depthStencilAttachmentInfo->SType = StructureType.RenderingAttachmentInfo;
             depthStencilAttachmentInfo->ImageView = DepthStencilTarget!.VK().ImageView;
             depthStencilAttachmentInfo->ImageLayout = ImageLayout.AttachmentOptimal;

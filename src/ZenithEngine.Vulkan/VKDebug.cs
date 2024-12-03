@@ -35,7 +35,7 @@ internal unsafe class VKDebug : DisposableObject
 
         foreach (ExtensionProperties extension in extensions)
         {
-            string name = Utils.PtrToStringAnsi((nint)extension.ExtensionName);
+            string name = Utils.PtrToStringUTF8((nint)extension.ExtensionName);
 
             if (name is ExtDebugUtils.ExtensionName)
             {
@@ -142,7 +142,7 @@ internal unsafe class VKDebug : DisposableObject
                 SType = StructureType.DebugUtilsObjectNameInfoExt,
                 ObjectType = type,
                 ObjectHandle = handle,
-                PObjectName = allocator.AllocAnsi(name)
+                PObjectName = allocator.AllocUTF8(name)
             };
 
             utils!.SetDebugUtilsObjectName(device, &nameInfo).ThrowIfError();
@@ -154,7 +154,7 @@ internal unsafe class VKDebug : DisposableObject
                 SType = StructureType.DebugMarkerObjectNameInfoExt,
                 ObjectType = (DebugReportObjectTypeEXT)type,
                 Object = handle,
-                PObjectName = allocator.AllocAnsi(name)
+                PObjectName = allocator.AllocUTF8(name)
             };
 
             marker!.DebugMarkerSetObjectName(device, &nameInfo).ThrowIfError();
@@ -183,7 +183,7 @@ internal unsafe class VKDebug : DisposableObject
                                  DebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                  void* pUserData)
     {
-        string message = Utils.PtrToStringAnsi((nint)pCallbackData->PMessage);
+        string message = Utils.PtrToStringUTF8((nint)pCallbackData->PMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
@@ -192,7 +192,7 @@ internal unsafe class VKDebug : DisposableObject
                                  $"[{messageSeverity}] [{messageTypes}]");
 
         stringBuilder.AppendLine(CultureInfo.InvariantCulture,
-                                 $"Name: {Utils.PtrToStringAnsi((nint)pCallbackData->PMessageIdName)}");
+                                 $"Name: {Utils.PtrToStringUTF8((nint)pCallbackData->PMessageIdName)}");
 
         stringBuilder.AppendLine(CultureInfo.InvariantCulture,
                                  $"Number: {pCallbackData->MessageIdNumber}");
@@ -223,7 +223,7 @@ internal unsafe class VKDebug : DisposableObject
                                  byte* pMessage,
                                  void* pUserData)
     {
-        string message = Utils.PtrToStringAnsi((nint)pMessage);
+        string message = Utils.PtrToStringUTF8((nint)pMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
@@ -238,7 +238,7 @@ internal unsafe class VKDebug : DisposableObject
                                  $"Message Code: {messageCode}");
 
         stringBuilder.AppendLine(CultureInfo.InvariantCulture,
-                                 $"Layer Prefix: {Utils.PtrToStringAnsi((nint)pLayerPrefix)}");
+                                 $"Layer Prefix: {Utils.PtrToStringUTF8((nint)pLayerPrefix)}");
 
         foreach (string str in strings)
         {

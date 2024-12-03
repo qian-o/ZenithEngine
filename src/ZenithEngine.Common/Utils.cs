@@ -1,11 +1,58 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Text;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Common;
 
 public static class Utils
 {
+    public const uint CbvOffset = 0;
+
+    public const uint SrvOffset = 20;
+
+    public const uint SmpOffset = 40;
+
+    public const uint UavOffset = 60;
+
+    public static uint GetBinding(ResourceType type, uint slot)
+    {
+        return type switch
+        {
+            ResourceType.ConstantBuffer => slot + CbvOffset,
+
+            ResourceType.StructuredBuffer or
+            ResourceType.Texture or
+            ResourceType.AccelerationStructure => slot + SrvOffset,
+
+            ResourceType.Sampler => slot + SmpOffset,
+
+            ResourceType.StructuredBufferReadWrite or
+            ResourceType.TextureReadWrite => slot + UavOffset,
+
+            _ => throw new InvalidOperationException("ResourceType doesn't supported.")
+        };
+    }
+
+    public static uint GetSlot(ResourceType type, uint binding)
+    {
+        return type switch
+        {
+            ResourceType.ConstantBuffer => binding - CbvOffset,
+
+            ResourceType.StructuredBuffer or
+            ResourceType.Texture or
+            ResourceType.AccelerationStructure => binding - SrvOffset,
+
+            ResourceType.Sampler => binding - SmpOffset,
+
+            ResourceType.StructuredBufferReadWrite or
+            ResourceType.TextureReadWrite => binding - UavOffset,
+
+            _ => throw new InvalidOperationException("ResourceType doesn't supported.")
+        };
+    }
+
     public static uint GetMipLevels(uint width, uint height)
     {
         return (uint)MathF.Floor(MathF.Log2(MathF.Max(width, height))) + 1;
@@ -103,9 +150,24 @@ public static class Utils
         };
     }
 
-    public static string PtrToStringAnsi(nint ptr)
+    public static uint CalcSizeStringUTF8(string value)
     {
-        return Marshal.PtrToStringAnsi(ptr) ?? string.Empty;
+        return (uint)(Encoding.UTF8.GetByteCount(value) + 1);
+    }
+
+    public static uint CalcSizeByStringUni(string value)
+    {
+        return (uint)(Encoding.Unicode.GetByteCount(value) + 2);
+    }
+
+    public static string PtrToStringUTF8(nint ptr)
+    {
+        return Marshal.PtrToStringUTF8(ptr) ?? string.Empty;
+    }
+
+    public static string PtrToStringUni(nint ptr)
+    {
+        return Marshal.PtrToStringUni(ptr) ?? string.Empty;
     }
 
     public static T AlignedSize<T>(T size, T alignment) where T : INumberBase<T>, IBitwiseOperators<T, T, T>

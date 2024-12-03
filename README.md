@@ -39,12 +39,12 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 		- [ ] Improve acceleration structures and ray tracing pipeline.
 
 - ZenithEngine.ShaderCompiler
-	- [ ] Add HLSL to SPIR-V compiler.
-	- [ ] Add SPIR-V reflection.
+	- [x] Add HLSL to SPIR-V compiler.
+	- [x] Add SPIR-V reflection.
 
 ## Proposed Features
-- [ ] Bindless resources.
-- [ ] SPIR-V reflection.
+- [x] Bindless resources.
+- [x] SPIR-V reflection.
 - [ ] Graphics API shared resources.
 
 ## Code Standard

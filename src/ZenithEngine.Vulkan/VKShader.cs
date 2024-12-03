@@ -1,5 +1,4 @@
 ﻿using Silk.NET.Vulkan;
-using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Graphics;
 
@@ -16,7 +15,7 @@ internal unsafe class VKShader : Shader
         {
             SType = StructureType.ShaderModuleCreateInfo,
             CodeSize = (uint)desc.ShaderBytes.Length,
-            PCode = (uint*)MemoryAllocator.Alloc(desc.ShaderBytes)
+            PCode = (uint*)Allocator.Alloc(desc.ShaderBytes)
         };
 
         Context.Vk.CreateShaderModule(Context.Device,
@@ -24,14 +23,14 @@ internal unsafe class VKShader : Shader
                                       null,
                                       out ShaderModule).ThrowIfError();
 
-        MemoryAllocator.Free(createInfo.PCode);
+        Allocator.Release();
 
         PipelineShaderStageCreateInfo = new()
         {
             SType = StructureType.PipelineShaderStageCreateInfo,
             Stage = VKFormats.GetShaderStageFlags(desc.Stage),
             Module = ShaderModule,
-            PName = MemoryAllocator.AllocAnsi(desc.EntryPoint)
+            PName = Allocator.AllocUTF8(desc.EntryPoint)
         };
     }
 

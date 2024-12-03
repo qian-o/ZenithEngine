@@ -6,6 +6,8 @@ namespace ZenithEngine.Common.Graphics;
 
 public abstract unsafe class GraphicsContext : DisposableObject
 {
+    public static readonly Version VulkanApiVersion = new(1, 3, 0);
+
     public abstract Backend Backend { get; }
 
     public abstract DeviceCapabilities Capabilities { get; }
@@ -103,7 +105,7 @@ public abstract unsafe class GraphicsContext : DisposableObject
         Assembly assembly = Assembly.Load(assemblyName);
         typeName = $"{assemblyName}.{typeName}";
 
-        if (args.Length == 0)
+        if (args.Length is 0)
         {
             return (T)assembly.CreateInstance(typeName)!;
         }

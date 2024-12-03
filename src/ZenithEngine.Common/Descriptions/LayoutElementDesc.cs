@@ -25,6 +25,11 @@ public struct LayoutElementDesc
     public ElementOptions Options { get; set; }
 
     /// <summary>
+    /// For regular resources, this value is 1, for array resources, this value is the size of the array.
+    /// </summary>
+    public uint Count { get; set; }
+
+    /// <summary>
     /// If it is greater than 0, it overrides the size of this resource (in bytes).
     /// Only valid on Buffers.
     /// </summary>
@@ -34,6 +39,7 @@ public struct LayoutElementDesc
                                             ResourceType type,
                                             ShaderStages stages,
                                             ElementOptions options = ElementOptions.None,
+                                            uint count = 1,
                                             uint size = 0)
     {
         return new()
@@ -42,6 +48,7 @@ public struct LayoutElementDesc
             Type = type,
             Stages = stages,
             Options = options,
+            Count = count,
             Size = size
         };
     }

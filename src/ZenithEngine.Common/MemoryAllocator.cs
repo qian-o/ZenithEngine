@@ -19,7 +19,7 @@ public unsafe class MemoryAllocator : DisposableObject
         return ptr;
     }
 
-    public T* Alloc<T>(int count = 1) where T : unmanaged
+    public T* Alloc<T>(uint count = 1) where T : unmanaged
     {
         T* ptr = (T*)Alloc((uint)(sizeof(T) * count));
 
@@ -33,7 +33,7 @@ public unsafe class MemoryAllocator : DisposableObject
 
     public T* Alloc<T>(T[] values) where T : unmanaged
     {
-        T* ptr = Alloc<T>(values.Length);
+        T* ptr = Alloc<T>((uint)values.Length);
 
         for (int i = 0; i < values.Length; i++)
         {
@@ -43,24 +43,47 @@ public unsafe class MemoryAllocator : DisposableObject
         return ptr;
     }
 
-    public byte* AllocAnsi(string value)
+    public byte* AllocUTF8(string value)
     {
-        byte[] bytes = Encoding.ASCII.GetBytes(value);
+        byte* ptr = Alloc<byte>(Utils.CalcSizeStringUTF8(value));
 
-        byte* chars = Alloc<byte>(bytes.Length + 1);
+        byte[] bytes = Encoding.UTF8.GetBytes(value);
 
-        Marshal.Copy(bytes, 0, (nint)chars, bytes.Length);
+        Marshal.Copy(bytes, 0, (nint)ptr, bytes.Length);
 
-        return chars;
+        return ptr;
     }
 
-    public byte** AllocAnsi(string[] values)
+    public byte** AllocUTF8(string[] values)
     {
-        nint* ptr = Alloc<nint>(values.Length);
+        nint* ptr = Alloc<nint>((uint)values.Length);
 
         for (int i = 0; i < values.Length; i++)
         {
-            ptr[i] = (nint)AllocAnsi(values[i]);
+            ptr[i] = (nint)AllocUTF8(values[i]);
+        }
+
+        return (byte**)ptr;
+    }
+
+    public byte** AllocUni(string value)
+    {
+        byte* ptr = Alloc<byte>(Utils.CalcSizeByStringUni(value));
+
+        byte[] bytes = Encoding.Unicode.GetBytes(value);
+
+        Marshal.Copy(bytes, 0, (nint)ptr, bytes.Length);
+
+        return (byte**)ptr;
+    }
+
+    public byte** AllocUni(string[] values)
+    {
+        nint* ptr = Alloc<nint>((uint)values.Length);
+
+        for (int i = 0; i < values.Length; i++)
+        {
+            ptr[i] = (nint)AllocUni(values[i]);
         }
 
         return (byte**)ptr;

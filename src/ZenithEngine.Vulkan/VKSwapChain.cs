@@ -271,7 +271,7 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     private void DestroySurface()
     {
-        if (Surface.Handle == 0)
+        if (Surface.Handle is 0)
         {
             return;
         }
@@ -281,7 +281,7 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     private void DestroySwapChain()
     {
-        if (Swapchain.Handle == 0)
+        if (Swapchain.Handle is 0)
         {
             return;
         }
