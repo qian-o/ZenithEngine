@@ -49,7 +49,7 @@ public class GraphicsContextTest
 
             BufferDesc mvp1Desc = BufferDesc.Default(64, BufferUsage.ConstantBuffer);
             BufferDesc mvp2Desc = BufferDesc.Default(64, BufferUsage.StorageBuffer);
-            BufferDesc colorsDesc = BufferDesc.Default(16, BufferUsage.StorageBuffer);
+            BufferDesc colorsDesc = BufferDesc.Default(16, BufferUsage.StorageBufferReadWrite);
 
             using Buffer mvp1 = context.Factory.CreateBuffer(in mvp1Desc);
             using Buffer mvp2 = context.Factory.CreateBuffer(in mvp2Desc);

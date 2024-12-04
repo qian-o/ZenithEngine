@@ -21,22 +21,27 @@ public enum BufferUsage
     ConstantBuffer = 1 << 2,
 
     /// <summary>
-    /// Indicates can be used as a read-write storage Buffer.
+    /// Indicates can be used as a read-only storage Buffer.
     /// </summary>
     StorageBuffer = 1 << 3,
 
     /// <summary>
+    /// Indicates can be used as a read-write storage Buffer.
+    /// </summary>
+    StorageBufferReadWrite = 1 << 4,
+
+    /// <summary>
     /// Indicates can be used as the source of indirect drawing information.
     /// </summary>
-    IndirectBuffer = 1 << 4,
+    IndirectBuffer = 1 << 5,
 
     /// <summary>
     /// Indicates will be used in a RayTracing acceleration structure.
     /// </summary>
-    AccelerationStructure = 1 << 5,
+    AccelerationStructure = 1 << 6,
 
     /// <summary>
     /// Indicates will be updated with new data very frequently.
     /// </summary>
-    Dynamic = 1 << 6
+    Dynamic = 1 << 7
 }
