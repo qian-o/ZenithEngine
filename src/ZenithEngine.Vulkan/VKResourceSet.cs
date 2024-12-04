@@ -15,7 +15,7 @@ internal unsafe class VKResourceSet : ResourceSet
     {
         VKResourceLayout layout = desc.Layout.VK();
 
-        Token = Context.DescriptorSetAllocator.Alloc(layout.DescriptorSetLayout, layout.Counts);
+        Token = Context.DescriptorSetAllocator!.Alloc(layout.DescriptorSetLayout, layout.Counts);
 
         WriteDescriptorSet[] writes = new WriteDescriptorSet[layout.Desc.Elements.Length];
 
@@ -77,7 +77,7 @@ internal unsafe class VKResourceSet : ResourceSet
         Array.Clear(StorageImages, 0, StorageImages.Length);
         Array.Clear(SampledImages, 0, SampledImages.Length);
 
-        Context.DescriptorSetAllocator.Free(Token);
+        Context.DescriptorSetAllocator!.Free(Token);
     }
 
     private static void FillDescriptors(MemoryAllocator allocator,
