@@ -37,7 +37,7 @@ internal unsafe class IncludeHandler(Func<string, string>? includeHandler) : Com
 
             byte[] source = Encoding.UTF8.GetBytes(shader);
 
-            DxcCompiler.DxcUtils.CreateBlob(ref source[0],
+            DxcCompiler.DxcUtils.CreateBlob(in source[0],
                                             (uint)source.Length,
                                             DXC.CPUtf8,
                                             (IDxcBlobEncoding**)&blob);

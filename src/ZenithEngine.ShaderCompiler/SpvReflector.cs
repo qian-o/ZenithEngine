@@ -11,7 +11,7 @@ public static unsafe class SpvReflector
     public static ReflectResult Reflect(byte[] shader)
     {
         ReflectShaderModule* module = stackalloc ReflectShaderModule[1];
-        reflect.CreateShaderModule((uint)shader.Length, ref shader[0], module);
+        reflect.CreateShaderModule((uint)shader.Length, in shader[0], module);
 
         ShaderStages stages = SpvFormats.GetShaderStages(module->ShaderStage);
 
