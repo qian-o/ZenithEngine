@@ -17,8 +17,6 @@ internal unsafe class VKSampler : Sampler
                             out Filter magFilter,
                             out SamplerMipmapMode mode);
 
-        bool compareEnable = desc.ComparisonFunction.HasValue;
-
         SamplerCreateInfo createInfo = new()
         {
             SType = StructureType.SamplerCreateInfo,
@@ -31,8 +29,8 @@ internal unsafe class VKSampler : Sampler
             MipLodBias = desc.LodBias,
             AnisotropyEnable = desc.Filter is SamplerFilter.Anisotropic,
             MaxAnisotropy = desc.MaximumAnisotropy,
-            CompareEnable = compareEnable,
-            CompareOp = compareEnable ? VKFormats.GetCompareOp(desc.ComparisonFunction!.Value) : CompareOp.Never,
+            CompareEnable = desc.ComparisonFunction is not ComparisonFunction.Never,
+            CompareOp = VKFormats.GetCompareOp(desc.ComparisonFunction),
             MinLod = desc.MinimumLod,
             MaxLod = desc.MaximumLod,
             BorderColor = VKFormats.GetBorderColor(desc.BorderColor)
