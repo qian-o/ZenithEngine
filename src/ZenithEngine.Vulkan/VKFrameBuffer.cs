@@ -13,8 +13,6 @@ internal unsafe class VKFrameBuffer : FrameBuffer
     public VKFrameBuffer(GraphicsContext context,
                          ref readonly FrameBufferDesc desc) : base(context, in desc)
     {
-        bool hasDepthStencil = desc.DepthStencilTarget.HasValue;
-
         ColorTargets = new TextureView[desc.ColorTargets.Length];
 
         TextureSampleCount sampleCount = TextureSampleCount.Count1;
@@ -63,9 +61,9 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             colorFormats[i] = viewDesc.Format;
         }
 
-        if (hasDepthStencil)
+        if (desc.DepthStencilTarget.HasValue)
         {
-            FrameBufferAttachmentDesc attachmentDesc = desc.DepthStencilTarget!.Value;
+            FrameBufferAttachmentDesc attachmentDesc = desc.DepthStencilTarget.Value;
             Texture target = attachmentDesc.Target;
 
             if (ColorTargets.Length is 0)
