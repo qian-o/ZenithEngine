@@ -63,21 +63,6 @@ internal class VKFormats
             PixelFormat.R32G32SInt => Format.R32G32Sint,
             PixelFormat.R32G32Float => Format.R32G32Sfloat,
 
-            PixelFormat.R8G8B8UNorm => Format.R8G8B8Unorm,
-            PixelFormat.R8G8B8SNorm => Format.R8G8B8SNorm,
-            PixelFormat.R8G8B8UInt => Format.R8G8B8Uint,
-            PixelFormat.R8G8B8SInt => Format.R8G8B8Sint,
-
-            PixelFormat.R16G16B16UNorm => Format.R16G16B16Unorm,
-            PixelFormat.R16G16B16SNorm => Format.R16G16B16SNorm,
-            PixelFormat.R16G16B16UInt => Format.R16G16B16Uint,
-            PixelFormat.R16G16B16SInt => Format.R16G16B16Sint,
-            PixelFormat.R16G16B16Float => Format.R16G16B16Sfloat,
-
-            PixelFormat.R32G32B32UInt => Format.R32G32B32Uint,
-            PixelFormat.R32G32B32SInt => Format.R32G32B32Sint,
-            PixelFormat.R32G32B32Float => Format.R32G32B32Sfloat,
-
             PixelFormat.R8G8B8A8UNorm => Format.R8G8B8A8Unorm,
             PixelFormat.R8G8B8A8UNormSRgb => Format.R8G8B8A8Srgb,
             PixelFormat.R8G8B8A8SNorm => Format.R8G8B8A8SNorm,
@@ -97,10 +82,8 @@ internal class VKFormats
             PixelFormat.B8G8R8A8UNorm => Format.B8G8R8A8Unorm,
             PixelFormat.B8G8R8A8UNormSRgb => Format.B8G8R8A8Srgb,
 
-            PixelFormat.BC1RgbUNorm => Format.BC1RgbUnormBlock,
-            PixelFormat.BC1RgbUNormSRgb => Format.BC1RgbSrgbBlock,
-            PixelFormat.BC1RgbaUNorm => Format.BC1RgbaUnormBlock,
-            PixelFormat.BC1RgbaUNormSRgb => Format.BC1RgbaSrgbBlock,
+            PixelFormat.BC1UNorm => Format.BC1RgbaUnormBlock,
+            PixelFormat.BC1UNormSRgb => Format.BC1RgbaSrgbBlock,
             PixelFormat.BC2UNorm => Format.BC2UnormBlock,
             PixelFormat.BC2UNormSRgb => Format.BC2SrgbBlock,
             PixelFormat.BC3UNorm => Format.BC3UnormBlock,
@@ -112,17 +95,8 @@ internal class VKFormats
             PixelFormat.BC7UNorm => Format.BC7UnormBlock,
             PixelFormat.BC7UNormSRgb => Format.BC7SrgbBlock,
 
-            PixelFormat.ETC2R8G8B8UNorm => Format.Etc2R8G8B8UnormBlock,
-            PixelFormat.ETC2R8G8B8A1UNorm => Format.Etc2R8G8B8A1UnormBlock,
-            PixelFormat.ETC2R8G8B8A8UNorm => Format.Etc2R8G8B8A8UnormBlock,
-
-            PixelFormat.D16UNormS8UInt => Format.D16UnormS8Uint,
             PixelFormat.D24UNormS8UInt => Format.D24UnormS8Uint,
             PixelFormat.D32FloatS8UInt => Format.D32SfloatS8Uint,
-
-            PixelFormat.R10G10B10A2UNorm => Format.A2B10G10R10UnormPack32,
-            PixelFormat.R10G10B10A2UInt => Format.A2B10G10R10UintPack32,
-            PixelFormat.R11G11B10Float => Format.B10G11R11UfloatPack32,
 
             _ => throw new ArgumentOutOfRangeException(nameof(format))
         };
@@ -692,21 +666,6 @@ internal class VKFormats
             Format.R32G32Sint => PixelFormat.R32G32SInt,
             Format.R32G32Sfloat => PixelFormat.R32G32Float,
 
-            Format.R8G8B8Unorm => PixelFormat.R8G8B8UNorm,
-            Format.R8G8B8SNorm => PixelFormat.R8G8B8SNorm,
-            Format.R8G8B8Uint => PixelFormat.R8G8B8UInt,
-            Format.R8G8B8Sint => PixelFormat.R8G8B8SInt,
-
-            Format.R16G16B16Unorm => PixelFormat.R16G16B16UNorm,
-            Format.R16G16B16SNorm => PixelFormat.R16G16B16SNorm,
-            Format.R16G16B16Uint => PixelFormat.R16G16B16UInt,
-            Format.R16G16B16Sint => PixelFormat.R16G16B16SInt,
-            Format.R16G16B16Sfloat => PixelFormat.R16G16B16Float,
-
-            Format.R32G32B32Uint => PixelFormat.R32G32B32UInt,
-            Format.R32G32B32Sint => PixelFormat.R32G32B32SInt,
-            Format.R32G32B32Sfloat => PixelFormat.R32G32B32Float,
-
             Format.R8G8B8A8Unorm => PixelFormat.R8G8B8A8UNorm,
             Format.R8G8B8A8Srgb => PixelFormat.R8G8B8A8UNormSRgb,
             Format.R8G8B8A8SNorm => PixelFormat.R8G8B8A8SNorm,
@@ -726,10 +685,8 @@ internal class VKFormats
             Format.B8G8R8A8Unorm => PixelFormat.B8G8R8A8UNorm,
             Format.B8G8R8A8Srgb => PixelFormat.B8G8R8A8UNormSRgb,
 
-            Format.BC1RgbUnormBlock => PixelFormat.BC1RgbUNorm,
-            Format.BC1RgbSrgbBlock => PixelFormat.BC1RgbUNormSRgb,
-            Format.BC1RgbaUnormBlock => PixelFormat.BC1RgbaUNorm,
-            Format.BC1RgbaSrgbBlock => PixelFormat.BC1RgbaUNormSRgb,
+            Format.BC1RgbaUnormBlock => PixelFormat.BC1UNorm,
+            Format.BC1RgbaSrgbBlock => PixelFormat.BC1UNormSRgb,
             Format.BC2UnormBlock => PixelFormat.BC2UNorm,
             Format.BC2SrgbBlock => PixelFormat.BC2UNormSRgb,
             Format.BC3UnormBlock => PixelFormat.BC3UNorm,
@@ -741,17 +698,8 @@ internal class VKFormats
             Format.BC7UnormBlock => PixelFormat.BC7UNorm,
             Format.BC7SrgbBlock => PixelFormat.BC7UNormSRgb,
 
-            Format.Etc2R8G8B8UnormBlock => PixelFormat.ETC2R8G8B8UNorm,
-            Format.Etc2R8G8B8A1UnormBlock => PixelFormat.ETC2R8G8B8A1UNorm,
-            Format.Etc2R8G8B8A8UnormBlock => PixelFormat.ETC2R8G8B8A8UNorm,
-
-            Format.D16UnormS8Uint => PixelFormat.D16UNormS8UInt,
             Format.D24UnormS8Uint => PixelFormat.D24UNormS8UInt,
             Format.D32SfloatS8Uint => PixelFormat.D32FloatS8UInt,
-
-            Format.A2B10G10R10UnormPack32 => PixelFormat.R10G10B10A2UNorm,
-            Format.A2B10G10R10UintPack32 => PixelFormat.R10G10B10A2UInt,
-            Format.B10G11R11UfloatPack32 => PixelFormat.R11G11B10Float,
 
             _ => throw new ArgumentOutOfRangeException(nameof(format))
         };

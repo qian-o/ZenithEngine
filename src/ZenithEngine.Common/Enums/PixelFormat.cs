@@ -123,66 +123,6 @@ public enum PixelFormat
     R32G32Float,
 
     /// <summary>
-    /// RGB component order. Each component is an 8-bit unsigned normalized integer.
-    /// </summary>
-    R8G8B8UNorm,
-
-    /// <summary>
-    /// RGB component order. Each component is an 8-bit signed normalized integer.
-    /// </summary>
-    R8G8B8SNorm,
-
-    /// <summary>
-    /// RGB component order. Each component is an 8-bit unsigned integer.
-    /// </summary>
-    R8G8B8UInt,
-
-    /// <summary>
-    /// RGB component order. Each component is an 8-bit signed integer.
-    /// </summary>
-    R8G8B8SInt,
-
-    /// <summary>
-    /// RGB component order. Each component is a 16-bit unsigned normalized integer.
-    /// </summary>
-    R16G16B16UNorm,
-
-    /// <summary>
-    /// RGB component order. Each component is a 16-bit signed normalized integer.
-    /// </summary>
-    R16G16B16SNorm,
-
-    /// <summary>
-    /// RGB component order. Each component is a 16-bit unsigned integer.
-    /// </summary>
-    R16G16B16UInt,
-
-    /// <summary>
-    /// RGB component order. Each component is a 16-bit signed integer.
-    /// </summary>
-    R16G16B16SInt,
-
-    /// <summary>
-    /// RGB component order. Each component is a 16-bit signed floating-point value.
-    /// </summary>
-    R16G16B16Float,
-
-    /// <summary>
-    /// RGB component order. Each component is a 32-bit unsigned integer.
-    /// </summary>
-    R32G32B32UInt,
-
-    /// <summary>
-    /// RGB component order. Each component is a 32-bit signed integer.
-    /// </summary>
-    R32G32B32SInt,
-
-    /// <summary>
-    /// RGB component order. Each component is a 32-bit signed floating-point value.
-    /// </summary>
-    R32G32B32Float,
-
-    /// <summary>
     /// RGBA component order. Each component is an 8-bit unsigned normalized integer.
     /// </summary>
     R8G8B8A8UNorm,
@@ -260,26 +200,15 @@ public enum PixelFormat
     B8G8R8A8UNormSRgb,
 
     /// <summary>
-    /// BC1 block compressed format with no alpha.
-    /// </summary>
-    BC1RgbUNorm,
-
-    /// <summary>
-    /// BC1 block compressed format with no alpha.
-    /// This is an sRGB format.
-    /// </summary>
-    BC1RgbUNormSRgb,
-
-    /// <summary>
     /// BC1 block compressed format with a single-bit alpha channel.
     /// </summary>
-    BC1RgbaUNorm,
+    BC1UNorm,
 
     /// <summary>
     /// BC1 block compressed format with a single-bit alpha channel.
     /// This is an sRGB format.
     /// </summary>
-    BC1RgbaUNormSRgb,
+    BC1UNormSRgb,
 
     /// <summary>
     /// BC2 block compressed format.
@@ -335,28 +264,6 @@ public enum PixelFormat
     BC7UNormSRgb,
 
     /// <summary>
-    /// A 64-bit, 4x4 block-compressed format storing unsigned normalized RGB data.
-    /// </summary>
-    ETC2R8G8B8UNorm,
-
-    /// <summary>
-    /// A 64-bit, 4x4 block-compressed format storing unsigned normalized RGB data, as well as 1 bit of alpha data.
-    /// </summary>
-    ETC2R8G8B8A1UNorm,
-
-    /// <summary>
-    /// A 128-bit, 4x4 block-compressed format storing 64 bits of unsigned normalized RGB data, as well as 64 bits of alpha
-    /// data.
-    /// </summary>
-    ETC2R8G8B8A8UNorm,
-
-    /// <summary>
-    /// A depth-stencil format where the depth is stored in a 16-bit unsigned normalized integer, and the stencil is stored
-    /// in an 8-bit unsigned integer.
-    /// </summary>
-    D16UNormS8UInt,
-
-    /// <summary>
     /// A depth-stencil format where the depth is stored in a 24-bit unsigned normalized integer, and the stencil is stored
     /// in an 8-bit unsigned integer.
     /// </summary>
@@ -366,25 +273,5 @@ public enum PixelFormat
     /// A depth-stencil format where the depth is stored in a 32-bit signed floating-point value, and the stencil is stored
     /// in an 8-bit unsigned integer.
     /// </summary>
-    D32FloatS8UInt,
-
-    /// <summary>
-    /// A 32-bit packed format. The 10-bit R component occupies bits 0..9, the 10-bit G component occupies bits 10..19,
-    /// the 10-bit A component occupies 20..29, and the 2-bit A component occupies bits 30..31. Each value is an unsigned,
-    /// normalized integer.
-    /// </summary>
-    R10G10B10A2UNorm,
-
-    /// <summary>
-    /// A 32-bit packed format. The 10-bit R component occupies bits 0..9, the 10-bit G component occupies bits 10..19,
-    /// the 10-bit A component occupies 20..29, and the 2-bit A component occupies bits 30..31. Each value is an unsigned
-    /// integer.
-    /// </summary>
-    R10G10B10A2UInt,
-
-    /// <summary>
-    /// A 32-bit packed format. The 11-bit R componnent occupies bits 0..10, the 11-bit G component occupies bits 11..21,
-    /// and the 10-bit B component occupies bits 22..31. Each value is an unsigned floating point value.
-    /// </summary>
-    R11G11B10Float
+    D32FloatS8UInt
 }

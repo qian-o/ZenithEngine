@@ -26,9 +26,8 @@ public struct SamplerDesc
 
     /// <summary>
     /// A function that compares sampled data against existing sampled data.
-    /// If null, comparison sampling is not used.
     /// </summary>
-    public ComparisonFunction? ComparisonFunction { get; set; }
+    public ComparisonFunction ComparisonFunction { get; set; }
 
     /// <summary>
     /// The maximum anisotropy of the filter.
@@ -59,7 +58,7 @@ public struct SamplerDesc
                                       AddressMode addressModeV = AddressMode.Wrap,
                                       AddressMode addressModeW = AddressMode.Wrap,
                                       SamplerFilter filter = SamplerFilter.MinLinearMagLinearMipLinear,
-                                      ComparisonFunction? comparisonFunction = null,
+                                      ComparisonFunction comparisonFunction = ComparisonFunction.Never,
                                       uint maximumAnisotropy = 0,
                                       uint minimumLod = 0,
                                       uint maximumLod = uint.MaxValue,
