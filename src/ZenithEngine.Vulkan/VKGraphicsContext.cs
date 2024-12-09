@@ -123,7 +123,11 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         InstanceCreateInfo createInfo = new()
         {
             SType = StructureType.InstanceCreateInfo,
-            PApplicationInfo = &appInfo
+            PApplicationInfo = &appInfo,
+            PpEnabledExtensionNames = InstanceExtensions(allocator,
+                                                         useDebugLayer,
+                                                         out uint extensionCount),
+            EnabledExtensionCount = extensionCount
         };
 
         if (useDebugLayer)
@@ -157,6 +161,22 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
             createInfo.PpEnabledLayerNames = allocator.AllocUTF8([ValidationLayerName]);
         }
 
+        Vk.CreateInstance(&createInfo, null, out Instance).ThrowIfError();
+
+        Debug = useDebugLayer ? new(this) : null;
+        KhrSurface = Vk.TryGetExtension<KhrSurface>(Instance);
+        KhrWin32Surface = Vk.TryGetExtension<KhrWin32Surface>(Instance);
+        KhrWaylandSurface = Vk.TryGetExtension<KhrWaylandSurface>(Instance);
+        KhrXlibSurface = Vk.TryGetExtension<KhrXlibSurface>(Instance);
+        KhrAndroidSurface = Vk.TryGetExtension<KhrAndroidSurface>(Instance);
+        MvkIosSurface = Vk.TryGetExtension<MvkIosSurface>(Instance);
+        MvkMacosSurface = Vk.TryGetExtension<MvkMacosSurface>(Instance);
+    }
+
+    private static byte** InstanceExtensions(MemoryAllocator allocator,
+                                             bool useDebugLayer,
+                                             out uint count)
+    {
         string[] extensions = [KhrSurface.ExtensionName];
 
         if (useDebugLayer)
@@ -185,18 +205,8 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
             extensions = [.. extensions, MvkMacosSurface.ExtensionName];
         }
 
-        createInfo.EnabledExtensionCount = (uint)extensions.Length;
-        createInfo.PpEnabledExtensionNames = allocator.AllocUTF8(extensions);
+        count = (uint)extensions.Length;
 
-        Vk.CreateInstance(&createInfo, null, out Instance).ThrowIfError();
-
-        Debug = useDebugLayer ? new(this) : null;
-        KhrSurface = Vk.TryGetExtension<KhrSurface>(Instance);
-        KhrWin32Surface = Vk.TryGetExtension<KhrWin32Surface>(Instance);
-        KhrWaylandSurface = Vk.TryGetExtension<KhrWaylandSurface>(Instance);
-        KhrXlibSurface = Vk.TryGetExtension<KhrXlibSurface>(Instance);
-        KhrAndroidSurface = Vk.TryGetExtension<KhrAndroidSurface>(Instance);
-        MvkIosSurface = Vk.TryGetExtension<MvkIosSurface>(Instance);
-        MvkMacosSurface = Vk.TryGetExtension<MvkMacosSurface>(Instance);
+        return allocator.AllocUTF8(extensions);
     }
 }

@@ -7,6 +7,12 @@ internal unsafe partial class VKGraphicsContext
 {
     public VkPhysicalDevice PhysicalDevice;
 
+    public uint DirectQueueFamilyIndex { get; private set; }
+
+    public uint CopyQueueFamilyIndex { get; private set; }
+
+    public bool SharingEnabled => DirectQueueFamilyIndex != CopyQueueFamilyIndex;
+
     public uint FindMemoryTypeIndex(uint typeBits, MemoryPropertyFlags flags)
     {
         PhysicalDeviceMemoryProperties properties;
@@ -49,10 +55,12 @@ internal unsafe partial class VKGraphicsContext
             {
                 bestScore = score;
                 bestPhysicalDevice = physicalDevice;
+                (DirectQueueFamilyIndex, CopyQueueFamilyIndex) = QueueFamilyIndices(physicalDevice);
             }
         }
 
         PhysicalDevice = bestPhysicalDevice;
+
         Capabilities.Init(this);
     }
 
@@ -169,5 +177,48 @@ internal unsafe partial class VKGraphicsContext
         }
 
         return score;
+    }
+
+    private (uint DirectQueueFamilyIndex, uint CopyQueueFamilyIndex) QueueFamilyIndices(VkPhysicalDevice physicalDevice)
+    {
+        uint directQueueFamilyIndex = 0;
+        uint copyQueueFamilyIndex = 0;
+
+        uint propertyCount = 0;
+        Vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propertyCount, null);
+
+        QueueFamilyProperties[] properties = new QueueFamilyProperties[propertyCount];
+        Vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propertyCount, properties);
+
+        uint directQueueCount = 0;
+        uint copyQueueCount = 0;
+
+        for (uint i = 0; i < properties.Length; i++)
+        {
+            QueueFlags flags = properties[i].QueueFlags;
+            uint count = properties[i].QueueCount;
+
+            if (flags.HasFlag(QueueFlags.GraphicsBit
+                              | QueueFlags.ComputeBit
+                              | QueueFlags.TransferBit) && directQueueCount < count)
+            {
+                DirectQueueFamilyIndex = i;
+
+                directQueueCount = count;
+            }
+            else if (flags.HasFlag(QueueFlags.TransferBit) && copyQueueCount < count)
+            {
+                CopyQueueFamilyIndex = i;
+
+                copyQueueCount = count;
+            }
+        }
+
+        if (copyQueueFamilyIndex is 0)
+        {
+            copyQueueFamilyIndex = directQueueFamilyIndex;
+        }
+
+        return (directQueueFamilyIndex, copyQueueFamilyIndex);
     }
 }

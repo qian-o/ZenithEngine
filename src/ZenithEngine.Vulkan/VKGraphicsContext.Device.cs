@@ -9,12 +9,6 @@ internal unsafe partial class VKGraphicsContext
 {
     public VkDevice Device;
 
-    public uint DirectQueueFamilyIndex { get; private set; }
-
-    public uint CopyQueueFamilyIndex { get; private set; }
-
-    public bool SharingEnabled { get; private set; }
-
     public KhrSwapchain? KhrSwapchain { get; private set; }
 
     public KhrRayTracingPipeline? KhrRayTracingPipeline { get; private set; }
@@ -37,72 +31,16 @@ internal unsafe partial class VKGraphicsContext
 
     private void InitDevice()
     {
-        float queuePriority = 1;
-
         using MemoryAllocator allocator = new();
-
-        (DirectQueueFamilyIndex, CopyQueueFamilyIndex) = GetBestQueueFamilyIndices();
-
-        SharingEnabled = DirectQueueFamilyIndex != CopyQueueFamilyIndex;
 
         DeviceCreateInfo createInfo = new()
         {
-            SType = StructureType.DeviceCreateInfo
+            SType = StructureType.DeviceCreateInfo,
+            PQueueCreateInfos = QueueCreateInfos(allocator, out uint infoCount),
+            QueueCreateInfoCount = infoCount,
+            PpEnabledExtensionNames = DeviceExtensions(allocator, out uint extensionCount),
+            EnabledExtensionCount = extensionCount
         };
-
-        DeviceQueueCreateInfo[] queueCreateInfos =
-        [
-            new()
-            {
-                SType = StructureType.DeviceQueueCreateInfo,
-                QueueFamilyIndex = DirectQueueFamilyIndex,
-                QueueCount = 1,
-                PQueuePriorities = &queuePriority
-            }
-        ];
-
-        if (SharingEnabled)
-        {
-            queueCreateInfos =
-            [
-                ..queueCreateInfos,
-                new()
-                {
-                    SType = StructureType.DeviceQueueCreateInfo,
-                    QueueFamilyIndex = CopyQueueFamilyIndex,
-                    QueueCount = 1,
-                    PQueuePriorities = &queuePriority
-                }
-            ];
-        }
-
-        createInfo.QueueCreateInfoCount = SharingEnabled ? 2u : 1u;
-        createInfo.PQueueCreateInfos = allocator.Alloc(queueCreateInfos);
-
-        string[] extensions = [KhrSwapchain.ExtensionName];
-
-        if (Capabilities.IsRayQuerySupported)
-        {
-            extensions = [.. extensions, KhrRayQuery.ExtensionName];
-        }
-
-        if (Capabilities.IsRayTracingSupported)
-        {
-            extensions = [.. extensions, KhrRayTracingPipeline.ExtensionName];
-        }
-
-        if (Capabilities.IsRayQuerySupported || Capabilities.IsRayTracingSupported)
-        {
-            extensions =
-            [
-                .. extensions,
-                KhrAccelerationStructure.ExtensionName,
-                KhrDeferredHostOperations.ExtensionName
-            ];
-        }
-
-        createInfo.EnabledExtensionCount = (uint)extensions.Length;
-        createInfo.PpEnabledExtensionNames = allocator.AllocUTF8(extensions);
 
         createInfo.AddNext(out PhysicalDeviceFeatures2 features2)
                   .AddNext(out PhysicalDeviceVulkan13Features _)
@@ -152,46 +90,59 @@ internal unsafe partial class VKGraphicsContext
         DescriptorSetAllocator = null;
     }
 
-    private (uint DirectQueueFamilyIndex, uint CopyQueueFamilyIndex) GetBestQueueFamilyIndices()
+    private DeviceQueueCreateInfo* QueueCreateInfos(MemoryAllocator allocator, out uint count)
     {
-        uint directQueueFamilyIndex = 0;
-        uint copyQueueFamilyIndex = 0;
+        float* queuePriorities = allocator.Alloc([1.0f]);
 
-        uint propertyCount = 0;
-        Vk.GetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &propertyCount, null);
+        DeviceQueueCreateInfo[] queueCreateInfos = [Info(DirectQueueFamilyIndex)];
 
-        QueueFamilyProperties[] properties = new QueueFamilyProperties[propertyCount];
-        Vk.GetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &propertyCount, properties);
-
-        uint directQueueCount = 0;
-        uint copyQueueCount = 0;
-
-        for (uint i = 0; i < properties.Length; i++)
+        if (SharingEnabled)
         {
-            QueueFlags flags = properties[i].QueueFlags;
-            uint count = properties[i].QueueCount;
-
-            if (flags.HasFlag(QueueFlags.GraphicsBit
-                              | QueueFlags.ComputeBit
-                              | QueueFlags.TransferBit) && directQueueCount < count)
-            {
-                DirectQueueFamilyIndex = i;
-
-                directQueueCount = count;
-            }
-            else if (flags.HasFlag(QueueFlags.TransferBit) && copyQueueCount < count)
-            {
-                CopyQueueFamilyIndex = i;
-
-                copyQueueCount = count;
-            }
+            queueCreateInfos = [.. queueCreateInfos, Info(CopyQueueFamilyIndex)];
         }
 
-        if (copyQueueFamilyIndex is 0)
+        count = (uint)queueCreateInfos.Length;
+
+        return allocator.Alloc(queueCreateInfos);
+
+        DeviceQueueCreateInfo Info(uint queueFamilyIndex)
         {
-            copyQueueFamilyIndex = directQueueFamilyIndex;
+            return new()
+            {
+                SType = StructureType.DeviceQueueCreateInfo,
+                QueueFamilyIndex = queueFamilyIndex,
+                QueueCount = 1,
+                PQueuePriorities = queuePriorities
+            };
+        }
+    }
+
+    private byte** DeviceExtensions(MemoryAllocator allocator, out uint count)
+    {
+        string[] extensions = [KhrSwapchain.ExtensionName];
+
+        if (Capabilities.IsRayQuerySupported)
+        {
+            extensions = [.. extensions, KhrRayQuery.ExtensionName];
         }
 
-        return (directQueueFamilyIndex, copyQueueFamilyIndex);
+        if (Capabilities.IsRayTracingSupported)
+        {
+            extensions = [.. extensions, KhrRayTracingPipeline.ExtensionName];
+        }
+
+        if (Capabilities.IsRayQuerySupported || Capabilities.IsRayTracingSupported)
+        {
+            extensions =
+            [
+                .. extensions,
+                KhrAccelerationStructure.ExtensionName,
+                KhrDeferredHostOperations.ExtensionName
+            ];
+        }
+
+        count = (uint)extensions.Length;
+
+        return allocator.AllocUTF8(extensions);
     }
 }
