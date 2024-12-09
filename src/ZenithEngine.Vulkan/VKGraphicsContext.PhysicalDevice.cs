@@ -181,14 +181,14 @@ internal unsafe partial class VKGraphicsContext
 
     private (uint Direct, uint Copy) QueueFamilyIndices(VkPhysicalDevice physicalDevice)
     {
-        uint directQueueFamilyIndex = 0;
-        uint copyQueueFamilyIndex = 0;
-
         uint propertyCount = 0;
         Vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propertyCount, null);
 
         QueueFamilyProperties[] properties = new QueueFamilyProperties[propertyCount];
         Vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propertyCount, properties);
+
+        uint directQueueFamilyIndex = 0;
+        uint copyQueueFamilyIndex = 0;
 
         uint directQueueCount = 0;
         uint copyQueueCount = 0;
@@ -202,13 +202,13 @@ internal unsafe partial class VKGraphicsContext
                               | QueueFlags.ComputeBit
                               | QueueFlags.TransferBit) && directQueueCount < count)
             {
-                DirectQueueFamilyIndex = i;
+                directQueueFamilyIndex = i;
 
                 directQueueCount = count;
             }
             else if (flags.HasFlag(QueueFlags.TransferBit) && copyQueueCount < count)
             {
-                CopyQueueFamilyIndex = i;
+                copyQueueFamilyIndex = i;
 
                 copyQueueCount = count;
             }
