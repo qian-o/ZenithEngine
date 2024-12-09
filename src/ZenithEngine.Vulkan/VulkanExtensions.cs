@@ -39,7 +39,7 @@ internal static class VulkanExtensions
     {
         if (swapChain is not VKSwapChain)
         {
-            throw new ZenithEngineException("SwapChain is not a Vulkan swap chain");
+            throw new ZenithEngineException("SwapChain is not a Vulkan swap chain.");
         }
 
         return (VKSwapChain)swapChain;
@@ -49,7 +49,7 @@ internal static class VulkanExtensions
     {
         if (buffer is not VKBuffer)
         {
-            throw new ZenithEngineException("Buffer is not a Vulkan buffer");
+            throw new ZenithEngineException("Buffer is not a Vulkan buffer.");
         }
 
         return (VKBuffer)buffer;
@@ -59,7 +59,7 @@ internal static class VulkanExtensions
     {
         if (texture is not VKTexture)
         {
-            throw new ZenithEngineException("Texture is not a Vulkan texture");
+            throw new ZenithEngineException("Texture is not a Vulkan texture.");
         }
 
         return (VKTexture)texture;
@@ -69,7 +69,7 @@ internal static class VulkanExtensions
     {
         if (textureView is not VKTextureView)
         {
-            throw new ZenithEngineException("TextureView is not a Vulkan texture view");
+            throw new ZenithEngineException("TextureView is not a Vulkan texture view.");
         }
 
         return (VKTextureView)textureView;
@@ -79,7 +79,7 @@ internal static class VulkanExtensions
     {
         if (sampler is not VKSampler)
         {
-            throw new ZenithEngineException("Sampler is not a Vulkan sampler");
+            throw new ZenithEngineException("Sampler is not a Vulkan sampler.");
         }
 
         return (VKSampler)sampler;
@@ -89,7 +89,7 @@ internal static class VulkanExtensions
     {
         if (shader is not VKShader)
         {
-            throw new ZenithEngineException("Shader is not a Vulkan shader");
+            throw new ZenithEngineException("Shader is not a Vulkan shader.");
         }
 
         return (VKShader)shader;
@@ -99,7 +99,7 @@ internal static class VulkanExtensions
     {
         if (resourceLayout is not VKResourceLayout)
         {
-            throw new ZenithEngineException("ResourceLayout is not a Vulkan resource layout");
+            throw new ZenithEngineException("ResourceLayout is not a Vulkan resource layout.");
         }
 
         return (VKResourceLayout)resourceLayout;
@@ -109,7 +109,7 @@ internal static class VulkanExtensions
     {
         if (resourceSet is not VKResourceSet)
         {
-            throw new ZenithEngineException("ResourceSet is not a Vulkan resource set");
+            throw new ZenithEngineException("ResourceSet is not a Vulkan resource set.");
         }
 
         return (VKResourceSet)resourceSet;
@@ -119,7 +119,7 @@ internal static class VulkanExtensions
     {
         if (frameBuffer is not VKFrameBuffer)
         {
-            throw new ZenithEngineException("FrameBuffer is not a Vulkan frame buffer");
+            throw new ZenithEngineException("FrameBuffer is not a Vulkan frame buffer.");
         }
 
         return (VKFrameBuffer)frameBuffer;
@@ -129,7 +129,7 @@ internal static class VulkanExtensions
     {
         if (pipeline is not VKGraphicsPipeline)
         {
-            throw new ZenithEngineException("GraphicsPipeline is not a Vulkan graphics pipeline");
+            throw new ZenithEngineException("GraphicsPipeline is not a Vulkan graphics pipeline.");
         }
 
         return (VKGraphicsPipeline)pipeline;
@@ -139,7 +139,7 @@ internal static class VulkanExtensions
     {
         if (pipeline is not VKComputePipeline)
         {
-            throw new ZenithEngineException("ComputePipeline is not a Vulkan compute pipeline");
+            throw new ZenithEngineException("ComputePipeline is not a Vulkan compute pipeline.");
         }
 
         return (VKComputePipeline)pipeline;
@@ -149,7 +149,7 @@ internal static class VulkanExtensions
     {
         if (processor is not VKCommandProcessor)
         {
-            throw new ZenithEngineException("CommandProcessor is not a Vulkan command processor");
+            throw new ZenithEngineException("CommandProcessor is not a Vulkan command processor.");
         }
 
         return (VKCommandProcessor)processor;
@@ -159,7 +159,7 @@ internal static class VulkanExtensions
     {
         if (commandBuffer is not VKCommandBuffer)
         {
-            throw new ZenithEngineException("CommandBuffer is not a Vulkan command buffer");
+            throw new ZenithEngineException("CommandBuffer is not a Vulkan command buffer.");
         }
 
         return (VKCommandBuffer)commandBuffer;

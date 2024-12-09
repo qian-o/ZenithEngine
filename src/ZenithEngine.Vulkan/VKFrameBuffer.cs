@@ -34,7 +34,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             }
             else if (target.Desc.SampleCount != sampleCount)
             {
-                throw new ZenithEngineException("All targets must have the same sample count");
+                throw new ZenithEngineException("All targets must have the same sample count.");
             }
 
             TextureViewDesc viewDesc = new()
@@ -72,7 +72,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             }
             else if (target.Desc.SampleCount != sampleCount)
             {
-                throw new ZenithEngineException("All targets must have the same sample count");
+                throw new ZenithEngineException("All targets must have the same sample count.");
             }
 
             TextureViewDesc viewDesc = new()
