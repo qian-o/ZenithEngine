@@ -4,41 +4,14 @@ using ZenithEngine.Windowing.Enums;
 
 namespace ZenithEngine.Windowing;
 
-public unsafe static class WindowHelpers
+public static unsafe class WindowHelpers
 {
+    private static readonly Dictionary<Scancode, Key> keyMap;
     private static readonly Dictionary<Cursor, nint> cursorMap;
     private static readonly Dictionary<byte, MouseButton> mouseButtonMap;
-    private static readonly Dictionary<Scancode, Key> keyMap;
 
     static WindowHelpers()
     {
-        cursorMap = new()
-        {
-            { Cursor.Arrow, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorArrow) },
-            { Cursor.TextInput, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorIbeam) },
-            { Cursor.ResizeAll, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizeall) },
-            { Cursor.ResizeNS, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizens) },
-            { Cursor.ResizeWE, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizewe) },
-            { Cursor.ResizeNESW, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizenesw) },
-            { Cursor.ResizeNWSE, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizenwse) },
-            { Cursor.Hand, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorHand) },
-            { Cursor.NotAllowed, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorNo) }
-        };
-        mouseButtonMap = new()
-        {
-            { 1, MouseButton.Left },
-            { 2, MouseButton.Middle },
-            { 3, MouseButton.Right },
-            { 4, MouseButton.Button4 },
-            { 5, MouseButton.Button5 },
-            { 6, MouseButton.Button6 },
-            { 7, MouseButton.Button7 },
-            { 8, MouseButton.Button8 },
-            { 9, MouseButton.Button9 },
-            { 10, MouseButton.Button10 },
-            { 11, MouseButton.Button11 },
-            { 12, MouseButton.Button12 }
-        };
         keyMap = new()
         {
             { Scancode.ScancodeUnknown, Key.Unknown },
@@ -160,6 +133,33 @@ public unsafe static class WindowHelpers
             { Scancode.ScancodeRgui, Key.SuperRight },
             { Scancode.ScancodeMenu, Key.Menu }
         };
+        cursorMap = new()
+        {
+            { Cursor.Arrow, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorArrow) },
+            { Cursor.TextInput, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorIbeam) },
+            { Cursor.ResizeAll, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizeall) },
+            { Cursor.ResizeNS, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizens) },
+            { Cursor.ResizeWE, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizewe) },
+            { Cursor.ResizeNESW, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizenesw) },
+            { Cursor.ResizeNWSE, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizenwse) },
+            { Cursor.Hand, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorHand) },
+            { Cursor.NotAllowed, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorNo) }
+        };
+        mouseButtonMap = new()
+        {
+            { 1, MouseButton.Left },
+            { 2, MouseButton.Middle },
+            { 3, MouseButton.Right },
+            { 4, MouseButton.Button4 },
+            { 5, MouseButton.Button5 },
+            { 6, MouseButton.Button6 },
+            { 7, MouseButton.Button7 },
+            { 8, MouseButton.Button8 },
+            { 9, MouseButton.Button9 },
+            { 10, MouseButton.Button10 },
+            { 11, MouseButton.Button11 },
+            { 12, MouseButton.Button12 }
+        };
     }
 
     public static Display[] GetDisplays()
@@ -224,11 +224,6 @@ public unsafe static class WindowHelpers
         return (WindowManager.Sdl.GetGlobalMouseState(null, null) & (1 << mask)) != 0;
     }
 
-    internal static MouseButton GetMouseButton(byte button)
-    {
-        return mouseButtonMap.TryGetValue(button, out MouseButton mouseButton) ? mouseButton : MouseButton.Unknown;
-    }
-
     internal static Key GetKey(Scancode scancode)
     {
         return keyMap.TryGetValue(scancode, out Key key) ? key : Key.Unknown;
@@ -259,5 +254,10 @@ public unsafe static class WindowHelpers
         }
 
         return keyModifiers;
+    }
+
+    internal static MouseButton GetMouseButton(byte button)
+    {
+        return mouseButtonMap.TryGetValue(button, out MouseButton mouseButton) ? mouseButton : MouseButton.Unknown;
     }
 }

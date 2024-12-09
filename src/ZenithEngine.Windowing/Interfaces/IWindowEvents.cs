@@ -20,6 +20,12 @@ public interface IWindowEvents
 
     event EventHandler<ValueEventArgs<WindowState>>? StateChanged;
 
+    event EventHandler<KeyEventArgs>? KeyUp;
+
+    event EventHandler<KeyEventArgs>? KeyDown;
+
+    event EventHandler<ValueEventArgs<char>>? KeyChar;
+
     event EventHandler<MouseButtonEventArgs>? Click;
 
     event EventHandler<MouseButtonEventArgs>? MouseUp;
@@ -29,10 +35,4 @@ public interface IWindowEvents
     event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseMove;
 
     event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseWheel;
-
-    event EventHandler<KeyEventArgs>? KeyUp;
-
-    event EventHandler<KeyEventArgs>? KeyDown;
-
-    event EventHandler<ValueEventArgs<char>>? KeyChar;
 }
