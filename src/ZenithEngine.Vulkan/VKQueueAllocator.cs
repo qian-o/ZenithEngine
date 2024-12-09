@@ -2,9 +2,11 @@
 
 namespace ZenithEngine.Vulkan;
 
-internal unsafe class VKQueueAllocator : DisposableObject
+internal class VKQueueAllocator : DisposableObject
 {
-    private readonly Queue<VkQueue> available = new();
+    private readonly Lock @lock = new();
+    private readonly Queue<VkQueue> available = [];
+    private readonly List<VkQueue> inUse = [];
 
     public VKQueueAllocator(VKGraphicsContext context,
                             uint queueFamilyIndex,
@@ -16,18 +18,35 @@ internal unsafe class VKQueueAllocator : DisposableObject
         }
     }
 
-    public VkQueue Allocate()
+    public VkQueue Alloc()
     {
-        return available.Dequeue();
+        using Lock.Scope _ = @lock.EnterScope();
+
+        if (available.Count is 0)
+        {
+            throw new InvalidOperationException("No available queues.");
+        }
+
+        VkQueue queue = available.Dequeue();
+
+        inUse.Add(queue);
+
+        return queue;
     }
 
     public void Free(VkQueue queue)
     {
-        available.Enqueue(queue);
+        using Lock.Scope _ = @lock.EnterScope();
+
+        if (inUse.Remove(queue))
+        {
+            available.Enqueue(queue);
+        }
     }
 
     protected override void Destroy()
     {
-
+        inUse.Clear();
+        available.Clear();
     }
 }

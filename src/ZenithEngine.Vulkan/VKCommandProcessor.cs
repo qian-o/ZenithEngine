@@ -11,7 +11,7 @@ internal unsafe class VKCommandProcessor : CommandProcessor
     public VKCommandProcessor(GraphicsContext context,
                               CommandProcessorType type) : base(context, type)
     {
-        queue = Context.Vk.GetDeviceQueue(Context.Device, Context.FindQueueFamilyIndex(type), 0);
+        queue = Context.GetQueue(type);
     }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
@@ -44,5 +44,12 @@ internal unsafe class VKCommandProcessor : CommandProcessor
     protected override void DebugName(string name)
     {
         Context.SetDebugName(ObjectType.Queue, (ulong)queue.Handle, name);
+    }
+
+    protected override void Destroy()
+    {
+        base.Destroy();
+
+        Context.FreeQueue(Type, queue);
     }
 }

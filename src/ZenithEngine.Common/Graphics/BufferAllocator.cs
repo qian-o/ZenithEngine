@@ -8,7 +8,7 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
     private const uint MaxBufferCount = 100;
 
     private readonly List<Buffer> available = [];
-    private readonly List<Buffer> used = [];
+    private readonly List<Buffer> inUse = [];
 
     public Buffer Buffer(uint sizeInBytes)
     {
@@ -35,7 +35,7 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
             buffer = context.Factory.CreateBuffer(in desc);
         }
 
-        used.Add(buffer);
+        inUse.Add(buffer);
 
         return buffer;
     }
@@ -52,7 +52,7 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
             available.Clear();
         }
 
-        foreach (Buffer item in used)
+        foreach (Buffer item in inUse)
         {
             available.Add(item);
         }
@@ -65,12 +65,12 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
             item.Dispose();
         }
 
-        foreach (Buffer item in used)
+        foreach (Buffer item in inUse)
         {
             item.Dispose();
         }
 
         available.Clear();
-        used.Clear();
+        inUse.Clear();
     }
 }
