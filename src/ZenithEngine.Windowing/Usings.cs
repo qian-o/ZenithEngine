@@ -1,1 +1,1 @@
-﻿
+﻿global using SdlWindow = Silk.NET.SDL.Window;
