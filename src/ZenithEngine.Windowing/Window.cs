@@ -227,6 +227,8 @@ internal unsafe partial class Window : IWindow
                 break;
             case WindowEventID.Minimized:
             case WindowEventID.Maximized:
+                StateChanged?.Invoke(this, new(State));
+                break;
             case WindowEventID.Restored:
                 StateChanged?.Invoke(this, new(State));
                 SizeChanged?.Invoke(this, new(Size));
