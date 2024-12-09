@@ -9,7 +9,9 @@ public interface IWindow
 {
     event EventHandler<EventArgs>? Loaded;
 
-    event EventHandler<EventArgs>? Unloaded;
+    event EventHandler<TimeEventArgs>? Update;
+
+    event EventHandler<TimeEventArgs>? Render;
 
     event EventHandler<ValueEventArgs<WindowState>>? StateChanged;
 
@@ -35,19 +37,15 @@ public interface IWindow
 
     event EventHandler<MouseButtonEventArgs>? DoubleClick;
 
-    event EventHandler<TimeEventArgs>? Update;
-
-    event EventHandler<TimeEventArgs>? Render;
-
-    nint Handle { get; }
+    event EventHandler<EventArgs>? Unloaded;
 
     string Title { get; set; }
-
-    float DpiScale { get; }
 
     WindowState State { get; set; }
 
     WindowBorder Border { get; set; }
+
+    bool ShowInTaskbar { get; set; }
 
     Vector2D<int> Position { get; set; }
 
@@ -57,21 +55,19 @@ public interface IWindow
 
     Vector2D<int> MaximumSize { get; set; }
 
-    bool IsFocused { get; }
+    double UpdatePerSecond { get; set; }
 
-    bool IsVisible { get; set; }
+    double RenderPerSecond { get; set; }
 
     bool TopMost { get; set; }
-
-    bool ShowInTaskbar { get; set; }
 
     float Opacity { get; set; }
 
     double Time { get; }
 
-    double UpdatePerSecond { get; set; }
+    bool IsFocused { get; }
 
-    double RenderPerSecond { get; set; }
+    float DpiScale { get; }
 
     ISurface Surface { get; }
 
