@@ -46,7 +46,7 @@ internal class VKQueueAllocator : DisposableObject
 
     protected override void Destroy()
     {
-        inUse.Clear();
         available.Clear();
+        inUse.Clear();
     }
 }
