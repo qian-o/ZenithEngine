@@ -15,10 +15,6 @@ internal unsafe partial class VKGraphicsContext
 
     public bool SharingEnabled { get; private set; }
 
-    public VKQueueAllocator DirectQueueAllocator { get; private set; }
-
-    public VKQueueAllocator CopyQueueAllocator { get; private set; }
-
     public KhrSwapchain? KhrSwapchain { get; private set; }
 
     public KhrRayTracingPipeline? KhrRayTracingPipeline { get; private set; }
@@ -28,31 +24,6 @@ internal unsafe partial class VKGraphicsContext
     public KhrDeferredHostOperations? KhrDeferredHostOperations { get; private set; }
 
     public VKDescriptorSetAllocator? DescriptorSetAllocator { get; private set; }
-
-    public VkQueue GetQueue(CommandProcessorType type)
-    {
-        return type switch
-        {
-            CommandProcessorType.Direct => DirectQueueAllocator.Alloc(),
-            CommandProcessorType.Copy => CopyQueueAllocator.Alloc(),
-            _ => throw new ArgumentOutOfRangeException(nameof(type))
-        };
-    }
-
-    public void FreeQueue(CommandProcessorType type, VkQueue queue)
-    {
-        switch (type)
-        {
-            case CommandProcessorType.Direct:
-                DirectQueueAllocator.Free(queue);
-                break;
-            case CommandProcessorType.Copy:
-                CopyQueueAllocator.Free(queue);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(type));
-        }
-    }
 
     public uint FindQueueFamilyIndex(CommandProcessorType type)
     {
@@ -66,40 +37,11 @@ internal unsafe partial class VKGraphicsContext
 
     private void InitDevice()
     {
+        float queuePriority = 1;
+
         using MemoryAllocator allocator = new();
 
-        uint propertyCount = 0;
-        Vk.GetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &propertyCount, null);
-
-        QueueFamilyProperties[] properties = new QueueFamilyProperties[propertyCount];
-        Vk.GetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &propertyCount, properties);
-
-        uint directQueueCount = 0;
-        uint copyQueueCount = 0;
-        for (uint i = 0; i < properties.Length; i++)
-        {
-            QueueFlags flags = properties[i].QueueFlags;
-            uint count = properties[i].QueueCount;
-
-            if (flags.HasFlag(QueueFlags.GraphicsBit
-                              | QueueFlags.ComputeBit
-                              | QueueFlags.TransferBit) && directQueueCount < count)
-            {
-                DirectQueueFamilyIndex = i;
-                directQueueCount = count;
-            }
-            else if (flags.HasFlag(QueueFlags.TransferBit) && copyQueueCount < count)
-            {
-                CopyQueueFamilyIndex = i;
-                copyQueueCount = count;
-            }
-        }
-
-        if (CopyQueueFamilyIndex is 0)
-        {
-            CopyQueueFamilyIndex = DirectQueueFamilyIndex;
-            copyQueueCount = directQueueCount;
-        }
+        (DirectQueueFamilyIndex, CopyQueueFamilyIndex) = GetBestQueueFamilyIndices();
 
         SharingEnabled = DirectQueueFamilyIndex != CopyQueueFamilyIndex;
 
@@ -108,39 +50,34 @@ internal unsafe partial class VKGraphicsContext
             SType = StructureType.DeviceCreateInfo
         };
 
-        float* directQueuePriorities = allocator.Alloc<float>(directQueueCount);
-        float* copyQueuePriorities = allocator.Alloc<float>(copyQueueCount);
+        DeviceQueueCreateInfo[] queueCreateInfos =
+        [
+            new()
+            {
+                SType = StructureType.DeviceQueueCreateInfo,
+                QueueFamilyIndex = DirectQueueFamilyIndex,
+                QueueCount = 1,
+                PQueuePriorities = &queuePriority
+            }
+        ];
 
-        for (uint i = 0; i < directQueueCount; i++)
+        if (SharingEnabled)
         {
-            directQueuePriorities[i] = 1;
+            queueCreateInfos =
+            [
+                ..queueCreateInfos,
+                new()
+                {
+                    SType = StructureType.DeviceQueueCreateInfo,
+                    QueueFamilyIndex = CopyQueueFamilyIndex,
+                    QueueCount = 1,
+                    PQueuePriorities = &queuePriority
+                }
+            ];
         }
-
-        for (uint i = 0; i < copyQueueCount; i++)
-        {
-            copyQueuePriorities[i] = 1;
-        }
-
-        DeviceQueueCreateInfo* queueCreateInfos = allocator.Alloc<DeviceQueueCreateInfo>(2);
-
-        queueCreateInfos[0] = new()
-        {
-            SType = StructureType.DeviceQueueCreateInfo,
-            QueueFamilyIndex = DirectQueueFamilyIndex,
-            QueueCount = directQueueCount,
-            PQueuePriorities = directQueuePriorities
-        };
-
-        queueCreateInfos[1] = new()
-        {
-            SType = StructureType.DeviceQueueCreateInfo,
-            QueueFamilyIndex = CopyQueueFamilyIndex,
-            QueueCount = copyQueueCount,
-            PQueuePriorities = copyQueuePriorities
-        };
 
         createInfo.QueueCreateInfoCount = SharingEnabled ? 2u : 1u;
-        createInfo.PQueueCreateInfos = queueCreateInfos;
+        createInfo.PQueueCreateInfos = allocator.Alloc(queueCreateInfos);
 
         string[] extensions = [KhrSwapchain.ExtensionName];
 
@@ -191,8 +128,6 @@ internal unsafe partial class VKGraphicsContext
 
         Vk.CreateDevice(PhysicalDevice, &createInfo, null, out Device).ThrowIfError();
 
-        DirectQueueAllocator = new(this, DirectQueueFamilyIndex, directQueueCount);
-        CopyQueueAllocator = SharingEnabled ? new(this, CopyQueueFamilyIndex, copyQueueCount) : DirectQueueAllocator;
         KhrSwapchain = Vk.TryGetExtension<KhrSwapchain>(Instance, Device);
         KhrRayTracingPipeline = Vk.TryGetExtension<KhrRayTracingPipeline>(Instance, Device);
         KhrAccelerationStructure = Vk.TryGetExtension<KhrAccelerationStructure>(Instance, Device);
@@ -215,5 +150,48 @@ internal unsafe partial class VKGraphicsContext
         KhrAccelerationStructure = null;
         KhrDeferredHostOperations = null;
         DescriptorSetAllocator = null;
+    }
+
+    private (uint DirectQueueFamilyIndex, uint CopyQueueFamilyIndex) GetBestQueueFamilyIndices()
+    {
+        uint directQueueFamilyIndex = 0;
+        uint copyQueueFamilyIndex = 0;
+
+        uint propertyCount = 0;
+        Vk.GetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &propertyCount, null);
+
+        QueueFamilyProperties[] properties = new QueueFamilyProperties[propertyCount];
+        Vk.GetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &propertyCount, properties);
+
+        uint directQueueCount = 0;
+        uint copyQueueCount = 0;
+
+        for (uint i = 0; i < properties.Length; i++)
+        {
+            QueueFlags flags = properties[i].QueueFlags;
+            uint count = properties[i].QueueCount;
+
+            if (flags.HasFlag(QueueFlags.GraphicsBit
+                              | QueueFlags.ComputeBit
+                              | QueueFlags.TransferBit) && directQueueCount < count)
+            {
+                DirectQueueFamilyIndex = i;
+
+                directQueueCount = count;
+            }
+            else if (flags.HasFlag(QueueFlags.TransferBit) && copyQueueCount < count)
+            {
+                CopyQueueFamilyIndex = i;
+
+                copyQueueCount = count;
+            }
+        }
+
+        if (copyQueueFamilyIndex is 0)
+        {
+            copyQueueFamilyIndex = directQueueFamilyIndex;
+        }
+
+        return (directQueueFamilyIndex, copyQueueFamilyIndex);
     }
 }
