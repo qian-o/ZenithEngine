@@ -1,4 +1,5 @@
 ﻿using Silk.NET.Maths;
+using Silk.NET.SDL;
 using ZenithEngine.Common.Interfaces;
 using ZenithEngine.Windowing.Enums;
 using ZenithEngine.Windowing.Interfaces;
@@ -7,11 +8,19 @@ namespace ZenithEngine.Windowing;
 
 internal unsafe partial class Window : IWindowProperties
 {
-    private ISurface? surface = null;
+    private ISurface? surface;
+    private string title = "Window";
+    private WindowState state = WindowState.Normal;
+    private WindowBorder border = WindowBorder.Resizable;
+    private bool topMost;
+    private bool showInTaskbar = true;
     private Vector2D<int> position = new(20, 20);
     private Vector2D<int> size = new(800, 600);
     private Vector2D<int> minimumSize = new(100, 100);
-    private Vector2D<int> maximumSize = new(10000, 10000);
+    private Vector2D<int> maximumSize = Vector2D<int>.Zero;
+    private float opacity = 1;
+    private double updatePeriod;
+    private double renderPeriod;
 
     public ISurface Surface
     {
@@ -26,27 +35,208 @@ internal unsafe partial class Window : IWindowProperties
         }
     }
 
-    public string Title { get; set; } = "Window";
+    public string Title
+    {
+        get => title;
+        set
+        {
+            title = value;
 
-    public WindowState State { get; set; } = WindowState.Normal;
+            if (!IsInitialized())
+            {
+                return;
+            }
 
-    public WindowBorder Border { get; set; } = WindowBorder.Resizable;
+            WindowManager.Sdl.SetWindowTitle(Handle, value);
+        }
+    }
 
-    public bool TopMost { get; set; } = false;
+    public WindowState State
+    {
+        get => state;
+        set
+        {
+            state = value;
 
-    public bool ShowInTaskbar { get; set; } = true;
+            if (!IsInitialized())
+            {
+                return;
+            }
 
-    public Vector2D<int> Position { get => position; set => position = value; }
+            switch (value)
+            {
+                case WindowState.Normal:
+                    WindowManager.Sdl.RestoreWindow(Handle);
+                    break;
+                case WindowState.Minimized:
+                    WindowManager.Sdl.MinimizeWindow(Handle);
+                    break;
+                case WindowState.Maximized:
+                    WindowManager.Sdl.MaximizeWindow(Handle);
+                    break;
+                case WindowState.Fullscreen:
+                    WindowManager.Sdl.SetWindowFullscreen(Handle, (uint)WindowFlags.Fullscreen);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(value), value, null);
+            }
+        }
+    }
 
-    public Vector2D<int> Size { get => size; set => size = value; }
+    public WindowBorder Border
+    {
+        get => border;
+        set
+        {
+            border = value;
 
-    public Vector2D<int> MinimumSize { get => minimumSize; set => minimumSize = value; }
+            if (!IsInitialized())
+            {
+                return;
+            }
 
-    public Vector2D<int> MaximumSize { get => maximumSize; set => maximumSize = value; }
+            switch (value)
+            {
+                case WindowBorder.Resizable:
+                    WindowManager.Sdl.SetWindowBordered(Handle, SdlBool.True);
+                    WindowManager.Sdl.SetWindowResizable(Handle, SdlBool.True);
+                    break;
+                case WindowBorder.Fixed:
+                    WindowManager.Sdl.SetWindowBordered(Handle, SdlBool.True);
+                    WindowManager.Sdl.SetWindowResizable(Handle, SdlBool.False);
+                    break;
+                case WindowBorder.Hidden:
+                    WindowManager.Sdl.SetWindowBordered(Handle, SdlBool.False);
+                    WindowManager.Sdl.SetWindowResizable(Handle, SdlBool.False);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(value), value, null);
+            }
+        }
+    }
 
-    public float Opacity { get; set; } = 1.0f;
+    public bool TopMost
+    {
+        get => topMost;
+        set
+        {
+            topMost = value;
 
-    public double UpdatePerSecond { get; set; } = 1.0 / 1000.0;
+            if (!IsInitialized())
+            {
+                return;
+            }
 
-    public double RenderPerSecond { get; set; } = 1.0 / 1000.0;
+            WindowManager.Sdl.SetWindowAlwaysOnTop(Handle, value ? SdlBool.True : SdlBool.False);
+        }
+    }
+
+    public bool ShowInTaskbar
+    {
+        get => showInTaskbar;
+        set
+        {
+            showInTaskbar = value;
+
+            if (!IsInitialized())
+            {
+                return;
+            }
+
+            // SDL does not support this feature.
+            // WindowManager.Sdl.SetWindowSkipTaskbar(Handle, value ? SdlBool.False : SdlBool.True);
+        }
+    }
+
+    public Vector2D<int> Position
+    {
+        get => position;
+        set
+        {
+            position = value;
+
+            if (!IsInitialized())
+            {
+                return;
+            }
+
+            WindowManager.Sdl.SetWindowPosition(Handle, value.X, value.Y);
+        }
+    }
+
+    public Vector2D<int> Size
+    {
+        get => size;
+        set
+        {
+            size = value;
+
+            if (!IsInitialized())
+            {
+                return;
+            }
+
+            WindowManager.Sdl.SetWindowSize(Handle, value.X, value.Y);
+        }
+    }
+
+    public Vector2D<int> MinimumSize
+    {
+        get => minimumSize;
+        set
+        {
+            minimumSize = value;
+
+            if (!IsInitialized())
+            {
+                return;
+            }
+
+            WindowManager.Sdl.SetWindowMinimumSize(Handle, value.X, value.Y);
+        }
+    }
+
+    public Vector2D<int> MaximumSize
+    {
+        get => maximumSize;
+        set
+        {
+            maximumSize = value;
+
+            if (!IsInitialized())
+            {
+                return;
+            }
+
+            WindowManager.Sdl.SetWindowMaximumSize(Handle, value.X, value.Y);
+        }
+    }
+
+    public float Opacity
+    {
+        get => opacity;
+        set
+        {
+            opacity = value;
+
+            if (!IsInitialized())
+            {
+                return;
+            }
+
+            WindowManager.Sdl.SetWindowOpacity(Handle, value);
+        }
+    }
+
+    public double UpdatePerSecond
+    {
+        get => updatePeriod <= double.Epsilon ? 0 : 1 / updatePeriod;
+        set => updatePeriod = value <= double.Epsilon ? 0 : 1 / value;
+    }
+
+    public double RenderPerSecond
+    {
+        get => renderPeriod <= double.Epsilon ? 0 : 1 / renderPeriod;
+        set => renderPeriod = value <= double.Epsilon ? 0 : 1 / value;
+    }
 }
