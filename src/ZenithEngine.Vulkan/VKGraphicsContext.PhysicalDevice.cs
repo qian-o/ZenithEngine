@@ -179,7 +179,7 @@ internal unsafe partial class VKGraphicsContext
         return score;
     }
 
-    private (uint DirectQueueFamilyIndex, uint CopyQueueFamilyIndex) QueueFamilyIndices(VkPhysicalDevice physicalDevice)
+    private (uint Direct, uint Copy) QueueFamilyIndices(VkPhysicalDevice physicalDevice)
     {
         uint directQueueFamilyIndex = 0;
         uint copyQueueFamilyIndex = 0;
