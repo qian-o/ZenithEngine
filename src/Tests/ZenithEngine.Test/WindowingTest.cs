@@ -16,25 +16,19 @@ public class WindowingTest
     {
         AssertEx.IsConsoleErrorEmpty(() =>
         {
+            IWindow window = WindowController.CreateWindow();
+
+            window.Show();
+
             using GraphicsContext context = GraphicsContext.Create(RenderBackend);
 
             context.CreateDevice(true);
 
-            SwapChain swapChain = null!;
+            using CommandProcessor commandProcessor = context.Factory.CreateCommandProcessor();
 
-            IWindow window = WindowController.CreateWindow();
+            SwapChainDesc swapChainDesc = SwapChainDesc.Default(window.Surface);
 
-            window.Loaded += (sender, e) =>
-            {
-                SwapChainDesc swapChainDesc = SwapChainDesc.Default(window.Surface);
-
-                swapChain = context.Factory.CreateSwapChain(in swapChainDesc);
-            };
-
-            window.Unloaded += (sender, e) =>
-            {
-                swapChain.Dispose();
-            };
+            using SwapChain swapChain = context.Factory.CreateSwapChain(in swapChainDesc);
 
             window.Update += (sender, e) =>
             {
@@ -42,14 +36,26 @@ public class WindowingTest
 
             window.Render += (sender, e) =>
             {
+                CommandBuffer commandBuffer = commandProcessor.CommandBuffer();
+
+                commandBuffer.Begin();
+                commandBuffer.BeginRendering(swapChain.FrameBuffer, new ClearValue(1, new(1)));
+
+                commandBuffer.EndRendering();
+                commandBuffer.End();
+
+                commandBuffer.Commit();
+
+                commandProcessor.Submit();
+                commandProcessor.WaitIdle();
+
+                swapChain.Present();
             };
 
             window.SizeChanged += (sender, e) =>
             {
                 swapChain.Resize();
             };
-
-            window.Show();
 
             WindowController.Loop();
         });
