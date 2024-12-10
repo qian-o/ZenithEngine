@@ -90,8 +90,6 @@ internal unsafe partial class VKSwapChain : SwapChain
         DestroySwapChain();
         DestroySurface();
 
-        swapChainFrameBuffer.Dispose();
-
         fence.Dispose();
     }
 
