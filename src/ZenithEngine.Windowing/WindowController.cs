@@ -9,6 +9,8 @@ public static unsafe class WindowController
     private static readonly List<IWindow> addWindows = [];
     private static readonly List<IWindow> removeWindows = [];
 
+    public static bool IsLooping { get; private set; }
+
     public static List<Event> Events { get; } = [];
 
     public static void PollEvents()
@@ -24,6 +26,8 @@ public static unsafe class WindowController
 
     public static void Loop()
     {
+        IsLooping = true;
+
         while (windows.Count > 0)
         {
             PollEvents();
@@ -56,20 +60,44 @@ public static unsafe class WindowController
                 window.DoRender();
             }
         }
+
+        IsLooping = false;
     }
 
-    public static IWindow CreateWindow()
+    public static IWindow CreateWindow(string title = "Window",
+                                       int width = 800,
+                                       int height = 600)
     {
-        return new Window();
+        Window window = new()
+        {
+            Title = title,
+            Size = new(width, height)
+        };
+
+        return window;
     }
 
     internal static void AddLoop(IWindow window)
     {
-        addWindows.Add(window);
+        if (IsLooping)
+        {
+            addWindows.Add(window);
+        }
+        else
+        {
+            windows.Add(window);
+        }
     }
 
     internal static void RemoveLoop(IWindow window)
     {
-        removeWindows.Add(window);
+        if (IsLooping)
+        {
+            removeWindows.Add(window);
+        }
+        else
+        {
+            windows.Remove(window);
+        }
     }
 }

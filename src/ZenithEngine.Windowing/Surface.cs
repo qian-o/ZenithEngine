@@ -7,27 +7,29 @@ namespace ZenithEngine.Windowing;
 
 internal readonly unsafe struct Surface : ISurface
 {
-    public Surface(SdlNativeWindow* nativeWindow)
+    public Surface(SdlWindow* handle)
     {
-        if (nativeWindow->Kind.HasFlag(NativeWindowFlags.Win32))
+        SdlNativeWindow nativeWindow = new(WindowUtils.Sdl, handle);
+
+        if (nativeWindow.Kind.HasFlag(NativeWindowFlags.Win32))
         {
             SurfaceType = SurfaceType.Win32;
-            Handles = [nativeWindow->Win32!.Value.Hwnd];
+            Handles = [nativeWindow.Win32!.Value.Hwnd];
         }
-        else if (nativeWindow->Kind.HasFlag(NativeWindowFlags.Wayland))
+        else if (nativeWindow.Kind.HasFlag(NativeWindowFlags.Wayland))
         {
             SurfaceType = SurfaceType.Wayland;
-            Handles = [nativeWindow->Wayland!.Value.Display, nativeWindow->Wayland!.Value.Surface];
+            Handles = [nativeWindow.Wayland!.Value.Display, nativeWindow.Wayland!.Value.Surface];
         }
-        else if (nativeWindow->Kind.HasFlag(NativeWindowFlags.X11))
+        else if (nativeWindow.Kind.HasFlag(NativeWindowFlags.X11))
         {
             SurfaceType = SurfaceType.Xlib;
-            Handles = [nativeWindow->X11!.Value.Display, (nint)nativeWindow->X11!.Value.Window];
+            Handles = [nativeWindow.X11!.Value.Display, (nint)nativeWindow.X11!.Value.Window];
         }
-        else if (nativeWindow->Kind.HasFlag(NativeWindowFlags.Cocoa))
+        else if (nativeWindow.Kind.HasFlag(NativeWindowFlags.Cocoa))
         {
             SurfaceType = SurfaceType.MacOS;
-            Handles = [nativeWindow->Cocoa!.Value];
+            Handles = [nativeWindow.Cocoa!.Value];
         }
         else
         {

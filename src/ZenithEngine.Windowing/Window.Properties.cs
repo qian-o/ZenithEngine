@@ -31,7 +31,7 @@ internal unsafe partial class Window : IWindowProperties
                 throw new InvalidOperationException("The window is not initialized.");
             }
 
-            return surface ??= new Surface(NativeWindow);
+            return surface ??= new Surface(Handle);
         }
     }
 

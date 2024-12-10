@@ -7,7 +7,7 @@ using Buffer = ZenithEngine.Common.Graphics.Buffer;
 namespace ZenithEngine.Test;
 
 [TestClass]
-public class GraphicsContextTest
+public class GraphicsTest
 {
     public const Backend RenderBackend = Backend.Vulkan;
 

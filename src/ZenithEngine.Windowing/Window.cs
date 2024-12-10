@@ -14,8 +14,6 @@ internal unsafe partial class Window : IWindow
 
     public SdlWindow* Handle;
 
-    public SdlNativeWindow* NativeWindow;
-
     public void Show()
     {
         if (!TryInitialize())
@@ -156,7 +154,6 @@ internal unsafe partial class Window : IWindow
         }
 
         Handle = WindowUtils.Sdl.CreateWindow(Title, Position.X, Position.Y, Size.X, Size.Y, (uint)flags);
-        *NativeWindow = new(WindowUtils.Sdl, Handle);
 
         WindowController.AddLoop(this);
 
@@ -175,7 +172,6 @@ internal unsafe partial class Window : IWindow
         WindowUtils.Sdl.DestroyWindow(Handle);
 
         Handle = null;
-        NativeWindow = null;
 
         return true;
     }
