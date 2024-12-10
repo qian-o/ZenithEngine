@@ -14,10 +14,8 @@ internal unsafe partial class VKSwapChain : SwapChain
     [LibraryImport("android", EntryPoint = "ANativeWindow_fromSurface")]
     private static partial nint ANativeWindowFromSurface(nint env, nint surface);
 
-    private readonly VkQueue queue;
-
     private readonly VKFence fence;
-    private readonly VKSwapChainFrameBuffer swapChainFB;
+    private readonly VKSwapChainFrameBuffer swapChainFrameBuffer;
 
     public SurfaceKHR Surface;
     public SwapchainKHR Swapchain;
@@ -25,21 +23,17 @@ internal unsafe partial class VKSwapChain : SwapChain
     public VKSwapChain(GraphicsContext context,
                        ref readonly SwapChainDesc desc) : base(context, in desc)
     {
-        queue = Context.Vk.GetDeviceQueue(Context.Device,
-                                          Context.DirectQueueFamilyIndex,
-                                          0);
-
         fence = new(Context);
-        swapChainFB = new(Context, this);
+        swapChainFrameBuffer = new(Context, this);
 
         CreateSurface();
         CreateSwapChain();
         AcquireNextImage();
     }
 
-    public ref uint CurrentIndex => ref swapChainFB.CurrentIndex;
+    public ref uint CurrentIndex => ref swapChainFrameBuffer.CurrentIndex;
 
-    public override FrameBuffer FrameBuffer => swapChainFB.FrameBuffer;
+    public override FrameBuffer FrameBuffer => swapChainFrameBuffer.FrameBuffer;
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
@@ -56,7 +50,7 @@ internal unsafe partial class VKSwapChain : SwapChain
                 PImageIndices = pImageIndex
             };
 
-            Result result = Context.KhrSwapchain!.QueuePresent(queue, &presentInfo);
+            Result result = Context.KhrSwapchain!.QueuePresent(Context.DirectQueue, &presentInfo);
 
             if (result is Result.ErrorOutOfDateKhr)
             {
@@ -93,11 +87,12 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     protected override void Destroy()
     {
-        fence.Dispose();
-        swapChainFB.Dispose();
-
         DestroySwapChain();
         DestroySurface();
+
+        swapChainFrameBuffer.Dispose();
+
+        fence.Dispose();
     }
 
     private void CreateSurface()
@@ -259,9 +254,9 @@ internal unsafe partial class VKSwapChain : SwapChain
                                               null,
                                               out Swapchain).ThrowIfError();
 
-        swapChainFB.CreateFrameBuffers(createInfo.ImageExtent.Width,
-                                       createInfo.ImageExtent.Height,
-                                       createInfo.ImageFormat);
+        swapChainFrameBuffer.CreateFrameBuffers(createInfo.ImageExtent.Width,
+                                                createInfo.ImageExtent.Height,
+                                                createInfo.ImageFormat);
     }
 
     private void AcquireNextImage()
@@ -292,6 +287,8 @@ internal unsafe partial class VKSwapChain : SwapChain
         {
             return;
         }
+
+        swapChainFrameBuffer.DestroyFrameBuffers();
 
         Context.KhrSwapchain!.DestroySwapchain(Context.Device, Swapchain, null);
     }

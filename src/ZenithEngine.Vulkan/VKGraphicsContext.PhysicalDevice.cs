@@ -1,5 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 using ZenithEngine.Common;
+using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Vulkan;
 
@@ -29,6 +30,16 @@ internal unsafe partial class VKGraphicsContext
         }
 
         throw new ZenithEngineException("Failed to find suitable memory type.");
+    }
+
+    public uint FindQueueFamilyIndex(CommandProcessorType type)
+    {
+        return type switch
+        {
+            CommandProcessorType.Direct => DirectQueueFamilyIndex,
+            CommandProcessorType.Copy => CopyQueueFamilyIndex,
+            _ => throw new ArgumentOutOfRangeException(nameof(type))
+        };
     }
 
     private void InitPhysicalDevice()
