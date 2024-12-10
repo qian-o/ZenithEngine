@@ -14,8 +14,9 @@ internal unsafe partial class VKSwapChain : SwapChain
     [LibraryImport("android", EntryPoint = "ANativeWindow_fromSurface")]
     private static partial nint ANativeWindowFromSurface(nint env, nint surface);
 
-    private readonly VKSwapChainFrameBuffer swapChainFrameBuffer;
     private readonly VKFence fence;
+    private readonly VKSwapChainFrameBuffer swapChainFrameBuffer;
+
     private readonly VkQueue queue;
 
     public SurfaceKHR Surface;
@@ -24,8 +25,9 @@ internal unsafe partial class VKSwapChain : SwapChain
     public VKSwapChain(GraphicsContext context,
                        ref readonly SwapChainDesc desc) : base(context, in desc)
     {
-        swapChainFrameBuffer = new(Context, this);
         fence = new(Context);
+        swapChainFrameBuffer = new(Context, this);
+
         queue = Context.Vk.GetDeviceQueue(Context.Device, Context.DirectQueueFamilyIndex, 0);
 
         CreateSurface();
@@ -89,6 +91,9 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     protected override void Destroy()
     {
+        swapChainFrameBuffer.Dispose();
+        fence.Dispose();
+
         DestroySwapChain();
         DestroySurface();
     }
