@@ -4,13 +4,13 @@ using ZenithEngine.Windowing.Enums;
 
 namespace ZenithEngine.Windowing;
 
-public static unsafe class WindowHelpers
+public static unsafe class WindowUtils
 {
     private static readonly Dictionary<Scancode, Key> keyMap;
     private static readonly Dictionary<Cursor, nint> cursorMap;
     private static readonly Dictionary<byte, MouseButton> mouseButtonMap;
 
-    static WindowHelpers()
+    static WindowUtils()
     {
         keyMap = new()
         {
@@ -135,15 +135,15 @@ public static unsafe class WindowHelpers
         };
         cursorMap = new()
         {
-            { Cursor.Arrow, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorArrow) },
-            { Cursor.TextInput, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorIbeam) },
-            { Cursor.ResizeAll, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizeall) },
-            { Cursor.ResizeNS, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizens) },
-            { Cursor.ResizeWE, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizewe) },
-            { Cursor.ResizeNESW, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizenesw) },
-            { Cursor.ResizeNWSE, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizenwse) },
-            { Cursor.Hand, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorHand) },
-            { Cursor.NotAllowed, (nint)WindowManager.Sdl.CreateSystemCursor(SystemCursor.SystemCursorNo) }
+            { Cursor.Arrow, (nint)Sdl.CreateSystemCursor(SystemCursor.SystemCursorArrow) },
+            { Cursor.TextInput, (nint)Sdl.CreateSystemCursor(SystemCursor.SystemCursorIbeam) },
+            { Cursor.ResizeAll, (nint)Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizeall) },
+            { Cursor.ResizeNS, (nint)Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizens) },
+            { Cursor.ResizeWE, (nint)Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizewe) },
+            { Cursor.ResizeNESW, (nint)Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizenesw) },
+            { Cursor.ResizeNWSE, (nint)Sdl.CreateSystemCursor(SystemCursor.SystemCursorSizenwse) },
+            { Cursor.Hand, (nint)Sdl.CreateSystemCursor(SystemCursor.SystemCursorHand) },
+            { Cursor.NotAllowed, (nint)Sdl.CreateSystemCursor(SystemCursor.SystemCursorNo) }
         };
         mouseButtonMap = new()
         {
@@ -162,30 +162,32 @@ public static unsafe class WindowHelpers
         };
     }
 
+    public static Sdl Sdl { get; } = Sdl.GetApi();
+
     public static Display[] GetDisplays()
     {
-        int count = WindowManager.Sdl.GetNumVideoDisplays();
+        int count = Sdl.GetNumVideoDisplays();
 
         Display[] displays = new Display[count];
 
         for (int i = 0; i < count; i++)
         {
             Rectangle<int> main;
-            WindowManager.Sdl.GetDisplayBounds(i, &main);
+            Sdl.GetDisplayBounds(i, &main);
 
             Rectangle<int> work;
-            WindowManager.Sdl.GetDisplayUsableBounds(i, &work);
+            Sdl.GetDisplayUsableBounds(i, &work);
 
             float ddpi;
-            WindowManager.Sdl.GetDisplayDPI(i, &ddpi, null, null);
+            Sdl.GetDisplayDPI(i, &ddpi, null, null);
 
-            displays[i] = new Display(i,
-                                      WindowManager.Sdl.GetDisplayNameS(i),
-                                      main.Origin,
-                                      main.Size,
-                                      work.Origin,
-                                      work.Size,
-                                      ddpi == 0 ? 1.0f : ddpi / 96.0f);
+            displays[i] = new(i,
+                              Sdl.GetDisplayNameS(i),
+                              main.Origin,
+                              main.Size,
+                              work.Origin,
+                              work.Size,
+                              ddpi == 0 ? 1 : ddpi / 96);
         }
 
         return displays;
@@ -193,22 +195,22 @@ public static unsafe class WindowHelpers
 
     public static void SetCursor(Cursor cursor)
     {
-        WindowManager.Sdl.SetCursor((SdlCursor*)cursorMap[cursor]);
+        Sdl.SetCursor((SdlCursor*)cursorMap[cursor]);
     }
 
     public static void SetTextInputRect(int x, int y, int w, int h)
     {
         Rectangle<int> rect = new(x, y, w, h);
 
-        WindowManager.Sdl.SetTextInputRect(&rect);
+        Sdl.SetTextInputRect(&rect);
     }
 
     public static Vector2D<int> GetMousePosition()
     {
         int x, y;
-        WindowManager.Sdl.GetGlobalMouseState(&x, &y);
+        Sdl.GetGlobalMouseState(&x, &y);
 
-        return new Vector2D<int>(x, y);
+        return new(x, y);
     }
 
     public static bool IsMouseButtonDown(MouseButton button)
@@ -218,10 +220,10 @@ public static unsafe class WindowHelpers
             MouseButton.Left => 0,
             MouseButton.Middle => 1,
             MouseButton.Right => 2,
-            _ => (int)button - 1,
+            _ => (int)button - 1
         };
 
-        return (WindowManager.Sdl.GetGlobalMouseState(null, null) & (1 << mask)) != 0;
+        return (Sdl.GetGlobalMouseState(null, null) & (1 << mask)) != 0;
     }
 
     internal static Key GetKey(Scancode scancode)
@@ -233,22 +235,30 @@ public static unsafe class WindowHelpers
     {
         KeyModifiers keyModifiers = KeyModifiers.None;
 
-        if (keymod.HasFlag(Keymod.Lshift) || keymod.HasFlag(Keymod.Rshift) || keymod.HasFlag(Keymod.Shift))
+        if (keymod.HasFlag(Keymod.Lshift)
+            || keymod.HasFlag(Keymod.Rshift)
+            || keymod.HasFlag(Keymod.Shift))
         {
             keyModifiers |= KeyModifiers.Shift;
         }
 
-        if (keymod.HasFlag(Keymod.Lctrl) || keymod.HasFlag(Keymod.Rctrl) || keymod.HasFlag(Keymod.Ctrl))
+        if (keymod.HasFlag(Keymod.Lctrl)
+            || keymod.HasFlag(Keymod.Rctrl)
+            || keymod.HasFlag(Keymod.Ctrl))
         {
             keyModifiers |= KeyModifiers.Control;
         }
 
-        if (keymod.HasFlag(Keymod.Lalt) || keymod.HasFlag(Keymod.Ralt) || keymod.HasFlag(Keymod.Alt))
+        if (keymod.HasFlag(Keymod.Lalt)
+            || keymod.HasFlag(Keymod.Ralt)
+            || keymod.HasFlag(Keymod.Alt))
         {
             keyModifiers |= KeyModifiers.Alt;
         }
 
-        if (keymod.HasFlag(Keymod.Lgui) || keymod.HasFlag(Keymod.Rgui) || keymod.HasFlag(Keymod.Gui))
+        if (keymod.HasFlag(Keymod.Lgui)
+            || keymod.HasFlag(Keymod.Rgui)
+            || keymod.HasFlag(Keymod.Gui))
         {
             keyModifiers |= KeyModifiers.Super;
         }

@@ -55,7 +55,7 @@ internal unsafe partial class Window : IWindow
             return;
         }
 
-        WindowManager.Sdl.RaiseWindow(Handle);
+        WindowUtils.Sdl.RaiseWindow(Handle);
     }
 
     public void DoEvents()
@@ -65,9 +65,9 @@ internal unsafe partial class Window : IWindow
             return;
         }
 
-        uint id = WindowManager.Sdl.GetWindowID(Handle);
+        uint id = WindowUtils.Sdl.GetWindowID(Handle);
 
-        foreach (Event @event in WindowManager.Events)
+        foreach (Event @event in WindowController.Events)
         {
             if (@event.Window.WindowID != id)
             {
@@ -155,10 +155,10 @@ internal unsafe partial class Window : IWindow
             flags |= WindowFlags.SkipTaskbar;
         }
 
-        Handle = WindowManager.Sdl.CreateWindow(Title, Position.X, Position.Y, Size.X, Size.Y, (uint)flags);
-        *NativeWindow = new(WindowManager.Sdl, Handle);
+        Handle = WindowUtils.Sdl.CreateWindow(Title, Position.X, Position.Y, Size.X, Size.Y, (uint)flags);
+        *NativeWindow = new(WindowUtils.Sdl, Handle);
 
-        WindowManager.AddLoop(this);
+        WindowController.AddLoop(this);
 
         return true;
     }
@@ -170,9 +170,9 @@ internal unsafe partial class Window : IWindow
             return false;
         }
 
-        WindowManager.RemoveLoop(this);
+        WindowController.RemoveLoop(this);
 
-        WindowManager.Sdl.DestroyWindow(Handle);
+        WindowUtils.Sdl.DestroyWindow(Handle);
 
         Handle = null;
         NativeWindow = null;
@@ -241,8 +241,8 @@ internal unsafe partial class Window : IWindow
 
     private void ProcessKeyboardEvent(KeyboardEvent keyboardEvent, bool isKeyDown)
     {
-        Key key = WindowHelpers.GetKey(keyboardEvent.Keysym.Scancode);
-        KeyModifiers modifiers = WindowHelpers.GetKeyModifiers((Keymod)keyboardEvent.Keysym.Mod);
+        Key key = WindowUtils.GetKey(keyboardEvent.Keysym.Scancode);
+        KeyModifiers modifiers = WindowUtils.GetKeyModifiers((Keymod)keyboardEvent.Keysym.Mod);
 
         if (isKeyDown)
         {
@@ -274,7 +274,7 @@ internal unsafe partial class Window : IWindow
 
     private void ProcessMouseButtonEvent(MouseButtonEvent mouseButtonEvent, bool isMouseDown)
     {
-        MouseButton button = WindowHelpers.GetMouseButton(mouseButtonEvent.Button);
+        MouseButton button = WindowUtils.GetMouseButton(mouseButtonEvent.Button);
 
         if (isMouseDown)
         {

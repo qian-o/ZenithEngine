@@ -3,13 +3,11 @@ using ZenithEngine.Windowing.Interfaces;
 
 namespace ZenithEngine.Windowing;
 
-public static unsafe class WindowManager
+public static unsafe class WindowController
 {
     private static readonly List<IWindow> windows = [];
     private static readonly List<IWindow> addWindows = [];
     private static readonly List<IWindow> removeWindows = [];
-
-    public static Sdl Sdl { get; } = Sdl.GetApi();
 
     public static List<Event> Events { get; } = [];
 
@@ -17,10 +15,10 @@ public static unsafe class WindowManager
     {
         Events.Clear();
 
-        Event ev;
-        while (Sdl.PollEvent(&ev) == (int)SdlBool.True)
+        Event @event;
+        while (WindowUtils.Sdl.PollEvent(&@event) == (int)SdlBool.True)
         {
-            Events.Add(ev);
+            Events.Add(@event);
         }
     }
 

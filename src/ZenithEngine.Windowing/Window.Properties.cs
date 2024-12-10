@@ -47,7 +47,7 @@ internal unsafe partial class Window : IWindowProperties
                 return;
             }
 
-            WindowManager.Sdl.SetWindowTitle(Handle, value);
+            WindowUtils.Sdl.SetWindowTitle(Handle, value);
         }
     }
 
@@ -66,16 +66,16 @@ internal unsafe partial class Window : IWindowProperties
             switch (value)
             {
                 case WindowState.Normal:
-                    WindowManager.Sdl.RestoreWindow(Handle);
+                    WindowUtils.Sdl.RestoreWindow(Handle);
                     break;
                 case WindowState.Minimized:
-                    WindowManager.Sdl.MinimizeWindow(Handle);
+                    WindowUtils.Sdl.MinimizeWindow(Handle);
                     break;
                 case WindowState.Maximized:
-                    WindowManager.Sdl.MaximizeWindow(Handle);
+                    WindowUtils.Sdl.MaximizeWindow(Handle);
                     break;
                 case WindowState.Fullscreen:
-                    WindowManager.Sdl.SetWindowFullscreen(Handle, (uint)WindowFlags.Fullscreen);
+                    WindowUtils.Sdl.SetWindowFullscreen(Handle, (uint)WindowFlags.Fullscreen);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(value), value, null);
@@ -98,16 +98,16 @@ internal unsafe partial class Window : IWindowProperties
             switch (value)
             {
                 case WindowBorder.Resizable:
-                    WindowManager.Sdl.SetWindowBordered(Handle, SdlBool.True);
-                    WindowManager.Sdl.SetWindowResizable(Handle, SdlBool.True);
+                    WindowUtils.Sdl.SetWindowBordered(Handle, SdlBool.True);
+                    WindowUtils.Sdl.SetWindowResizable(Handle, SdlBool.True);
                     break;
                 case WindowBorder.Fixed:
-                    WindowManager.Sdl.SetWindowBordered(Handle, SdlBool.True);
-                    WindowManager.Sdl.SetWindowResizable(Handle, SdlBool.False);
+                    WindowUtils.Sdl.SetWindowBordered(Handle, SdlBool.True);
+                    WindowUtils.Sdl.SetWindowResizable(Handle, SdlBool.False);
                     break;
                 case WindowBorder.Hidden:
-                    WindowManager.Sdl.SetWindowBordered(Handle, SdlBool.False);
-                    WindowManager.Sdl.SetWindowResizable(Handle, SdlBool.False);
+                    WindowUtils.Sdl.SetWindowBordered(Handle, SdlBool.False);
+                    WindowUtils.Sdl.SetWindowResizable(Handle, SdlBool.False);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(value), value, null);
@@ -127,7 +127,7 @@ internal unsafe partial class Window : IWindowProperties
                 return;
             }
 
-            WindowManager.Sdl.SetWindowAlwaysOnTop(Handle, value ? SdlBool.True : SdlBool.False);
+            WindowUtils.Sdl.SetWindowAlwaysOnTop(Handle, value ? SdlBool.True : SdlBool.False);
         }
     }
 
@@ -160,7 +160,7 @@ internal unsafe partial class Window : IWindowProperties
                 return;
             }
 
-            WindowManager.Sdl.SetWindowPosition(Handle, value.X, value.Y);
+            WindowUtils.Sdl.SetWindowPosition(Handle, value.X, value.Y);
         }
     }
 
@@ -176,7 +176,7 @@ internal unsafe partial class Window : IWindowProperties
                 return;
             }
 
-            WindowManager.Sdl.SetWindowSize(Handle, value.X, value.Y);
+            WindowUtils.Sdl.SetWindowSize(Handle, value.X, value.Y);
         }
     }
 
@@ -192,7 +192,7 @@ internal unsafe partial class Window : IWindowProperties
                 return;
             }
 
-            WindowManager.Sdl.SetWindowMinimumSize(Handle, value.X, value.Y);
+            WindowUtils.Sdl.SetWindowMinimumSize(Handle, value.X, value.Y);
         }
     }
 
@@ -208,7 +208,7 @@ internal unsafe partial class Window : IWindowProperties
                 return;
             }
 
-            WindowManager.Sdl.SetWindowMaximumSize(Handle, value.X, value.Y);
+            WindowUtils.Sdl.SetWindowMaximumSize(Handle, value.X, value.Y);
         }
     }
 
@@ -224,7 +224,7 @@ internal unsafe partial class Window : IWindowProperties
                 return;
             }
 
-            WindowManager.Sdl.SetWindowOpacity(Handle, value);
+            WindowUtils.Sdl.SetWindowOpacity(Handle, value);
         }
     }
 
