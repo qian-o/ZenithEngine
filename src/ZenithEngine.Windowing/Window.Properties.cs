@@ -14,7 +14,7 @@ internal unsafe partial class Window : IWindowProperties
     private WindowBorder border = WindowBorder.Resizable;
     private bool topMost;
     private bool showInTaskbar = true;
-    private Vector2D<int> position = new(20, 20);
+    private Vector2D<int> position = new(100, 100);
     private Vector2D<int> size = new(800, 600);
     private Vector2D<int> minimumSize = new(100, 100);
     private Vector2D<int> maximumSize = Vector2D<int>.Zero;
