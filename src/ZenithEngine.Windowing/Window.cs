@@ -102,7 +102,7 @@ internal unsafe partial class Window : IWindow
 
     private bool IsInitialized()
     {
-        return Handle != null;
+        return Handle is not null;
     }
 
     private bool TryInitialize()
@@ -268,7 +268,7 @@ internal unsafe partial class Window : IWindow
 
         for (int i = 0; i < charSize; i++)
         {
-            if (chars[i] == '\0')
+            if (chars[i] is '\0')
             {
                 break;
             }

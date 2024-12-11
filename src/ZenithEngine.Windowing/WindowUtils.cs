@@ -223,7 +223,7 @@ public static unsafe class WindowUtils
             _ => (int)button - 1
         };
 
-        return (Sdl.GetGlobalMouseState(null, null) & (1 << mask)) != 0;
+        return (Sdl.GetGlobalMouseState(null, null) & (1 << mask)) is not 0;
     }
 
     internal static Key GetKey(Scancode scancode)
