@@ -8,6 +8,8 @@ namespace ZenithEngine.ImGui;
 
 public unsafe class ImGuiController : DisposableObject
 {
+    private readonly ImGuiRenderer imGuiRenderer;
+
     public ImGuiContextPtr ImGuiContext;
 
     public ImGuiController(GraphicsContext context,
@@ -32,17 +34,19 @@ public unsafe class ImGuiController : DisposableObject
         {
             io.Fonts.Clear();
 
-            nint glyphRanges = fontConfig.Value.GlyphRange?.Invoke(io) ?? (nint)io.Fonts.GetGlyphRangesDefault();
-
             io.Fonts.AddFontFromFileTTF(fontConfig.Value.Font,
                                         (int)fontConfig.Value.Size,
                                         null,
-                                        (uint*)glyphRanges);
+                                        (uint*)fontConfig.Value.GlyphRange(io));
         }
+
+        imGuiRenderer = new(context, desc, handling);
     }
 
     protected override void Destroy()
     {
+        imGuiRenderer.Dispose();
+
         ImGuiApi.SetCurrentContext(null);
 
         ImGuiApi.DestroyContext(ImGuiContext);
