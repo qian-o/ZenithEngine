@@ -25,27 +25,29 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [ ] Use `slnx` instead of `sln` for Visual Studio solution.
 	- [ ] Add `ZenithEngine.D3D12` project.
 	- [x] Add `ZenithEngine.Vulkan` project.
-	- [ ] Add `ZenithEngine.Windowing` project.
+	- [x] Add `ZenithEngine.Windowing` project.
 	- [x] Add `ZenithEngine.ShaderCompiler` project.
 	- [ ] Add `ZenithEngine.ImGui` project.
 	- [ ] Add `ZenithEngine.ImGui.MultipleWindows` project.
 	- [ ] Add `ZenithEngine.Material` project.
+	- [ ] Add `ZenithEngine.Editor` project.
+	- [ ] Add `ZenithEngine.Viewer` project.
 
 - ZenithEngine.Vulkan
 	- [ ] Complete Vulkan API bindings.
-		- [x] Add `CommandProcessor` and `CommandBuffer`.
-		- [x] Improve `VKFrameBuffer`'s `TransitionToIntermedialLayout` and `TransitionToFinalLayout` methods.
-		- [x] Complete the remaining methods in `CommandBuffer`.
 		- [ ] Improve acceleration structures and ray tracing pipeline.
 
 - ZenithEngine.ShaderCompiler
-	- [x] Add HLSL to SPIR-V compiler.
-	- [x] Add SPIR-V reflection.
+	- [ ] Use Slang instead of HLSL.
 
-## Proposed Features
-- [x] Bindless resources.
-- [x] SPIR-V reflection.
-- [ ] Graphics API shared resources.
+- ZenithEngine.Editor And ZenithEngine.Viewer
+	- [ ] Add project design and parsing, as well as loading and saving of project files.
+
+- ZenithEngine.Editor
+	- [ ] Use WPF for the editor's UI.
+
+- ZenithEngine.Viewer
+	- [ ] Use ImGui for the viewer's UI.
 
 ## Code Standard
 - Prefer using `(static item => item.Property)` Lambda expressions.
