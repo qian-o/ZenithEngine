@@ -242,7 +242,7 @@ internal unsafe partial class VKSwapChain : SwapChain
             ImageUsage = ImageUsageFlags.ColorAttachmentBit,
             PreTransform = SurfaceTransformFlagsKHR.IdentityBitKhr,
             CompositeAlpha = capabilities.SupportedCompositeAlpha,
-            PresentMode = ChooseSwapPresentMode(modes, Desc.VerticalSync),
+            PresentMode = ChooseSwapPresentMode(modes),
             ImageSharingMode = SharingMode.Exclusive,
             Clipped = true
         };
@@ -291,11 +291,13 @@ internal unsafe partial class VKSwapChain : SwapChain
         Context.KhrSwapchain!.DestroySwapchain(Context.Device, Swapchain, null);
     }
 
-    private static SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] surfaceFormats)
+    private SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] surfaceFormats)
     {
+        Format desiredFormat = VKFormats.GetPixelFormat(Desc.ColorTargetFormat);
+
         foreach (SurfaceFormatKHR availableFormat in surfaceFormats)
         {
-            if (availableFormat.Format is Format.B8G8R8A8Srgb && availableFormat.ColorSpace is ColorSpaceKHR.SpaceSrgbNonlinearKhr)
+            if (availableFormat.Format == desiredFormat && availableFormat.ColorSpace is ColorSpaceKHR.SpaceSrgbNonlinearKhr)
             {
                 return availableFormat;
             }
@@ -304,11 +306,11 @@ internal unsafe partial class VKSwapChain : SwapChain
         return surfaceFormats[0];
     }
 
-    private static PresentModeKHR ChooseSwapPresentMode(PresentModeKHR[] presentModes, bool vsync)
+    private PresentModeKHR ChooseSwapPresentMode(PresentModeKHR[] presentModes)
     {
         PresentModeKHR presentMode = PresentModeKHR.FifoKhr;
 
-        if (vsync && presentModes.Contains(PresentModeKHR.FifoRelaxedKhr))
+        if (Desc.VerticalSync && presentModes.Contains(PresentModeKHR.FifoRelaxedKhr))
         {
             presentMode = PresentModeKHR.FifoRelaxedKhr;
         }
@@ -324,14 +326,18 @@ internal unsafe partial class VKSwapChain : SwapChain
         return presentMode;
     }
 
-    private static Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities)
+    private Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities)
     {
         if (capabilities.CurrentExtent.Width is not uint.MaxValue)
         {
             return capabilities.CurrentExtent;
         }
 
-        return new((uint)Utils.Lerp(capabilities.MinImageExtent.Width, capabilities.MaxImageExtent.Width, 0.5),
-                   (uint)Utils.Lerp(capabilities.MinImageExtent.Height, capabilities.MaxImageExtent.Height, 0.5));
+        return new(Utils.Clamp(Desc.Surface.Size().X,
+                               capabilities.MinImageExtent.Width,
+                               capabilities.MaxImageExtent.Width),
+                   Utils.Clamp(Desc.Surface.Size().Y,
+                               capabilities.MinImageExtent.Height,
+                               capabilities.MaxImageExtent.Height));
     }
 }

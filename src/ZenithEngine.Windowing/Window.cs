@@ -153,7 +153,12 @@ internal unsafe partial class Window : IWindow
             flags |= WindowFlags.SkipTaskbar;
         }
 
-        Handle = WindowUtils.Sdl.CreateWindow(Title, Position.X, Position.Y, Size.X, Size.Y, (uint)flags);
+        Handle = WindowUtils.Sdl.CreateWindow(Title,
+                                              Position.X,
+                                              Position.Y,
+                                              Size.X,
+                                              Size.Y,
+                                              (uint)flags);
 
         WindowUtils.Sdl.SetWindowMinimumSize(Handle, MinimumSize.X, MinimumSize.Y);
         WindowUtils.Sdl.SetWindowMaximumSize(Handle, MaximumSize.X, MaximumSize.Y);
