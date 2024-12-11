@@ -11,7 +11,7 @@ internal unsafe class VKCommandProcessor : CommandProcessor
     public VKCommandProcessor(GraphicsContext context,
                               CommandProcessorType type) : base(context, type)
     {
-        queue = Context.Vk.GetDeviceQueue(Context.Device, Context.FindQueueFamilyIndex(type), 0);
+        queue = Context.FindQueue(type);
     }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;

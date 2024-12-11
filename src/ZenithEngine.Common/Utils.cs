@@ -179,4 +179,9 @@ public static class Utils
     {
         return start + ((end - start) * value);
     }
+
+    public static T Clamp<T>(T value, T min, T max) where T : INumberBase<T>, IComparisonOperators<T, T, bool>
+    {
+        return value < min ? min : value > max ? max : value;
+    }
 }

@@ -9,6 +9,10 @@ internal unsafe partial class VKGraphicsContext
 {
     public VkDevice Device;
 
+    public VkQueue DirectQueue { get; private set; }
+
+    public VkQueue CopyQueue { get; private set; }
+
     public KhrSwapchain? KhrSwapchain { get; private set; }
 
     public KhrRayTracingPipeline? KhrRayTracingPipeline { get; private set; }
@@ -19,12 +23,12 @@ internal unsafe partial class VKGraphicsContext
 
     public VKDescriptorSetAllocator? DescriptorSetAllocator { get; private set; }
 
-    public uint FindQueueFamilyIndex(CommandProcessorType type)
+    public VkQueue FindQueue(CommandProcessorType type)
     {
         return type switch
         {
-            CommandProcessorType.Direct => DirectQueueFamilyIndex,
-            CommandProcessorType.Copy => CopyQueueFamilyIndex,
+            CommandProcessorType.Direct => DirectQueue,
+            CommandProcessorType.Copy => CopyQueue,
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
     }
@@ -66,6 +70,8 @@ internal unsafe partial class VKGraphicsContext
 
         Vk.CreateDevice(PhysicalDevice, &createInfo, null, out Device).ThrowIfError();
 
+        DirectQueue = Vk.GetDeviceQueue(Device, DirectQueueFamilyIndex, 0);
+        CopyQueue = Vk.GetDeviceQueue(Device, CopyQueueFamilyIndex, 0);
         KhrSwapchain = Vk.TryGetExtension<KhrSwapchain>(Instance, Device);
         KhrRayTracingPipeline = Vk.TryGetExtension<KhrRayTracingPipeline>(Instance, Device);
         KhrAccelerationStructure = Vk.TryGetExtension<KhrAccelerationStructure>(Instance, Device);
