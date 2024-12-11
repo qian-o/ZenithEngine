@@ -2,7 +2,7 @@
 
 namespace ZenithEngine.ImGui;
 
-public unsafe readonly struct ImGuiFontConfig(string font,
+public readonly unsafe struct ImGuiFontConfig(string font,
                                               uint size = 16,
                                               Func<ImGuiIOPtr, nint>? glyphRange = null)
 {
