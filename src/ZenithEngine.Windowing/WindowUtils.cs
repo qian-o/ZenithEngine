@@ -184,9 +184,9 @@ public static unsafe class WindowUtils
             displays[i] = new(i,
                               Sdl.GetDisplayNameS(i),
                               main.Origin,
-                              main.Size,
+                              main.Size.As<uint>(),
                               work.Origin,
-                              work.Size,
+                              work.Size.As<uint>(),
                               ddpi == 0 ? 1 : ddpi / 96);
         }
 

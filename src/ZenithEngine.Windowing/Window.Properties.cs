@@ -10,14 +10,14 @@ internal unsafe partial class Window : IWindowProperties
 {
     private ISurface? surface;
     private string title = "Window";
-    private WindowState state = WindowState.Normal;
-    private WindowBorder border = WindowBorder.Resizable;
+    private WindowState state;
+    private WindowBorder border;
     private bool topMost;
     private bool showInTaskbar = true;
     private Vector2D<int> position = new(100, 100);
-    private Vector2D<int> size = new(800, 600);
-    private Vector2D<int> minimumSize = new(100, 100);
-    private Vector2D<int> maximumSize = Vector2D<int>.Zero;
+    private Vector2D<uint> size = new(800, 600);
+    private Vector2D<uint> minimumSize = new(100, 100);
+    private Vector2D<uint> maximumSize;
     private float opacity = 1;
     private double updatePeriod;
     private double renderPeriod;
@@ -164,7 +164,7 @@ internal unsafe partial class Window : IWindowProperties
         }
     }
 
-    public Vector2D<int> Size
+    public Vector2D<uint> Size
     {
         get => size;
         set
@@ -176,11 +176,11 @@ internal unsafe partial class Window : IWindowProperties
                 return;
             }
 
-            WindowUtils.Sdl.SetWindowSize(Handle, value.X, value.Y);
+            WindowUtils.Sdl.SetWindowSize(Handle, (int)value.X, (int)value.Y);
         }
     }
 
-    public Vector2D<int> MinimumSize
+    public Vector2D<uint> MinimumSize
     {
         get => minimumSize;
         set
@@ -192,11 +192,11 @@ internal unsafe partial class Window : IWindowProperties
                 return;
             }
 
-            WindowUtils.Sdl.SetWindowMinimumSize(Handle, value.X, value.Y);
+            WindowUtils.Sdl.SetWindowMinimumSize(Handle, (int)value.X, (int)value.Y);
         }
     }
 
-    public Vector2D<int> MaximumSize
+    public Vector2D<uint> MaximumSize
     {
         get => maximumSize;
         set
@@ -208,7 +208,7 @@ internal unsafe partial class Window : IWindowProperties
                 return;
             }
 
-            WindowUtils.Sdl.SetWindowMaximumSize(Handle, value.X, value.Y);
+            WindowUtils.Sdl.SetWindowMaximumSize(Handle, (int)value.X, (int)value.Y);
         }
     }
 

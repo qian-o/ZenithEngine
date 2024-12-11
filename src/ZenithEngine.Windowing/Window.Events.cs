@@ -17,7 +17,7 @@ internal partial class Window : IWindowEvents
 
     public event EventHandler<ValueEventArgs<Vector2D<int>>>? PositionChanged;
 
-    public event EventHandler<ValueEventArgs<Vector2D<int>>>? SizeChanged;
+    public event EventHandler<ValueEventArgs<Vector2D<uint>>>? SizeChanged;
 
     public event EventHandler<ValueEventArgs<WindowState>>? StateChanged;
 

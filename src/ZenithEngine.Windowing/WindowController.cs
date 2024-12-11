@@ -65,8 +65,8 @@ public static unsafe class WindowController
     }
 
     public static IWindow CreateWindow(string title = "Window",
-                                       int width = 800,
-                                       int height = 600)
+                                       uint width = 800,
+                                       uint height = 600)
     {
         Window window = new()
         {

@@ -16,7 +16,7 @@ public interface IWindowEvents
 
     event EventHandler<ValueEventArgs<Vector2D<int>>>? PositionChanged;
 
-    event EventHandler<ValueEventArgs<Vector2D<int>>>? SizeChanged;
+    event EventHandler<ValueEventArgs<Vector2D<uint>>>? SizeChanged;
 
     event EventHandler<ValueEventArgs<WindowState>>? StateChanged;
 

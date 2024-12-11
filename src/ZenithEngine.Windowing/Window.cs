@@ -156,12 +156,12 @@ internal unsafe partial class Window : IWindow
         Handle = WindowUtils.Sdl.CreateWindow(Title,
                                               Position.X,
                                               Position.Y,
-                                              Size.X,
-                                              Size.Y,
+                                              (int)Size.X,
+                                              (int)Size.Y,
                                               (uint)flags);
 
-        WindowUtils.Sdl.SetWindowMinimumSize(Handle, MinimumSize.X, MinimumSize.Y);
-        WindowUtils.Sdl.SetWindowMaximumSize(Handle, MaximumSize.X, MaximumSize.Y);
+        WindowUtils.Sdl.SetWindowMinimumSize(Handle, (int)MinimumSize.X, (int)MinimumSize.Y);
+        WindowUtils.Sdl.SetWindowMaximumSize(Handle, (int)MaximumSize.X, (int)MaximumSize.Y);
         WindowUtils.Sdl.SetWindowOpacity(Handle, Opacity);
 
         WindowController.AddLoop(this);

@@ -20,11 +20,11 @@ public interface IWindowProperties
 
     Vector2D<int> Position { get; set; }
 
-    Vector2D<int> Size { get; set; }
+    Vector2D<uint> Size { get; set; }
 
-    Vector2D<int> MinimumSize { get; set; }
+    Vector2D<uint> MinimumSize { get; set; }
 
-    Vector2D<int> MaximumSize { get; set; }
+    Vector2D<uint> MaximumSize { get; set; }
 
     float Opacity { get; set; }
 
