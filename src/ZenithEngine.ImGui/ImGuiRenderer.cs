@@ -1,4 +1,6 @@
-﻿using Hexa.NET.ImGui;
+﻿using System.Numerics;
+using System.Runtime.InteropServices;
+using Hexa.NET.ImGui;
 using Silk.NET.Maths;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
@@ -12,9 +14,12 @@ public unsafe class ImGuiRenderer : DisposableObject
     private Buffer vertexBuffer = null!;
     private Buffer indexBuffer = null!;
     private Buffer constantsBuffer = null!;
+    private Sampler sampler = null!;
     private ResourceLayout layout0 = null!;
     private ResourceLayout layout1 = null!;
     private GraphicsPipeline pipeline = null!;
+
+    private ResourceSet set0 = null!;
 
     public ImGuiRenderer(GraphicsContext context, OutputDesc outputDesc, ColorSpaceHandling handling)
     {
@@ -25,26 +30,135 @@ public unsafe class ImGuiRenderer : DisposableObject
 
     public GraphicsContext Context { get; }
 
+    public void Render(CommandBuffer commandBuffer, ImDrawDataPtr dataPtr)
+    {
+        if (dataPtr.CmdListsCount is 0)
+        {
+            return;
+        }
+
+        uint totalVertexSize = (uint)(dataPtr.TotalVtxCount * sizeof(ImDrawVert));
+        if (totalVertexSize > vertexBuffer.Desc.SizeInBytes)
+        {
+            vertexBuffer.Dispose();
+
+            BufferDesc vbDesc = BufferDesc.Default((uint)(totalVertexSize * 1.5),
+                                                   BufferUsage.VertexBuffer | BufferUsage.Dynamic);
+
+            vertexBuffer = Context.Factory.CreateBuffer(ref vbDesc);
+        }
+
+        uint totalIndexSize = (uint)(dataPtr.TotalIdxCount * sizeof(ushort));
+        if (totalIndexSize > indexBuffer.Desc.SizeInBytes)
+        {
+            indexBuffer.Dispose();
+            BufferDesc ibDesc = BufferDesc.Default((uint)(totalIndexSize * 1.5),
+                                                   BufferUsage.IndexBuffer | BufferUsage.Dynamic);
+
+            indexBuffer = Context.Factory.CreateBuffer(ref ibDesc);
+        }
+
+        uint vertexOffset = 0;
+        uint indexOffset = 0;
+
+        for (int i = 0; i < dataPtr.CmdListsCount; i++)
+        {
+            ImDrawListPtr listPtr = dataPtr.CmdLists[i];
+
+            uint vertexSize = (uint)(listPtr.VtxBuffer.Size * sizeof(ImDrawVert));
+            uint indexSize = (uint)(listPtr.IdxBuffer.Size * sizeof(ushort));
+
+            Context.UpdateBuffer(vertexBuffer, (nint)listPtr.VtxBuffer.Data, vertexSize, vertexOffset);
+            Context.UpdateBuffer(indexBuffer, (nint)listPtr.IdxBuffer.Data, indexSize, indexOffset);
+
+            vertexOffset += vertexSize;
+            indexOffset += indexSize;
+        }
+
+        Vector2 displayPos = dataPtr.DisplayPos;
+        Vector2 displaySize = dataPtr.DisplaySize;
+
+        Matrix4X4<float> projection = Matrix4X4.CreateOrthographicOffCenter(displayPos.X,
+                                                                            displayPos.X + displaySize.X,
+                                                                            displayPos.Y + displaySize.Y,
+                                                                            displayPos.Y,
+                                                                            -1.0f,
+                                                                            1.0f);
+
+        Context.UpdateBuffer(constantsBuffer, (nint)(&projection), (uint)sizeof(Matrix4X4<float>));
+
+        commandBuffer.SetGraphicsPipeline(pipeline);
+        commandBuffer.SetVertexBuffer(0, vertexBuffer);
+        commandBuffer.SetIndexBuffer(indexBuffer, IndexFormat.U16Bit);
+        commandBuffer.SetResourceSet(set0, 0);
+
+        vertexOffset = 0;
+        indexOffset = 0;
+
+        for (int i = 0; i < dataPtr.CmdListsCount; i++)
+        {
+            ImDrawListPtr listPtr = dataPtr.CmdLists.Data[i];
+
+            for (int j = 0; j < listPtr.CmdBuffer.Size; j++)
+            {
+                ImDrawCmd cmd = listPtr.CmdBuffer.Data[j];
+
+                if (cmd.UserCallback != null)
+                {
+                    ImDrawCallback callback = Marshal.GetDelegateForFunctionPointer<ImDrawCallback>((nint)cmd.UserCallback);
+
+                    callback(listPtr, &cmd);
+                }
+                else
+                {
+                    Rectangle<int> scissor = new((int)Math.Max(0, cmd.ClipRect.X - displayPos.X),
+                                                 (int)Math.Max(0, cmd.ClipRect.Y - displayPos.Y),
+                                                 (int)Math.Max(0, cmd.ClipRect.Z - cmd.ClipRect.X),
+                                                 (int)Math.Max(0, cmd.ClipRect.W - cmd.ClipRect.Y));
+
+                    commandBuffer.SetScissorRectangle(0, scissor);
+
+                    commandBuffer.DrawIndexed(cmd.ElemCount,
+                                              cmd.IdxOffset + indexOffset,
+                                              cmd.VtxOffset + vertexOffset);
+                }
+            }
+        }
+    }
+
     protected override void Destroy()
     {
+        set0.Dispose();
+
+        pipeline.Dispose();
+        layout1.Dispose();
+        layout0.Dispose();
+        sampler.Dispose();
+        constantsBuffer.Dispose();
+        indexBuffer.Dispose();
+        vertexBuffer.Dispose();
     }
 
     private void CreateGraphicsResources(OutputDesc outputDesc, ColorSpaceHandling handling)
     {
         BufferDesc vbDesc = BufferDesc.Default((uint)sizeof(ImDrawVert) * 5000,
-                                               BufferUsage.VertexBuffer);
+                                               BufferUsage.VertexBuffer | BufferUsage.Dynamic);
 
         vertexBuffer = Context.Factory.CreateBuffer(ref vbDesc);
 
         BufferDesc ibDesc = BufferDesc.Default(sizeof(ushort) * 10000,
-                                               BufferUsage.IndexBuffer);
+                                               BufferUsage.IndexBuffer | BufferUsage.Dynamic);
 
         indexBuffer = Context.Factory.CreateBuffer(ref ibDesc);
 
         BufferDesc cbDesc = BufferDesc.Default((uint)sizeof(Matrix4X4<float>),
-                                               BufferUsage.ConstantBuffer);
+                                               BufferUsage.ConstantBuffer | BufferUsage.Dynamic);
 
         constantsBuffer = Context.Factory.CreateBuffer(ref cbDesc);
+
+        SamplerDesc samplerDesc = SamplerDesc.Default(filter: SamplerFilter.MinPointMagPointMipPoint);
+
+        sampler = Context.Factory.CreateSampler(ref samplerDesc);
 
         ResourceLayoutDesc layout0Desc = ResourceLayoutDesc.Default(
         [
@@ -90,5 +204,9 @@ public unsafe class ImGuiRenderer : DisposableObject
         );
 
         pipeline = Context.Factory.CreateGraphicsPipeline(ref pipelineDesc);
+
+        ResourceSetDesc set0Desc = ResourceSetDesc.Default(layout0, constantsBuffer, sampler);
+
+        set0 = Context.Factory.CreateResourceSet(ref set0Desc);
     }
 }

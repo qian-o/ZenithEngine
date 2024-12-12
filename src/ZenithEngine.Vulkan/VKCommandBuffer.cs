@@ -794,7 +794,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     }
 
     public override void SetResourceSet(ResourceSet resourceSet,
-                                        uint index = 0,
+                                        uint index,
                                         uint[]? constantBufferOffsets = null)
     {
         VKResourceSet vkResourceSet = resourceSet.VK();

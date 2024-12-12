@@ -248,7 +248,7 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// <param name="index">The resource set index.</param>
     /// <param name="constantBufferOffsets">Array of constant buffer offsets.</param>
     public abstract void SetResourceSet(ResourceSet resourceSet,
-                                        uint index = 0,
+                                        uint index,
                                         uint[]? constantBufferOffsets = null);
     #endregion
 
