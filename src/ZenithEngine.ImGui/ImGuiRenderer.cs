@@ -99,7 +99,7 @@ public unsafe class ImGuiRenderer : DisposableObject
                                                                             displayPos.X + displaySize.X,
                                                                             displayPos.Y + displaySize.Y,
                                                                             displayPos.Y,
-                                                                            -1.0f,
+                                                                            0.0f,
                                                                             1.0f);
 
         Context.UpdateBuffer(constantsBuffer, (nint)(&projection), (uint)sizeof(Matrix4X4<float>));
@@ -217,9 +217,19 @@ public unsafe class ImGuiRenderer : DisposableObject
         layoutDesc.Add(ElementDesc.Default(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
         layoutDesc.Add(ElementDesc.Default(ElementFormat.UByte4Normalized, ElementSemanticType.Color, 0));
 
+        BlendStateDesc blendStateDesc = BlendStateDesc.Default();
+        blendStateDesc.RenderTarget0 = BlendStateRenderTargetDesc.Default(true,
+                                                                          Blend.SourceAlpha,
+                                                                          Blend.InverseSourceAlpha,
+                                                                          BlendOperation.Add,
+                                                                          Blend.SourceAlpha,
+                                                                          Blend.InverseSourceAlpha,
+                                                                          BlendOperation.Add);
+
         RenderStateDesc renderStateDesc = RenderStateDesc.Default();
         renderStateDesc.RasterizerState = RasterizerStateDesc.Default(CullMode.None);
         renderStateDesc.DepthStencilState = DepthStencilStateDesc.Default(false);
+        renderStateDesc.BlendState = blendStateDesc;
 
         GraphicsPipelineDesc pipelineDesc = GraphicsPipelineDesc.Default
         (
