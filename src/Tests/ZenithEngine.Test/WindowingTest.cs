@@ -6,6 +6,7 @@ using ZenithEngine.Common.Graphics;
 using ZenithEngine.ImGui;
 using ZenithEngine.ImGui.Interfaces;
 using ZenithEngine.Windowing;
+using ZenithEngine.Windowing.Enums;
 using ZenithEngine.Windowing.Events;
 using ZenithEngine.Windowing.Interfaces;
 
@@ -25,14 +26,16 @@ public class WindowingTest
         {
             this.window = window;
 
+            window.MouseMove += Window_MouseMove;
+            window.MouseWheel += Window_MouseWheel;
             window.KeyChar += Window_KeyChar;
         }
 
         public Vector2D<uint> Size => window.Size;
 
-        public Vector2D<int> MousePosition => window.Position;
+        public Vector2D<int> MousePosition { get; private set; }
 
-        public Vector2D<int> MouseWheel { get; }
+        public Vector2D<int> MouseWheel { get; private set; }
 
         public string InputText
         {
@@ -53,7 +56,24 @@ public class WindowingTest
 
         public bool MousePressed(ImGuiMouseButton button)
         {
-            return false;
+            return button switch
+            {
+                ImGuiMouseButton.Left => WindowUtils.IsMouseButtonDown(MouseButton.Left),
+                ImGuiMouseButton.Right => WindowUtils.IsMouseButtonDown(MouseButton.Right),
+                ImGuiMouseButton.Middle => WindowUtils.IsMouseButtonDown(MouseButton.Middle),
+                ImGuiMouseButton.Count => WindowUtils.IsMouseButtonDown(MouseButton.Button4),
+                _ => false,
+            };
+        }
+
+        private void Window_MouseMove(object? sender, ValueEventArgs<Vector2D<int>> e)
+        {
+            MousePosition = e.Value;
+        }
+
+        private void Window_MouseWheel(object? sender, ValueEventArgs<Vector2D<int>> e)
+        {
+            MouseWheel = e.Value;
         }
 
         private void Window_KeyChar(object? sender, ValueEventArgs<char> e)
