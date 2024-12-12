@@ -57,7 +57,7 @@ public class WindowingTest
                 swapChain.Resize();
             };
 
-            WindowController.Loop();
+            WindowController.Loop(true);
         });
     }
 }
