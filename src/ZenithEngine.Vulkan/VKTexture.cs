@@ -7,9 +7,9 @@ namespace ZenithEngine.Vulkan;
 
 internal unsafe class VKTexture : Texture
 {
-    private readonly ImageLayout[] imageLayouts;
-
     public VkImage Image;
+
+    private readonly ImageLayout[] imageLayouts;
 
     public VKTexture(GraphicsContext context,
                      ref readonly TextureDesc desc) : base(context, in desc)

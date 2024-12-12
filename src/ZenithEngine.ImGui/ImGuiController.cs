@@ -8,9 +8,11 @@ namespace ZenithEngine.ImGui;
 
 public unsafe class ImGuiController : DisposableObject
 {
+    public ImGuiContextPtr ImGuiContext;
+
     private readonly ImGuiRenderer imGuiRenderer;
 
-    public ImGuiContextPtr ImGuiContext;
+    private bool frameBegun;
 
     public ImGuiController(GraphicsContext context,
                            OutputDesc outputDesc,
@@ -41,6 +43,11 @@ public unsafe class ImGuiController : DisposableObject
         }
 
         imGuiRenderer = new(context, outputDesc, handling);
+    }
+
+    public void Update(float deltaSeconds)
+    {
+
     }
 
     protected override void Destroy()

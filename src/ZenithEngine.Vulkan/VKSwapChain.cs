@@ -14,11 +14,11 @@ internal unsafe partial class VKSwapChain : SwapChain
     [LibraryImport("android", EntryPoint = "ANativeWindow_fromSurface")]
     private static partial nint ANativeWindowFromSurface(nint env, nint surface);
 
-    private readonly VKFence fence;
-    private readonly VKSwapChainFrameBuffer swapChainFrameBuffer;
-
     public SurfaceKHR Surface;
     public SwapchainKHR Swapchain;
+
+    private readonly VKFence fence;
+    private readonly VKSwapChainFrameBuffer swapChainFrameBuffer;
 
     public VKSwapChain(GraphicsContext context,
                        ref readonly SwapChainDesc desc) : base(context, in desc)
