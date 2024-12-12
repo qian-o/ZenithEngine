@@ -73,13 +73,20 @@ public unsafe class ImGuiRenderer : DisposableObject
 
         for (int i = 0; i < dataPtr.CmdListsCount; i++)
         {
-            ImDrawListPtr listPtr = dataPtr.CmdLists[i];
+            ImDrawListPtr listPtr = dataPtr.CmdLists.Data[i];
 
             uint vertexSize = (uint)(listPtr.VtxBuffer.Size * sizeof(ImDrawVert));
             uint indexSize = (uint)(listPtr.IdxBuffer.Size * sizeof(ushort));
 
-            Context.UpdateBuffer(vertexBuffer, (nint)listPtr.VtxBuffer.Data, vertexSize, vertexOffset);
-            Context.UpdateBuffer(indexBuffer, (nint)listPtr.IdxBuffer.Data, indexSize, indexOffset);
+            Context.UpdateBuffer(vertexBuffer,
+                                 (nint)listPtr.VtxBuffer.Data,
+                                 vertexSize,
+                                 vertexOffset);
+
+            Context.UpdateBuffer(indexBuffer,
+                                 (nint)listPtr.IdxBuffer.Data,
+                                 indexSize,
+                                 indexOffset);
 
             vertexOffset += vertexSize;
             indexOffset += indexSize;
@@ -135,6 +142,9 @@ public unsafe class ImGuiRenderer : DisposableObject
                                               cmd.VtxOffset + vertexOffset);
                 }
             }
+
+            vertexOffset += (uint)listPtr.VtxBuffer.Size;
+            indexOffset += (uint)listPtr.IdxBuffer.Size;
         }
     }
 
@@ -204,8 +214,8 @@ public unsafe class ImGuiRenderer : DisposableObject
 
         LayoutDesc layoutDesc = LayoutDesc.Default();
         layoutDesc.Add(ElementDesc.Default(ElementFormat.Float2, ElementSemanticType.Position, 0));
-        layoutDesc.Add(ElementDesc.Default(ElementFormat.Float2, ElementSemanticType.Normal, 0));
-        layoutDesc.Add(ElementDesc.Default(ElementFormat.Float4, ElementSemanticType.Color, 0));
+        layoutDesc.Add(ElementDesc.Default(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
+        layoutDesc.Add(ElementDesc.Default(ElementFormat.UByte4Normalized, ElementSemanticType.Color, 0));
 
         RenderStateDesc renderStateDesc = RenderStateDesc.Default();
         renderStateDesc.RasterizerState = RasterizerStateDesc.Default(CullMode.None);

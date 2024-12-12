@@ -53,7 +53,16 @@ internal unsafe partial class Window : IWindowProperties
 
     public WindowState State
     {
-        get => state;
+        get
+        {
+            if (IsInitialized())
+            {
+
+            }
+
+            return state;
+        }
+
         set
         {
             state = value;
@@ -150,7 +159,21 @@ internal unsafe partial class Window : IWindowProperties
 
     public Vector2D<int> Position
     {
-        get => position;
+        get
+        {
+            if (IsInitialized())
+            {
+                Vector2D<int> value;
+                WindowUtils.Sdl.GetWindowPosition(Handle, &value.X, &value.Y);
+
+                return value;
+            }
+            else
+            {
+                return position;
+            }
+        }
+
         set
         {
             position = value;
@@ -166,7 +189,21 @@ internal unsafe partial class Window : IWindowProperties
 
     public Vector2D<uint> Size
     {
-        get => size;
+        get
+        {
+            if (IsInitialized())
+            {
+                Vector2D<int> value;
+                WindowUtils.Sdl.GetWindowSize(Handle, &value.X, &value.Y);
+
+                return value.As<uint>();
+            }
+            else
+            {
+                return size;
+            }
+        }
+
         set
         {
             size = value;

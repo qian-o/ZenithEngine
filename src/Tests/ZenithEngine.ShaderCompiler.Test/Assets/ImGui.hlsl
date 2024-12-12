@@ -7,7 +7,7 @@ struct VSInput
 {
     float2 Position : POSITION0;
     
-    float2 UV : NORMAL0;
+    float2 UV : TEXCOORD0;
     
     float4 Color : COLOR0;
 };
@@ -34,7 +34,7 @@ VSOutput VSMain(VSInput input)
 {
     VSOutput output;
     
-    output.Position = mul(constants.Projection, float4(input.Position, 0.0f, 1.0f));
+    output.Position = mul(float4(input.Position, 0.0f, 1.0f), constants.Projection);
     output.UV = input.UV;
     output.Color = input.Color;
     
