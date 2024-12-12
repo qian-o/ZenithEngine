@@ -90,7 +90,7 @@ public unsafe class ImGuiRenderer : DisposableObject
         commandBuffer.SetGraphicsPipeline(pipeline);
         commandBuffer.SetVertexBuffer(0, vertexBuffer);
         commandBuffer.SetIndexBuffer(indexBuffer, IndexFormat.U16Bit);
-        commandBuffer.SetResourceSet(set0, 0);
+        commandBuffer.SetResourceSet(0, set0);
 
         vertexOffset = 0;
         indexOffset = 0;

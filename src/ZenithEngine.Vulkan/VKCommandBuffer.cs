@@ -793,8 +793,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         }
     }
 
-    public override void SetResourceSet(ResourceSet resourceSet,
-                                        uint index,
+    public override void SetResourceSet(uint slot,
+                                        ResourceSet resourceSet,
                                         uint[]? constantBufferOffsets = null)
     {
         VKResourceSet vkResourceSet = resourceSet.VK();
@@ -813,7 +813,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             Context.Vk.CmdBindDescriptorSets(CommandBuffer,
                                              PipelineBindPoint.Graphics,
                                              graphicsPipeline.PipelineLayout,
-                                             index,
+                                             slot,
                                              1,
                                              in vkResourceSet.Token.Set,
                                              (uint)offsets.Length,
@@ -824,7 +824,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             Context.Vk.CmdBindDescriptorSets(CommandBuffer,
                                              PipelineBindPoint.Compute,
                                              computePipeline.PipelineLayout,
-                                             index,
+                                             slot,
                                              1,
                                              in vkResourceSet.Token.Set,
                                              (uint)offsets.Length,

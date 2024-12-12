@@ -244,11 +244,11 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// <summary>
     /// Set the resource set for pipeline binding.
     /// </summary>
+    /// <param name="slot">The resource set slot.</param>
     /// <param name="resourceSet">Resource set.</param>
-    /// <param name="index">The resource set index.</param>
     /// <param name="constantBufferOffsets">Array of constant buffer offsets.</param>
-    public abstract void SetResourceSet(ResourceSet resourceSet,
-                                        uint index,
+    public abstract void SetResourceSet(uint slot,
+                                        ResourceSet resourceSet,
                                         uint[]? constantBufferOffsets = null);
     #endregion
 
