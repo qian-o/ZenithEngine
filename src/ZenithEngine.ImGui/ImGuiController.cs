@@ -1,21 +1,27 @@
 ﻿using Hexa.NET.ImGui;
+using Silk.NET.Maths;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
+using ZenithEngine.ImGui.Interfaces;
 
 namespace ZenithEngine.ImGui;
 
 public unsafe class ImGuiController : DisposableObject
 {
+    public static ImGuiKey[] keys = Enum.GetValues<ImGuiKey>();
+
     public ImGuiContextPtr ImGuiContext;
 
-    private readonly ImGuiRenderer imGuiRenderer;
+    private readonly IInputController controller;
+    private readonly ImGuiRenderer renderer;
 
     private bool frameBegun;
 
     public ImGuiController(GraphicsContext context,
                            OutputDesc outputDesc,
+                           IInputController inputController,
                            ColorSpaceHandling handling = ColorSpaceHandling.Legacy,
                            ImGuiFontConfig? fontConfig = null)
     {
@@ -42,17 +48,60 @@ public unsafe class ImGuiController : DisposableObject
                                         (uint*)fontConfig.Value.GlyphRange(io));
         }
 
-        imGuiRenderer = new(context, outputDesc, handling);
+        controller = inputController;
+        renderer = new(context, outputDesc, handling);
     }
 
     public void Update(float deltaSeconds)
     {
+        if (frameBegun)
+        {
+            ImGuiApi.Render();
+        }
 
+        ImGuiApi.SetCurrentContext(ImGuiContext);
+
+        ImGuiIOPtr io = ImGuiApi.GetIO();
+
+        io.DeltaTime = deltaSeconds;
+        io.DisplaySize = controller.Size.As<float>().ToSystem();
+
+        io.AddMousePosEvent(controller.MousePosition.X, controller.MousePosition.Y);
+        io.AddMouseWheelEvent(controller.MouseWheel.X, controller.MouseWheel.Y);
+
+        io.AddMouseButtonEvent((int)ImGuiMouseButton.Left, controller.MousePressed(ImGuiMouseButton.Left));
+        io.AddMouseButtonEvent((int)ImGuiMouseButton.Right, controller.MousePressed(ImGuiMouseButton.Right));
+        io.AddMouseButtonEvent((int)ImGuiMouseButton.Middle, controller.MousePressed(ImGuiMouseButton.Middle));
+
+        foreach (ImGuiKey key in keys)
+        {
+            io.AddKeyEvent(key, controller.KeyPressed(key));
+        }
+
+        io.AddInputCharactersUTF8(controller.InputText);
+
+        ImGuiApi.NewFrame();
+
+        ImGuiApi.DockSpaceOverViewport();
+
+        frameBegun = true;
+    }
+
+    public void Render(CommandBuffer commandBuffer)
+    {
+        if (frameBegun)
+        {
+            ImGuiApi.Render();
+
+            renderer.Render(commandBuffer, ImGuiApi.GetDrawData());
+
+            frameBegun = false;
+        }
     }
 
     protected override void Destroy()
     {
-        imGuiRenderer.Dispose();
+        renderer.Dispose();
 
         ImGuiApi.SetCurrentContext(null);
 
