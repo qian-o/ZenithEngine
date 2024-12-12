@@ -22,7 +22,7 @@ public struct ShaderDesc
 
     public static ShaderDesc Default(ShaderStages stage,
                                      byte[] shaderBytes,
-                                     string entryPoint = "main")
+                                     string entryPoint)
     {
         return new()
         {
