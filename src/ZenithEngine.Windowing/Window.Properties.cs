@@ -57,12 +57,28 @@ internal unsafe partial class Window : IWindowProperties
         {
             if (IsInitialized())
             {
+                WindowFlags flags = (WindowFlags)WindowUtils.Sdl.GetWindowFlags(Handle);
 
+                if (flags.HasFlag(WindowFlags.Minimized))
+                {
+                    state = WindowState.Minimized;
+                }
+                else if (flags.HasFlag(WindowFlags.Maximized))
+                {
+                    state = WindowState.Maximized;
+                }
+                else if (flags.HasFlag(WindowFlags.Fullscreen))
+                {
+                    state = WindowState.Fullscreen;
+                }
+                else
+                {
+                    state = WindowState.Normal;
+                }
             }
 
             return state;
         }
-
         set
         {
             state = value;
@@ -163,17 +179,14 @@ internal unsafe partial class Window : IWindowProperties
         {
             if (IsInitialized())
             {
-                Vector2D<int> value;
-                WindowUtils.Sdl.GetWindowPosition(Handle, &value.X, &value.Y);
+                int x, y;
+                WindowUtils.Sdl.GetWindowPosition(Handle, &x, &y);
 
-                return value;
+                position = new(x, y);
             }
-            else
-            {
-                return position;
-            }
+
+            return position;
         }
-
         set
         {
             position = value;
@@ -193,17 +206,14 @@ internal unsafe partial class Window : IWindowProperties
         {
             if (IsInitialized())
             {
-                Vector2D<int> value;
-                WindowUtils.Sdl.GetWindowSize(Handle, &value.X, &value.Y);
+                int x, y;
+                WindowUtils.Sdl.GetWindowSize(Handle, &x, &y);
 
-                return value.As<uint>();
+                size = new((uint)x, (uint)y);
             }
-            else
-            {
-                return size;
-            }
+
+            return size;
         }
-
         set
         {
             size = value;
