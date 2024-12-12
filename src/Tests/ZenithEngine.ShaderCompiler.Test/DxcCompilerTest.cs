@@ -37,4 +37,26 @@ public class DxcCompilerTest
 
         Assert.ThrowsException<InvalidOperationException>(() => DxcCompiler.Compile(ShaderStages.None, source, "Main"));
     }
+
+    [TestMethod]
+    public void TestImGuiShader()
+    {
+        string legacy = File.ReadAllText(Path.Combine(assetsPath, "ImGui.hlsl"));
+        string linear = legacy.Replace("#if 0", "#if 1");
+
+        byte[] vsLegacy = DxcCompiler.Compile(ShaderStages.Vertex, legacy, "VSMain");
+        byte[] psLegacy = DxcCompiler.Compile(ShaderStages.Pixel, legacy, "PSMain");
+
+        byte[] vsLinear = DxcCompiler.Compile(ShaderStages.Vertex, linear, "VSMain");
+        byte[] psLinear = DxcCompiler.Compile(ShaderStages.Pixel, linear, "PSMain");
+
+        string vsLegacyHex = Convert.ToHexString(vsLegacy);
+        string psLegacyHex = Convert.ToHexString(psLegacy);
+
+        string vsLinearHex = Convert.ToHexString(vsLinear);
+        string psLinearHex = Convert.ToHexString(psLinear);
+
+        Assert.AreNotEqual(vsLegacyHex, vsLinearHex);
+        Assert.AreEqual(psLegacyHex, psLinearHex);
+    }
 }

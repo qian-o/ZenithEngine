@@ -109,9 +109,9 @@ public class GraphicsTest
             GraphicsShaderDesc shaderDesc = GraphicsShaderDesc.Default(vertex: vsShader, pixel: psShader);
 
             LayoutDesc layoutDesc = LayoutDesc.Default();
-            layoutDesc.Add(ElementDesc.Default(ElementFormat.Float3, ElementSemanticType.Position));
-            layoutDesc.Add(ElementDesc.Default(ElementFormat.Float4, ElementSemanticType.Color));
-            layoutDesc.Add(ElementDesc.Default(ElementFormat.Float2, ElementSemanticType.TexCoord));
+            layoutDesc.Add(ElementDesc.Default(ElementFormat.Float3, ElementSemanticType.Position, 0));
+            layoutDesc.Add(ElementDesc.Default(ElementFormat.Float4, ElementSemanticType.Color, 0));
+            layoutDesc.Add(ElementDesc.Default(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
 
             OutputDesc outputDesc = OutputDesc.Default(TextureSampleCount.Count1,
                                                        PixelFormat.D24UNormS8UInt,

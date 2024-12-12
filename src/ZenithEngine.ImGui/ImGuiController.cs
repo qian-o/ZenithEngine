@@ -13,7 +13,7 @@ public unsafe class ImGuiController : DisposableObject
     public ImGuiContextPtr ImGuiContext;
 
     public ImGuiController(GraphicsContext context,
-                           OutputDesc desc,
+                           OutputDesc outputDesc,
                            ColorSpaceHandling handling = ColorSpaceHandling.Legacy,
                            ImGuiFontConfig? fontConfig = null)
     {
@@ -40,7 +40,7 @@ public unsafe class ImGuiController : DisposableObject
                                         (uint*)fontConfig.Value.GlyphRange(io));
         }
 
-        imGuiRenderer = new(context, desc, handling);
+        imGuiRenderer = new(context, outputDesc, handling);
     }
 
     protected override void Destroy()

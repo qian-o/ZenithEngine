@@ -28,7 +28,7 @@ public struct ElementDesc
 
     public static ElementDesc Default(ElementFormat format,
                                       ElementSemanticType Semantic,
-                                      uint semanticIndex = 0,
+                                      uint semanticIndex,
                                       int offset = AppendAligned)
     {
         return new()
