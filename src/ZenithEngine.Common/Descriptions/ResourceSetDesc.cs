@@ -7,12 +7,12 @@ public struct ResourceSetDesc
     /// <summary>
     /// The layout of the resource set.
     /// </summary>
-    public ResourceLayout Layout { get; set; }
+    public ResourceLayout Layout;
 
     /// <summary>
     /// An array of resources that are bound to the resource set.
     /// </summary>
-    public GraphicsResource[] Resources { get; set; }
+    public GraphicsResource[] Resources;
 
     public static ResourceSetDesc Default(ResourceLayout layout,
                                           params GraphicsResource[] resources)

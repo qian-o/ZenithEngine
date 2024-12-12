@@ -4,15 +4,15 @@ namespace ZenithEngine.Common.Descriptions;
 
 public struct GraphicsShaderDesc
 {
-    public Shader? Vertex { get; set; }
+    public Shader? Vertex;
 
-    public Shader? Hull { get; set; }
+    public Shader? Hull;
 
-    public Shader? Domain { get; set; }
+    public Shader? Domain;
 
-    public Shader? Geometry { get; set; }
+    public Shader? Geometry;
 
-    public Shader? Pixel { get; set; }
+    public Shader? Pixel;
 
     public static GraphicsShaderDesc Default(Shader? vertex = null,
                                              Shader? hull = null,

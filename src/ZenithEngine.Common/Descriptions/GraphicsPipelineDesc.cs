@@ -8,32 +8,32 @@ public struct GraphicsPipelineDesc
     /// <summary>
     /// The render state description.
     /// </summary>
-    public RenderStateDesc RenderStates { get; set; }
+    public RenderStateDesc RenderStates;
 
     /// <summary>
     /// The shader state description.
     /// </summary>
-    public GraphicsShaderDesc Shaders { get; set; }
+    public GraphicsShaderDesc Shaders;
 
     /// <summary>
     /// vertex input layout.
     /// </summary>
-    public LayoutDesc[] InputLayouts { get; set; }
+    public LayoutDesc[] InputLayouts;
 
     /// <summary>
     /// Describes the resource layouts input array.
     /// </summary>
-    public ResourceLayout[] ResourceLayouts { get; set; }
+    public ResourceLayout[] ResourceLayouts;
 
     /// <summary>
     /// Define how vertices are interpreted and rendered by the pipeline.
     /// </summary>
-    public PrimitiveTopology PrimitiveTopology { get; set; }
+    public PrimitiveTopology PrimitiveTopology;
 
     /// <summary>
     /// A description of the output attachments of the pipeline.
     /// </summary>
-    public OutputDesc Outputs { get; set; }
+    public OutputDesc Outputs;
 
     public static GraphicsPipelineDesc Default(GraphicsShaderDesc shaders,
                                                LayoutDesc[] inputLayouts,

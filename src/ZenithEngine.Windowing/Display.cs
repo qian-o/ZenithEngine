@@ -10,17 +10,17 @@ public readonly struct Display(int index,
                                Vector2D<uint> workSize,
                                float dpiScale)
 {
-    public int Index { get; } = index;
+    public readonly int Index = index;
 
-    public string Name { get; } = name;
+    public readonly string Name = name;
 
-    public Vector2D<int> MainPosition { get; } = mainPosition;
+    public readonly Vector2D<int> MainPosition = mainPosition;
 
-    public Vector2D<uint> MainSize { get; } = mainSize;
+    public readonly Vector2D<uint> MainSize = mainSize;
 
-    public Vector2D<int> WorkPosition { get; } = workPosition;
+    public readonly Vector2D<int> WorkPosition = workPosition;
 
-    public Vector2D<uint> WorkSize { get; } = workSize;
+    public readonly Vector2D<uint> WorkSize = workSize;
 
-    public float DpiScale { get; } = dpiScale;
+    public readonly float DpiScale = dpiScale;
 }

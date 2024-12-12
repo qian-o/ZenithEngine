@@ -7,11 +7,11 @@ public readonly struct MappedResource(Buffer buffer,
                                       nint data,
                                       uint sizeInBytes)
 {
-    public Buffer Buffer { get; } = buffer;
+    public readonly Buffer Buffer = buffer;
 
-    public MapMode Mode { get; } = mode;
+    public readonly MapMode Mode = mode;
 
-    public nint Data { get; } = data;
+    public readonly nint Data = data;
 
-    public uint SizeInBytes { get; } = sizeInBytes;
+    public readonly uint SizeInBytes = sizeInBytes;
 }

@@ -9,22 +9,22 @@ public struct ElementDesc
     /// <summary>
     /// The format of the element.
     /// </summary>
-    public ElementFormat Format { get; set; }
+    public ElementFormat Format;
 
     /// <summary>
     /// The type of the element.
     /// </summary>
-    public ElementSemanticType Semantic { get; set; }
+    public ElementSemanticType Semantic;
 
     /// <summary>
     /// The index of the element.
     /// </summary>
-    public uint SemanticIndex { get; set; }
+    public uint SemanticIndex;
 
     /// <summary>
     /// The element offset.
     /// </summary>
-    public int Offset { get; set; }
+    public int Offset;
 
     public static ElementDesc Default(ElementFormat format,
                                       ElementSemanticType Semantic,

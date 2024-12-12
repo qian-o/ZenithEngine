@@ -7,19 +7,19 @@ public struct RayTracingPipelineDesc
     /// <summary>
     /// The ray tracing shader description.
     /// </summary>
-    public RayTracingShaderDesc Shaders { get; set; }
+    public RayTracingShaderDesc Shaders;
 
     /// <summary>
     /// Describes the resource layouts input array.
     /// </summary>
-    public ResourceLayout[] ResourceLayouts { get; set; }
+    public ResourceLayout[] ResourceLayouts;
 
     /// <summary>
     /// Limit on ray recursion for the raytracing pipeline. It must be in the range of
     /// 0 to 31. Below the maximum recursion depth, shader invocations such as closest
     /// depth, TraceRay calls result in the device going into removed state.
     /// </summary>
-    public uint MaxTraceRecursionDepth { get; set; }
+    public uint MaxTraceRecursionDepth;
 
     public static RayTracingPipelineDesc Default(RayTracingShaderDesc shaders,
                                                  ResourceLayout[] resourceLayouts,

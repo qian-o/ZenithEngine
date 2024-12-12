@@ -22,11 +22,11 @@ public struct ClearValue
         }
     }
 
-    public Vector4D<float>[] ColorValues { get; set; }
+    public Vector4D<float>[] ColorValues;
 
-    public float Depth { get; set; }
+    public float Depth;
 
-    public byte Stencil { get; set; }
+    public byte Stencil;
 
-    public ClearOptions Options { get; set; }
+    public ClearOptions Options;
 }

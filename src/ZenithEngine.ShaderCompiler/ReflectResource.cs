@@ -10,17 +10,17 @@ public readonly struct ReflectResource(ShaderStages stages,
                                        string name,
                                        uint count)
 {
-    public ShaderStages Stages { get; } = stages;
+    public readonly ShaderStages Stages = stages;
 
-    public ResourceType Type { get; } = type;
+    public readonly ResourceType Type = type;
 
-    public uint Slot { get; } = slot;
+    public readonly uint Slot = slot;
 
-    public uint Space { get; } = space;
+    public readonly uint Space = space;
 
-    public string Name { get; } = name;
+    public readonly string Name = name;
 
-    public uint Count { get; } = count;
+    public readonly uint Count = count;
 
     public LayoutElementDesc Desc => LayoutElementDesc.Default(Stages, Type, Slot, count: Count);
 }

@@ -6,9 +6,9 @@ public readonly unsafe struct ImGuiFontConfig(string font,
                                               uint size = 16,
                                               Func<ImGuiIOPtr, nint>? glyphRange = null)
 {
-    public string Font { get; } = font;
+    public readonly string Font = font;
 
-    public uint Size { get; } = size;
+    public readonly uint Size = size;
 
-    public Func<ImGuiIOPtr, nint> GlyphRange { get; } = glyphRange is not null ? glyphRange : (static io => (nint)io.Fonts.GetGlyphRangesDefault());
+    public readonly Func<ImGuiIOPtr, nint> GlyphRange = glyphRange is not null ? glyphRange : (static io => (nint)io.Fonts.GetGlyphRangesDefault());
 }
