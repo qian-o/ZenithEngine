@@ -21,13 +21,10 @@ public static class DepthStencilStates
 
     static DepthStencilStates()
     {
-        None = DepthStencilStateDesc.Default();
-        None.DepthEnabled = false;
-        None.DepthWriteEnabled = false;
+        None = DepthStencilStateDesc.Default(depthEnabled: false, depthWriteEnabled: false);
 
         ReadWrite = DepthStencilStateDesc.Default();
 
-        Read = DepthStencilStateDesc.Default();
-        Read.DepthWriteEnabled = false;
+        Read = DepthStencilStateDesc.Default(depthWriteEnabled: false);
     }
 }
