@@ -38,7 +38,9 @@ public static class BlendStates
         AlphaBlend.RenderTarget0 = BlendStateRenderTargetDesc.Default
         (
             blendEnabled: true,
+            sourceBlendColor: Blend.SourceAlpha,
             destinationBlendColor: Blend.InverseSourceAlpha,
+            sourceBlendAlpha: Blend.SourceAlpha,
             destinationBlendAlpha: Blend.InverseSourceAlpha
         );
 
