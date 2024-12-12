@@ -21,6 +21,11 @@ public unsafe class ImGuiRenderer : DisposableObject
 
     private ResourceSet set0 = null!;
 
+    private Texture fontTexture = null!;
+    private TextureView fontTextureView = null!;
+
+    private ResourceSet set1 = null!;
+
     public ImGuiRenderer(GraphicsContext context, OutputDesc outputDesc, ColorSpaceHandling handling)
     {
         Context = context;
@@ -29,6 +34,11 @@ public unsafe class ImGuiRenderer : DisposableObject
     }
 
     public GraphicsContext Context { get; }
+
+    public void PrepareResources(CommandBuffer commandBuffer)
+    {
+        commandBuffer.PrepareResources(set1);
+    }
 
     public void Render(CommandBuffer commandBuffer, ImDrawDataPtr dataPtr)
     {
@@ -91,6 +101,7 @@ public unsafe class ImGuiRenderer : DisposableObject
         commandBuffer.SetVertexBuffer(0, vertexBuffer);
         commandBuffer.SetIndexBuffer(indexBuffer, IndexFormat.U16Bit);
         commandBuffer.SetResourceSet(0, set0);
+        commandBuffer.SetResourceSet(1, set1);
 
         vertexOffset = 0;
         indexOffset = 0;
@@ -116,6 +127,7 @@ public unsafe class ImGuiRenderer : DisposableObject
                                                  (int)Math.Max(0, cmd.ClipRect.Z - cmd.ClipRect.X),
                                                  (int)Math.Max(0, cmd.ClipRect.W - cmd.ClipRect.Y));
 
+                    commandBuffer.SetViewport(0, new Viewport(0, 0, displaySize.X, displaySize.Y, 0.0f, 1.0f));
                     commandBuffer.SetScissorRectangle(0, scissor);
 
                     commandBuffer.DrawIndexed(cmd.ElemCount,
@@ -128,6 +140,11 @@ public unsafe class ImGuiRenderer : DisposableObject
 
     protected override void Destroy()
     {
+        set1.Dispose();
+
+        fontTextureView.Dispose();
+        fontTexture.Dispose();
+
         set0.Dispose();
 
         pipeline.Dispose();
@@ -144,21 +161,21 @@ public unsafe class ImGuiRenderer : DisposableObject
         BufferDesc vbDesc = BufferDesc.Default((uint)sizeof(ImDrawVert) * 5000,
                                                BufferUsage.VertexBuffer | BufferUsage.Dynamic);
 
-        vertexBuffer = Context.Factory.CreateBuffer(ref vbDesc);
+        vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
 
         BufferDesc ibDesc = BufferDesc.Default(sizeof(ushort) * 10000,
                                                BufferUsage.IndexBuffer | BufferUsage.Dynamic);
 
-        indexBuffer = Context.Factory.CreateBuffer(ref ibDesc);
+        indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
 
         BufferDesc cbDesc = BufferDesc.Default((uint)sizeof(Matrix4X4<float>),
                                                BufferUsage.ConstantBuffer | BufferUsage.Dynamic);
 
-        constantsBuffer = Context.Factory.CreateBuffer(ref cbDesc);
+        constantsBuffer = Context.Factory.CreateBuffer(in cbDesc);
 
         SamplerDesc samplerDesc = SamplerDesc.Default(filter: SamplerFilter.MinPointMagPointMipPoint);
 
-        sampler = Context.Factory.CreateSampler(ref samplerDesc);
+        sampler = Context.Factory.CreateSampler(in samplerDesc);
 
         ResourceLayoutDesc layout0Desc = ResourceLayoutDesc.Default(
         [
@@ -166,24 +183,24 @@ public unsafe class ImGuiRenderer : DisposableObject
             LayoutElementDesc.Default(ShaderStages.Pixel, ResourceType.Sampler, 0)
         ]);
 
-        layout0 = Context.Factory.CreateResourceLayout(ref layout0Desc);
+        layout0 = Context.Factory.CreateResourceLayout(in layout0Desc);
 
         ResourceLayoutDesc layout1Desc = ResourceLayoutDesc.Default(
         [
             LayoutElementDesc.Default(ShaderStages.Pixel, ResourceType.Texture, 0)
         ]);
 
-        layout1 = Context.Factory.CreateResourceLayout(ref layout1Desc);
+        layout1 = Context.Factory.CreateResourceLayout(in layout1Desc);
 
         Shaders.Get(handling, out byte[] vs, out byte[] ps);
 
         ShaderDesc shaderDesc = ShaderDesc.Default(ShaderStages.Vertex, vs, Shaders.VSMain);
 
-        using Shader vsShader = Context.Factory.CreateShader(ref shaderDesc);
+        using Shader vsShader = Context.Factory.CreateShader(in shaderDesc);
 
         shaderDesc = ShaderDesc.Default(ShaderStages.Pixel, ps, Shaders.PSMain);
 
-        using Shader psShader = Context.Factory.CreateShader(ref shaderDesc);
+        using Shader psShader = Context.Factory.CreateShader(in shaderDesc);
 
         LayoutDesc layoutDesc = LayoutDesc.Default();
         layoutDesc.Add(ElementDesc.Default(ElementFormat.Float2, ElementSemanticType.Position, 0));
@@ -203,10 +220,34 @@ public unsafe class ImGuiRenderer : DisposableObject
             renderStateDesc
         );
 
-        pipeline = Context.Factory.CreateGraphicsPipeline(ref pipelineDesc);
+        pipeline = Context.Factory.CreateGraphicsPipeline(in pipelineDesc);
 
         ResourceSetDesc set0Desc = ResourceSetDesc.Default(layout0, constantsBuffer, sampler);
 
-        set0 = Context.Factory.CreateResourceSet(ref set0Desc);
+        set0 = Context.Factory.CreateResourceSet(in set0Desc);
+
+        ImGuiIOPtr io = ImGuiApi.GetIO();
+
+        byte* pixels;
+        int width;
+        int height;
+        io.Fonts.GetTexDataAsRGBA32(&pixels, &width, &height);
+
+        TextureDesc textureDesc = TextureDesc.Default((uint)width, (uint)height, 1, 1);
+
+        fontTexture = Context.Factory.CreateTexture(in textureDesc);
+
+        TextureViewDesc textureViewDesc = TextureViewDesc.Default(fontTexture);
+
+        fontTextureView = Context.Factory.CreateTextureView(in textureViewDesc);
+
+        Context.UpdateTexture(fontTexture,
+                              (nint)pixels,
+                              (uint)(width * height * 4),
+                              new(0, 0, 0, (uint)width, (uint)height, 1, 0));
+
+        ResourceSetDesc set1Desc = ResourceSetDesc.Default(layout1, fontTextureView);
+
+        set1 = Context.Factory.CreateResourceSet(in set1Desc);
     }
 }

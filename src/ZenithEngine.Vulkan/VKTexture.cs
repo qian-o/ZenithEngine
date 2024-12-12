@@ -90,6 +90,11 @@ internal unsafe class VKTexture : Texture
                                  uint faceCount,
                                  ImageLayout newLayout)
     {
+        if (newLayout is ImageLayout.Undefined or ImageLayout.Preinitialized)
+        {
+            return;
+        }
+
         for (int i = 0; i < mipLevels; i++)
         {
             uint mipLevel = baseMipLevel + (uint)i;

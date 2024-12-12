@@ -808,27 +808,30 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             }
         }
 
-        if (activePipeline is VKGraphicsPipeline graphicsPipeline)
+        fixed (uint* pOffsets = offsets)
         {
-            Context.Vk.CmdBindDescriptorSets(CommandBuffer,
-                                             PipelineBindPoint.Graphics,
-                                             graphicsPipeline.PipelineLayout,
-                                             slot,
-                                             1,
-                                             in vkResourceSet.Token.Set,
-                                             (uint)offsets.Length,
-                                             in offsets[0]);
-        }
-        else if (activePipeline is VKComputePipeline computePipeline)
-        {
-            Context.Vk.CmdBindDescriptorSets(CommandBuffer,
-                                             PipelineBindPoint.Compute,
-                                             computePipeline.PipelineLayout,
-                                             slot,
-                                             1,
-                                             in vkResourceSet.Token.Set,
-                                             (uint)offsets.Length,
-                                             in offsets[0]);
+            if (activePipeline is VKGraphicsPipeline graphicsPipeline)
+            {
+                Context.Vk.CmdBindDescriptorSets(CommandBuffer,
+                                                 PipelineBindPoint.Graphics,
+                                                 graphicsPipeline.PipelineLayout,
+                                                 slot,
+                                                 1,
+                                                 in vkResourceSet.Token.Set,
+                                                 (uint)offsets.Length,
+                                                 pOffsets);
+            }
+            else if (activePipeline is VKComputePipeline computePipeline)
+            {
+                Context.Vk.CmdBindDescriptorSets(CommandBuffer,
+                                                 PipelineBindPoint.Compute,
+                                                 computePipeline.PipelineLayout,
+                                                 slot,
+                                                 1,
+                                                 in vkResourceSet.Token.Set,
+                                                 (uint)offsets.Length,
+                                                 pOffsets);
+            }
         }
     }
     #endregion

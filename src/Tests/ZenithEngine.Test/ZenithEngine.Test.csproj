@@ -9,6 +9,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\ZenithEngine.ImGui\ZenithEngine.ImGui.csproj" />
 		<ProjectReference Include="..\..\ZenithEngine.ShaderCompiler\ZenithEngine.ShaderCompiler.csproj" />
 		<ProjectReference Include="..\..\ZenithEngine.Vulkan\ZenithEngine.Vulkan.csproj" />
 		<ProjectReference Include="..\..\ZenithEngine.Windowing\ZenithEngine.Windowing.csproj" />

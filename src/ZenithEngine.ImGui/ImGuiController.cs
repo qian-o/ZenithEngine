@@ -10,8 +10,6 @@ namespace ZenithEngine.ImGui;
 
 public unsafe class ImGuiController : DisposableObject
 {
-    public static ImGuiKey[] keys = Enum.GetValues<ImGuiKey>();
-
     public ImGuiContextPtr ImGuiContext;
 
     private readonly IInputController controller;
@@ -52,7 +50,7 @@ public unsafe class ImGuiController : DisposableObject
         renderer = new(context, outputDesc, handling);
     }
 
-    public void Update(float deltaSeconds)
+    public void Update(double deltaSeconds)
     {
         if (frameBegun)
         {
@@ -63,7 +61,7 @@ public unsafe class ImGuiController : DisposableObject
 
         ImGuiIOPtr io = ImGuiApi.GetIO();
 
-        io.DeltaTime = deltaSeconds;
+        io.DeltaTime = (float)deltaSeconds;
         io.DisplaySize = controller.Size.As<float>().ToSystem();
 
         io.AddMousePosEvent(controller.MousePosition.X, controller.MousePosition.Y);
@@ -72,12 +70,6 @@ public unsafe class ImGuiController : DisposableObject
         io.AddMouseButtonEvent((int)ImGuiMouseButton.Left, controller.MousePressed(ImGuiMouseButton.Left));
         io.AddMouseButtonEvent((int)ImGuiMouseButton.Right, controller.MousePressed(ImGuiMouseButton.Right));
         io.AddMouseButtonEvent((int)ImGuiMouseButton.Middle, controller.MousePressed(ImGuiMouseButton.Middle));
-
-        foreach (ImGuiKey key in keys)
-        {
-            io.AddKeyEvent(key, controller.KeyPressed(key));
-        }
-
         io.AddInputCharactersUTF8(controller.InputText);
 
         ImGuiApi.NewFrame();
@@ -85,6 +77,11 @@ public unsafe class ImGuiController : DisposableObject
         ImGuiApi.DockSpaceOverViewport();
 
         frameBegun = true;
+    }
+
+    public void PrepareResources(CommandBuffer commandBuffer)
+    {
+        renderer.PrepareResources(commandBuffer);
     }
 
     public void Render(CommandBuffer commandBuffer)
