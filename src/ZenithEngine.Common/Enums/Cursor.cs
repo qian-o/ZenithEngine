@@ -1,4 +1,4 @@
-﻿namespace ZenithEngine.Windowing.Enums;
+﻿namespace ZenithEngine.Common.Enums;
 
 public enum Cursor
 {

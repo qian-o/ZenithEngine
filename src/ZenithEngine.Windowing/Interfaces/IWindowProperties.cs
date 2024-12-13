@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Maths;
+using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Interfaces;
-using ZenithEngine.Windowing.Enums;
 
 namespace ZenithEngine.Windowing.Interfaces;
 

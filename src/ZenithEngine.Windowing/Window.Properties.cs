@@ -1,7 +1,7 @@
 ﻿using Silk.NET.Maths;
 using Silk.NET.SDL;
+using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Interfaces;
-using ZenithEngine.Windowing.Enums;
 using ZenithEngine.Windowing.Interfaces;
 
 namespace ZenithEngine.Windowing;

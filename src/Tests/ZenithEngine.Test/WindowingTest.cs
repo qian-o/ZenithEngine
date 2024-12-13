@@ -2,12 +2,11 @@
 using Silk.NET.Maths;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
+using ZenithEngine.Common.Events;
 using ZenithEngine.Common.Graphics;
 using ZenithEngine.ImGui;
 using ZenithEngine.ImGui.Interfaces;
 using ZenithEngine.Windowing;
-using ZenithEngine.Windowing.Enums;
-using ZenithEngine.Windowing.Events;
 using ZenithEngine.Windowing.Interfaces;
 
 namespace ZenithEngine.Test;
