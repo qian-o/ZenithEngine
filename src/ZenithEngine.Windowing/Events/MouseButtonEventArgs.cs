@@ -1,7 +1,7 @@
 ﻿using Silk.NET.Maths;
-using ZenithEngine.Common.Enums;
+using ZenithEngine.Windowing.Enums;
 
-namespace ZenithEngine.Common.Events;
+namespace ZenithEngine.Windowing.Events;
 
 public class MouseButtonEventArgs(MouseButton button, Vector2D<int> position, uint clicks) : EventArgs
 {

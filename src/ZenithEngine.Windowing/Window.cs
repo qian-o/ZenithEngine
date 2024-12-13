@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using Silk.NET.SDL;
-using ZenithEngine.Common.Enums;
+using ZenithEngine.Windowing.Enums;
 using ZenithEngine.Windowing.Interfaces;
 
 namespace ZenithEngine.Windowing;

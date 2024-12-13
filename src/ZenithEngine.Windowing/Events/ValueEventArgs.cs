@@ -1,4 +1,4 @@
-﻿namespace ZenithEngine.Common.Events;
+﻿namespace ZenithEngine.Windowing.Events;
 
 public class ValueEventArgs<T>(T value) : EventArgs
 {

@@ -1,4 +1,4 @@
-﻿namespace ZenithEngine.Common.Enums;
+﻿namespace ZenithEngine.Windowing.Enums;
 
 [Flags]
 public enum KeyModifiers

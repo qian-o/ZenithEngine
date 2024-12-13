@@ -1,4 +1,4 @@
-﻿namespace ZenithEngine.Common.Enums;
+﻿namespace ZenithEngine.Windowing.Enums;
 
 public enum WindowBorder
 {
