@@ -1,7 +1,7 @@
 ﻿using Hexa.NET.ImGui;
 using Silk.NET.Maths;
 
-namespace ZenithEngine.ImGui.Interfaces;
+namespace ZenithEngine.ImGuiRender.Interfaces;
 
 public interface IInputController
 {

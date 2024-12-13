@@ -4,8 +4,8 @@ using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Events;
 using ZenithEngine.Common.Graphics;
-using ZenithEngine.ImGui;
-using ZenithEngine.ImGui.Interfaces;
+using ZenithEngine.ImGuiRender;
+using ZenithEngine.ImGuiRender.Interfaces;
 using ZenithEngine.Windowing;
 using ZenithEngine.Windowing.Interfaces;
 
@@ -111,7 +111,7 @@ public class WindowingTest
 
             window.Render += (sender, e) =>
             {
-                Hexa.NET.ImGui.ImGui.ShowDemoWindow();
+                ImGui.ShowDemoWindow();
 
                 CommandBuffer commandBuffer = commandProcessor.CommandBuffer();
 

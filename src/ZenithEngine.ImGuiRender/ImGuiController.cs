@@ -4,9 +4,9 @@ using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
-using ZenithEngine.ImGui.Interfaces;
+using ZenithEngine.ImGuiRender.Interfaces;
 
-namespace ZenithEngine.ImGui;
+namespace ZenithEngine.ImGuiRender;
 
 public unsafe class ImGuiController : DisposableObject
 {

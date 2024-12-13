@@ -7,7 +7,7 @@ using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
-namespace ZenithEngine.ImGui;
+namespace ZenithEngine.ImGuiRender;
 
 public unsafe class ImGuiRenderer : DisposableObject
 {

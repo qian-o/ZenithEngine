@@ -1,6 +1,6 @@
 ﻿using Hexa.NET.ImGui;
 
-namespace ZenithEngine.ImGui;
+namespace ZenithEngine.ImGuiRender;
 
 public readonly unsafe struct ImGuiFontConfig(string font,
                                               uint size = 16,

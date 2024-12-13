@@ -1,6 +1,6 @@
 ﻿using ZenithEngine.Common.Enums;
 
-namespace ZenithEngine.ImGui;
+namespace ZenithEngine.ImGuiRender;
 
 internal class Shaders
 {
