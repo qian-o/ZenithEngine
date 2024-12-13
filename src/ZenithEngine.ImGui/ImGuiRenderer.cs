@@ -183,9 +183,7 @@ public unsafe class ImGuiRenderer : DisposableObject
 
         constantsBuffer = Context.Factory.CreateBuffer(in cbDesc);
 
-        SamplerDesc samplerDesc = SamplerDesc.Default(filter: SamplerFilter.MinPointMagPointMipPoint);
-
-        sampler = Context.Factory.CreateSampler(in samplerDesc);
+        sampler = Context.Factory.CreateSampler(in Samplers.PointClamp);
 
         ResourceLayoutDesc layout0Desc = ResourceLayoutDesc.Default(
         [
