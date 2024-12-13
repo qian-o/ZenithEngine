@@ -637,6 +637,15 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
             Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
         }
+
+        Viewport[] viewports = new Viewport[vkFrameBuffer.ColorTargets.Length];
+        Rectangle<int>[] scissors = new Rectangle<int>[vkFrameBuffer.ColorTargets.Length];
+
+        Array.Fill(viewports, new Viewport(0, 0, vkFrameBuffer.Width, vkFrameBuffer.Height));
+        Array.Fill(scissors, new Rectangle<int>(0, 0, (int)vkFrameBuffer.Width, (int)vkFrameBuffer.Height));
+
+        SetViewports(viewports);
+        SetScissorRectangles(scissors);
     }
 
     public override void EndRendering()
