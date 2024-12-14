@@ -10,8 +10,10 @@ namespace Triangle;
 
 internal class Program
 {
-    private static void Main(string[] _)
+    private static unsafe void Main(string[] _)
     {
+        string fontPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Fonts", "msyh.ttf");
+
         using GraphicsContext context = GraphicsContext.Create(Backend.Vulkan);
         context.CreateDevice(true);
 
@@ -24,7 +26,10 @@ internal class Program
 
         using CommandProcessor commandProcessor = context.Factory.CreateCommandProcessor();
 
-        using ImGuiController imGuiController = new(context, swapChain.FrameBuffer.Output, window);
+        using ImGuiController imGuiController = new(context,
+                                                    swapChain.FrameBuffer.Output,
+                                                    window,
+                                                    fontConfig: new(fontPath, 18, (io) => (nint)io.Fonts.GetGlyphRangesChineseSimplifiedCommon()));
 
         window.Update += (a, b) =>
         {
