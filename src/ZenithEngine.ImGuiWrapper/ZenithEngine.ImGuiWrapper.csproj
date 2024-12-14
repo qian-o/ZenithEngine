@@ -2,7 +2,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Hexa.NET.ImGui" />
-		<PackageReference Include="Hexa.NET.ImNodes" />
 	</ItemGroup>
 
 	<ItemGroup>
