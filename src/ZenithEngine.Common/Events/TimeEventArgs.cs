@@ -1,4 +1,4 @@
-﻿namespace ZenithEngine.Windowing.Events;
+﻿namespace ZenithEngine.Common.Events;
 
 public class TimeEventArgs(double deltaTime, double totalTime) : EventArgs
 {

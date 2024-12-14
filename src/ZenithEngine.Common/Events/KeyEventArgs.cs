@@ -1,6 +1,6 @@
-﻿using ZenithEngine.Windowing.Enums;
+﻿using ZenithEngine.Common.Enums;
 
-namespace ZenithEngine.Windowing.Events;
+namespace ZenithEngine.Common.Events;
 
 public class KeyEventArgs(Key key, KeyModifiers modifiers) : EventArgs
 {
