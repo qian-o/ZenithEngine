@@ -170,7 +170,7 @@ public unsafe class ImGuiRenderer : DisposableObject
             {
                 ImDrawCmd drawCmd = drawListPtr.CmdBuffer[j];
 
-                if (drawCmd.UserCallback != null)
+                if (drawCmd.UserCallback is not null)
                 {
                     ImDrawCallback callback = Marshal.GetDelegateForFunctionPointer<ImDrawCallback>((nint)drawCmd.UserCallback);
 

@@ -18,7 +18,7 @@ public static unsafe class WindowController
         Events.Clear();
 
         Event @event;
-        while (WindowUtils.Sdl.PollEvent(&@event) == (int)SdlBool.True)
+        while ((SdlBool)WindowUtils.Sdl.PollEvent(&@event) is SdlBool.True)
         {
             Events.Add(@event);
         }
@@ -28,7 +28,7 @@ public static unsafe class WindowController
     {
         IsLooping = true;
 
-        Func<bool> exit = autoExit ? (static () => windows.Count == 0) : (static () => !IsLooping);
+        Func<bool> exit = autoExit ? (static () => windows.Count is 0) : (static () => !IsLooping);
 
         while (!exit())
         {

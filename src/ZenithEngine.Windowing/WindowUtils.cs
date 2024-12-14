@@ -187,7 +187,7 @@ public static unsafe class WindowUtils
                               main.Size.As<uint>(),
                               work.Origin,
                               work.Size.As<uint>(),
-                              ddpi == 0 ? 1 : ddpi / 96);
+                              ddpi is 0 ? 1 : ddpi / 96);
         }
 
         return displays;
