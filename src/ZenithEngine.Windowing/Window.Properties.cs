@@ -206,10 +206,10 @@ internal unsafe partial class Window : IWindowProperties
         {
             if (IsInitialized())
             {
-                int x, y;
-                WindowUtils.Sdl.GetWindowSize(Handle, &x, &y);
+                int width, height;
+                WindowUtils.Sdl.GetWindowSize(Handle, &width, &height);
 
-                size = new((uint)x, (uint)y);
+                size = new((uint)width, (uint)height);
             }
 
             return size;

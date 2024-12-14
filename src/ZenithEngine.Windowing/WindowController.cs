@@ -28,9 +28,9 @@ public static unsafe class WindowController
     {
         IsLooping = true;
 
-        Func<bool> loopFunc = autoExit ? (static () => windows.Count > 0) : (static () => IsLooping);
+        Func<bool> exit = autoExit ? (static () => windows.Count == 0) : (static () => !IsLooping);
 
-        while (loopFunc())
+        while (!exit())
         {
             PollEvents();
 
