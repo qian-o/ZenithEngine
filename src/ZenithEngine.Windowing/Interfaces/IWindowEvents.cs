@@ -1,10 +1,11 @@
 ﻿using Silk.NET.Maths;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Events;
+using ZenithEngine.Common.Interfaces;
 
 namespace ZenithEngine.Windowing.Interfaces;
 
-public interface IWindowEvents
+public interface IWindowEvents : IInputController
 {
     event EventHandler<TimeEventArgs>? Update;
 
@@ -19,20 +20,4 @@ public interface IWindowEvents
     event EventHandler<ValueEventArgs<Vector2D<uint>>>? SizeChanged;
 
     event EventHandler<ValueEventArgs<WindowState>>? StateChanged;
-
-    event EventHandler<KeyEventArgs>? KeyUp;
-
-    event EventHandler<KeyEventArgs>? KeyDown;
-
-    event EventHandler<ValueEventArgs<char>>? KeyChar;
-
-    event EventHandler<MouseButtonEventArgs>? Click;
-
-    event EventHandler<MouseButtonEventArgs>? MouseUp;
-
-    event EventHandler<MouseButtonEventArgs>? MouseDown;
-
-    event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseMove;
-
-    event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseWheel;
 }
