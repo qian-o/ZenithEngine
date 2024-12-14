@@ -42,7 +42,7 @@ public unsafe class ImGuiRenderer : DisposableObject
 
         ResourceSetDesc desc = ResourceSetDesc.Default(layout1, textureView);
 
-        bindings[id] = new BindingToken(textureView, Context.Factory.CreateResourceSet(in desc));
+        bindings[id] = new(textureView, Context.Factory.CreateResourceSet(in desc));
 
         return id;
     }
@@ -286,7 +286,7 @@ public unsafe class ImGuiRenderer : DisposableObject
         Context.UpdateTexture(fontTexture,
                               (nint)pixels,
                               (uint)(width * height * 4),
-                              new TextureRegion(0, 0, 0, (uint)width, (uint)height, 1));
+                              new(0, 0, 0, (uint)width, (uint)height, 1));
 
         GetBinding(fontTexture);
     }
