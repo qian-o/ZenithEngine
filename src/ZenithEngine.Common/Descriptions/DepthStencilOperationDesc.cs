@@ -7,22 +7,22 @@ public struct DepthStencilOperationDesc
     /// <summary>
     /// The stencil operation to perform when stencil testing fails.
     /// </summary>
-    public StencilOperation StencilFailOperation { get; set; }
+    public StencilOperation StencilFailOperation;
 
     /// <summary>
     /// The stencil operation to perform when stencil testing and depth testing both pass.
     /// </summary>
-    public StencilOperation StencilPassOperation { get; set; }
+    public StencilOperation StencilPassOperation;
 
     /// <summary>
     /// The stencil operation to perform when stencil testing passes and depth testing fails.
     /// </summary>
-    public StencilOperation StencilDepthFailOperation { get; set; }
+    public StencilOperation StencilDepthFailOperation;
 
     /// <summary>
     /// The comparison operator used in the stencil test.
     /// </summary>
-    public ComparisonFunction StencilFunction { get; set; }
+    public ComparisonFunction StencilFunction;
 
     public static DepthStencilOperationDesc Default(StencilOperation stencilFailOperation = StencilOperation.Keep,
                                                     StencilOperation stencilPassOperation = StencilOperation.Keep,

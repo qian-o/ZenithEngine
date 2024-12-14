@@ -8,13 +8,13 @@ public struct TexturePosition(uint x = 0,
                               uint mipLevel = 0,
                               CubeMapFace face = CubeMapFace.PositiveX)
 {
-    public uint X { get; set; } = x;
+    public uint X = x;
 
-    public uint Y { get; set; } = y;
+    public uint Y = y;
 
-    public uint Z { get; set; } = z;
+    public uint Z = z;
 
-    public uint MipLevel { get; set; } = mipLevel;
+    public uint MipLevel = mipLevel;
 
-    public CubeMapFace Face { get; set; } = face;
+    public CubeMapFace Face = face;
 }

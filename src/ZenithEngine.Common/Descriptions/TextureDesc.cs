@@ -7,42 +7,42 @@ public struct TextureDesc
     /// <summary>
     /// The type of the texture.
     /// </summary>
-    public TextureType Type { get; set; }
+    public TextureType Type;
 
     /// <summary>
     /// The format of individual texture elements.
     /// </summary>
-    public PixelFormat Format { get; set; }
+    public PixelFormat Format;
 
     /// <summary>
     /// The total width, in texels.
     /// </summary>
-    public uint Width { get; set; }
+    public uint Width;
 
     /// <summary>
     /// The total height, in texels.
     /// </summary>
-    public uint Height { get; set; }
+    public uint Height;
 
     /// <summary>
     /// The total depth, in texels.
     /// </summary>
-    public uint Depth { get; set; }
+    public uint Depth;
 
     /// <summary>
     /// The number of mipmap levels.
     /// </summary>
-    public uint MipLevels { get; set; }
+    public uint MipLevels;
 
     /// <summary>
     /// Controls how the Texture is permitted to be used. If the Texture will be sampled from a shader.
     /// </summary>
-    public TextureUsage Usage { get; set; }
+    public TextureUsage Usage;
 
     /// <summary>
     /// The number of samples.
     /// </summary>
-    public TextureSampleCount SampleCount { get; set; }
+    public TextureSampleCount SampleCount;
 
     public static TextureDesc Default(uint width,
                                       uint height,

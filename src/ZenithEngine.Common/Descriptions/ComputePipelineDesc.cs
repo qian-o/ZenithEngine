@@ -7,12 +7,12 @@ public struct ComputePipelineDesc
     /// <summary>
     /// The compute shader to be used.
     /// </summary>
-    public Shader Shader { get; set; }
+    public Shader Shader;
 
     /// <summary>
     /// Describes the resource layouts input array.
     /// </summary>
-    public ResourceLayout[] ResourceLayouts { get; set; }
+    public ResourceLayout[] ResourceLayouts;
 
     public static ComputePipelineDesc Default(Shader shader,
                                               params ResourceLayout[] resourceLayouts)

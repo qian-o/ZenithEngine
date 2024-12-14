@@ -7,27 +7,27 @@ public struct RenderStateDesc
     /// <summary>
     /// Gets or sets the Rasterizer State.
     /// </summary>
-    public RasterizerStateDesc RasterizerState { get; set; }
+    public RasterizerStateDesc RasterizerState;
 
     /// <summary>
     /// Gets or sets the DepthStencil state.
     /// </summary>
-    public DepthStencilStateDesc DepthStencilState { get; set; }
+    public DepthStencilStateDesc DepthStencilState;
 
     /// <summary>
     /// Gets or sets the BlendState state.
     /// </summary>
-    public BlendStateDesc BlendState { get; set; }
+    public BlendStateDesc BlendState;
 
     /// <summary>
     /// The reference value to use when doing a stencil test.
     /// </summary>
-    public int StencilReference { get; set; }
+    public int StencilReference;
 
     /// <summary>
     /// Array of blend factors, one for each RGBA component.
     /// </summary>
-    public Vector4D<float>? BlendFactor { get; set; }
+    public Vector4D<float>? BlendFactor;
 
     public static RenderStateDesc Default(RasterizerStateDesc? rasterizerState = null,
                                           DepthStencilStateDesc? depthStencilState = null,

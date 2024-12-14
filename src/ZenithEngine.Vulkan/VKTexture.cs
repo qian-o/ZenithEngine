@@ -7,9 +7,9 @@ namespace ZenithEngine.Vulkan;
 
 internal unsafe class VKTexture : Texture
 {
-    private readonly ImageLayout[] imageLayouts;
-
     public VkImage Image;
+
+    private readonly ImageLayout[] imageLayouts;
 
     public VKTexture(GraphicsContext context,
                      ref readonly TextureDesc desc) : base(context, in desc)
@@ -90,6 +90,11 @@ internal unsafe class VKTexture : Texture
                                  uint faceCount,
                                  ImageLayout newLayout)
     {
+        if (newLayout is ImageLayout.Undefined or ImageLayout.Preinitialized)
+        {
+            return;
+        }
+
         for (int i = 0; i < mipLevels; i++)
         {
             uint mipLevel = baseMipLevel + (uint)i;

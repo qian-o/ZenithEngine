@@ -5,11 +5,11 @@ namespace ZenithEngine.Common.Descriptions;
 
 public struct TopLevelASDesc
 {
-    public AccelerationStructureInstance[] Instances { get; set; }
+    public AccelerationStructureInstance[] Instances;
 
-    public uint Offset { get; set; }
+    public uint Offset;
 
-    public AccelerationStructureBuildOptions Options { get; set; }
+    public AccelerationStructureBuildOptions Options;
 
     public static TopLevelASDesc Default(AccelerationStructureInstance[] instances,
                                          uint offset = 0,

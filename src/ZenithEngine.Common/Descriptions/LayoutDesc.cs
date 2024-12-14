@@ -7,23 +7,23 @@ public struct LayoutDesc
     /// <summary>
     /// A array of individual vertex elements comprising a single vertex.
     /// </summary>
-    public ElementDesc[] Elements { get; set; }
+    public ElementDesc[] Elements;
 
     /// <summary>
     /// The frequency with which the vertex function fetches attribute data.
     /// </summary>
-    public VertexStepFunction StepFunction { get; set; }
+    public VertexStepFunction StepFunction;
 
     /// <summary>
     /// A value controlling how often data for instances is updated for this layout.
     /// For per-vertex elements, this value should be 0.
     /// </summary>
-    public uint StepRate { get; set; }
+    public uint StepRate;
 
     /// <summary>
     /// The total size of an individual vertex in bytes.
     /// </summary>
-    public uint Stride { get; set; }
+    public uint Stride;
 
     public static LayoutDesc Default(VertexStepFunction stepFunction = VertexStepFunction.PerVertexData,
                                      uint stepRate = 0,

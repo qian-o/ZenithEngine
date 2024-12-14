@@ -24,11 +24,13 @@ public static unsafe class WindowController
         }
     }
 
-    public static void Loop()
+    public static void Loop(bool autoExit)
     {
         IsLooping = true;
 
-        while (windows.Count > 0)
+        Func<bool> loopFunc = autoExit ? (static () => windows.Count > 0) : (static () => IsLooping);
+
+        while (loopFunc())
         {
             PollEvents();
 
@@ -61,6 +63,11 @@ public static unsafe class WindowController
             }
         }
 
+        IsLooping = false;
+    }
+
+    public static void Exit()
+    {
         IsLooping = false;
     }
 

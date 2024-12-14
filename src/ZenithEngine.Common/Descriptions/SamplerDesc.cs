@@ -7,52 +7,52 @@ public struct SamplerDesc
     /// <summary>
     /// Mode to use for the U (or S) coordinate.
     /// </summary>
-    public AddressMode AddressModeU { get; set; }
+    public AddressMode AddressModeU;
 
     /// <summary>
     /// Mode to use for the V (or T) coordinate.
     /// </summary>
-    public AddressMode AddressModeV { get; set; }
+    public AddressMode AddressModeV;
 
     /// <summary>
     /// Mode to use for the W (or R) coordinate.
     /// </summary>
-    public AddressMode AddressModeW { get; set; }
+    public AddressMode AddressModeW;
 
     /// <summary>
     /// The filter used when sampling.
     /// </summary>
-    public SamplerFilter Filter { get; set; }
+    public SamplerFilter Filter;
 
     /// <summary>
     /// A function that compares sampled data against existing sampled data.
     /// </summary>
-    public ComparisonFunction ComparisonFunction { get; set; }
+    public ComparisonFunction ComparisonFunction;
 
     /// <summary>
     /// The maximum anisotropy of the filter.
     /// </summary>
-    public uint MaximumAnisotropy { get; set; }
+    public uint MaximumAnisotropy;
 
     /// <summary>
     /// The minimum level of detail.
     /// </summary>
-    public uint MinimumLod { get; set; }
+    public uint MinimumLod;
 
     /// <summary>
     /// The maximum level of detail.
     /// </summary>
-    public uint MaximumLod { get; set; }
+    public uint MaximumLod;
 
     /// <summary>
     /// The level of detail bias.
     /// </summary>
-    public int LodBias { get; set; }
+    public int LodBias;
 
     /// <summary>
     /// The border color to use when sampling outside the texture.
     /// </summary>
-    public SamplerBorderColor BorderColor { get; set; }
+    public SamplerBorderColor BorderColor;
 
     public static SamplerDesc Default(AddressMode addressModeU = AddressMode.Wrap,
                                       AddressMode addressModeV = AddressMode.Wrap,

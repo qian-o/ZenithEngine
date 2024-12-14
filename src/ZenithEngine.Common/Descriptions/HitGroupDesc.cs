@@ -4,11 +4,11 @@ namespace ZenithEngine.Common.Descriptions;
 
 public struct HitGroupDesc
 {
-    public Shader? ClosestHit { get; set; }
+    public Shader? ClosestHit;
 
-    public Shader? AnyHit { get; set; }
+    public Shader? AnyHit;
 
-    public Shader? Intersection { get; set; }
+    public Shader? Intersection;
 
     public static HitGroupDesc Default(Shader? closestHit = null,
                                        Shader? anyHit = null,

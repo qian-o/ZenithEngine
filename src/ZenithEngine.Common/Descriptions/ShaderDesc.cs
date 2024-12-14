@@ -7,22 +7,22 @@ public struct ShaderDesc
     /// <summary>
     /// The shader stage this instance describes.
     /// </summary>
-    public ShaderStages Stage { get; set; }
+    public ShaderStages Stage;
 
     /// <summary>
     /// An array containing the raw shader bytes.
     /// Shader bytecode in SPIR-V format.
     /// </summary>
-    public byte[] ShaderBytes { get; set; }
+    public byte[] ShaderBytes;
 
     /// <summary>
     /// The name of the entry point function in the shader module to be used in this stage.
     /// </summary>
-    public string EntryPoint { get; set; }
+    public string EntryPoint;
 
     public static ShaderDesc Default(ShaderStages stage,
                                      byte[] shaderBytes,
-                                     string entryPoint = "main")
+                                     string entryPoint)
     {
         return new()
         {

@@ -7,42 +7,42 @@ public struct RasterizerStateDesc
     /// <summary>
     /// Controls which face will be culled.
     /// </summary>
-    public CullMode CullMode { get; set; }
+    public CullMode CullMode;
 
     /// <summary>
     /// Controls how the rasterizer fills polygons.
     /// </summary>
-    public FillMode FillMode { get; set; }
+    public FillMode FillMode;
 
     /// <summary>
     /// Controls the winding order used to determine the front face of primitives.
     /// </summary>
-    public FrontFace FrontFace { get; set; }
+    public FrontFace FrontFace;
 
     /// <summary>
     /// Depth value added to a given pixel. For info about depth bias.
     /// </summary>
-    public int DepthBias { get; set; }
+    public int DepthBias;
 
     /// <summary>
     /// Maximum depth bias of a pixel.
     /// </summary>
-    public float DepthBiasClamp { get; set; }
+    public float DepthBiasClamp;
 
     /// <summary>
     /// Scalar on a given pixel's slope.
     /// </summary>
-    public float SlopeScaledDepthBias { get; set; }
+    public float SlopeScaledDepthBias;
 
     /// <summary>
     /// Controls whether depth clipping is enabled.
     /// </summary>
-    public bool DepthClipEnabled { get; set; }
+    public bool DepthClipEnabled;
 
     /// <summary>
     /// Controls whether the scissor test is enabled.
     /// </summary>
-    public bool ScissorEnabled { get; set; }
+    public bool ScissorEnabled;
 
     public static RasterizerStateDesc Default(CullMode cullMode = CullMode.Back,
                                               FillMode fillMode = FillMode.Solid,

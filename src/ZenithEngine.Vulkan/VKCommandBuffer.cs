@@ -637,6 +637,15 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
             Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
         }
+
+        Viewport[] viewports = new Viewport[vkFrameBuffer.ColorTargets.Length];
+        Rectangle<int>[] scissors = new Rectangle<int>[vkFrameBuffer.ColorTargets.Length];
+
+        Array.Fill(viewports, new Viewport(0, 0, vkFrameBuffer.Width, vkFrameBuffer.Height));
+        Array.Fill(scissors, new Rectangle<int>(0, 0, (int)vkFrameBuffer.Width, (int)vkFrameBuffer.Height));
+
+        SetViewports(viewports);
+        SetScissorRectangles(scissors);
     }
 
     public override void EndRendering()
@@ -793,8 +802,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         }
     }
 
-    public override void SetResourceSet(ResourceSet resourceSet,
-                                        uint index = 0,
+    public override void SetResourceSet(uint slot,
+                                        ResourceSet resourceSet,
                                         uint[]? constantBufferOffsets = null)
     {
         VKResourceSet vkResourceSet = resourceSet.VK();
@@ -808,27 +817,34 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             }
         }
 
-        if (activePipeline is VKGraphicsPipeline graphicsPipeline)
+        (PipelineBindPoint bindPoint, VkPipelineLayout layout) = activePipeline switch
+        {
+            VKGraphicsPipeline graphicsPipeline => (PipelineBindPoint.Graphics, graphicsPipeline.PipelineLayout),
+            VKComputePipeline computePipeline => (PipelineBindPoint.Compute, computePipeline.PipelineLayout),
+            _ => throw new InvalidOperationException()
+        };
+
+        if (offsets.Length > 0)
         {
             Context.Vk.CmdBindDescriptorSets(CommandBuffer,
-                                             PipelineBindPoint.Graphics,
-                                             graphicsPipeline.PipelineLayout,
-                                             index,
+                                             bindPoint,
+                                             layout,
+                                             slot,
                                              1,
                                              in vkResourceSet.Token.Set,
                                              (uint)offsets.Length,
                                              in offsets[0]);
         }
-        else if (activePipeline is VKComputePipeline computePipeline)
+        else
         {
             Context.Vk.CmdBindDescriptorSets(CommandBuffer,
-                                             PipelineBindPoint.Compute,
-                                             computePipeline.PipelineLayout,
-                                             index,
+                                             bindPoint,
+                                             layout,
+                                             slot,
                                              1,
                                              in vkResourceSet.Token.Set,
-                                             (uint)offsets.Length,
-                                             in offsets[0]);
+                                             0,
+                                             null);
         }
     }
     #endregion

@@ -7,15 +7,15 @@ public struct Viewport(float x = 0,
                        float minDepth = 0,
                        float maxDepth = 1)
 {
-    public float X { get; set; } = x;
+    public float X = x;
 
-    public float Y { get; set; } = y;
+    public float Y = y;
 
-    public float Width { get; set; } = width;
+    public float Width = width;
 
-    public float Height { get; set; } = height;
+    public float Height = height;
 
-    public float MinDepth { get; set; } = minDepth;
+    public float MinDepth = minDepth;
 
-    public float MaxDepth { get; set; } = maxDepth;
+    public float MaxDepth = maxDepth;
 }

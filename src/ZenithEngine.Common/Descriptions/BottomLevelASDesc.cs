@@ -4,7 +4,7 @@ namespace ZenithEngine.Common.Descriptions;
 
 public struct BottomLevelASDesc
 {
-    public AccelerationStructureGeometry[] Geometries { get; set; }
+    public AccelerationStructureGeometry[] Geometries;
 
     public static BottomLevelASDesc Default(params AccelerationStructureGeometry[] geometries)
     {

@@ -2,9 +2,9 @@
 
 public struct ResourceLayoutDesc
 {
-    public LayoutElementDesc[] Elements { get; set; }
+    public LayoutElementDesc[] Elements;
 
-    public uint DynamicConstantBufferCount { get; set; }
+    public uint DynamicConstantBufferCount;
 
     public static ResourceLayoutDesc Default(params LayoutElementDesc[] elements)
     {

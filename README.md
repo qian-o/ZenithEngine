@@ -27,11 +27,10 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [x] Add `ZenithEngine.Vulkan` project.
 	- [x] Add `ZenithEngine.Windowing` project.
 	- [x] Add `ZenithEngine.ShaderCompiler` project.
-	- [ ] Add `ZenithEngine.ImGui` project.
-	- [ ] Add `ZenithEngine.ImGui.MultipleWindows` project.
+	- [ ] Add `ZenithEngine.ImGuiRender` project.
+	- [ ] Add `ZenithEngine.ImGuiRender.MultipleWindows` project.
 	- [ ] Add `ZenithEngine.Material` project.
 	- [ ] Add `ZenithEngine.Editor` project.
-	- [ ] Add `ZenithEngine.Viewer` project.
 
 - ZenithEngine.Vulkan
 	- [ ] Complete Vulkan API bindings.
@@ -40,14 +39,9 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - ZenithEngine.ShaderCompiler
 	- [ ] Use Slang instead of HLSL.
 
-- ZenithEngine.Editor And ZenithEngine.Viewer
-	- [ ] Add project design and parsing, as well as loading and saving of project files.
-
 - ZenithEngine.Editor
-	- [ ] Use WPF for the editor's UI.
-
-- ZenithEngine.Viewer
-	- [ ] Use ImGui for the viewer's UI.
+	- [ ] Use ImGui for the editor's UI.
+	- [ ] Add project design and parsing, as well as loading and saving of project files.
 
 ## Code Standard
 - Prefer using `(static item => item.Property)` Lambda expressions.

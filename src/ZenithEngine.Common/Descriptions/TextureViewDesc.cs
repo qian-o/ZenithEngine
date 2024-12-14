@@ -8,32 +8,32 @@ public struct TextureViewDesc
     /// <summary>
     /// The desired target.
     /// </summary>
-    public Texture Target { get; set; }
+    public Texture Target;
 
     /// <summary>
     /// The format of the view.
     /// </summary>
-    public PixelFormat Format { get; set; }
+    public PixelFormat Format;
 
     /// <summary>
     /// The base mip level visible in the view. Must be less than the number of mip levels in the target Texture.
     /// </summary>
-    public uint BaseMipLevel { get; set; }
+    public uint BaseMipLevel;
 
     /// <summary>
     /// The number of mip levels visible in the view.
     /// </summary>
-    public uint MipLevels { get; set; }
+    public uint MipLevels;
 
     /// <summary>
     /// If it is a cube map, it indicates the starting face to view. (Cube Map exclusive)
     /// </summary>
-    public CubeMapFace BaseFace { get; set; }
+    public CubeMapFace BaseFace;
 
     /// <summary>
     /// Number of faces to view. (Cube Map exclusive)
     /// </summary>
-    public uint FaceCount { get; set; }
+    public uint FaceCount;
 
     public static TextureViewDesc Default(Texture target,
                                           PixelFormat? format = null,
