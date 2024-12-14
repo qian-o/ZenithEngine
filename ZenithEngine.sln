@@ -22,6 +22,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenithEngine.ImGuiWrapper",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenithEngine.ImGuiWrapper.MultipleWindows", "src\ZenithEngine.ImGuiWrapper.MultipleWindows\ZenithEngine.ImGuiWrapper.MultipleWindows.csproj", "{EBBE5DD2-5219-4777-9839-BE6DEBF1F818}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{B14D733F-0FA6-4861-BCD5-E166EE6E2DAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Triangle", "src\Examples\Triangle\Triangle.csproj", "{B8F2CA0B-8573-4F73-8DC0-99CE76A6D27D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,8 +56,15 @@ Global
 		{EBBE5DD2-5219-4777-9839-BE6DEBF1F818}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBBE5DD2-5219-4777-9839-BE6DEBF1F818}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBBE5DD2-5219-4777-9839-BE6DEBF1F818}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8F2CA0B-8573-4F73-8DC0-99CE76A6D27D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8F2CA0B-8573-4F73-8DC0-99CE76A6D27D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8F2CA0B-8573-4F73-8DC0-99CE76A6D27D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8F2CA0B-8573-4F73-8DC0-99CE76A6D27D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B8F2CA0B-8573-4F73-8DC0-99CE76A6D27D} = {B14D733F-0FA6-4861-BCD5-E166EE6E2DAA}
 	EndGlobalSection
 EndGlobal

@@ -54,7 +54,7 @@ public unsafe class ImGuiController : DisposableObject
         AddEvents();
     }
 
-    public void Update(double deltaSeconds, uint width, uint height)
+    public void Update(double deltaSeconds, Vector2D<uint> size)
     {
         if (frameBegun)
         {
@@ -66,7 +66,7 @@ public unsafe class ImGuiController : DisposableObject
         ImGuiIOPtr io = ImGui.GetIO();
 
         io.DeltaTime = (float)deltaSeconds;
-        io.DisplaySize = new(width, height);
+        io.DisplaySize = size.As<float>().ToSystem();
 
         ImGui.NewFrame();
 

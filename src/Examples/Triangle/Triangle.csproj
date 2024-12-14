@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\ZenithEngine.ImGuiWrapper\ZenithEngine.ImGuiWrapper.csproj" />
+		<ProjectReference Include="..\..\ZenithEngine.Vulkan\ZenithEngine.Vulkan.csproj" />
+		<ProjectReference Include="..\..\ZenithEngine.Windowing\ZenithEngine.Windowing.csproj" />
+	</ItemGroup>
+
+</Project>
