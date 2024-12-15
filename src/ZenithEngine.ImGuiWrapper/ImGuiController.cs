@@ -92,6 +92,26 @@ public unsafe class ImGuiController : DisposableObject
         }
     }
 
+    public ulong GetBinding(TextureView textureView)
+    {
+        return renderer.GetBinding(textureView);
+    }
+
+    public ulong GetBinding(Texture texture)
+    {
+        return renderer.GetBinding(texture);
+    }
+
+    public void RemoveBinding(TextureView textureView)
+    {
+        renderer.RemoveBinding(textureView);
+    }
+
+    public void RemoveBinding(Texture texture)
+    {
+        renderer.RemoveBinding(texture);
+    }
+
     protected override void Destroy()
     {
         RemoveEvents();
