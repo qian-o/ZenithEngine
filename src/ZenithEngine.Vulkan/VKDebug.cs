@@ -11,8 +11,8 @@ internal unsafe class VKDebug : DisposableObject
     private static readonly bool debugUtilsSupported;
     private static readonly bool debugReportSupported;
     private static readonly bool debugMarkerSupported;
-    private static readonly PfnDebugUtilsMessengerCallbackEXT pfnDebugUtilsMessengerCallback;
-    private static readonly PfnDebugReportCallbackEXT pfnDebugReportCallback;
+    private static readonly PfnDebugUtilsMessengerCallbackEXT pfnUtilsCallback;
+    private static readonly PfnDebugReportCallbackEXT pfnReportCallback;
 
     private readonly VkInstance instance;
     private readonly ExtDebugUtils? utils;
@@ -72,8 +72,8 @@ internal unsafe class VKDebug : DisposableObject
             }
         }
 
-        pfnDebugUtilsMessengerCallback = (PfnDebugUtilsMessengerCallbackEXT)MessageCallback;
-        pfnDebugReportCallback = (PfnDebugReportCallbackEXT)MessageCallback;
+        pfnUtilsCallback = (PfnDebugUtilsMessengerCallbackEXT)MessageCallback;
+        pfnReportCallback = (PfnDebugReportCallbackEXT)MessageCallback;
     }
 
     public VKDebug(VKGraphicsContext context)
@@ -97,7 +97,7 @@ internal unsafe class VKDebug : DisposableObject
                               | DebugUtilsMessageTypeFlagsEXT.ValidationBitExt
                               | DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt
                               | DebugUtilsMessageTypeFlagsEXT.DeviceAddressBindingBitExt,
-                PfnUserCallback = pfnDebugUtilsMessengerCallback
+                PfnUserCallback = pfnUtilsCallback
             };
 
             DebugUtilsMessengerEXT messengerEXT;
@@ -118,7 +118,7 @@ internal unsafe class VKDebug : DisposableObject
                         | DebugReportFlagsEXT.PerformanceWarningBitExt
                         | DebugReportFlagsEXT.ErrorBitExt
                         | DebugReportFlagsEXT.DebugBitExt,
-                PfnCallback = pfnDebugReportCallback
+                PfnCallback = pfnReportCallback
             };
 
             DebugReportCallbackEXT callbackEXT;
