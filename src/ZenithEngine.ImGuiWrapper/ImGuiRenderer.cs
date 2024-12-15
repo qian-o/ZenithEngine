@@ -8,7 +8,7 @@ using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.ImGuiWrapper;
 
-public unsafe class ImGuiRenderer : DisposableObject
+internal unsafe class ImGuiRenderer : DisposableObject
 {
     private readonly Dictionary<ulong, BindingToken> bindings = [];
 
