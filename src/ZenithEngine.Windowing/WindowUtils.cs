@@ -12,6 +12,8 @@ public static unsafe class WindowUtils
 
     static WindowUtils()
     {
+        Sdl.Init(Sdl.InitVideo);
+
         keyMap = new()
         {
             { Scancode.ScancodeUnknown, Key.Unknown },
@@ -191,6 +193,11 @@ public static unsafe class WindowUtils
         }
 
         return displays;
+    }
+
+    public static Cursor GetCursor()
+    {
+        return cursorMap.FirstOrDefault(x => x.Value == (nint)Sdl.GetCursor()).Key;
     }
 
     public static void SetCursor(Cursor cursor)

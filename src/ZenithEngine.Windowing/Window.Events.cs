@@ -20,20 +20,4 @@ internal partial class Window : IWindowEvents
     public event EventHandler<ValueEventArgs<Vector2D<uint>>>? SizeChanged;
 
     public event EventHandler<ValueEventArgs<WindowState>>? StateChanged;
-
-    public event EventHandler<KeyEventArgs>? KeyUp;
-
-    public event EventHandler<KeyEventArgs>? KeyDown;
-
-    public event EventHandler<ValueEventArgs<char>>? KeyChar;
-
-    public event EventHandler<MouseButtonEventArgs>? Click;
-
-    public event EventHandler<MouseButtonEventArgs>? MouseUp;
-
-    public event EventHandler<MouseButtonEventArgs>? MouseDown;
-
-    public event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseMove;
-
-    public event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseWheel;
 }

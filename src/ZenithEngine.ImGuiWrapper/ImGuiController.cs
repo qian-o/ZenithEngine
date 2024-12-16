@@ -48,6 +48,19 @@ public unsafe class ImGuiController : DisposableObject
         io.DeltaTime = (float)deltaSeconds;
         io.DisplaySize = size.As<float>().ToSystem();
 
+        InputController.Cursor = ImGui.GetMouseCursor() switch
+        {
+            ImGuiMouseCursor.TextInput => Cursor.TextInput,
+            ImGuiMouseCursor.ResizeAll => Cursor.ResizeAll,
+            ImGuiMouseCursor.ResizeNs => Cursor.ResizeNS,
+            ImGuiMouseCursor.ResizeEw => Cursor.ResizeWE,
+            ImGuiMouseCursor.ResizeNesw => Cursor.ResizeNESW,
+            ImGuiMouseCursor.ResizeNwse => Cursor.ResizeNWSE,
+            ImGuiMouseCursor.Hand => Cursor.Hand,
+            ImGuiMouseCursor.NotAllowed => Cursor.NotAllowed,
+            _ => Cursor.Arrow
+        };
+
         ImGui.NewFrame();
 
         ImGui.DockSpaceOverViewport();
@@ -116,6 +129,7 @@ public unsafe class ImGuiController : DisposableObject
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
 
+        io.BackendFlags |= ImGuiBackendFlags.HasMouseCursors;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
 
         if (fontConfig is not null)

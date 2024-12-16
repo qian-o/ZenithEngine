@@ -1,11 +1,10 @@
 ﻿using Silk.NET.Maths;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Events;
-using ZenithEngine.Common.Interfaces;
 
 namespace ZenithEngine.Windowing.Interfaces;
 
-public interface IWindowEvents : IInputController
+public interface IWindowEvents
 {
     event EventHandler<TimeEventArgs>? Update;
 

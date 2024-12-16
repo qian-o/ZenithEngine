@@ -1,6 +1,8 @@
-﻿namespace ZenithEngine.Windowing.Interfaces;
+﻿using ZenithEngine.Common.Interfaces;
 
-public interface IWindow : IWindowEvents, IWindowProperties
+namespace ZenithEngine.Windowing.Interfaces;
+
+public interface IWindow : IWindowEvents, IWindowProperties, IInputController
 {
     void Show();
 

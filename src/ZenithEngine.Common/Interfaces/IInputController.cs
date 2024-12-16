@@ -1,10 +1,13 @@
 ﻿using Silk.NET.Maths;
+using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Events;
 
 namespace ZenithEngine.Common.Interfaces;
 
 public interface IInputController
 {
+    Cursor Cursor { get; set; }
+
     event EventHandler<KeyEventArgs>? KeyUp;
 
     event EventHandler<KeyEventArgs>? KeyDown;
