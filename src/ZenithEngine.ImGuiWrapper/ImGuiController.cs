@@ -43,11 +43,6 @@ public unsafe class ImGuiController : DisposableObject
 
         ImGui.SetCurrentContext(ImGuiContext);
 
-        ImGuiIOPtr io = ImGui.GetIO();
-
-        io.DeltaTime = (float)deltaSeconds;
-        io.DisplaySize = size.As<float>().ToSystem();
-
         InputController.Cursor = ImGui.GetMouseCursor() switch
         {
             ImGuiMouseCursor.TextInput => Cursor.TextInput,
@@ -60,6 +55,11 @@ public unsafe class ImGuiController : DisposableObject
             ImGuiMouseCursor.NotAllowed => Cursor.NotAllowed,
             _ => Cursor.Arrow
         };
+
+        ImGuiIOPtr io = ImGui.GetIO();
+
+        io.DeltaTime = (float)deltaSeconds;
+        io.DisplaySize = size.As<float>().ToSystem();
 
         ImGui.NewFrame();
 
