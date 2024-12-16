@@ -12,6 +12,8 @@ internal unsafe class ImGuiRenderer : DisposableObject
 {
     private readonly Dictionary<ulong, BindingToken> bindings = [];
 
+    private Texture? fontTexture;
+
     private Buffer vertexBuffer = null!;
     private Buffer indexBuffer = null!;
     private Buffer constantsBuffer = null!;
@@ -20,10 +22,6 @@ internal unsafe class ImGuiRenderer : DisposableObject
     private ResourceLayout layout1 = null!;
     private ResourceSet set0 = null!;
     private GraphicsPipeline pipeline = null!;
-
-    private Texture fontTexture = null!;
-
-    private ulong textureId = 0;
 
     public ImGuiRenderer(GraphicsContext context,
                          OutputDesc outputDesc,
@@ -35,6 +33,32 @@ internal unsafe class ImGuiRenderer : DisposableObject
     }
 
     public GraphicsContext Context { get; }
+
+    public void CreateFontDeviceTexture()
+    {
+        if (fontTexture is not null)
+        {
+            RemoveBinding(fontTexture);
+
+            fontTexture.Dispose();
+        }
+
+        byte* pixels;
+        int width;
+        int height;
+        ImGui.GetIO().Fonts.GetTexDataAsRGBA32(&pixels, &width, &height);
+
+        TextureDesc fontTextureDesc = TextureDesc.Default((uint)width, (uint)height, 1, 1);
+
+        fontTexture = Context.Factory.CreateTexture(in fontTextureDesc);
+
+        Context.UpdateTexture(fontTexture,
+                              (nint)pixels,
+                              (uint)(width * height * 4),
+                              new(0, 0, 0, (uint)width, (uint)height, 1));
+
+        GetBinding(fontTexture);
+    }
 
     public void PrepareResources(CommandBuffer commandBuffer)
     {
@@ -146,7 +170,16 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
     public ulong GetBinding(TextureView textureView)
     {
-        ulong id = textureId++;
+        ulong id = 0;
+        while (true)
+        {
+            if (!bindings.ContainsKey(id))
+            {
+                break;
+            }
+
+            id++;
+        }
 
         ResourceSetDesc desc = ResourceSetDesc.Default(layout1, textureView);
 
@@ -200,6 +233,13 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
     protected override void Destroy()
     {
+        foreach (BindingToken token in bindings.Values)
+        {
+            token.Dispose();
+        }
+
+        fontTexture?.Dispose();
+
         vertexBuffer.Dispose();
         indexBuffer.Dispose();
         constantsBuffer.Dispose();
@@ -208,13 +248,6 @@ internal unsafe class ImGuiRenderer : DisposableObject
         layout1.Dispose();
         set0.Dispose();
         pipeline.Dispose();
-
-        fontTexture.Dispose();
-
-        foreach (BindingToken token in bindings.Values)
-        {
-            token.Dispose();
-        }
     }
 
     private void CreateGraphicsResources(OutputDesc outputDesc, ColorSpaceHandling colorSpaceHandling)
@@ -273,21 +306,5 @@ internal unsafe class ImGuiRenderer : DisposableObject
         );
 
         pipeline = Context.Factory.CreateGraphicsPipeline(in pipelineDesc);
-
-        byte* pixels;
-        int width;
-        int height;
-        ImGui.GetIO().Fonts.GetTexDataAsRGBA32(&pixels, &width, &height);
-
-        TextureDesc fontTextureDesc = TextureDesc.Default((uint)width, (uint)height, 1, 1);
-
-        fontTexture = Context.Factory.CreateTexture(in fontTextureDesc);
-
-        Context.UpdateTexture(fontTexture,
-                              (nint)pixels,
-                              (uint)(width * height * 4),
-                              new(0, 0, 0, (uint)width, (uint)height, 1));
-
-        GetBinding(fontTexture);
     }
 }

@@ -13,9 +13,6 @@ public unsafe class ImGuiController : DisposableObject
 {
     public ImGuiContextPtr ImGuiContext;
 
-    private readonly ImGuiRenderer renderer;
-    private readonly IInputController controller;
-
     private bool frameBegun;
 
     public ImGuiController(GraphicsContext graphicsContext,
@@ -25,34 +22,17 @@ public unsafe class ImGuiController : DisposableObject
                            ImGuiFontConfig? fontConfig = null,
                            Action<ImGuiIOPtr>? ioConfig = null)
     {
-        ImGuiContext = ImGui.CreateContext();
+        ImGui.SetCurrentContext(ImGuiContext = ImGui.CreateContext());
 
-        ImGui.SetCurrentContext(ImGuiContext);
+        Renderer = new(graphicsContext, outputDesc, colorSpaceHandling);
+        InputController = inputController;
 
-        ImGuiIOPtr io = ImGui.GetIO();
-
-        io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
-        io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
-
-        io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
-
-        if (fontConfig is not null)
-        {
-            io.Fonts.Clear();
-
-            io.Fonts.AddFontFromFileTTF(fontConfig.Value.Font,
-                                        (int)fontConfig.Value.Size,
-                                        null,
-                                        (uint*)fontConfig.Value.GlyphRange(io));
-        }
-
-        ioConfig?.Invoke(io);
-
-        renderer = new(graphicsContext, outputDesc, colorSpaceHandling);
-        controller = inputController;
-
-        AddEvents();
+        Initialize(fontConfig, ioConfig);
     }
+
+    internal ImGuiRenderer Renderer { get; }
+
+    protected IInputController InputController { get; }
 
     public void Update(double deltaSeconds, Vector2D<uint> size)
     {
@@ -77,7 +57,7 @@ public unsafe class ImGuiController : DisposableObject
 
     public void PrepareResources(CommandBuffer commandBuffer)
     {
-        renderer.PrepareResources(commandBuffer);
+        Renderer.PrepareResources(commandBuffer);
     }
 
     public void Render(CommandBuffer commandBuffer)
@@ -86,7 +66,7 @@ public unsafe class ImGuiController : DisposableObject
         {
             ImGui.Render();
 
-            renderer.Render(commandBuffer, ImGui.GetDrawData());
+            Renderer.Render(commandBuffer, ImGui.GetDrawData());
 
             frameBegun = false;
         }
@@ -94,55 +74,71 @@ public unsafe class ImGuiController : DisposableObject
 
     public ulong GetBinding(TextureView textureView)
     {
-        return renderer.GetBinding(textureView);
+        return Renderer.GetBinding(textureView);
     }
 
     public ulong GetBinding(Texture texture)
     {
-        return renderer.GetBinding(texture);
+        return Renderer.GetBinding(texture);
     }
 
     public void RemoveBinding(TextureView textureView)
     {
-        renderer.RemoveBinding(textureView);
+        Renderer.RemoveBinding(textureView);
     }
 
     public void RemoveBinding(Texture texture)
     {
-        renderer.RemoveBinding(texture);
+        Renderer.RemoveBinding(texture);
     }
 
     protected override void Destroy()
     {
-        RemoveEvents();
+        InputController.KeyUp -= KeyUp;
+        InputController.KeyDown -= KeyDown;
+        InputController.KeyChar -= KeyChar;
+        InputController.MouseUp -= MouseUp;
+        InputController.MouseDown -= MouseDown;
+        InputController.MouseMove -= MouseMove;
+        InputController.MouseWheel -= MouseWheel;
 
-        renderer.Dispose();
+        Renderer.Dispose();
 
         ImGui.SetCurrentContext(null);
 
         ImGui.DestroyContext(ImGuiContext);
     }
 
-    private void AddEvents()
+    protected virtual void Initialize(ImGuiFontConfig? fontConfig, Action<ImGuiIOPtr>? ioConfig)
     {
-        controller.KeyUp += KeyUp;
-        controller.KeyDown += KeyDown;
-        controller.KeyChar += KeyChar;
-        controller.MouseUp += MouseUp;
-        controller.MouseDown += MouseDown;
-        controller.MouseMove += MouseMove;
-        controller.MouseWheel += MouseWheel;
-    }
+        ImGuiIOPtr io = ImGui.GetIO();
 
-    private void RemoveEvents()
-    {
-        controller.KeyUp -= KeyUp;
-        controller.KeyDown -= KeyDown;
-        controller.KeyChar -= KeyChar;
-        controller.MouseUp -= MouseUp;
-        controller.MouseDown -= MouseDown;
-        controller.MouseMove -= MouseMove;
-        controller.MouseWheel -= MouseWheel;
+        io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+
+        io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
+
+        if (fontConfig is not null)
+        {
+            io.Fonts.Clear();
+
+            io.Fonts.AddFontFromFileTTF(fontConfig.Value.Font,
+                                        (int)fontConfig.Value.Size,
+                                        null,
+                                        (uint*)fontConfig.Value.GlyphRange(io));
+        }
+
+        ioConfig?.Invoke(io);
+
+        Renderer.CreateFontDeviceTexture();
+
+        InputController.KeyUp += KeyUp;
+        InputController.KeyDown += KeyDown;
+        InputController.KeyChar += KeyChar;
+        InputController.MouseUp += MouseUp;
+        InputController.MouseDown += MouseDown;
+        InputController.MouseMove += MouseMove;
+        InputController.MouseWheel += MouseWheel;
     }
 
     private void KeyUp(object? sender, KeyEventArgs e)
