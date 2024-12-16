@@ -136,7 +136,7 @@ internal unsafe partial class Window : IWindow
                 flags |= WindowFlags.Resizable;
                 break;
             case WindowBorder.Fixed:
-                flags |= WindowFlags.Borderless;
+                flags &= ~WindowFlags.Resizable;
                 break;
             case WindowBorder.Hidden:
                 flags |= WindowFlags.Borderless;
@@ -230,8 +230,7 @@ internal unsafe partial class Window : IWindow
             case WindowEventID.Resized:
                 SizeChanged?.Invoke(this, new(Size));
                 break;
-            case WindowEventID.Minimized:
-            case WindowEventID.Maximized:
+            case WindowEventID.Minimized or WindowEventID.Maximized:
                 StateChanged?.Invoke(this, new(State));
                 break;
             case WindowEventID.Restored:
