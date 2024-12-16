@@ -11,6 +11,8 @@ internal unsafe class VKDebug : DisposableObject
     private static readonly bool debugUtilsSupported;
     private static readonly bool debugReportSupported;
     private static readonly bool debugMarkerSupported;
+    private static readonly PfnDebugUtilsMessengerCallbackEXT pfnUtilsCallback;
+    private static readonly PfnDebugReportCallbackEXT pfnReportCallback;
 
     private readonly VkInstance instance;
     private readonly ExtDebugUtils? utils;
@@ -69,6 +71,9 @@ internal unsafe class VKDebug : DisposableObject
                 ExtensionNames = [.. ExtensionNames, ExtDebugMarker.ExtensionName];
             }
         }
+
+        pfnUtilsCallback = (PfnDebugUtilsMessengerCallbackEXT)MessageCallback;
+        pfnReportCallback = (PfnDebugReportCallbackEXT)MessageCallback;
     }
 
     public VKDebug(VKGraphicsContext context)
@@ -92,7 +97,7 @@ internal unsafe class VKDebug : DisposableObject
                               | DebugUtilsMessageTypeFlagsEXT.ValidationBitExt
                               | DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt
                               | DebugUtilsMessageTypeFlagsEXT.DeviceAddressBindingBitExt,
-                PfnUserCallback = (PfnDebugUtilsMessengerCallbackEXT)MessageCallback
+                PfnUserCallback = pfnUtilsCallback
             };
 
             DebugUtilsMessengerEXT messengerEXT;
@@ -113,7 +118,7 @@ internal unsafe class VKDebug : DisposableObject
                         | DebugReportFlagsEXT.PerformanceWarningBitExt
                         | DebugReportFlagsEXT.ErrorBitExt
                         | DebugReportFlagsEXT.DebugBitExt,
-                PfnCallback = (PfnDebugReportCallbackEXT)MessageCallback
+                PfnCallback = pfnReportCallback
             };
 
             DebugReportCallbackEXT callbackEXT;
@@ -178,10 +183,10 @@ internal unsafe class VKDebug : DisposableObject
         utils?.Dispose();
     }
 
-    private uint MessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
-                                 DebugUtilsMessageTypeFlagsEXT messageTypes,
-                                 DebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                 void* pUserData)
+    private static uint MessageCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity,
+                                        DebugUtilsMessageTypeFlagsEXT messageTypes,
+                                        DebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                        void* pUserData)
     {
         string message = Utils.PtrToStringUTF8((nint)pCallbackData->PMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -214,14 +219,14 @@ internal unsafe class VKDebug : DisposableObject
         return Vk.False;
     }
 
-    private uint MessageCallback(uint flags,
-                                 DebugReportObjectTypeEXT objectType,
-                                 ulong @object,
-                                 nuint location,
-                                 int messageCode,
-                                 byte* pLayerPrefix,
-                                 byte* pMessage,
-                                 void* pUserData)
+    private static uint MessageCallback(uint flags,
+                                        DebugReportObjectTypeEXT objectType,
+                                        ulong @object,
+                                        nuint location,
+                                        int messageCode,
+                                        byte* pLayerPrefix,
+                                        byte* pMessage,
+                                        void* pUserData)
     {
         string message = Utils.PtrToStringUTF8((nint)pMessage);
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

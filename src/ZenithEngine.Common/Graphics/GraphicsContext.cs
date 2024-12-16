@@ -77,8 +77,11 @@ public abstract unsafe class GraphicsContext : DisposableObject
 
     public void SyncCopyTasks()
     {
-        CopyProcessor!.Submit(false);
-        CopyProcessor.WaitIdle();
+        if (CopyProcessor!.CanExecute)
+        {
+            CopyProcessor.Submit(false);
+            CopyProcessor.WaitIdle();
+        }
     }
 
     protected abstract void CreateDeviceInternal(bool useDebugLayer);

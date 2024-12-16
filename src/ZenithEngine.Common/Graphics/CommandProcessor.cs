@@ -13,6 +13,8 @@ public abstract class CommandProcessor(GraphicsContext context,
 
     public CommandProcessorType Type { get; } = type;
 
+    public bool CanExecute => executionSize > 0;
+
     /// <summary>
     /// Gets the next available command buffer.
     /// </summary>
