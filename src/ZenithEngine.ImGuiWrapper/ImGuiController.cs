@@ -32,7 +32,7 @@ public unsafe class ImGuiController : DisposableObject
 
     internal ImGuiRenderer Renderer { get; }
 
-    protected IInputController InputController { get; }
+    internal IInputController InputController { get; }
 
     public void Update(double deltaSeconds, Vector2D<uint> size)
     {
@@ -109,7 +109,7 @@ public unsafe class ImGuiController : DisposableObject
         ImGui.DestroyContext(ImGuiContext);
     }
 
-    protected virtual void Initialize(ImGuiFontConfig? fontConfig, Action<ImGuiIOPtr>? ioConfig)
+    private void Initialize(ImGuiFontConfig? fontConfig, Action<ImGuiIOPtr>? ioConfig)
     {
         ImGuiIOPtr io = ImGui.GetIO();
 

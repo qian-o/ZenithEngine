@@ -27,8 +27,7 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [x] Add `ZenithEngine.Vulkan` project.
 	- [x] Add `ZenithEngine.Windowing` project.
 	- [x] Add `ZenithEngine.ShaderCompiler` project.
-	- [ ] Add `ZenithEngine.ImGuiWrapper` project.
-	- [ ] Add `ZenithEngine.ImGuiWrapper.MultipleWindows` project.
+	- [x] Add `ZenithEngine.ImGuiWrapper` project.
 	- [ ] Add `ZenithEngine.Material` project.
 	- [ ] Add `ZenithEngine.Editor` project.
 
