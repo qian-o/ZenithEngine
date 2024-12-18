@@ -29,7 +29,7 @@ internal class Program
         using ImGuiController imGuiController = new(context,
                                                     swapChain.FrameBuffer.Output,
                                                     window,
-                                                    fontConfig: new(fontPath, 18, (io) => (nint)io.Fonts.GetGlyphRangesChineseSimplifiedCommon()));
+                                                    fontConfig: new(fontPath, 18, static (io) => (nint)io.Fonts.GetGlyphRangesChineseSimplifiedCommon()));
 
         window.Update += (a, b) =>
         {

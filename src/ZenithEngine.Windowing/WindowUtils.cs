@@ -197,7 +197,7 @@ public static unsafe class WindowUtils
 
     public static Cursor GetCursor()
     {
-        return cursorMap.FirstOrDefault(x => x.Value == (nint)Sdl.GetCursor()).Key;
+        return cursorMap.FirstOrDefault(static item => item.Value == (nint)Sdl.GetCursor()).Key;
     }
 
     public static void SetCursor(Cursor cursor)
