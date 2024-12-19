@@ -49,6 +49,8 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 
 ## Code Standard
 - Prefer using `(static item => item.Property)` Lambda expressions.
+- Prefer using new() syntax sugar.
+- Prefer using pattern matching. Such as `is, is not, =>`.
 - If a class is `internal` and has value type parameters that need to be accessed externally, allow `public Type FieldName`.
 - Class members should be in the following order: Fields, Constructors, Properties, Methods.
 - Modifiers: public > internal > protected > private, non-static > static.
