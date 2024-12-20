@@ -58,3 +58,6 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 
 ## Regular Expression Format
 - `,+[\s]+[^\S\r\n]+};` Search for the comma after the last property when simplifying property assignments.
+
+## Draft
+- Do we need to add a `CommandProcessor Processor` property in the `CommandBuffer` so that some parameters can be used when executing commands in the `CommandBuffer`?
