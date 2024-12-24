@@ -61,3 +61,6 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 
 ## Draft
 - Do we need to add a `CommandProcessor Processor` property in the `CommandBuffer` so that some parameters can be used when executing commands in the `CommandBuffer`?
+- Direct3D 12 does not support automatic mipmap generation.
+- Direct3D 12 does not support the void SetViewport(uint slot, Viewport viewport) interface.
+- Direct3D 12 does not support the void SetScissorRectangle(uint slot, Rectangle<int> scissor) interface.
