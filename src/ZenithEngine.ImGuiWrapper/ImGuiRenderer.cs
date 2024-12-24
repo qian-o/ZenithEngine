@@ -148,8 +148,8 @@ internal unsafe class ImGuiRenderer : DisposableObject
                 }
                 else
                 {
-                    Rectangle<int> scissor = new((int)Math.Max(0, drawCmd.ClipRect.X - drawDataPtr.DisplayPos.X),
-                                                 (int)Math.Max(0, drawCmd.ClipRect.Y - drawDataPtr.DisplayPos.Y),
+                    Rectangle<int> scissor = new((int)Math.Max(0, drawCmd.ClipRect.X),
+                                                 (int)Math.Max(0, drawCmd.ClipRect.Y),
                                                  (int)Math.Max(0, drawCmd.ClipRect.Z - drawCmd.ClipRect.X),
                                                  (int)Math.Max(0, drawCmd.ClipRect.W - drawCmd.ClipRect.Y));
 
