@@ -165,22 +165,8 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// <summary>
     /// Set the viewport for rendering.
     /// </summary>
-    /// <param name="slot">The attachment slot.</param>
-    /// <param name="viewport">The viewport.</param>
-    public abstract void SetViewport(uint slot, Viewport viewport);
-
-    /// <summary>
-    /// Set the viewport for rendering.
-    /// </summary>
     /// <param name="viewports">Array of viewports.</param>
     public abstract void SetViewports(Viewport[] viewports);
-
-    /// <summary>
-    /// Set the scissor rectangle for rendering.
-    /// </summary>
-    /// <param name="slot">The attachment slot.</param>
-    /// <param name="scissor">The scissor rectangle.</param>
-    public abstract void SetScissorRectangle(uint slot, Rectangle<int> scissor);
 
     /// <summary>
     /// Set the scissor rectangles for rendering.
@@ -223,7 +209,7 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// </summary>
     /// <param name="buffers">Array of buffers.</param>
     /// <param name="offsets">Array of offsets.</param>
-    public abstract void SetVertexBuffers(Buffer[] buffers, int[] offsets);
+    public abstract void SetVertexBuffers(Buffer[] buffers, uint[] offsets);
 
     /// <summary>
     /// Set the index buffer for graphics pipeline.

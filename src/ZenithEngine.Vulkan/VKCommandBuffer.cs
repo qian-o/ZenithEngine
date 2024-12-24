@@ -662,21 +662,6 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         activeFrameBuffer = null;
     }
 
-    public override void SetViewport(uint slot, Viewport viewport)
-    {
-        VkViewport vp = new()
-        {
-            X = viewport.X,
-            Y = viewport.Y + viewport.Height,
-            Width = viewport.Width,
-            Height = -viewport.Height,
-            MinDepth = viewport.MinDepth,
-            MaxDepth = viewport.MaxDepth
-        };
-
-        Context.Vk.CmdSetViewport(CommandBuffer, slot, 1, &vp);
-    }
-
     public override void SetViewports(Viewport[] viewports)
     {
         VkViewport[] vps = viewports.Select(static item => new VkViewport
@@ -690,25 +675,6 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         }).ToArray();
 
         Context.Vk.CmdSetViewport(CommandBuffer, 0, (uint)vps.Length, vps);
-    }
-
-    public override void SetScissorRectangle(uint slot, Rectangle<int> scissor)
-    {
-        Rect2D sc = new()
-        {
-            Offset = new()
-            {
-                X = scissor.Origin.X,
-                Y = scissor.Origin.Y
-            },
-            Extent = new()
-            {
-                Width = (uint)scissor.Size.X,
-                Height = (uint)scissor.Size.Y
-            }
-        };
-
-        Context.Vk.CmdSetScissor(CommandBuffer, slot, 1, &sc);
     }
 
     public override void SetScissorRectangles(Rectangle<int>[] scissors)
@@ -768,7 +734,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                         in longOffset);
     }
 
-    public override void SetVertexBuffers(Buffer[] buffers, int[] offsets)
+    public override void SetVertexBuffers(Buffer[] buffers, uint[] offsets)
     {
         Context.Vk.CmdBindVertexBuffers(CommandBuffer,
                                         0,
