@@ -163,7 +163,7 @@ public abstract class CommandBuffer(GraphicsContext context,
     public abstract void EndRendering();
 
     /// <summary>
-    /// Set the viewport for rendering.
+    /// Set the viewports for rendering.
     /// </summary>
     /// <param name="viewports">Array of viewports.</param>
     public abstract void SetViewports(Viewport[] viewports);
