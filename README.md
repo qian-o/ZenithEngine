@@ -32,12 +32,21 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [ ] Add `ZenithEngine.Editor` project.
 	- [ ] Add `ZenithEngine.Viewer` project.
 
+- ZenithEngine.Common
+	- [ ] Add `GenerateMipmaps` method in Utils.
+
 - ZenithEngine.Vulkan
-	- [ ] Complete Vulkan API bindings.
-		- [ ] Improve acceleration structures and ray tracing pipeline.
+	- [ ] Improve acceleration structures and ray tracing pipeline.
 
 - ZenithEngine.ShaderCompiler
 	- [ ] Use Slang instead of HLSL.
+
+- ZenithEngine.ImGuiWrapper
+	- [ ] Add DPI scaling support.
+
+- ZenithEngine.Windowing
+	- [ ] Use SDL3 instead of SDL2.
+	- [ ] Add DPI Changed event.
 
 - ZenithEngine.Editor
 	- [ ] Use WPF for the editor's UI. 
