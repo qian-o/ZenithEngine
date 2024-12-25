@@ -20,8 +20,8 @@ internal unsafe class VKResourceSet : ResourceSet
         WriteDescriptorSet[] writes = new WriteDescriptorSet[layout.Desc.Elements.Length];
 
         uint resourceOffset = 0;
-        List<Texture> sampledImages = [];
-        List<Texture> storageImages = [];
+        List<VKTextureView> srvTextureViews = [];
+        List<VKTextureView> uavTextureViews = [];
 
         for (uint i = 0; i < writes.Length; i++)
         {
@@ -40,8 +40,8 @@ internal unsafe class VKResourceSet : ResourceSet
                             element,
                             desc.Resources[(int)resourceOffset..(int)(resourceOffset + element.Count)],
                             ref writes[i],
-                            sampledImages,
-                            storageImages);
+                            srvTextureViews,
+                            uavTextureViews);
 
             resourceOffset += element.Count;
         }
@@ -53,17 +53,17 @@ internal unsafe class VKResourceSet : ResourceSet
                                         (CopyDescriptorSet*)null);
 
         DynamicConstantBufferCount = layout.Desc.DynamicConstantBufferCount;
-        SampledImages = [.. sampledImages];
-        StorageImages = [.. storageImages];
+        SrvTextureViews = [.. srvTextureViews];
+        UavTextureViews = [.. uavTextureViews];
 
         Allocator.Release();
     }
 
     public uint DynamicConstantBufferCount { get; }
 
-    public Texture[] SampledImages { get; }
+    public VKTextureView[] SrvTextureViews { get; }
 
-    public Texture[] StorageImages { get; }
+    public VKTextureView[] UavTextureViews { get; }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
@@ -74,8 +74,8 @@ internal unsafe class VKResourceSet : ResourceSet
 
     protected override void Destroy()
     {
-        Array.Clear(StorageImages, 0, StorageImages.Length);
-        Array.Clear(SampledImages, 0, SampledImages.Length);
+        Array.Clear(UavTextureViews, 0, UavTextureViews.Length);
+        Array.Clear(SrvTextureViews, 0, SrvTextureViews.Length);
 
         Context.DescriptorSetAllocator!.Free(Token);
     }
@@ -84,8 +84,8 @@ internal unsafe class VKResourceSet : ResourceSet
                                         LayoutElementDesc element,
                                         GraphicsResource[] resources,
                                         ref WriteDescriptorSet write,
-                                        List<Texture> sampledImages,
-                                        List<Texture> storageImages)
+                                        List<VKTextureView> srvTextureViews,
+                                        List<VKTextureView> uavTextureViews)
     {
         if (element.Type
             is ResourceType.ConstantBuffer
@@ -96,11 +96,11 @@ internal unsafe class VKResourceSet : ResourceSet
 
             for (uint i = 0; i < element.Count; i++)
             {
-                Buffer buffer = (Buffer)resources[i];
+                VKBuffer buffer = (VKBuffer)resources[i];
 
                 infos[i] = new()
                 {
-                    Buffer = buffer.VK().Buffer,
+                    Buffer = buffer.Buffer,
                     Offset = 0,
                     Range = element.Range is 0 ? Vk.WholeSize : element.Range
                 };
@@ -112,26 +112,26 @@ internal unsafe class VKResourceSet : ResourceSet
         {
             DescriptorImageInfo* infos = allocator.Alloc<DescriptorImageInfo>(element.Count);
 
-            bool isSampled = element.Type is ResourceType.Texture;
-            ImageLayout imageLayout = isSampled ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.General;
+            bool isSrv = element.Type is ResourceType.Texture;
+            ImageLayout imageLayout = isSrv ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.General;
 
             for (uint i = 0; i < element.Count; i++)
             {
-                TextureView textureView = (TextureView)resources[i];
+                VKTextureView textureView = (VKTextureView)resources[i];
 
                 infos[i] = new()
                 {
-                    ImageView = textureView.VK().ImageView,
+                    ImageView = textureView.ImageView,
                     ImageLayout = imageLayout
                 };
 
-                if (isSampled)
+                if (isSrv)
                 {
-                    sampledImages.Add(textureView.Desc.Target);
+                    srvTextureViews.Add(textureView);
                 }
                 else
                 {
-                    storageImages.Add(textureView.Desc.Target);
+                    uavTextureViews.Add(textureView);
                 }
             }
 
@@ -143,11 +143,11 @@ internal unsafe class VKResourceSet : ResourceSet
 
             for (uint i = 0; i < element.Count; i++)
             {
-                Sampler sampler = (Sampler)resources[i];
+                VKSampler sampler = (VKSampler)resources[i];
 
                 infos[i] = new()
                 {
-                    Sampler = sampler.VK().Sampler
+                    Sampler = sampler.Sampler
                 };
             }
 
