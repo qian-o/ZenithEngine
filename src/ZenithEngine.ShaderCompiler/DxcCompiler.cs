@@ -82,19 +82,19 @@ public static unsafe class DxcCompiler
         arguments.Add("-fvk-use-scalar-layout");
 
         arguments.Add("-fvk-b-shift");
-        arguments.Add($"{Utils.CbvOffset}");
+        arguments.Add($"0");
         arguments.Add("all");
 
         arguments.Add("-fvk-t-shift");
-        arguments.Add($"{Utils.SrvOffset}");
-        arguments.Add("all");
-
-        arguments.Add("-fvk-s-shift");
-        arguments.Add($"{Utils.SmpOffset}");
+        arguments.Add($"{Utils.CbvCount}");
         arguments.Add("all");
 
         arguments.Add("-fvk-u-shift");
-        arguments.Add($"{Utils.UavOffset}");
+        arguments.Add($"{Utils.CbvCount + Utils.SrvCount}");
+        arguments.Add("all");
+
+        arguments.Add("-fvk-s-shift");
+        arguments.Add($"{Utils.CbvCount + Utils.SrvCount + Utils.UavCount}");
         arguments.Add("all");
 
         arguments.Add("-spirv");

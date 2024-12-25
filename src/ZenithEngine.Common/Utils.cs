@@ -7,51 +7,13 @@ namespace ZenithEngine.Common;
 
 public static class Utils
 {
-    public const uint CbvOffset = 0;
+    public const uint CbvCount = 20;
 
-    public const uint SrvOffset = 20;
+    public const uint SrvCount = 20;
 
-    public const uint SmpOffset = 40;
+    public const uint UavCount = 20;
 
-    public const uint UavOffset = 60;
-
-    public static uint GetBinding(ResourceType type, uint slot)
-    {
-        return type switch
-        {
-            ResourceType.ConstantBuffer => slot + CbvOffset,
-
-            ResourceType.StructuredBuffer or
-            ResourceType.Texture or
-            ResourceType.AccelerationStructure => slot + SrvOffset,
-
-            ResourceType.Sampler => slot + SmpOffset,
-
-            ResourceType.StructuredBufferReadWrite or
-            ResourceType.TextureReadWrite => slot + UavOffset,
-
-            _ => throw new InvalidOperationException("ResourceType doesn't supported.")
-        };
-    }
-
-    public static uint GetSlot(ResourceType type, uint binding)
-    {
-        return type switch
-        {
-            ResourceType.ConstantBuffer => binding - CbvOffset,
-
-            ResourceType.StructuredBuffer or
-            ResourceType.Texture or
-            ResourceType.AccelerationStructure => binding - SrvOffset,
-
-            ResourceType.Sampler => binding - SmpOffset,
-
-            ResourceType.StructuredBufferReadWrite or
-            ResourceType.TextureReadWrite => binding - UavOffset,
-
-            _ => throw new InvalidOperationException("ResourceType doesn't supported.")
-        };
-    }
+    public const uint SmpCount = 16;
 
     public static uint GetMipLevels(uint width, uint height)
     {

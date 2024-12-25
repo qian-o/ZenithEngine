@@ -29,7 +29,7 @@ public static unsafe class SpvReflector
 
                 resources.Add(new(stages,
                                   type,
-                                  Utils.GetSlot(type, binding->Binding),
+                                  GetSlot(type, binding->Binding),
                                   set.Set,
                                   Utils.PtrToStringUTF8((nint)binding->Name),
                                   binding->Count));
@@ -39,5 +39,24 @@ public static unsafe class SpvReflector
         reflect.DestroyShaderModule(module);
 
         return new([.. resources]);
+    }
+
+    private static uint GetSlot(ResourceType type, uint binding)
+    {
+        return type switch
+        {
+            ResourceType.ConstantBuffer => binding,
+
+            ResourceType.StructuredBuffer or
+            ResourceType.Texture or
+            ResourceType.AccelerationStructure => binding - Utils.CbvCount,
+
+            ResourceType.StructuredBufferReadWrite or
+            ResourceType.TextureReadWrite => binding - Utils.CbvCount - Utils.SrvCount,
+
+            ResourceType.Sampler => binding - Utils.CbvCount - Utils.SrvCount - Utils.UavCount,
+
+            _ => throw new InvalidOperationException("ResourceType doesn't supported.")
+        };
     }
 }

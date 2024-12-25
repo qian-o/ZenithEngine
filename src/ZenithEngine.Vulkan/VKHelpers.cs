@@ -1,4 +1,5 @@
 ﻿using Silk.NET.Vulkan;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 
@@ -102,5 +103,24 @@ internal class VKHelpers
         {
             throw new InvalidOperationException("Unsupported layout transition.");
         }
+    }
+
+    public static uint GetBinding(ResourceType type, uint slot)
+    {
+        return type switch
+        {
+            ResourceType.ConstantBuffer => slot,
+
+            ResourceType.StructuredBuffer or
+            ResourceType.Texture or
+            ResourceType.AccelerationStructure => Utils.CbvCount + slot,
+
+            ResourceType.StructuredBufferReadWrite or
+            ResourceType.TextureReadWrite => Utils.CbvCount + Utils.SrvCount + slot,
+
+            ResourceType.Sampler => Utils.CbvCount + Utils.SrvCount + Utils.UavCount + slot,
+
+            _ => throw new InvalidOperationException("ResourceType doesn't supported.")
+        };
     }
 }
