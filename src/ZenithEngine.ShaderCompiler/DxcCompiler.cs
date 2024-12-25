@@ -72,7 +72,7 @@ public static unsafe class DxcCompiler
 
         arguments.Add($"-T {GetProfile(stage)}");
 
-        if (stage > ShaderStages.None && stage < ShaderStages.RayGeneration)
+        if (stage is > ShaderStages.None and < ShaderStages.RayGeneration)
         {
             arguments.Add($"-E {entryPoint}");
         }
