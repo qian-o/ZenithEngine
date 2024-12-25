@@ -13,7 +13,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
     public VKFrameBuffer(GraphicsContext context,
                          ref readonly FrameBufferDesc desc) : base(context, in desc)
     {
-        ColorTargets = new TextureView[desc.ColorTargets.Length];
+        ColorTargets = new VKTextureView[desc.ColorTargets.Length];
 
         TextureSampleCount sampleCount = TextureSampleCount.Count1;
 
@@ -47,7 +47,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 FaceCount = 1
             };
 
-            ColorTargets[i] = Context.Factory.CreateTextureView(in viewDesc);
+            ColorTargets[i] = Context.Factory.CreateTextureView(in viewDesc).VK();
 
             colorAttachmentInfos[i] = new()
             {
@@ -85,7 +85,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 FaceCount = 1
             };
 
-            DepthStencilTarget = Context.Factory.CreateTextureView(in viewDesc);
+            DepthStencilTarget = Context.Factory.CreateTextureView(in viewDesc).VK();
 
             depthStencilAttachmentInfo = Allocator.Alloc<RenderingAttachmentInfo>();
             depthStencilAttachmentInfo->SType = StructureType.RenderingAttachmentInfo;
@@ -134,9 +134,9 @@ internal unsafe class VKFrameBuffer : FrameBuffer
         Output = OutputDesc.Default(sampleCount, depthStencilFormat, colorFormats);
     }
 
-    public TextureView[] ColorTargets { get; }
+    public VKTextureView[] ColorTargets { get; }
 
-    public TextureView? DepthStencilTarget { get; }
+    public VKTextureView? DepthStencilTarget { get; }
 
     public override uint Width { get; }
 
@@ -148,17 +148,17 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
     public void TransitionToIntermedialLayout(VkCommandBuffer commandBuffer)
     {
-        foreach (TextureView colorTarget in ColorTargets)
+        foreach (VKTextureView colorTarget in ColorTargets)
         {
-            colorTarget.VK().TransitionLayout(commandBuffer, ImageLayout.ColorAttachmentOptimal);
+            colorTarget.TransitionLayout(commandBuffer, ImageLayout.ColorAttachmentOptimal);
         }
 
-        DepthStencilTarget?.VK().TransitionLayout(commandBuffer, ImageLayout.DepthStencilAttachmentOptimal);
+        DepthStencilTarget?.TransitionLayout(commandBuffer, ImageLayout.DepthStencilAttachmentOptimal);
     }
 
     public void TransitionToFinalLayout(VkCommandBuffer commandBuffer)
     {
-        foreach (TextureView colorTarget in ColorTargets)
+        foreach (VKTextureView colorTarget in ColorTargets)
         {
             Texture texture = colorTarget.Desc.Target;
 
@@ -175,7 +175,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
             if (imageLayout is not ImageLayout.Undefined)
             {
-                colorTarget.VK().TransitionLayout(commandBuffer, imageLayout);
+                colorTarget.TransitionLayout(commandBuffer, imageLayout);
             }
         }
 
@@ -183,7 +183,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
         {
             if (DepthStencilTarget.Desc.Target.Desc.Usage.HasFlag(TextureUsage.Sampled))
             {
-                DepthStencilTarget.VK().TransitionLayout(commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+                DepthStencilTarget.TransitionLayout(commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
             }
         }
     }
@@ -203,7 +203,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
     protected override void Destroy()
     {
-        foreach (TextureView colorTarget in ColorTargets)
+        foreach (VKTextureView colorTarget in ColorTargets)
         {
             colorTarget.Dispose();
         }
