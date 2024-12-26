@@ -51,6 +51,7 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - ZenithEngine.Editor
 	- [ ] Use WPF for the editor's UI. 
 	- [ ] Add project design and parsing, as well as loading and saving of project files.
+	- [ ] Design Redo and Undo features.
 
 - ZenithEngine.Viewer
 	- [ ] Use ImGui for the viewer's UI.
