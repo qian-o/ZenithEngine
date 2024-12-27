@@ -153,6 +153,11 @@ internal unsafe class ImGuiRenderer : DisposableObject
                                                  (int)Math.Max(0, drawCmd.ClipRect.Z - drawCmd.ClipRect.X),
                                                  (int)Math.Max(0, drawCmd.ClipRect.W - drawCmd.ClipRect.Y));
 
+                    if (scissor.Size.X is 0 || scissor.Size.Y is 0)
+                    {
+                        continue;
+                    }
+
                     commandBuffer.SetScissorRectangles([scissor]);
 
                     commandBuffer.SetResourceSet(1, bindings[drawCmd.TextureId.Handle].ResourceSet);
