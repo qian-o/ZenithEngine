@@ -74,3 +74,6 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - Direct3D 12 does not support automatic mipmap generation.
 - Check the variable name used when ShaderStages is used. If it is a single type, it is called stage, and if it is multiple types, it is called stages.
 - Do we need to add the StructureByteStride field to BufferDesc? (This field is used to describe the size of each element in the buffer, in bytes.)
+- Create Default method for TexturePosition and TextureRegion to simplify the call.
+- Implement the ImGuiRenderer.GetBinding() method to return the corresponding id directly if the Texture already exists in bindings.
+- All implementations in Graphics should inherit from GraphicsResource instead of DisposableObject.
