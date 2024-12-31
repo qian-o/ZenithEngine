@@ -78,3 +78,4 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - Implement the ImGuiRenderer.GetBinding() method to return the corresponding id directly if the Texture already exists in bindings.
 - All implementations in Graphics should inherit from GraphicsResource instead of DisposableObject.
 - Should CommandProcessorType be changed to Graphics, Compute, and Copy queue types?
+- All properties related to size should use uint type.
