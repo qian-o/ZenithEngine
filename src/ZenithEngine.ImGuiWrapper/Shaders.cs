@@ -72,8 +72,8 @@ float4 PSMain(VSOutput input) : SV_TARGET
     {
         vs = colorSpaceHandling switch
         {
-            ColorSpaceHandling.Linear => Convert.FromHexString(VSByLinearHexString),
             ColorSpaceHandling.Legacy => Convert.FromHexString(VSByLegacyHexString),
+            ColorSpaceHandling.Linear => Convert.FromHexString(VSByLinearHexString),
             _ => throw new ArgumentOutOfRangeException(nameof(colorSpaceHandling))
         };
 
