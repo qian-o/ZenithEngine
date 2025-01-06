@@ -46,7 +46,7 @@ internal readonly unsafe struct Surface : ISurface
 
     public nint[] Handles { get; }
 
-    public Vector2D<uint> Size()
+    public Vector2D<uint> GetSize()
     {
         Vector2D<int> size;
         WindowUtils.Sdl.GetWindowSize(window, &size.X, &size.Y);

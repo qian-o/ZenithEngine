@@ -9,5 +9,5 @@ public interface ISurface
 
     nint[] Handles { get; }
 
-    Vector2D<uint> Size();
+    Vector2D<uint> GetSize();
 }

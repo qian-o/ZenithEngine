@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Silk.NET.Maths;
 using Silk.NET.Vulkan;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
@@ -333,10 +334,12 @@ internal unsafe partial class VKSwapChain : SwapChain
             return capabilities.CurrentExtent;
         }
 
-        return new(Utils.Clamp(Desc.Surface.Size().X,
+        Vector2D<uint> size = Desc.Surface.GetSize();
+
+        return new(Utils.Clamp(size.X,
                                capabilities.MinImageExtent.Width,
                                capabilities.MaxImageExtent.Width),
-                   Utils.Clamp(Desc.Surface.Size().Y,
+                   Utils.Clamp(size.Y,
                                capabilities.MinImageExtent.Height,
                                capabilities.MaxImageExtent.Height));
     }
