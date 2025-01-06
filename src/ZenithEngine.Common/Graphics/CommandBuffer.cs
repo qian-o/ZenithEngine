@@ -101,12 +101,6 @@ public abstract class CommandBuffer(GraphicsContext context,
                                      TextureRegion destinationRegion);
 
     /// <summary>
-    /// Generate mipmaps for the texture.
-    /// </summary>
-    /// <param name="texture">The texture to generate mipmaps.</param>
-    public abstract void GenerateMipmaps(Texture texture);
-
-    /// <summary>
     /// Resolve the multisampled source texture to the destination texture.
     /// </summary>
     /// <param name="source">The source texture.</param>

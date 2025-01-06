@@ -70,7 +70,6 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - `,+[\s]+[^\S\r\n]+};` Search for the comma after the last property when simplifying property assignments.
 
 ## Draft
-- Do we need to add a `CommandProcessor Processor` property in the `CommandBuffer` so that some parameters can be used when executing commands in the `CommandBuffer`?
 - Direct3D 12 does not support automatic mipmap generation.
 - Check the variable name used when ShaderStages is used. If it is a single type, it is called stage, and if it is multiple types, it is called stages.
 - Do we need to add the StructureByteStride field to BufferDesc? (This field is used to describe the size of each element in the buffer, in bytes.)
