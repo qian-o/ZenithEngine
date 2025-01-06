@@ -1,6 +1,9 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Common;
@@ -46,6 +49,12 @@ public static class Utils
         mipWidth = Math.Max(1, width >> (int)mipLevel);
         mipHeight = Math.Max(1, height >> (int)mipLevel);
         mipDepth = Math.Max(1, depth >> (int)mipLevel);
+    }
+
+    public static Image<T> GenerateMipmaps<T>(Image<T> image,
+                                              IResampler? resampler = null) where T : unmanaged, IPixel<T>
+    {
+        throw new NotImplementedException();
     }
 
     public static uint GetFormatSizeInBytes(ElementFormat format)
