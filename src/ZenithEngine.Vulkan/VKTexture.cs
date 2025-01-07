@@ -89,6 +89,27 @@ internal unsafe class VKTexture : Texture
     {
         Image = image;
 
+        // Image View
+        {
+            ImageViewCreateInfo createInfo = new()
+            {
+                SType = StructureType.ImageViewCreateInfo,
+                Image = Image,
+                ViewType = VKFormats.GetImageViewType(desc.Type),
+                Format = VKFormats.GetPixelFormat(desc.Format),
+                SubresourceRange = new()
+                {
+                    AspectMask = VKFormats.GetImageAspectFlags(desc.Usage),
+                    BaseMipLevel = 0,
+                    LevelCount = desc.MipLevels,
+                    BaseArrayLayer = 0,
+                    LayerCount = VKHelpers.GetArrayLayers(desc)
+                }
+            };
+
+            Context.Vk.CreateImageView(Context.Device, &createInfo, null, out ImageView).ThrowIfError();
+        }
+
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
     }
 
@@ -191,9 +212,13 @@ internal unsafe class VKTexture : Texture
 
     protected override void Destroy()
     {
-        DeviceMemory?.Dispose();
-
         Context.Vk.DestroyImageView(Context.Device, ImageView, null);
-        Context.Vk.DestroyImage(Context.Device, Image, null);
+
+        if (DeviceMemory is not null)
+        {
+            DeviceMemory.Dispose();
+
+            Context.Vk.DestroyImage(Context.Device, Image, null);
+        }
     }
 }
