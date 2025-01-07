@@ -79,7 +79,7 @@ public static unsafe class DxcCompiler
 
         arguments.Add("-Zpr");
 
-        arguments.Add("-fvk-use-scalar-layout");
+        arguments.Add("-fvk-use-dx-layout");
 
         arguments.Add("-fvk-b-shift");
         arguments.Add($"0");
