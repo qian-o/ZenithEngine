@@ -217,7 +217,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
         {
             if (item.Value.Texture == texture)
             {
-                item.Value.Dispose();
+                item.Value.ResourceSet.Dispose();
 
                 bindings.Remove(item.Key);
 
@@ -230,7 +230,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
     {
         foreach (BindingToken token in bindings.Values)
         {
-            token.Dispose();
+            token.ResourceSet.Dispose();
         }
 
         fontTexture?.Dispose();
