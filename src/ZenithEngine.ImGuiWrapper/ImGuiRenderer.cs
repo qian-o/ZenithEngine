@@ -10,6 +10,13 @@ namespace ZenithEngine.ImGuiWrapper;
 
 internal unsafe class ImGuiRenderer : DisposableObject
 {
+    [StructLayout(LayoutKind.Explicit)]
+    private struct Constants
+    {
+        [FieldOffset(0)]
+        public Matrix4X4<float> Projection;
+    }
+
     private readonly Dictionary<ulong, BindingToken> bindings = [];
 
     private Texture? fontTexture;
@@ -118,14 +125,17 @@ internal unsafe class ImGuiRenderer : DisposableObject
             indexOffset += indexSize;
         }
 
-        Matrix4X4<float> projection = Matrix4X4.CreateOrthographicOffCenter(drawDataPtr.DisplayPos.X,
-                                                                            drawDataPtr.DisplayPos.X + drawDataPtr.DisplaySize.X,
-                                                                            drawDataPtr.DisplayPos.Y + drawDataPtr.DisplaySize.Y,
-                                                                            drawDataPtr.DisplayPos.Y,
-                                                                            0.0f,
-                                                                            1.0f);
+        Constants constants = new()
+        {
+            Projection = Matrix4X4.CreateOrthographicOffCenter(drawDataPtr.DisplayPos.X,
+                                                               drawDataPtr.DisplayPos.X + drawDataPtr.DisplaySize.X,
+                                                               drawDataPtr.DisplayPos.Y + drawDataPtr.DisplaySize.Y,
+                                                               drawDataPtr.DisplayPos.Y,
+                                                               0.0f,
+                                                               1.0f)
+        };
 
-        Context.UpdateBuffer(constantsBuffer, (nint)(&projection), (uint)sizeof(Matrix4X4<float>));
+        Context.UpdateBuffer(constantsBuffer, (nint)(&constants), (uint)sizeof(Constants));
 
         commandBuffer.SetGraphicsPipeline(pipeline);
         commandBuffer.SetVertexBuffer(0, vertexBuffer);
@@ -243,7 +253,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
         BufferDesc ibDesc = BufferDesc.Default(sizeof(ushort) * 10000,
                                                BufferUsage.IndexBuffer | BufferUsage.Dynamic);
 
-        BufferDesc cbDesc = BufferDesc.Default((uint)sizeof(Matrix4X4<float>),
+        BufferDesc cbDesc = BufferDesc.Default((uint)sizeof(Constants),
                                                BufferUsage.ConstantBuffer | BufferUsage.Dynamic);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
