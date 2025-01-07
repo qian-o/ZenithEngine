@@ -87,9 +87,9 @@ internal unsafe class VKTexture : Texture
                      ref readonly TextureDesc desc,
                      VkImage image) : base(context, in desc)
     {
-        imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
-
         Image = image;
+
+        imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
     }
 
     public VKDeviceMemory? DeviceMemory { get; }

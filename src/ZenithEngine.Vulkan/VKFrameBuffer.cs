@@ -25,9 +25,6 @@ internal unsafe class VKFrameBuffer : FrameBuffer
         RenderingAttachmentInfo* colorAttachments = Allocator.Alloc<RenderingAttachmentInfo>(colorAttachmentCount);
         RenderingAttachmentInfo* depthStencilAttachment = hasDepthStencil ? Allocator.Alloc<RenderingAttachmentInfo>() : null;
 
-        PixelFormat[] colorFormats = desc.ColorTargets.Select(x => x.Target.Desc.Format).ToArray();
-        PixelFormat? depthStencilFormat = hasDepthStencil ? desc.DepthStencilTarget!.Value.Target.Desc.Format : null;
-
         for (int i = 0; i < colorAttachmentCount; i++)
         {
             FrameBufferAttachmentDesc attachmentDesc = desc.ColorTargets[i];
@@ -63,7 +60,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             FrameBufferAttachmentDesc attachmentDesc = desc.DepthStencilTarget!.Value;
             Texture target = attachmentDesc.Target;
 
-            if (ColorViews.Length is 0)
+            if (colorAttachmentCount is 0)
             {
                 Utils.GetMipDimensions(target.Desc.Width,
                                        target.Desc.Height,
@@ -114,7 +111,9 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
         Width = width;
         Height = height;
-        Output = OutputDesc.Default(sampleCount, depthStencilFormat, colorFormats);
+        Output = OutputDesc.Default(sampleCount,
+                                    hasDepthStencil ? desc.DepthStencilTarget!.Value.Target.Desc.Format : null,
+                                    [.. desc.ColorTargets.Select(static x => x.Target.Desc.Format)]);
     }
 
     public VkImageView[] ColorViews { get; }
