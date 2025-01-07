@@ -70,7 +70,6 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - `,+[\s]+[^\S\r\n]+};` Search for the comma after the last property when simplifying property assignments.
 
 ## Draft
-- Do we need to add the StructureByteStride field to BufferDesc? (This field is used to describe the size of each element in the buffer, in bytes.)
 - Create Default method for TexturePosition and TextureRegion to simplify the call.
 - All implementations in Graphics should inherit from GraphicsResource instead of DisposableObject.
 - Should CommandProcessorType be changed to Graphics, Compute, and Copy queue types?
