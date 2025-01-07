@@ -65,16 +65,6 @@ internal static class VulkanExtensions
         return (VKTexture)texture;
     }
 
-    public static VKTextureView VK(this TextureView textureView)
-    {
-        if (textureView is not VKTextureView)
-        {
-            throw new ZenithEngineException("TextureView is not a Vulkan texture view.");
-        }
-
-        return (VKTextureView)textureView;
-    }
-
     public static VKSampler VK(this Sampler sampler)
     {
         if (sampler is not VKSampler)

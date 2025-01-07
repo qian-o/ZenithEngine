@@ -21,11 +21,6 @@ internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(cont
         return new VKTexture(Context, in desc);
     }
 
-    public override TextureView CreateTextureView(ref readonly TextureViewDesc desc)
-    {
-        return new VKTextureView(Context, in desc);
-    }
-
     public override Sampler CreateSampler(ref readonly SamplerDesc desc)
     {
         return new VKSampler(Context, in desc);

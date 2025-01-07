@@ -173,8 +173,16 @@ internal unsafe class ImGuiRenderer : DisposableObject
         }
     }
 
-    public ulong GetBinding(TextureView textureView)
+    public ulong GetBinding(Texture texture)
     {
+        foreach (KeyValuePair<ulong, BindingToken> item in bindings)
+        {
+            if (item.Value.Texture == texture)
+            {
+                return item.Key;
+            }
+        }
+
         ulong id = 0;
         while (true)
         {
@@ -186,39 +194,11 @@ internal unsafe class ImGuiRenderer : DisposableObject
             id++;
         }
 
-        ResourceSetDesc desc = ResourceSetDesc.Default(layout1, textureView);
+        ResourceSetDesc desc = ResourceSetDesc.Default(layout1, texture);
 
-        bindings[id] = new(textureView, Context.Factory.CreateResourceSet(in desc));
-
-        return id;
-    }
-
-    public ulong GetBinding(Texture texture)
-    {
-        TextureViewDesc desc = TextureViewDesc.Default(texture);
-
-        TextureView textureView = Context.Factory.CreateTextureView(in desc);
-
-        ulong id = GetBinding(textureView);
-
-        bindings[id].Texture = texture;
+        bindings[id] = new(texture, Context.Factory.CreateResourceSet(in desc));
 
         return id;
-    }
-
-    public void RemoveBinding(TextureView textureView)
-    {
-        foreach (KeyValuePair<ulong, BindingToken> item in bindings)
-        {
-            if (item.Value.TextureView == textureView)
-            {
-                item.Value.Dispose();
-
-                bindings.Remove(item.Key);
-
-                break;
-            }
-        }
     }
 
     public void RemoveBinding(Texture texture)

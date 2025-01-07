@@ -537,8 +537,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
         }
 
-        Viewport[] viewports = new Viewport[vkFrameBuffer.ColorTargets.Length];
-        Rectangle<int>[] scissors = new Rectangle<int>[vkFrameBuffer.ColorTargets.Length];
+        Viewport[] viewports = new Viewport[vkFrameBuffer.ColorViews.Length];
+        Rectangle<int>[] scissors = new Rectangle<int>[vkFrameBuffer.ColorViews.Length];
 
         Array.Fill(viewports, new(0, 0, vkFrameBuffer.Width, vkFrameBuffer.Height));
         Array.Fill(scissors, new(0, 0, (int)vkFrameBuffer.Width, (int)vkFrameBuffer.Height));
@@ -656,14 +656,14 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     {
         VKResourceSet vkResourceSet = resourceSet.VK();
 
-        foreach (VKTextureView textureView in vkResourceSet.SrvTextureViews)
+        foreach (VKTexture texture in vkResourceSet.SrvTextures)
         {
-            textureView.TransitionLayout(CommandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+            texture.TransitionLayout(CommandBuffer, ImageLayout.ShaderReadOnlyOptimal);
         }
 
-        foreach (VKTextureView textureView in vkResourceSet.UavTextureViews)
+        foreach (VKTexture texture in vkResourceSet.UavTextures)
         {
-            textureView.TransitionLayout(CommandBuffer, ImageLayout.General);
+            texture.TransitionLayout(CommandBuffer, ImageLayout.General);
         }
     }
 

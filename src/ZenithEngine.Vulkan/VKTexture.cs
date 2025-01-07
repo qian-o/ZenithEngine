@@ -8,50 +8,75 @@ namespace ZenithEngine.Vulkan;
 internal unsafe class VKTexture : Texture
 {
     public VkImage Image;
+    public VkImageView ImageView;
 
     private readonly ImageLayout[] imageLayouts;
 
     public VKTexture(GraphicsContext context,
                      ref readonly TextureDesc desc) : base(context, in desc)
     {
-        ImageCreateInfo createInfo = new()
+        // Image
         {
-            SType = StructureType.ImageCreateInfo,
-            ImageType = VKFormats.GetImageType(desc.Type),
-            Format = VKFormats.GetPixelFormat(desc.Format),
-            Extent = new()
+            ImageCreateInfo createInfo = new()
             {
-                Width = desc.Width,
-                Height = desc.Height,
-                Depth = desc.Depth
-            },
-            MipLevels = desc.MipLevels,
-            ArrayLayers = VKHelpers.GetArrayLayers(desc),
-            Samples = VKFormats.GetSampleCountFlags(desc.SampleCount),
-            Tiling = ImageTiling.Optimal,
-            Usage = VKFormats.GetImageUsageFlags(desc.Usage),
-            SharingMode = Context.SharingEnabled ? SharingMode.Concurrent : SharingMode.Exclusive,
-            InitialLayout = ImageLayout.Preinitialized,
-            Flags = desc.Type is TextureType.TextureCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
-        };
+                SType = StructureType.ImageCreateInfo,
+                ImageType = VKFormats.GetImageType(desc.Type),
+                Format = VKFormats.GetPixelFormat(desc.Format),
+                Extent = new()
+                {
+                    Width = desc.Width,
+                    Height = desc.Height,
+                    Depth = desc.Depth
+                },
+                MipLevels = desc.MipLevels,
+                ArrayLayers = VKHelpers.GetArrayLayers(desc),
+                Samples = VKFormats.GetSampleCountFlags(desc.SampleCount),
+                Tiling = ImageTiling.Optimal,
+                Usage = VKFormats.GetImageUsageFlags(desc.Usage),
+                SharingMode = Context.SharingEnabled ? SharingMode.Concurrent : SharingMode.Exclusive,
+                InitialLayout = ImageLayout.Preinitialized,
+                Flags = desc.Type is TextureType.TextureCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
+            };
 
-        if (Context.SharingEnabled)
-        {
-            createInfo.QueueFamilyIndexCount = 2;
-            createInfo.PQueueFamilyIndices = Allocator.Alloc([Context.DirectQueueFamilyIndex, Context.CopyQueueFamilyIndex]);
+            if (Context.SharingEnabled)
+            {
+                createInfo.QueueFamilyIndexCount = 2;
+                createInfo.PQueueFamilyIndices = Allocator.Alloc([Context.DirectQueueFamilyIndex, Context.CopyQueueFamilyIndex]);
+            }
+
+            Context.Vk.CreateImage(Context.Device, &createInfo, null, out Image).ThrowIfError();
+
+            MemoryRequirements requirements;
+            Context.Vk.GetImageMemoryRequirements(Context.Device, Image, &requirements);
+
+            DeviceMemory = new(Context, requirements, false);
+
+            Context.Vk.BindImageMemory(Context.Device,
+                                       Image,
+                                       DeviceMemory.DeviceMemory,
+                                       0).ThrowIfError();
         }
 
-        Context.Vk.CreateImage(Context.Device, &createInfo, null, out Image).ThrowIfError();
+        // Image View
+        {
+            ImageViewCreateInfo createInfo = new()
+            {
+                SType = StructureType.ImageViewCreateInfo,
+                Image = Image,
+                ViewType = VKFormats.GetImageViewType(desc.Type),
+                Format = VKFormats.GetPixelFormat(desc.Format),
+                SubresourceRange = new()
+                {
+                    AspectMask = VKFormats.GetImageAspectFlags(desc.Usage),
+                    BaseMipLevel = 0,
+                    LevelCount = desc.MipLevels,
+                    BaseArrayLayer = 0,
+                    LayerCount = VKHelpers.GetArrayLayers(desc)
+                }
+            };
 
-        MemoryRequirements requirements;
-        Context.Vk.GetImageMemoryRequirements(Context.Device, Image, &requirements);
-
-        DeviceMemory = new(Context, requirements, false);
-
-        Context.Vk.BindImageMemory(Context.Device,
-                                   Image,
-                                   DeviceMemory.DeviceMemory,
-                                   0).ThrowIfError();
+            Context.Vk.CreateImageView(Context.Device, &createInfo, null, out ImageView).ThrowIfError();
+        }
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
 
@@ -156,6 +181,7 @@ internal unsafe class VKTexture : Texture
     protected override void DebugName(string name)
     {
         Context.SetDebugName(ObjectType.Image, Image.Handle, name);
+        Context.SetDebugName(ObjectType.ImageView, ImageView.Handle, name);
 
         if (DeviceMemory is not null)
         {
@@ -167,6 +193,7 @@ internal unsafe class VKTexture : Texture
     {
         DeviceMemory?.Dispose();
 
+        Context.Vk.DestroyImageView(Context.Device, ImageView, null);
         Context.Vk.DestroyImage(Context.Device, Image, null);
     }
 }
