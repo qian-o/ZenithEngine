@@ -70,7 +70,6 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - `,+[\s]+[^\S\r\n]+};` Search for the comma after the last property when simplifying property assignments.
 
 ## Draft
-- All implementations in Graphics should inherit from GraphicsResource instead of DisposableObject.
 - Should CommandProcessorType be changed to Graphics, Compute, and Copy queue types?
 - All properties related to size should use uint type.
 - Use the DirectX memory layout rules to define the structure.
