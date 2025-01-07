@@ -71,6 +71,5 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 
 ## Draft
 - Should CommandProcessorType be changed to Graphics, Compute, and Copy queue types?
-- Use the DirectX memory layout rules to define the structure.
 - Add some common default resources to GraphicsContext. If resources like Texture, TextureView, Sampler, etc. are not set, default resources can be used.
 - Whether VK_KHR_dedicated_allocation extension is enabled in Vulkan.
