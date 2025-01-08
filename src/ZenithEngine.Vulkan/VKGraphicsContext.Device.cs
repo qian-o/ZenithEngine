@@ -104,7 +104,7 @@ internal unsafe partial class VKGraphicsContext
     {
         float* queuePriorities = allocator.Alloc([1.0f]);
 
-        DeviceQueueCreateInfo[] queueCreateInfos = QueueFamilyIndices!.Select(Info).ToArray();
+        DeviceQueueCreateInfo[] queueCreateInfos = [.. QueueFamilyIndices!.Select(Info)];
 
         count = (uint)queueCreateInfos.Length;
 

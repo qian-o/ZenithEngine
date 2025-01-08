@@ -63,7 +63,7 @@ public static unsafe class DxcCompiler
 
         result.GetResult(rb.GetAddressOf());
 
-        return new ReadOnlySpan<byte>(rb.GetBufferPointer(), (int)rb.GetBufferSize()).ToArray();
+        return [.. new ReadOnlySpan<byte>(rb.GetBufferPointer(), (int)rb.GetBufferSize())];
     }
 
     private static string[] GetArguments(ShaderStages stage, string entryPoint)

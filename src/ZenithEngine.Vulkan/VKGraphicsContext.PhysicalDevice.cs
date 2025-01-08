@@ -74,12 +74,12 @@ internal unsafe partial class VKGraphicsContext
 
                 (GraphicsQueueFamilyIndex, ComputeQueueFamilyIndex, CopyQueueFamilyIndex) = MatchQueueFamilyIndices(physicalDevice);
 
-                QueueFamilyIndices = new HashSet<uint>
+                QueueFamilyIndices = [.. new HashSet<uint>
                 {
                     GraphicsQueueFamilyIndex,
                     ComputeQueueFamilyIndex,
                     CopyQueueFamilyIndex
-                }.ToArray();
+                }];
 
                 SharingEnabled = QueueFamilyIndices.Length > 1;
             }
