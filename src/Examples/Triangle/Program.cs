@@ -24,7 +24,7 @@ internal class Program
 
         using SwapChain swapChain = context.Factory.CreateSwapChain(in swapChainDesc);
 
-        using CommandProcessor commandProcessor = context.Factory.CreateCommandProcessor();
+        using CommandProcessor commandProcessor = context.Factory.CreateCommandProcessor(CommandProcessorType.Graphics);
 
         using ImGuiController imGuiController = new(context,
                                                     swapChain.FrameBuffer.Output,

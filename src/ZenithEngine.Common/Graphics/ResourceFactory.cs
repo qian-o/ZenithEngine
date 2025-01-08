@@ -29,5 +29,5 @@ public abstract class ResourceFactory(GraphicsContext context)
 
     public abstract RayTracingPipeline CreateRayTracingPipeline(ref readonly RayTracingPipelineDesc desc);
 
-    public abstract CommandProcessor CreateCommandProcessor(CommandProcessorType type = CommandProcessorType.Graphics);
+    public abstract CommandProcessor CreateCommandProcessor(CommandProcessorType type);
 }

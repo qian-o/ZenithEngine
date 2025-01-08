@@ -119,12 +119,12 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
         VKTexture vkTexture = texture.VK();
 
-        ImageLayout oldLayout = vkTexture[region.MipLevel, region.Face];
+        ImageLayout oldLayout = vkTexture[region.Position.MipLevel, region.Position.Face];
 
         vkTexture.TransitionLayout(CommandBuffer,
-                                   region.MipLevel,
+                                   region.Position.MipLevel,
                                    1,
-                                   region.Face,
+                                   region.Position.Face,
                                    1,
                                    ImageLayout.TransferDstOptimal);
 
@@ -133,15 +133,15 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             ImageSubresource = new()
             {
                 AspectMask = VKFormats.GetImageAspectFlags(vkTexture.Desc.Usage),
-                MipLevel = region.MipLevel,
-                BaseArrayLayer = (uint)region.Face,
+                MipLevel = region.Position.MipLevel,
+                BaseArrayLayer = (uint)region.Position.Face,
                 LayerCount = 1
             },
             ImageOffset = new()
             {
-                X = (int)region.X,
-                Y = (int)region.Y,
-                Z = (int)region.Z
+                X = (int)region.Position.X,
+                Y = (int)region.Position.Y,
+                Z = (int)region.Position.Z
             },
             ImageExtent = new()
             {
@@ -159,9 +159,9 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                         &bufferImageCopy);
 
         vkTexture.TransitionLayout(CommandBuffer,
-                                   region.MipLevel,
+                                   region.Position.MipLevel,
                                    1,
-                                   region.Face,
+                                   region.Position.Face,
                                    1,
                                    oldLayout);
     }
@@ -522,7 +522,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
         for (int i = 0; i < count; i++)
         {
-            scs[i] = new Rect2D
+            scs[i] = new()
             {
                 Offset = new()
                 {
