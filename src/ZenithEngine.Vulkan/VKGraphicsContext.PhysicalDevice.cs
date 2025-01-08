@@ -36,14 +36,14 @@ internal unsafe partial class VKGraphicsContext
         throw new ZenithEngineException("Failed to find suitable memory type.");
     }
 
-    public uint FindQueueFamilyIndex(CommandProcessorType type)
+    public uint FindQueueFamilyIndex(CommandProcessorType processorType)
     {
-        return type switch
+        return processorType switch
         {
             CommandProcessorType.Graphics => GraphicsQueueFamilyIndex,
             CommandProcessorType.Compute => ComputeQueueFamilyIndex,
             CommandProcessorType.Copy => CopyQueueFamilyIndex,
-            _ => throw new ArgumentOutOfRangeException(nameof(type))
+            _ => throw new ArgumentOutOfRangeException(nameof(processorType))
         };
     }
 

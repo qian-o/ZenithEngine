@@ -21,7 +21,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         CommandPoolCreateInfo createInfo = new()
         {
             SType = StructureType.CommandPoolCreateInfo,
-            QueueFamilyIndex = Context.FindQueueFamilyIndex(Type),
+            QueueFamilyIndex = Context.FindQueueFamilyIndex(ProcessorType),
             Flags = CommandPoolCreateFlags.ResetCommandBufferBit
         };
 
@@ -94,7 +94,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             DstAccessMask = AccessFlags.MemoryReadBit
         };
 
-        PipelineStageFlags dstStageMask = Type switch
+        PipelineStageFlags dstStageMask = ProcessorType switch
         {
             CommandProcessorType.Graphics => PipelineStageFlags.AllGraphicsBit,
             CommandProcessorType.Compute => PipelineStageFlags.ComputeShaderBit,
