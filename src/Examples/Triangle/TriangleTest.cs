@@ -1,5 +1,4 @@
 ﻿using Common;
-using Hexa.NET.ImGui;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -68,7 +67,6 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
 
     protected override void OnUpdate(double deltaTime, double totalTime)
     {
-        ImGui.ShowDemoWindow();
     }
 
     protected override void OnRender(double deltaTime, double totalTime)
