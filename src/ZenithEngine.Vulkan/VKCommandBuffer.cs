@@ -538,13 +538,15 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         }
 
         Viewport[] viewports = new Viewport[vkFrameBuffer.ColorViews.Length];
-        Rectangle<int>[] scissors = new Rectangle<int>[vkFrameBuffer.ColorViews.Length];
+        Vector2D<int>[] scissorsByOffset = new Vector2D<int>[vkFrameBuffer.ColorViews.Length];
+        Vector2D<uint>[] scissorsByExtent = new Vector2D<uint>[vkFrameBuffer.ColorViews.Length];
 
         Array.Fill(viewports, new(0, 0, vkFrameBuffer.Width, vkFrameBuffer.Height));
-        Array.Fill(scissors, new(0, 0, (int)vkFrameBuffer.Width, (int)vkFrameBuffer.Height));
+        Array.Fill(scissorsByOffset, new(0, 0));
+        Array.Fill(scissorsByExtent, new(vkFrameBuffer.Width, vkFrameBuffer.Height));
 
         SetViewports(viewports);
-        SetScissorRectangles(scissors);
+        SetScissorRectangles(scissorsByOffset, scissorsByExtent);
     }
 
     public override void EndRendering()
@@ -576,21 +578,28 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         Context.Vk.CmdSetViewport(CommandBuffer, 0, (uint)vps.Length, vps);
     }
 
-    public override void SetScissorRectangles(Rectangle<int>[] scissors)
+    public override void SetScissorRectangles(Vector2D<int>[] offsets, Vector2D<uint>[] extents)
     {
-        Rect2D[] scs = scissors.Select(static item => new Rect2D
+        uint count = (uint)Math.Min(offsets.Length, extents.Length);
+
+        Rect2D[] scs = new Rect2D[count];
+
+        for (int i = 0; i < count; i++)
         {
-            Offset = new()
+            scs[i] = new Rect2D
             {
-                X = item.Origin.X,
-                Y = item.Origin.Y
-            },
-            Extent = new()
-            {
-                Width = (uint)item.Size.X,
-                Height = (uint)item.Size.Y
-            }
-        }).ToArray();
+                Offset = new()
+                {
+                    X = offsets[i].X,
+                    Y = offsets[i].Y
+                },
+                Extent = new()
+                {
+                    Width = extents[i].X,
+                    Height = extents[i].Y
+                }
+            };
+        }
 
         Context.Vk.CmdSetScissor(CommandBuffer, 0, (uint)scs.Length, scs);
     }

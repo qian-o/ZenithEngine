@@ -158,17 +158,18 @@ internal unsafe class ImGuiRenderer : DisposableObject
                 }
                 else
                 {
-                    Rectangle<int> scissor = new((int)Math.Max(0, drawCmd.ClipRect.X),
-                                                 (int)Math.Max(0, drawCmd.ClipRect.Y),
-                                                 (int)Math.Max(0, drawCmd.ClipRect.Z - drawCmd.ClipRect.X),
-                                                 (int)Math.Max(0, drawCmd.ClipRect.W - drawCmd.ClipRect.Y));
+                    Vector2D<int> offset = new((int)Math.Max(0, drawCmd.ClipRect.X),
+                                               (int)Math.Max(0, drawCmd.ClipRect.Y));
 
-                    if (scissor.Size.X is 0 || scissor.Size.Y is 0)
+                    Vector2D<uint> extent = new((uint)Math.Max(0, drawCmd.ClipRect.Z - drawCmd.ClipRect.X),
+                                                 (uint)Math.Max(0, drawCmd.ClipRect.W - drawCmd.ClipRect.Y));
+
+                    if (extent.X is 0 || extent.Y is 0)
                     {
                         continue;
                     }
 
-                    commandBuffer.SetScissorRectangles([scissor]);
+                    commandBuffer.SetScissorRectangles([offset], [extent]);
 
                     commandBuffer.SetResourceSet(1, bindings[drawCmd.TextureId.Handle].ResourceSet);
 

@@ -165,8 +165,9 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// <summary>
     /// Set the scissor rectangles for rendering.
     /// </summary>
-    /// <param name="scissors">Array of scissor rectangles.</param>
-    public abstract void SetScissorRectangles(Rectangle<int>[] scissors);
+    /// <param name="offsets">The array of scissor rectangle offsets.</param>
+    /// <param name="extents">The array of scissor rectangle extents.</param>
+    public abstract void SetScissorRectangles(Vector2D<int>[] offsets, Vector2D<uint>[] extents);
     #endregion
 
     #region Pipeline Operations
