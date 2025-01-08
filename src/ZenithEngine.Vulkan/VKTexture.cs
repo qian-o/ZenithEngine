@@ -46,10 +46,27 @@ internal unsafe class VKTexture : Texture
 
             Context.Vk.CreateImage(Context.Device, &createInfo, null, out Image).ThrowIfError();
 
-            MemoryRequirements requirements;
-            Context.Vk.GetImageMemoryRequirements(Context.Device, Image, &requirements);
+            ImageMemoryRequirementsInfo2 requirementsInfo2 = new()
+            {
+                SType = StructureType.ImageMemoryRequirementsInfo2,
+                Image = Image
+            };
 
-            DeviceMemory = new(Context, requirements, false);
+            MemoryRequirements2 requirements2 = new()
+            {
+                SType = StructureType.MemoryRequirements2
+            };
+
+            requirements2.AddNext(out MemoryDedicatedRequirements dedicatedRequirements);
+
+            Context.Vk.GetImageMemoryRequirements2(Context.Device, &requirementsInfo2, &requirements2);
+
+            DeviceMemory = new(Context,
+                               false,
+                               requirements2.MemoryRequirements,
+                               dedicatedRequirements.PrefersDedicatedAllocation || dedicatedRequirements.RequiresDedicatedAllocation,
+                               Image,
+                               null);
 
             Context.Vk.BindImageMemory(Context.Device,
                                        Image,

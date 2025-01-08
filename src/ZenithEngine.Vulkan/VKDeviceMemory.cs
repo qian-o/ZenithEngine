@@ -8,8 +8,11 @@ internal unsafe class VKDeviceMemory : GraphicsResource
     public VkDeviceMemory DeviceMemory;
 
     public VKDeviceMemory(GraphicsContext context,
+                          bool isDynamic,
                           MemoryRequirements requirements,
-                          bool isDynamic) : base(context)
+                          bool dedicated,
+                          VkImage? dedicatedImage,
+                          VkBuffer? dedicatedBuffer) : base(context)
     {
         MemoryPropertyFlags flags = isDynamic
             ? MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit
@@ -25,6 +28,14 @@ internal unsafe class VKDeviceMemory : GraphicsResource
         allocateInfo.AddNext(out MemoryAllocateFlagsInfo flagsInfo);
 
         flagsInfo.Flags = MemoryAllocateFlags.AddressBit;
+
+        if (dedicated)
+        {
+            allocateInfo.AddNext(out MemoryDedicatedAllocateInfo dedicatedInfo);
+
+            dedicatedInfo.Image = dedicatedImage ?? default;
+            dedicatedInfo.Buffer = dedicatedBuffer ?? default;
+        }
 
         Context.Vk.AllocateMemory(Context.Device,
                                   &allocateInfo,
