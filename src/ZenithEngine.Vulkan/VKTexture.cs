@@ -15,85 +15,66 @@ internal unsafe class VKTexture : Texture
     public VKTexture(GraphicsContext context,
                      ref readonly TextureDesc desc) : base(context, in desc)
     {
-        // Image
+        ImageCreateInfo createInfo = new()
         {
-            ImageCreateInfo createInfo = new()
+            SType = StructureType.ImageCreateInfo,
+            ImageType = VKFormats.GetImageType(desc.Type),
+            Format = VKFormats.GetPixelFormat(desc.Format),
+            Extent = new()
             {
-                SType = StructureType.ImageCreateInfo,
-                ImageType = VKFormats.GetImageType(desc.Type),
-                Format = VKFormats.GetPixelFormat(desc.Format),
-                Extent = new()
-                {
-                    Width = desc.Width,
-                    Height = desc.Height,
-                    Depth = desc.Depth
-                },
-                MipLevels = desc.MipLevels,
-                ArrayLayers = VKHelpers.GetArrayLayers(desc),
-                Samples = VKFormats.GetSampleCountFlags(desc.SampleCount),
-                Tiling = ImageTiling.Optimal,
-                Usage = VKFormats.GetImageUsageFlags(desc.Usage),
-                SharingMode = Context.SharingEnabled ? SharingMode.Concurrent : SharingMode.Exclusive,
-                InitialLayout = ImageLayout.Preinitialized,
-                Flags = desc.Type is TextureType.TextureCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
-            };
+                Width = desc.Width,
+                Height = desc.Height,
+                Depth = desc.Depth
+            },
+            MipLevels = desc.MipLevels,
+            ArrayLayers = VKHelpers.GetArrayLayers(desc),
+            Samples = VKFormats.GetSampleCountFlags(desc.SampleCount),
+            Tiling = ImageTiling.Optimal,
+            Usage = VKFormats.GetImageUsageFlags(desc.Usage),
+            SharingMode = Context.SharingEnabled ? SharingMode.Concurrent : SharingMode.Exclusive,
+            InitialLayout = ImageLayout.Preinitialized,
+            Flags = desc.Type is TextureType.TextureCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
+        };
 
-            if (Context.SharingEnabled)
-            {
-                createInfo.QueueFamilyIndexCount = (uint)Context.QueueFamilyIndices!.Length;
-                createInfo.PQueueFamilyIndices = Allocator.Alloc(Context.QueueFamilyIndices);
-            }
-
-            Context.Vk.CreateImage(Context.Device, &createInfo, null, out Image).ThrowIfError();
-
-            ImageMemoryRequirementsInfo2 requirementsInfo2 = new()
-            {
-                SType = StructureType.ImageMemoryRequirementsInfo2,
-                Image = Image
-            };
-
-            MemoryRequirements2 requirements2 = new()
-            {
-                SType = StructureType.MemoryRequirements2
-            };
-
-            requirements2.AddNext(out MemoryDedicatedRequirements dedicatedRequirements);
-
-            Context.Vk.GetImageMemoryRequirements2(Context.Device, &requirementsInfo2, &requirements2);
-
-            DeviceMemory = new(Context,
-                               false,
-                               requirements2.MemoryRequirements,
-                               dedicatedRequirements.PrefersDedicatedAllocation || dedicatedRequirements.RequiresDedicatedAllocation,
-                               Image,
-                               null);
-
-            Context.Vk.BindImageMemory(Context.Device,
-                                       Image,
-                                       DeviceMemory.DeviceMemory,
-                                       0).ThrowIfError();
+        if (Context.SharingEnabled)
+        {
+            createInfo.QueueFamilyIndexCount = (uint)Context.QueueFamilyIndices!.Length;
+            createInfo.PQueueFamilyIndices = Allocator.Alloc(Context.QueueFamilyIndices);
         }
 
-        // Image View
-        {
-            ImageViewCreateInfo createInfo = new()
-            {
-                SType = StructureType.ImageViewCreateInfo,
-                Image = Image,
-                ViewType = VKFormats.GetImageViewType(desc.Type),
-                Format = VKFormats.GetPixelFormat(desc.Format),
-                SubresourceRange = new()
-                {
-                    AspectMask = VKFormats.GetImageAspectFlags(desc.Usage),
-                    BaseMipLevel = 0,
-                    LevelCount = desc.MipLevels,
-                    BaseArrayLayer = 0,
-                    LayerCount = VKHelpers.GetArrayLayers(desc)
-                }
-            };
+        Context.Vk.CreateImage(Context.Device, &createInfo, null, out Image).ThrowIfError();
 
-            Context.Vk.CreateImageView(Context.Device, &createInfo, null, out ImageView).ThrowIfError();
-        }
+        ImageMemoryRequirementsInfo2 requirementsInfo2 = new()
+        {
+            SType = StructureType.ImageMemoryRequirementsInfo2,
+            Image = Image
+        };
+
+        MemoryRequirements2 requirements2 = new()
+        {
+            SType = StructureType.MemoryRequirements2
+        };
+
+        requirements2.AddNext(out MemoryDedicatedRequirements dedicatedRequirements);
+
+        Context.Vk.GetImageMemoryRequirements2(Context.Device, &requirementsInfo2, &requirements2);
+
+        DeviceMemory = new(Context,
+                           false,
+                           requirements2.MemoryRequirements,
+                           dedicatedRequirements.PrefersDedicatedAllocation || dedicatedRequirements.RequiresDedicatedAllocation,
+                           Image,
+                           null);
+
+        Context.Vk.BindImageMemory(Context.Device,
+                                   Image,
+                                   DeviceMemory.DeviceMemory,
+                                   0).ThrowIfError();
+
+        ImageView = CreateImageView(0,
+                                    desc.MipLevels,
+                                    CubeMapFace.PositiveX,
+                                    VKHelpers.GetArrayLayers(desc));
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
 
@@ -106,26 +87,10 @@ internal unsafe class VKTexture : Texture
     {
         Image = image;
 
-        // Image View
-        {
-            ImageViewCreateInfo createInfo = new()
-            {
-                SType = StructureType.ImageViewCreateInfo,
-                Image = Image,
-                ViewType = VKFormats.GetImageViewType(desc.Type),
-                Format = VKFormats.GetPixelFormat(desc.Format),
-                SubresourceRange = new()
-                {
-                    AspectMask = VKFormats.GetImageAspectFlags(desc.Usage),
-                    BaseMipLevel = 0,
-                    LevelCount = desc.MipLevels,
-                    BaseArrayLayer = 0,
-                    LayerCount = VKHelpers.GetArrayLayers(desc)
-                }
-            };
-
-            Context.Vk.CreateImageView(Context.Device, &createInfo, null, out ImageView).ThrowIfError();
-        }
+        ImageView = CreateImageView(0,
+                                    desc.MipLevels,
+                                    CubeMapFace.PositiveX,
+                                    VKHelpers.GetArrayLayers(desc));
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
     }
@@ -145,6 +110,33 @@ internal unsafe class VKTexture : Texture
     }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+
+    public VkImageView CreateImageView(uint baseMipLevel,
+                                       uint mipLevels,
+                                       CubeMapFace baseFace,
+                                       uint faceCount)
+    {
+        ImageViewCreateInfo createInfo = new()
+        {
+            SType = StructureType.ImageViewCreateInfo,
+            Image = Image,
+            ViewType = VKFormats.GetImageViewType(Desc.Type),
+            Format = VKFormats.GetPixelFormat(Desc.Format),
+            SubresourceRange = new()
+            {
+                AspectMask = VKFormats.GetImageAspectFlags(Desc.Usage),
+                BaseMipLevel = baseMipLevel,
+                LevelCount = mipLevels,
+                BaseArrayLayer = (uint)baseFace,
+                LayerCount = faceCount
+            }
+        };
+
+        VkImageView imageView;
+        Context.Vk.CreateImageView(Context.Device, &createInfo, null, &imageView).ThrowIfError();
+
+        return imageView;
+    }
 
     public void TransitionLayout(VkCommandBuffer commandBuffer,
                                  uint baseMipLevel,

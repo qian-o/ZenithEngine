@@ -45,10 +45,15 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 throw new ZenithEngineException("All targets must have the same sample count.");
             }
 
+            VkImageView imageView = target.VK().CreateImageView(attachmentDesc.MipLevel,
+                                                                1,
+                                                                attachmentDesc.Face,
+                                                                1);
+
             colorAttachments[i] = new()
             {
                 SType = StructureType.RenderingAttachmentInfo,
-                ImageView = ColorViews[i] = CreateImageView(in attachmentDesc),
+                ImageView = ColorViews[i] = imageView,
                 ImageLayout = ImageLayout.AttachmentOptimal,
                 LoadOp = AttachmentLoadOp.Load,
                 StoreOp = AttachmentStoreOp.Store
@@ -75,10 +80,15 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 throw new ZenithEngineException("All targets must have the same sample count.");
             }
 
+            VkImageView imageView = target.VK().CreateImageView(attachmentDesc.MipLevel,
+                                                                1,
+                                                                attachmentDesc.Face,
+                                                                1);
+
             depthStencilAttachment[0] = new()
             {
                 SType = StructureType.RenderingAttachmentInfo,
-                ImageView = (DepthStencilView = CreateImageView(in attachmentDesc)).Value,
+                ImageView = (DepthStencilView = imageView).Value,
                 ImageLayout = ImageLayout.AttachmentOptimal,
                 LoadOp = AttachmentLoadOp.Load,
                 StoreOp = AttachmentStoreOp.Store
@@ -223,34 +233,5 @@ internal unsafe class VKFrameBuffer : FrameBuffer
         {
             Context.Vk.DestroyImageView(Context.Device, DepthStencilView.Value, null);
         }
-    }
-
-    private VkImageView CreateImageView(ref readonly FrameBufferAttachmentDesc desc)
-    {
-        TextureDesc textureDesc = desc.Target.Desc;
-
-        ImageViewCreateInfo createInfo = new()
-        {
-            SType = StructureType.ImageViewCreateInfo,
-            Image = desc.Target.VK().Image,
-            ViewType = VKFormats.GetImageViewType(textureDesc.Type),
-            Format = VKFormats.GetPixelFormat(textureDesc.Format),
-            SubresourceRange = new()
-            {
-                AspectMask = VKFormats.GetImageAspectFlags(textureDesc.Usage),
-                BaseMipLevel = desc.MipLevel,
-                LevelCount = 1,
-                BaseArrayLayer = (uint)desc.Face,
-                LayerCount = 1
-            }
-        };
-
-        VkImageView imageView;
-        Context.Vk.CreateImageView(Context.Device,
-                                   &createInfo,
-                                   null,
-                                   &imageView).ThrowIfError();
-
-        return imageView;
     }
 }
