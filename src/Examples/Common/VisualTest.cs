@@ -11,10 +11,17 @@ public abstract unsafe class VisualTest
 {
     protected VisualTest(string name, Backend backend)
     {
+        List<double> samples = [];
+
         Window = WindowController.CreateWindow(name);
 
         Context = GraphicsContext.Create(backend);
+
+#if DEBUG
         Context.CreateDevice(true);
+#else
+        Context.CreateDevice();
+#endif
 
         Window.Loaded += (a, b) =>
         {
@@ -65,6 +72,15 @@ public abstract unsafe class VisualTest
             CommandProcessor.WaitIdle();
 
             SwapChain.Present();
+
+            samples.Add(b.DeltaTime);
+
+            if (samples.Count > 100)
+            {
+                Window.Title = $"{name} - {1.0 / samples.Average():F2} FPS";
+
+                samples.Clear();
+            }
         };
 
         Window.SizeChanged += (a, b) =>
