@@ -66,8 +66,6 @@ public unsafe class ImGuiController : DisposableObject
 
         ImGui.NewFrame();
 
-        ImGui.DockSpaceOverViewport();
-
         frameBegun = true;
     }
 
@@ -120,7 +118,6 @@ public unsafe class ImGuiController : DisposableObject
         ImGuiIOPtr io = ImGui.GetIO();
 
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
-        io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
 
         io.BackendFlags |= ImGuiBackendFlags.HasMouseCursors;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;

@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{B1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Triangle", "src\Examples\Triangle\Triangle.csproj", "{B8F2CA0B-8573-4F73-8DC0-99CE76A6D27D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "src\Examples\Common\Common.csproj", "{E4748968-BDD8-4D9B-8147-52DB910F05B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,11 +56,16 @@ Global
 		{B8F2CA0B-8573-4F73-8DC0-99CE76A6D27D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8F2CA0B-8573-4F73-8DC0-99CE76A6D27D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8F2CA0B-8573-4F73-8DC0-99CE76A6D27D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4748968-BDD8-4D9B-8147-52DB910F05B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4748968-BDD8-4D9B-8147-52DB910F05B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4748968-BDD8-4D9B-8147-52DB910F05B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4748968-BDD8-4D9B-8147-52DB910F05B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B8F2CA0B-8573-4F73-8DC0-99CE76A6D27D} = {B14D733F-0FA6-4861-BCD5-E166EE6E2DAA}
+		{E4748968-BDD8-4D9B-8147-52DB910F05B7} = {B14D733F-0FA6-4861-BCD5-E166EE6E2DAA}
 	EndGlobalSection
 EndGlobal

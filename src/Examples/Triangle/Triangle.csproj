@@ -6,9 +6,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\ZenithEngine.ImGuiWrapper\ZenithEngine.ImGuiWrapper.csproj" />
-		<ProjectReference Include="..\..\ZenithEngine.Vulkan\ZenithEngine.Vulkan.csproj" />
-		<ProjectReference Include="..\..\ZenithEngine.Windowing\ZenithEngine.Windowing.csproj" />
+		<ProjectReference Include="..\Common\Common.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
