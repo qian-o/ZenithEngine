@@ -20,11 +20,6 @@ public struct TextureRegion
 
     public CubeMapFace Face;
 
-    public readonly bool SizeEquals(TextureRegion other)
-    {
-        return Width == other.Width && Height == other.Height && Depth == other.Depth;
-    }
-
     public static TextureRegion Default(uint width,
                                         uint height,
                                         uint depth,

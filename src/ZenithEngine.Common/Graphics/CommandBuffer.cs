@@ -92,13 +92,19 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// Copy the source texture to the destination texture.
     /// </summary>
     /// <param name="source">The source texture.</param>
-    /// <param name="sourceRegion">Region of the source texture to copy.</param>
+    /// <param name="sourcePosition">Position of the source texture.</param>
     /// <param name="destination">The destination texture.</param>
-    /// <param name="destinationRegion">Region of the destination texture to copy.</param>
+    /// <param name="destinationPosition">Position of the destination texture.</param>
+    /// <param name="width">Width of the texture.</param>
+    /// <param name="height">Height of the texture.</param>
+    /// <param name="depth">Depth of the texture.</param>
     public abstract void CopyTexture(Texture source,
-                                     TextureRegion sourceRegion,
+                                     TexturePosition sourcePosition,
                                      Texture destination,
-                                     TextureRegion destinationRegion);
+                                     TexturePosition destinationPosition,
+                                     uint width,
+                                     uint height,
+                                     uint depth);
 
     /// <summary>
     /// Resolve the multisampled source texture to the destination texture.
@@ -111,13 +117,6 @@ public abstract class CommandBuffer(GraphicsContext context,
                                         TexturePosition sourcePosition,
                                         Texture destination,
                                         TexturePosition destinationPosition);
-
-    /// <summary>
-    /// Transition the texture to the specified usage.
-    /// </summary>
-    /// <param name="texture">The texture to transition.</param>
-    /// <param name="usage">The texture usage.</param>
-    public abstract void TransitionTexture(Texture texture, TextureUsage usage);
     #endregion
 
     #region Acceleration Structure Operations
