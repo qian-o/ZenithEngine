@@ -8,11 +8,15 @@ internal unsafe partial class VKGraphicsContext
 {
     public VkPhysicalDevice PhysicalDevice;
 
-    public uint DirectQueueFamilyIndex { get; private set; }
+    public uint GraphicsQueueFamilyIndex { get; private set; }
+
+    public uint ComputeQueueFamilyIndex { get; private set; }
 
     public uint CopyQueueFamilyIndex { get; private set; }
 
-    public bool SharingEnabled => DirectQueueFamilyIndex != CopyQueueFamilyIndex;
+    public uint[]? QueueFamilyIndices { get; private set; }
+
+    public bool SharingEnabled { get; private set; }
 
     public uint FindMemoryTypeIndex(uint typeBits, MemoryPropertyFlags flags)
     {
@@ -36,7 +40,8 @@ internal unsafe partial class VKGraphicsContext
     {
         return type switch
         {
-            CommandProcessorType.Direct => DirectQueueFamilyIndex,
+            CommandProcessorType.Graphics => GraphicsQueueFamilyIndex,
+            CommandProcessorType.Compute => ComputeQueueFamilyIndex,
             CommandProcessorType.Copy => CopyQueueFamilyIndex,
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
@@ -66,7 +71,17 @@ internal unsafe partial class VKGraphicsContext
             {
                 bestScore = score;
                 bestPhysicalDevice = physicalDevice;
-                (DirectQueueFamilyIndex, CopyQueueFamilyIndex) = QueueFamilyIndices(physicalDevice);
+
+                (GraphicsQueueFamilyIndex, ComputeQueueFamilyIndex, CopyQueueFamilyIndex) = MatchQueueFamilyIndices(physicalDevice);
+
+                QueueFamilyIndices = new HashSet<uint>
+                {
+                    GraphicsQueueFamilyIndex,
+                    ComputeQueueFamilyIndex,
+                    CopyQueueFamilyIndex
+                }.ToArray();
+
+                SharingEnabled = QueueFamilyIndices.Length > 1;
             }
         }
 
@@ -190,7 +205,7 @@ internal unsafe partial class VKGraphicsContext
         return score;
     }
 
-    private (uint Direct, uint Copy) QueueFamilyIndices(VkPhysicalDevice physicalDevice)
+    private (uint Graphics, uint Compute, uint Copy) MatchQueueFamilyIndices(VkPhysicalDevice physicalDevice)
     {
         uint propertyCount = 0;
         Vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propertyCount, null);
@@ -198,10 +213,12 @@ internal unsafe partial class VKGraphicsContext
         QueueFamilyProperties[] properties = new QueueFamilyProperties[propertyCount];
         Vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propertyCount, properties);
 
-        uint directQueueFamilyIndex = 0;
+        uint graphicsQueueFamilyIndex = 0;
+        uint computeQueueFamilyIndex = 0;
         uint copyQueueFamilyIndex = 0;
 
-        uint directQueueCount = 0;
+        uint graphicsQueueCount = 0;
+        uint computeQueueCount = 0;
         uint copyQueueCount = 0;
 
         for (uint i = 0; i < properties.Length; i++)
@@ -209,13 +226,17 @@ internal unsafe partial class VKGraphicsContext
             QueueFlags flags = properties[i].QueueFlags;
             uint count = properties[i].QueueCount;
 
-            if (flags.HasFlag(QueueFlags.GraphicsBit
-                              | QueueFlags.ComputeBit
-                              | QueueFlags.TransferBit) && directQueueCount < count)
+            if (flags.HasFlag(QueueFlags.GraphicsBit) && graphicsQueueCount < count)
             {
-                directQueueFamilyIndex = i;
+                graphicsQueueFamilyIndex = i;
 
-                directQueueCount = count;
+                graphicsQueueCount = count;
+            }
+            else if (flags.HasFlag(QueueFlags.ComputeBit) && computeQueueCount < count)
+            {
+                computeQueueFamilyIndex = i;
+
+                computeQueueCount = count;
             }
             else if (flags.HasFlag(QueueFlags.TransferBit) && copyQueueCount < count)
             {
@@ -225,11 +246,6 @@ internal unsafe partial class VKGraphicsContext
             }
         }
 
-        if (copyQueueFamilyIndex is 0)
-        {
-            copyQueueFamilyIndex = directQueueFamilyIndex;
-        }
-
-        return (directQueueFamilyIndex, copyQueueFamilyIndex);
+        return (graphicsQueueFamilyIndex, computeQueueFamilyIndex, copyQueueFamilyIndex);
     }
 }

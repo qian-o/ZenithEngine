@@ -24,8 +24,8 @@ internal unsafe class VKBuffer : Buffer
 
         if (Context.SharingEnabled)
         {
-            createInfo.QueueFamilyIndexCount = 2;
-            createInfo.PQueueFamilyIndices = Allocator.Alloc([Context.DirectQueueFamilyIndex, Context.CopyQueueFamilyIndex]);
+            createInfo.QueueFamilyIndexCount = (uint)Context.QueueFamilyIndices!.Length;
+            createInfo.PQueueFamilyIndices = Allocator.Alloc(Context.QueueFamilyIndices);
         }
 
         if (desc.Usage.HasFlag(BufferUsage.VertexBuffer))

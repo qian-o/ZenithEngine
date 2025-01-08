@@ -51,7 +51,7 @@ internal unsafe partial class VKSwapChain : SwapChain
                 PImageIndices = pImageIndex
             };
 
-            Result result = Context.KhrSwapchain!.QueuePresent(Context.DirectQueue, &presentInfo);
+            Result result = Context.KhrSwapchain!.QueuePresent(Context.GraphicsQueue, &presentInfo);
 
             if (result is Result.ErrorOutOfDateKhr)
             {

@@ -40,8 +40,8 @@ internal unsafe class VKTexture : Texture
 
             if (Context.SharingEnabled)
             {
-                createInfo.QueueFamilyIndexCount = 2;
-                createInfo.PQueueFamilyIndices = Allocator.Alloc([Context.DirectQueueFamilyIndex, Context.CopyQueueFamilyIndex]);
+                createInfo.QueueFamilyIndexCount = (uint)Context.QueueFamilyIndices!.Length;
+                createInfo.PQueueFamilyIndices = Allocator.Alloc(Context.QueueFamilyIndices);
             }
 
             Context.Vk.CreateImage(Context.Device, &createInfo, null, out Image).ThrowIfError();
