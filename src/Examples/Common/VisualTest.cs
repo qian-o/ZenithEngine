@@ -7,7 +7,7 @@ using ZenithEngine.Windowing.Interfaces;
 
 namespace Common;
 
-public unsafe abstract class VisualTest
+public abstract unsafe class VisualTest
 {
     protected VisualTest(string name, Backend backend)
     {
