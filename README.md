@@ -33,7 +33,7 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [ ] Add `ZenithEngine.Viewer` project.
 
 - ZenithEngine.Common
-	- [ ] Add `GenerateMipmaps` method in Utils.
+	- [x] Add `GenerateMipmaps` method in Utils.
 
 - ZenithEngine.Vulkan
 	- [ ] Improve acceleration structures and ray tracing pipeline.
@@ -70,4 +70,3 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - `,+[\s]+[^\S\r\n]+};` Search for the comma after the last property when simplifying property assignments.
 
 ## Draft
-- Use VK_EXT_mutable_descriptor_type extension to support dynamic descriptor types.
