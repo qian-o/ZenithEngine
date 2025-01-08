@@ -8,6 +8,11 @@ public abstract class CommandBuffer(GraphicsContext context,
                                     CommandProcessor processor) : GraphicsResource(context)
 {
     /// <summary>
+    /// Current command buffer type, used to handle some operations differently.
+    /// </summary>
+    protected CommandProcessorType Type { get; } = processor.Type;
+
+    /// <summary>
     /// Command recording period available temporary buffer allocator.
     /// </summary>
     protected BufferAllocator BufferAllocator { get; } = new(context);
