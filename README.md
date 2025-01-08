@@ -70,6 +70,5 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - `,+[\s]+[^\S\r\n]+};` Search for the comma after the last property when simplifying property assignments.
 
 ## Draft
-- Should CommandProcessorType be changed to Graphics, Compute, and Copy queue types?
-- Add some common default resources to GraphicsContext. If resources like Texture, TextureView, Sampler, etc. are not set, default resources can be used.
+- Add some common default resources to GraphicsContext. If resources like Texture, Sampler, etc. are not set, default resources can be used.
 - Whether VK_KHR_dedicated_allocation extension is enabled in Vulkan.
