@@ -167,250 +167,90 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     }
 
     public override void CopyTexture(Texture source,
-                                     TextureRegion sourceRegion,
+                                     TexturePosition sourcePosition,
                                      Texture destination,
-                                     TextureRegion destinationRegion)
+                                     TexturePosition destinationPosition,
+                                     uint width,
+                                     uint height,
+                                     uint depth)
     {
         VKTexture src = source.VK();
         VKTexture dst = destination.VK();
 
-        ImageLayout srcOldLayout = src[sourceRegion.MipLevel, sourceRegion.Face];
-        ImageLayout dstOldLayout = dst[destinationRegion.MipLevel, destinationRegion.Face];
+        ImageLayout srcOldLayout = src[sourcePosition.MipLevel, sourcePosition.Face];
+        ImageLayout dstOldLayout = dst[destinationPosition.MipLevel, destinationPosition.Face];
 
         src.TransitionLayout(CommandBuffer,
-                             sourceRegion.MipLevel,
+                             sourcePosition.MipLevel,
                              1,
-                             sourceRegion.Face,
+                             sourcePosition.Face,
                              1,
                              ImageLayout.TransferSrcOptimal);
 
         dst.TransitionLayout(CommandBuffer,
-                             destinationRegion.MipLevel,
+                             destinationPosition.MipLevel,
                              1,
-                             destinationRegion.Face,
+                             destinationPosition.Face,
                              1,
                              ImageLayout.TransferDstOptimal);
 
-        if (sourceRegion.SizeEquals(destinationRegion))
+        ImageCopy imageCopy = new()
         {
-            ImageCopy imageCopy = new()
+            SrcSubresource = new()
             {
-                SrcSubresource = new()
-                {
-                    AspectMask = VKFormats.GetImageAspectFlags(src.Desc.Usage),
-                    MipLevel = sourceRegion.MipLevel,
-                    BaseArrayLayer = (uint)sourceRegion.Face,
-                    LayerCount = 1
-                },
-                SrcOffset = new()
-                {
-                    X = (int)sourceRegion.X,
-                    Y = (int)sourceRegion.Y,
-                    Z = (int)sourceRegion.Z
-                },
-                DstSubresource = new()
-                {
-                    AspectMask = VKFormats.GetImageAspectFlags(dst.Desc.Usage),
-                    MipLevel = destinationRegion.MipLevel,
-                    BaseArrayLayer = (uint)destinationRegion.Face,
-                    LayerCount = 1
-                },
-                DstOffset = new()
-                {
-                    X = (int)destinationRegion.X,
-                    Y = (int)destinationRegion.Y,
-                    Z = (int)destinationRegion.Z
-                },
-                Extent = new()
-                {
-                    Width = sourceRegion.Width,
-                    Height = sourceRegion.Height,
-                    Depth = sourceRegion.Depth
-                }
-            };
-
-            Context.Vk.CmdCopyImage(CommandBuffer,
-                                    src.Image,
-                                    ImageLayout.TransferSrcOptimal,
-                                    dst.Image,
-                                    ImageLayout.TransferDstOptimal,
-                                    1,
-                                    &imageCopy);
-        }
-        else
-        {
-            ImageBlit imageBlit = new()
+                AspectMask = VKFormats.GetImageAspectFlags(src.Desc.Usage),
+                MipLevel = sourcePosition.MipLevel,
+                BaseArrayLayer = (uint)sourcePosition.Face,
+                LayerCount = 1
+            },
+            SrcOffset = new()
             {
-                SrcSubresource = new()
-                {
-                    AspectMask = VKFormats.GetImageAspectFlags(src.Desc.Usage),
-                    MipLevel = sourceRegion.MipLevel,
-                    BaseArrayLayer = (uint)sourceRegion.Face,
-                    LayerCount = 1
-                },
-                SrcOffsets = new()
-                {
-                    Element0 = new()
-                    {
-                        X = (int)sourceRegion.X,
-                        Y = (int)sourceRegion.Y,
-                        Z = (int)sourceRegion.Z
-                    },
-                    Element1 = new()
-                    {
-                        X = (int)sourceRegion.X + (int)sourceRegion.Width,
-                        Y = (int)sourceRegion.Y + (int)sourceRegion.Height,
-                        Z = (int)sourceRegion.Z + (int)sourceRegion.Depth
-                    }
-                },
-                DstSubresource = new()
-                {
-                    AspectMask = VKFormats.GetImageAspectFlags(dst.Desc.Usage),
-                    MipLevel = destinationRegion.MipLevel,
-                    BaseArrayLayer = (uint)destinationRegion.Face,
-                    LayerCount = 1
-                },
-                DstOffsets = new()
-                {
-                    Element0 = new()
-                    {
-                        X = (int)destinationRegion.X,
-                        Y = (int)destinationRegion.Y,
-                        Z = (int)destinationRegion.Z
-                    },
-                    Element1 = new()
-                    {
-                        X = (int)destinationRegion.X + (int)destinationRegion.Width,
-                        Y = (int)destinationRegion.Y + (int)destinationRegion.Height,
-                        Z = (int)destinationRegion.Z + (int)destinationRegion.Depth
-                    }
-                }
-            };
+                X = (int)sourcePosition.X,
+                Y = (int)sourcePosition.Y,
+                Z = (int)sourcePosition.Z
+            },
+            DstSubresource = new()
+            {
+                AspectMask = VKFormats.GetImageAspectFlags(dst.Desc.Usage),
+                MipLevel = destinationPosition.MipLevel,
+                BaseArrayLayer = (uint)destinationPosition.Face,
+                LayerCount = 1
+            },
+            DstOffset = new()
+            {
+                X = (int)destinationPosition.X,
+                Y = (int)destinationPosition.Y,
+                Z = (int)destinationPosition.Z
+            },
+            Extent = new()
+            {
+                Width = width,
+                Height = height,
+                Depth = depth
+            }
+        };
 
-            Context.Vk.CmdBlitImage(CommandBuffer,
-                                    src.Image,
-                                    ImageLayout.TransferSrcOptimal,
-                                    dst.Image,
-                                    ImageLayout.TransferDstOptimal,
-                                    1,
-                                    &imageBlit,
-                                    Filter.Linear);
-        }
+        Context.Vk.CmdCopyImage(CommandBuffer,
+                                src.Image,
+                                ImageLayout.TransferSrcOptimal,
+                                dst.Image,
+                                ImageLayout.TransferDstOptimal,
+                                1,
+                                &imageCopy);
 
         src.TransitionLayout(CommandBuffer,
-                             sourceRegion.MipLevel,
+                             sourcePosition.MipLevel,
                              1,
-                             sourceRegion.Face,
+                             sourcePosition.Face,
                              1,
                              srcOldLayout);
 
         dst.TransitionLayout(CommandBuffer,
-                             destinationRegion.MipLevel,
+                             destinationPosition.MipLevel,
                              1,
-                             destinationRegion.Face,
+                             destinationPosition.Face,
                              1,
                              dstOldLayout);
-    }
-
-    public override void GenerateMipmaps(Texture texture)
-    {
-        uint width = texture.Desc.Width;
-        uint height = texture.Desc.Height;
-        uint depth = texture.Desc.Depth;
-        uint mipLevels = texture.Desc.MipLevels;
-        uint arrayLayers = VKHelpers.GetArrayLayers(texture.Desc);
-
-        VKTexture vkTexture = texture.VK();
-
-        for (uint i = 1; i < mipLevels; i++)
-        {
-            uint srcMipLevel = i - 1;
-            uint dstMipLevel = i;
-
-            ImageLayout srcOldLayout = vkTexture[srcMipLevel, CubeMapFace.PositiveX];
-            ImageLayout dstOldLayout = vkTexture[dstMipLevel, CubeMapFace.PositiveX];
-
-            vkTexture.TransitionLayout(CommandBuffer,
-                                       srcMipLevel,
-                                       1,
-                                       CubeMapFace.PositiveX,
-                                       arrayLayers,
-                                       ImageLayout.TransferSrcOptimal);
-
-            vkTexture.TransitionLayout(CommandBuffer,
-                                       dstMipLevel,
-                                       1,
-                                       CubeMapFace.PositiveX,
-                                       arrayLayers,
-                                       ImageLayout.TransferDstOptimal);
-
-            uint mipWidth = Math.Max(1, width >> (int)i);
-            uint mipHeight = Math.Max(1, height >> (int)i);
-            uint mipDepth = Math.Max(1, depth >> (int)i);
-
-            ImageBlit imageBlit = new()
-            {
-                SrcSubresource = new()
-                {
-                    AspectMask = VKFormats.GetImageAspectFlags(vkTexture.Desc.Usage),
-                    MipLevel = srcMipLevel,
-                    BaseArrayLayer = 0,
-                    LayerCount = arrayLayers
-                },
-                SrcOffsets = new()
-                {
-                    Element1 = new()
-                    {
-                        X = (int)width,
-                        Y = (int)height,
-                        Z = (int)depth
-                    }
-                },
-                DstSubresource = new()
-                {
-                    AspectMask = VKFormats.GetImageAspectFlags(vkTexture.Desc.Usage),
-                    MipLevel = dstMipLevel,
-                    BaseArrayLayer = 0,
-                    LayerCount = arrayLayers
-                },
-                DstOffsets = new()
-                {
-                    Element1 = new()
-                    {
-                        X = (int)mipWidth,
-                        Y = (int)mipHeight,
-                        Z = (int)mipDepth
-                    }
-                }
-            };
-
-            Context.Vk.CmdBlitImage(CommandBuffer,
-                                    vkTexture.Image,
-                                    ImageLayout.TransferSrcOptimal,
-                                    vkTexture.Image,
-                                    ImageLayout.TransferDstOptimal,
-                                    1,
-                                    &imageBlit,
-                                    Filter.Linear);
-
-            vkTexture.TransitionLayout(CommandBuffer,
-                                       srcMipLevel,
-                                       1,
-                                       CubeMapFace.PositiveX,
-                                       arrayLayers,
-                                       srcOldLayout);
-
-            vkTexture.TransitionLayout(CommandBuffer,
-                                       dstMipLevel,
-                                       1,
-                                       CubeMapFace.PositiveX,
-                                       arrayLayers,
-                                       dstOldLayout);
-
-            width = mipWidth;
-            height = mipHeight;
-            depth = mipDepth;
-        }
     }
 
     public override void ResolveTexture(Texture source,
@@ -524,11 +364,6 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                              1,
                              dstOldLayout);
     }
-
-    public override void TransitionTexture(Texture texture, TextureUsage usage)
-    {
-        texture.VK().TransitionLayout(CommandBuffer, VKFormats.GetImageLayout(usage));
-    }
     #endregion
 
     #region Acceleration Structure Operations
@@ -638,14 +473,16 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
         }
 
-        Viewport[] viewports = new Viewport[vkFrameBuffer.ColorTargets.Length];
-        Rectangle<int>[] scissors = new Rectangle<int>[vkFrameBuffer.ColorTargets.Length];
+        Viewport[] viewports = new Viewport[vkFrameBuffer.ColorViews.Length];
+        Vector2D<int>[] scissorsByOffset = new Vector2D<int>[vkFrameBuffer.ColorViews.Length];
+        Vector2D<uint>[] scissorsByExtent = new Vector2D<uint>[vkFrameBuffer.ColorViews.Length];
 
         Array.Fill(viewports, new(0, 0, vkFrameBuffer.Width, vkFrameBuffer.Height));
-        Array.Fill(scissors, new(0, 0, (int)vkFrameBuffer.Width, (int)vkFrameBuffer.Height));
+        Array.Fill(scissorsByOffset, new(0, 0));
+        Array.Fill(scissorsByExtent, new(vkFrameBuffer.Width, vkFrameBuffer.Height));
 
         SetViewports(viewports);
-        SetScissorRectangles(scissors);
+        SetScissorRectangles(scissorsByOffset, scissorsByExtent);
     }
 
     public override void EndRendering()
@@ -677,21 +514,28 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         Context.Vk.CmdSetViewport(CommandBuffer, 0, (uint)vps.Length, vps);
     }
 
-    public override void SetScissorRectangles(Rectangle<int>[] scissors)
+    public override void SetScissorRectangles(Vector2D<int>[] offsets, Vector2D<uint>[] extents)
     {
-        Rect2D[] scs = scissors.Select(static item => new Rect2D
+        uint count = (uint)Math.Min(offsets.Length, extents.Length);
+
+        Rect2D[] scs = new Rect2D[count];
+
+        for (int i = 0; i < count; i++)
         {
-            Offset = new()
+            scs[i] = new Rect2D
             {
-                X = item.Origin.X,
-                Y = item.Origin.Y
-            },
-            Extent = new()
-            {
-                Width = (uint)item.Size.X,
-                Height = (uint)item.Size.Y
-            }
-        }).ToArray();
+                Offset = new()
+                {
+                    X = offsets[i].X,
+                    Y = offsets[i].Y
+                },
+                Extent = new()
+                {
+                    Width = extents[i].X,
+                    Height = extents[i].Y
+                }
+            };
+        }
 
         Context.Vk.CmdSetScissor(CommandBuffer, 0, (uint)scs.Length, scs);
     }
@@ -757,14 +601,14 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     {
         VKResourceSet vkResourceSet = resourceSet.VK();
 
-        foreach (VKTextureView textureView in vkResourceSet.SrvTextureViews)
+        foreach (VKTexture texture in vkResourceSet.SrvTextures)
         {
-            textureView.TransitionLayout(CommandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+            texture.TransitionLayout(CommandBuffer, ImageLayout.ShaderReadOnlyOptimal);
         }
 
-        foreach (VKTextureView textureView in vkResourceSet.UavTextureViews)
+        foreach (VKTexture texture in vkResourceSet.UavTextures)
         {
-            textureView.TransitionLayout(CommandBuffer, ImageLayout.General);
+            texture.TransitionLayout(CommandBuffer, ImageLayout.General);
         }
     }
 

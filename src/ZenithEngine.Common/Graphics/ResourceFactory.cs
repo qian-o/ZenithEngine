@@ -13,8 +13,6 @@ public abstract class ResourceFactory(GraphicsContext context)
 
     public abstract Texture CreateTexture(ref readonly TextureDesc desc);
 
-    public abstract TextureView CreateTextureView(ref readonly TextureViewDesc desc);
-
     public abstract Sampler CreateSampler(ref readonly SamplerDesc desc);
 
     public abstract Shader CreateShader(ref readonly ShaderDesc desc);
@@ -31,5 +29,5 @@ public abstract class ResourceFactory(GraphicsContext context)
 
     public abstract RayTracingPipeline CreateRayTracingPipeline(ref readonly RayTracingPipelineDesc desc);
 
-    public abstract CommandProcessor CreateCommandProcessor(CommandProcessorType type = CommandProcessorType.Direct);
+    public abstract CommandProcessor CreateCommandProcessor(CommandProcessorType type = CommandProcessorType.Graphics);
 }

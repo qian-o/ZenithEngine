@@ -57,6 +57,6 @@ public class ReflectResult
 
     public static ReflectResult Merge(params ReflectResult[] layouts)
     {
-        return new ReflectResult(layouts.Select(item => item.resources).ToArray());
+        return new ReflectResult(layouts.Select(static item => item.resources).ToArray());
     }
 }

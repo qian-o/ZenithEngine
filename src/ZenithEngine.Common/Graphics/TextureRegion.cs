@@ -2,33 +2,43 @@
 
 namespace ZenithEngine.Common.Graphics;
 
-public struct TextureRegion(uint x = 0,
-                            uint y = 0,
-                            uint z = 0,
-                            uint width = 0,
-                            uint height = 0,
-                            uint depth = 0,
-                            uint mipLevel = 0,
-                            CubeMapFace face = CubeMapFace.PositiveX)
+public struct TextureRegion
 {
-    public uint X = x;
+    public uint Width;
 
-    public uint Y = y;
+    public uint Height;
 
-    public uint Z = z;
+    public uint Depth;
 
-    public uint Width = width;
+    public uint X;
 
-    public uint Height = height;
+    public uint Y;
 
-    public uint Depth = depth;
+    public uint Z;
 
-    public uint MipLevel = mipLevel;
+    public uint MipLevel;
 
-    public CubeMapFace Face = face;
+    public CubeMapFace Face;
 
-    public readonly bool SizeEquals(TextureRegion other)
+    public static TextureRegion Default(uint width,
+                                        uint height,
+                                        uint depth,
+                                        uint x = 0,
+                                        uint y = 0,
+                                        uint z = 0,
+                                        uint mipLevel = 0,
+                                        CubeMapFace face = CubeMapFace.PositiveX)
     {
-        return Width == other.Width && Height == other.Height && Depth == other.Depth;
+        return new()
+        {
+            Width = width,
+            Height = height,
+            Depth = depth,
+            X = x,
+            Y = y,
+            Z = z,
+            MipLevel = mipLevel,
+            Face = face
+        };
     }
 }

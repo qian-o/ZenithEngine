@@ -9,7 +9,9 @@ internal unsafe partial class VKGraphicsContext
 {
     public VkDevice Device;
 
-    public VkQueue DirectQueue { get; private set; }
+    public VkQueue GraphicsQueue { get; private set; }
+
+    public VkQueue ComputeQueue { get; private set; }
 
     public VkQueue CopyQueue { get; private set; }
 
@@ -27,7 +29,8 @@ internal unsafe partial class VKGraphicsContext
     {
         return type switch
         {
-            CommandProcessorType.Direct => DirectQueue,
+            CommandProcessorType.Graphics => GraphicsQueue,
+            CommandProcessorType.Compute => ComputeQueue,
             CommandProcessorType.Copy => CopyQueue,
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
@@ -70,7 +73,8 @@ internal unsafe partial class VKGraphicsContext
 
         Vk.CreateDevice(PhysicalDevice, &createInfo, null, out Device).ThrowIfError();
 
-        DirectQueue = Vk.GetDeviceQueue(Device, DirectQueueFamilyIndex, 0);
+        GraphicsQueue = Vk.GetDeviceQueue(Device, GraphicsQueueFamilyIndex, 0);
+        ComputeQueue = Vk.GetDeviceQueue(Device, ComputeQueueFamilyIndex, 0);
         CopyQueue = Vk.GetDeviceQueue(Device, CopyQueueFamilyIndex, 0);
         KhrSwapchain = Vk.TryGetExtension<KhrSwapchain>(Instance, Device);
         KhrRayTracingPipeline = Vk.TryGetExtension<KhrRayTracingPipeline>(Instance, Device);
@@ -100,12 +104,7 @@ internal unsafe partial class VKGraphicsContext
     {
         float* queuePriorities = allocator.Alloc([1.0f]);
 
-        DeviceQueueCreateInfo[] queueCreateInfos = [Info(DirectQueueFamilyIndex)];
-
-        if (SharingEnabled)
-        {
-            queueCreateInfos = [.. queueCreateInfos, Info(CopyQueueFamilyIndex)];
-        }
+        DeviceQueueCreateInfo[] queueCreateInfos = QueueFamilyIndices!.Select(Info).ToArray();
 
         count = (uint)queueCreateInfos.Length;
 

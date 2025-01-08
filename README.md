@@ -33,7 +33,7 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [ ] Add `ZenithEngine.Viewer` project.
 
 - ZenithEngine.Common
-	- [ ] Add `GenerateMipmaps` method in Utils.
+	- [x] Add `GenerateMipmaps` method in Utils.
 
 - ZenithEngine.Vulkan
 	- [ ] Improve acceleration structures and ray tracing pipeline.
@@ -70,15 +70,3 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - `,+[\s]+[^\S\r\n]+};` Search for the comma after the last property when simplifying property assignments.
 
 ## Draft
-- Do we need to add a `CommandProcessor Processor` property in the `CommandBuffer` so that some parameters can be used when executing commands in the `CommandBuffer`?
-- Direct3D 12 does not support automatic mipmap generation.
-- Check the variable name used when ShaderStages is used. If it is a single type, it is called stage, and if it is multiple types, it is called stages.
-- Do we need to add the StructureByteStride field to BufferDesc? (This field is used to describe the size of each element in the buffer, in bytes.)
-- Create Default method for TexturePosition and TextureRegion to simplify the call.
-- Implement the ImGuiRenderer.GetBinding() method to return the corresponding id directly if the Texture already exists in bindings.
-- All implementations in Graphics should inherit from GraphicsResource instead of DisposableObject.
-- Should CommandProcessorType be changed to Graphics, Compute, and Copy queue types?
-- All properties related to size should use uint type.
-- Use the DirectX memory layout rules to define the structure.
-- Add some common default resources to GraphicsContext. If resources like Texture, TextureView, Sampler, etc. are not set, default resources can be used.
-- Whether VK_KHR_dedicated_allocation extension is enabled in Vulkan.

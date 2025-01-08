@@ -6,66 +6,66 @@ namespace ZenithEngine.ShaderCompiler;
 internal class SpvFormats
 {
     #region To ZenithEngine
-    public static ShaderStages GetShaderStages(ShaderStageFlagBits stageFlagBits)
+    public static ShaderStages GetShaderStages(ShaderStageFlagBits shaderStageFlagBits)
     {
         ShaderStages stages = ShaderStages.None;
 
-        if (stageFlagBits.HasFlag(ShaderStageFlagBits.VertexBit))
+        if (shaderStageFlagBits.HasFlag(ShaderStageFlagBits.VertexBit))
         {
             stages |= ShaderStages.Vertex;
         }
 
-        if (stageFlagBits.HasFlag(ShaderStageFlagBits.TessellationControlBit))
+        if (shaderStageFlagBits.HasFlag(ShaderStageFlagBits.TessellationControlBit))
         {
             stages |= ShaderStages.Hull;
         }
 
-        if (stageFlagBits.HasFlag(ShaderStageFlagBits.TessellationEvaluationBit))
+        if (shaderStageFlagBits.HasFlag(ShaderStageFlagBits.TessellationEvaluationBit))
         {
             stages |= ShaderStages.Domain;
         }
 
-        if (stageFlagBits.HasFlag(ShaderStageFlagBits.GeometryBit))
+        if (shaderStageFlagBits.HasFlag(ShaderStageFlagBits.GeometryBit))
         {
             stages |= ShaderStages.Geometry;
         }
 
-        if (stageFlagBits.HasFlag(ShaderStageFlagBits.FragmentBit))
+        if (shaderStageFlagBits.HasFlag(ShaderStageFlagBits.FragmentBit))
         {
             stages |= ShaderStages.Pixel;
         }
 
-        if (stageFlagBits.HasFlag(ShaderStageFlagBits.ComputeBit))
+        if (shaderStageFlagBits.HasFlag(ShaderStageFlagBits.ComputeBit))
         {
             stages |= ShaderStages.Compute;
         }
 
-        if (stageFlagBits.HasFlag(ShaderStageFlagBits.RaygenBitKhr))
+        if (shaderStageFlagBits.HasFlag(ShaderStageFlagBits.RaygenBitKhr))
         {
             stages |= ShaderStages.RayGeneration;
         }
 
-        if (stageFlagBits.HasFlag(ShaderStageFlagBits.MissBitKhr))
+        if (shaderStageFlagBits.HasFlag(ShaderStageFlagBits.MissBitKhr))
         {
             stages |= ShaderStages.Miss;
         }
 
-        if (stageFlagBits.HasFlag(ShaderStageFlagBits.ClosestHitBitKhr))
+        if (shaderStageFlagBits.HasFlag(ShaderStageFlagBits.ClosestHitBitKhr))
         {
             stages |= ShaderStages.ClosestHit;
         }
 
-        if (stageFlagBits.HasFlag(ShaderStageFlagBits.AnyHitBitKhr))
+        if (shaderStageFlagBits.HasFlag(ShaderStageFlagBits.AnyHitBitKhr))
         {
             stages |= ShaderStages.AnyHit;
         }
 
-        if (stageFlagBits.HasFlag(ShaderStageFlagBits.IntersectionBitKhr))
+        if (shaderStageFlagBits.HasFlag(ShaderStageFlagBits.IntersectionBitKhr))
         {
             stages |= ShaderStages.Intersection;
         }
 
-        if (stageFlagBits.HasFlag(ShaderStageFlagBits.CallableBitKhr))
+        if (shaderStageFlagBits.HasFlag(ShaderStageFlagBits.CallableBitKhr))
         {
             stages |= ShaderStages.Callable;
         }

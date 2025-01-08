@@ -10,6 +10,13 @@ namespace ZenithEngine.ImGuiWrapper;
 
 internal unsafe class ImGuiRenderer : DisposableObject
 {
+    [StructLayout(LayoutKind.Explicit)]
+    private struct Constants
+    {
+        [FieldOffset(0)]
+        public Matrix4X4<float> Projection;
+    }
+
     private readonly Dictionary<ulong, BindingToken> bindings = [];
 
     private Texture? fontTexture;
@@ -55,7 +62,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
         Context.UpdateTexture(fontTexture,
                               (nint)pixels,
                               (uint)(width * height * 4),
-                              new(0, 0, 0, (uint)width, (uint)height, 1));
+                              TextureRegion.Default((uint)width, (uint)height, 1));
 
         GetBinding(fontTexture);
     }
@@ -118,14 +125,17 @@ internal unsafe class ImGuiRenderer : DisposableObject
             indexOffset += indexSize;
         }
 
-        Matrix4X4<float> projection = Matrix4X4.CreateOrthographicOffCenter(drawDataPtr.DisplayPos.X,
-                                                                            drawDataPtr.DisplayPos.X + drawDataPtr.DisplaySize.X,
-                                                                            drawDataPtr.DisplayPos.Y + drawDataPtr.DisplaySize.Y,
-                                                                            drawDataPtr.DisplayPos.Y,
-                                                                            0.0f,
-                                                                            1.0f);
+        Constants constants = new()
+        {
+            Projection = Matrix4X4.CreateOrthographicOffCenter(drawDataPtr.DisplayPos.X,
+                                                               drawDataPtr.DisplayPos.X + drawDataPtr.DisplaySize.X,
+                                                               drawDataPtr.DisplayPos.Y + drawDataPtr.DisplaySize.Y,
+                                                               drawDataPtr.DisplayPos.Y,
+                                                               0.0f,
+                                                               1.0f)
+        };
 
-        Context.UpdateBuffer(constantsBuffer, (nint)(&projection), (uint)sizeof(Matrix4X4<float>));
+        Context.UpdateBuffer(constantsBuffer, (nint)(&constants), (uint)sizeof(Constants));
 
         commandBuffer.SetGraphicsPipeline(pipeline);
         commandBuffer.SetVertexBuffer(0, vertexBuffer);
@@ -148,17 +158,18 @@ internal unsafe class ImGuiRenderer : DisposableObject
                 }
                 else
                 {
-                    Rectangle<int> scissor = new((int)Math.Max(0, drawCmd.ClipRect.X),
-                                                 (int)Math.Max(0, drawCmd.ClipRect.Y),
-                                                 (int)Math.Max(0, drawCmd.ClipRect.Z - drawCmd.ClipRect.X),
-                                                 (int)Math.Max(0, drawCmd.ClipRect.W - drawCmd.ClipRect.Y));
+                    Vector2D<int> offset = new((int)Math.Max(0, drawCmd.ClipRect.X),
+                                               (int)Math.Max(0, drawCmd.ClipRect.Y));
 
-                    if (scissor.Size.X is 0 || scissor.Size.Y is 0)
+                    Vector2D<uint> extent = new((uint)Math.Max(0, drawCmd.ClipRect.Z - drawCmd.ClipRect.X),
+                                                 (uint)Math.Max(0, drawCmd.ClipRect.W - drawCmd.ClipRect.Y));
+
+                    if (extent.X is 0 || extent.Y is 0)
                     {
                         continue;
                     }
 
-                    commandBuffer.SetScissorRectangles([scissor]);
+                    commandBuffer.SetScissorRectangles([offset], [extent]);
 
                     commandBuffer.SetResourceSet(1, bindings[drawCmd.TextureId.Handle].ResourceSet);
 
@@ -173,8 +184,16 @@ internal unsafe class ImGuiRenderer : DisposableObject
         }
     }
 
-    public ulong GetBinding(TextureView textureView)
+    public ulong GetBinding(Texture texture)
     {
+        foreach (KeyValuePair<ulong, BindingToken> item in bindings)
+        {
+            if (item.Value.Texture == texture)
+            {
+                return item.Key;
+            }
+        }
+
         ulong id = 0;
         while (true)
         {
@@ -186,39 +205,11 @@ internal unsafe class ImGuiRenderer : DisposableObject
             id++;
         }
 
-        ResourceSetDesc desc = ResourceSetDesc.Default(layout1, textureView);
+        ResourceSetDesc desc = ResourceSetDesc.Default(layout1, texture);
 
-        bindings[id] = new(textureView, Context.Factory.CreateResourceSet(in desc));
-
-        return id;
-    }
-
-    public ulong GetBinding(Texture texture)
-    {
-        TextureViewDesc desc = TextureViewDesc.Default(texture);
-
-        TextureView textureView = Context.Factory.CreateTextureView(in desc);
-
-        ulong id = GetBinding(textureView);
-
-        bindings[id].Texture = texture;
+        bindings[id] = new(texture, Context.Factory.CreateResourceSet(in desc));
 
         return id;
-    }
-
-    public void RemoveBinding(TextureView textureView)
-    {
-        foreach (KeyValuePair<ulong, BindingToken> item in bindings)
-        {
-            if (item.Value.TextureView == textureView)
-            {
-                item.Value.Dispose();
-
-                bindings.Remove(item.Key);
-
-                break;
-            }
-        }
     }
 
     public void RemoveBinding(Texture texture)
@@ -227,7 +218,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
         {
             if (item.Value.Texture == texture)
             {
-                item.Value.Dispose();
+                item.Value.ResourceSet.Dispose();
 
                 bindings.Remove(item.Key);
 
@@ -240,7 +231,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
     {
         foreach (BindingToken token in bindings.Values)
         {
-            token.Dispose();
+            token.ResourceSet.Dispose();
         }
 
         fontTexture?.Dispose();
@@ -263,7 +254,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
         BufferDesc ibDesc = BufferDesc.Default(sizeof(ushort) * 10000,
                                                BufferUsage.IndexBuffer | BufferUsage.Dynamic);
 
-        BufferDesc cbDesc = BufferDesc.Default((uint)sizeof(Matrix4X4<float>),
+        BufferDesc cbDesc = BufferDesc.Default((uint)sizeof(Constants),
                                                BufferUsage.ConstantBuffer | BufferUsage.Dynamic);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);

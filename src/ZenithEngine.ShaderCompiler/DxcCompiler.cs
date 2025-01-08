@@ -79,7 +79,7 @@ public static unsafe class DxcCompiler
 
         arguments.Add("-Zpr");
 
-        arguments.Add("-fvk-use-scalar-layout");
+        arguments.Add("-fvk-use-dx-layout");
 
         arguments.Add("-fvk-b-shift");
         arguments.Add($"0");
@@ -107,13 +107,13 @@ public static unsafe class DxcCompiler
     {
         return stage switch
         {
-            ShaderStages.Vertex => "vs_6_0",
-            ShaderStages.Hull => "hs_6_0",
-            ShaderStages.Domain => "ds_6_0",
-            ShaderStages.Geometry => "gs_6_0",
-            ShaderStages.Pixel => "ps_6_0",
-            ShaderStages.Compute => "cs_6_0",
-            _ => "lib_6_3"
+            ShaderStages.Vertex => "vs_6_8",
+            ShaderStages.Hull => "hs_6_8",
+            ShaderStages.Domain => "ds_6_8",
+            ShaderStages.Geometry => "gs_6_8",
+            ShaderStages.Pixel => "ps_6_8",
+            ShaderStages.Compute => "cs_6_8",
+            _ => "lib_6_8"
         };
     }
 }

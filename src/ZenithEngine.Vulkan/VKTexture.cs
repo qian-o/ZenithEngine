@@ -8,6 +8,7 @@ namespace ZenithEngine.Vulkan;
 internal unsafe class VKTexture : Texture
 {
     public VkImage Image;
+    public VkImageView ImageView;
 
     private readonly ImageLayout[] imageLayouts;
 
@@ -37,21 +38,43 @@ internal unsafe class VKTexture : Texture
 
         if (Context.SharingEnabled)
         {
-            createInfo.QueueFamilyIndexCount = 2;
-            createInfo.PQueueFamilyIndices = Allocator.Alloc([Context.DirectQueueFamilyIndex, Context.CopyQueueFamilyIndex]);
+            createInfo.QueueFamilyIndexCount = (uint)Context.QueueFamilyIndices!.Length;
+            createInfo.PQueueFamilyIndices = Allocator.Alloc(Context.QueueFamilyIndices);
         }
 
         Context.Vk.CreateImage(Context.Device, &createInfo, null, out Image).ThrowIfError();
 
-        MemoryRequirements requirements;
-        Context.Vk.GetImageMemoryRequirements(Context.Device, Image, &requirements);
+        ImageMemoryRequirementsInfo2 requirementsInfo2 = new()
+        {
+            SType = StructureType.ImageMemoryRequirementsInfo2,
+            Image = Image
+        };
 
-        DeviceMemory = new(Context, requirements, false);
+        MemoryRequirements2 requirements2 = new()
+        {
+            SType = StructureType.MemoryRequirements2
+        };
+
+        requirements2.AddNext(out MemoryDedicatedRequirements dedicatedRequirements);
+
+        Context.Vk.GetImageMemoryRequirements2(Context.Device, &requirementsInfo2, &requirements2);
+
+        DeviceMemory = new(Context,
+                           false,
+                           requirements2.MemoryRequirements,
+                           dedicatedRequirements.PrefersDedicatedAllocation || dedicatedRequirements.RequiresDedicatedAllocation,
+                           Image,
+                           null);
 
         Context.Vk.BindImageMemory(Context.Device,
                                    Image,
                                    DeviceMemory.DeviceMemory,
                                    0).ThrowIfError();
+
+        ImageView = CreateImageView(0,
+                                    desc.MipLevels,
+                                    CubeMapFace.PositiveX,
+                                    VKHelpers.GetArrayLayers(desc));
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
 
@@ -62,9 +85,14 @@ internal unsafe class VKTexture : Texture
                      ref readonly TextureDesc desc,
                      VkImage image) : base(context, in desc)
     {
-        imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
-
         Image = image;
+
+        ImageView = CreateImageView(0,
+                                    desc.MipLevels,
+                                    CubeMapFace.PositiveX,
+                                    VKHelpers.GetArrayLayers(desc));
+
+        imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
     }
 
     public VKDeviceMemory? DeviceMemory { get; }
@@ -82,6 +110,33 @@ internal unsafe class VKTexture : Texture
     }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+
+    public VkImageView CreateImageView(uint baseMipLevel,
+                                       uint mipLevels,
+                                       CubeMapFace baseFace,
+                                       uint faceCount)
+    {
+        ImageViewCreateInfo createInfo = new()
+        {
+            SType = StructureType.ImageViewCreateInfo,
+            Image = Image,
+            ViewType = VKFormats.GetImageViewType(Desc.Type),
+            Format = VKFormats.GetPixelFormat(Desc.Format),
+            SubresourceRange = new()
+            {
+                AspectMask = VKFormats.GetImageAspectFlags(Desc.Usage),
+                BaseMipLevel = baseMipLevel,
+                LevelCount = mipLevels,
+                BaseArrayLayer = (uint)baseFace,
+                LayerCount = faceCount
+            }
+        };
+
+        VkImageView imageView;
+        Context.Vk.CreateImageView(Context.Device, &createInfo, null, &imageView).ThrowIfError();
+
+        return imageView;
+    }
 
     public void TransitionLayout(VkCommandBuffer commandBuffer,
                                  uint baseMipLevel,
@@ -156,6 +211,7 @@ internal unsafe class VKTexture : Texture
     protected override void DebugName(string name)
     {
         Context.SetDebugName(ObjectType.Image, Image.Handle, name);
+        Context.SetDebugName(ObjectType.ImageView, ImageView.Handle, name);
 
         if (DeviceMemory is not null)
         {
@@ -165,8 +221,13 @@ internal unsafe class VKTexture : Texture
 
     protected override void Destroy()
     {
-        DeviceMemory?.Dispose();
+        Context.Vk.DestroyImageView(Context.Device, ImageView, null);
 
-        Context.Vk.DestroyImage(Context.Device, Image, null);
+        if (DeviceMemory is not null)
+        {
+            DeviceMemory.Dispose();
+
+            Context.Vk.DestroyImage(Context.Device, Image, null);
+        }
     }
 }

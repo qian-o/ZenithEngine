@@ -11,6 +11,7 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
     public uint CurrentIndex;
 
     private Texture? depthStencilTarget;
+    private Texture[] colorTargets = [];
     private FrameBuffer[] frameBuffers = [];
 
     public FrameBuffer FrameBuffer => frameBuffers[CurrentIndex];
@@ -43,6 +44,7 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
             depthStencilTarget = Context.Factory.CreateTexture(in desc);
         }
 
+        colorTargets = new Texture[imageCount];
         frameBuffers = new FrameBuffer[imageCount];
         for (int i = 0; i < imageCount; i++)
         {
@@ -53,10 +55,10 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
                                                    format: VKFormats.GetPixelFormat(imageFormat),
                                                    usage: TextureUsage.RenderTarget);
 
-            VKTexture colorTarget = new(Context, in desc, images[i]);
+            colorTargets[i] = new VKTexture(Context, in desc, images[i]);
 
             FrameBufferDesc frameBufferDesc = FrameBufferDesc.Default(depthStencilTarget is not null ? FrameBufferAttachmentDesc.Default(depthStencilTarget) : null,
-                                                                      FrameBufferAttachmentDesc.Default(colorTarget));
+                                                                      FrameBufferAttachmentDesc.Default(colorTargets[i]));
 
             frameBuffers[i] = Context.Factory.CreateFrameBuffer(in frameBufferDesc);
         }
@@ -69,9 +71,15 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
             frameBuffer.Dispose();
         }
 
+        foreach (Texture colorTarget in colorTargets)
+        {
+            colorTarget.Dispose();
+        }
+
         depthStencilTarget?.Dispose();
 
         depthStencilTarget = null;
+        colorTargets = [];
         frameBuffers = [];
     }
 

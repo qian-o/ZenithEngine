@@ -13,23 +13,31 @@ internal unsafe class VKFrameBuffer : FrameBuffer
     public VKFrameBuffer(GraphicsContext context,
                          ref readonly FrameBufferDesc desc) : base(context, in desc)
     {
-        ColorTargets = new VKTextureView[desc.ColorTargets.Length];
+        uint colorAttachmentCount = (uint)desc.ColorTargets.Length;
+        bool hasDepthStencil = desc.DepthStencilTarget.HasValue;
 
+        ColorViews = new VkImageView[colorAttachmentCount];
+
+        uint width = 0;
+        uint height = 0;
         TextureSampleCount sampleCount = TextureSampleCount.Count1;
 
-        RenderingAttachmentInfo* colorAttachmentInfos = Allocator.Alloc<RenderingAttachmentInfo>((uint)ColorTargets.Length);
-        RenderingAttachmentInfo* depthStencilAttachmentInfo = null;
+        RenderingAttachmentInfo* colorAttachments = Allocator.Alloc<RenderingAttachmentInfo>(colorAttachmentCount);
+        RenderingAttachmentInfo* depthStencilAttachment = hasDepthStencil ? Allocator.Alloc<RenderingAttachmentInfo>() : null;
 
-        PixelFormat[] colorFormats = new PixelFormat[ColorTargets.Length];
-        PixelFormat? depthStencilFormat = null;
-
-        for (int i = 0; i < ColorTargets.Length; i++)
+        for (int i = 0; i < colorAttachmentCount; i++)
         {
             FrameBufferAttachmentDesc attachmentDesc = desc.ColorTargets[i];
             Texture target = attachmentDesc.Target;
 
             if (i is 0)
             {
+                Utils.GetMipDimensions(target.Desc.Width,
+                                       target.Desc.Height,
+                                       attachmentDesc.MipLevel,
+                                       out width,
+                                       out height);
+
                 sampleCount = target.Desc.SampleCount;
             }
             else if (target.Desc.SampleCount != sampleCount)
@@ -37,37 +45,34 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 throw new ZenithEngineException("All targets must have the same sample count.");
             }
 
-            TextureViewDesc viewDesc = new()
-            {
-                Target = target,
-                Format = target.Desc.Format,
-                BaseMipLevel = attachmentDesc.MipLevel,
-                MipLevels = 1,
-                BaseFace = attachmentDesc.Face,
-                FaceCount = 1
-            };
+            VkImageView imageView = target.VK().CreateImageView(attachmentDesc.MipLevel,
+                                                                1,
+                                                                attachmentDesc.Face,
+                                                                1);
 
-            ColorTargets[i] = Context.Factory.CreateTextureView(in viewDesc).VK();
-
-            colorAttachmentInfos[i] = new()
+            colorAttachments[i] = new()
             {
                 SType = StructureType.RenderingAttachmentInfo,
-                ImageView = ColorTargets[i].VK().ImageView,
+                ImageView = ColorViews[i] = imageView,
                 ImageLayout = ImageLayout.AttachmentOptimal,
                 LoadOp = AttachmentLoadOp.Load,
                 StoreOp = AttachmentStoreOp.Store
             };
-
-            colorFormats[i] = viewDesc.Format;
         }
 
-        if (desc.DepthStencilTarget.HasValue)
+        if (hasDepthStencil)
         {
-            FrameBufferAttachmentDesc attachmentDesc = desc.DepthStencilTarget.Value;
+            FrameBufferAttachmentDesc attachmentDesc = desc.DepthStencilTarget!.Value;
             Texture target = attachmentDesc.Target;
 
-            if (ColorTargets.Length is 0)
+            if (colorAttachmentCount is 0)
             {
+                Utils.GetMipDimensions(target.Desc.Width,
+                                       target.Desc.Height,
+                                       attachmentDesc.MipLevel,
+                                       out width,
+                                       out height);
+
                 sampleCount = target.Desc.SampleCount;
             }
             else if (target.Desc.SampleCount != sampleCount)
@@ -75,35 +80,20 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 throw new ZenithEngineException("All targets must have the same sample count.");
             }
 
-            TextureViewDesc viewDesc = new()
+            VkImageView imageView = target.VK().CreateImageView(attachmentDesc.MipLevel,
+                                                                1,
+                                                                attachmentDesc.Face,
+                                                                1);
+
+            depthStencilAttachment[0] = new()
             {
-                Target = target,
-                Format = target.Desc.Format,
-                BaseMipLevel = attachmentDesc.MipLevel,
-                MipLevels = 1,
-                BaseFace = attachmentDesc.Face,
-                FaceCount = 1
+                SType = StructureType.RenderingAttachmentInfo,
+                ImageView = (DepthStencilView = imageView).Value,
+                ImageLayout = ImageLayout.AttachmentOptimal,
+                LoadOp = AttachmentLoadOp.Load,
+                StoreOp = AttachmentStoreOp.Store
             };
-
-            DepthStencilTarget = Context.Factory.CreateTextureView(in viewDesc).VK();
-
-            depthStencilAttachmentInfo = Allocator.Alloc<RenderingAttachmentInfo>();
-            depthStencilAttachmentInfo->SType = StructureType.RenderingAttachmentInfo;
-            depthStencilAttachmentInfo->ImageView = DepthStencilTarget!.VK().ImageView;
-            depthStencilAttachmentInfo->ImageLayout = ImageLayout.AttachmentOptimal;
-            depthStencilAttachmentInfo->LoadOp = AttachmentLoadOp.Load;
-            depthStencilAttachmentInfo->StoreOp = AttachmentStoreOp.Store;
-
-            depthStencilFormat = viewDesc.Format;
         }
-
-        TextureView view = ColorTargets.Length > 0 ? ColorTargets[0] : DepthStencilTarget!;
-
-        Utils.GetMipDimensions(view.Desc.Target.Desc.Width,
-                               view.Desc.Target.Desc.Height,
-                               view.Desc.BaseMipLevel,
-                               out uint width,
-                               out uint height);
 
         RenderingInfo = new()
         {
@@ -123,20 +113,22 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             },
             LayerCount = 1,
             ViewMask = 0,
-            ColorAttachmentCount = (uint)ColorTargets.Length,
-            PColorAttachments = colorAttachmentInfos,
-            PDepthAttachment = depthStencilAttachmentInfo,
-            PStencilAttachment = depthStencilAttachmentInfo
+            ColorAttachmentCount = colorAttachmentCount,
+            PColorAttachments = colorAttachments,
+            PDepthAttachment = depthStencilAttachment,
+            PStencilAttachment = depthStencilAttachment
         };
 
         Width = width;
         Height = height;
-        Output = OutputDesc.Default(sampleCount, depthStencilFormat, colorFormats);
+        Output = OutputDesc.Default(sampleCount,
+                                    hasDepthStencil ? desc.DepthStencilTarget!.Value.Target.Desc.Format : null,
+                                    [.. desc.ColorTargets.Select(static x => x.Target.Desc.Format)]);
     }
 
-    public VKTextureView[] ColorTargets { get; }
+    public VkImageView[] ColorViews { get; }
 
-    public VKTextureView? DepthStencilTarget { get; }
+    public VkImageView? DepthStencilView { get; }
 
     public override uint Width { get; }
 
@@ -148,19 +140,34 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
     public void TransitionToIntermedialLayout(VkCommandBuffer commandBuffer)
     {
-        foreach (VKTextureView colorTarget in ColorTargets)
+        foreach (FrameBufferAttachmentDesc desc in Desc.ColorTargets)
         {
-            colorTarget.TransitionLayout(commandBuffer, ImageLayout.ColorAttachmentOptimal);
+            desc.Target.VK().TransitionLayout(commandBuffer,
+                                              desc.MipLevel,
+                                              1,
+                                              desc.Face,
+                                              1,
+                                              ImageLayout.ColorAttachmentOptimal);
         }
 
-        DepthStencilTarget?.TransitionLayout(commandBuffer, ImageLayout.DepthStencilAttachmentOptimal);
+        if (Desc.DepthStencilTarget is not null)
+        {
+            FrameBufferAttachmentDesc desc = Desc.DepthStencilTarget!.Value;
+
+            desc.Target.VK().TransitionLayout(commandBuffer,
+                                              desc.MipLevel,
+                                              1,
+                                              desc.Face,
+                                              1,
+                                              ImageLayout.DepthStencilAttachmentOptimal);
+        }
     }
 
     public void TransitionToFinalLayout(VkCommandBuffer commandBuffer)
     {
-        foreach (VKTextureView colorTarget in ColorTargets)
+        foreach (FrameBufferAttachmentDesc desc in Desc.ColorTargets)
         {
-            Texture texture = colorTarget.Desc.Target;
+            VKTexture texture = desc.Target.VK();
 
             ImageLayout imageLayout = ImageLayout.Undefined;
 
@@ -175,39 +182,56 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
             if (imageLayout is not ImageLayout.Undefined)
             {
-                colorTarget.TransitionLayout(commandBuffer, imageLayout);
+                texture.TransitionLayout(commandBuffer,
+                                         desc.MipLevel,
+                                         1,
+                                         desc.Face,
+                                         1,
+                                         imageLayout);
             }
         }
 
-        if (DepthStencilTarget is not null)
+        if (Desc.DepthStencilTarget is not null)
         {
-            if (DepthStencilTarget.Desc.Target.Desc.Usage.HasFlag(TextureUsage.Sampled))
+            FrameBufferAttachmentDesc desc = Desc.DepthStencilTarget!.Value;
+
+            VKTexture texture = desc.Target.VK();
+
+            if (texture.Desc.Usage.HasFlag(TextureUsage.Sampled))
             {
-                DepthStencilTarget.TransitionLayout(commandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+                texture.TransitionLayout(commandBuffer,
+                                         desc.MipLevel,
+                                         1,
+                                         desc.Face,
+                                         1,
+                                         ImageLayout.ShaderReadOnlyOptimal);
             }
         }
     }
 
     protected override void DebugName(string name)
     {
-        for (int i = 0; i < ColorTargets.Length; i++)
+        for (int i = 0; i < ColorViews.Length; i++)
         {
-            ColorTargets[i].Name = $"{name} Color Target[{i}]";
+            Context.SetDebugName(ObjectType.ImageView, ColorViews[i].Handle, $"{name} Color Target[{i}]");
         }
 
-        if (DepthStencilTarget is not null)
+        if (DepthStencilView is not null)
         {
-            DepthStencilTarget.Name = $"{name} Depth Stencil Target";
+            Context.SetDebugName(ObjectType.ImageView, DepthStencilView.Value.Handle, $"{name} Depth Stencil Target");
         }
     }
 
     protected override void Destroy()
     {
-        foreach (VKTextureView colorTarget in ColorTargets)
+        for (int i = 0; i < ColorViews.Length; i++)
         {
-            colorTarget.Dispose();
+            Context.Vk.DestroyImageView(Context.Device, ColorViews[i], null);
         }
 
-        DepthStencilTarget?.Dispose();
+        if (DepthStencilView is not null)
+        {
+            Context.Vk.DestroyImageView(Context.Device, DepthStencilView.Value, null);
+        }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace ZenithEngine.Common.Graphics;
 
-public class BufferAllocator(GraphicsContext context) : DisposableObject
+public class BufferAllocator(GraphicsContext context) : GraphicsResource(context)
 {
     private const uint MinBufferSize = 1024 * 4;
     private const uint MaxBufferCount = 100;
@@ -32,7 +32,7 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
 
             BufferDesc desc = BufferDesc.Default(sizeInBytes);
 
-            buffer = context.Factory.CreateBuffer(in desc);
+            buffer = Context.Factory.CreateBuffer(in desc);
         }
 
         inUse.Add(buffer);
@@ -56,6 +56,10 @@ public class BufferAllocator(GraphicsContext context) : DisposableObject
         {
             available.Add(item);
         }
+    }
+
+    protected override void DebugName(string name)
+    {
     }
 
     protected override void Destroy()

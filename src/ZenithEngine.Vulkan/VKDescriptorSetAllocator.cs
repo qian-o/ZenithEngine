@@ -1,12 +1,14 @@
 ﻿using Silk.NET.Vulkan;
-using ZenithEngine.Common;
+using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Vulkan;
 
-internal unsafe class VKDescriptorSetAllocator(VKGraphicsContext context) : DisposableObject
+internal unsafe class VKDescriptorSetAllocator(GraphicsContext context) : GraphicsResource(context)
 {
     private readonly Lock @lock = new();
     private readonly List<VKDescriptorPool> pools = [];
+
+    private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     public VKDescriptorAllocationToken Alloc(VkDescriptorSetLayout descriptorSetLayout,
                                              VKResourceCounts counts)
@@ -15,7 +17,7 @@ internal unsafe class VKDescriptorSetAllocator(VKGraphicsContext context) : Disp
 
         if (pools.FirstOrDefault(item => item.CanAlloc(counts)) is not VKDescriptorPool pool)
         {
-            pools.Add(pool = new(context));
+            pools.Add(pool = new(Context));
         }
 
         DescriptorSetAllocateInfo allocateInfo = new()
@@ -27,7 +29,7 @@ internal unsafe class VKDescriptorSetAllocator(VKGraphicsContext context) : Disp
         };
 
         VkDescriptorSet set;
-        context.Vk.AllocateDescriptorSets(context.Device,
+        Context.Vk.AllocateDescriptorSets(Context.Device,
                                           &allocateInfo,
                                           &set).ThrowIfError();
 
@@ -36,10 +38,14 @@ internal unsafe class VKDescriptorSetAllocator(VKGraphicsContext context) : Disp
 
     public void Free(VKDescriptorAllocationToken token)
     {
-        context.Vk.FreeDescriptorSets(context.Device,
+        Context.Vk.FreeDescriptorSets(Context.Device,
                                       token.Pool.Pool,
                                       1,
                                       &token.Set).ThrowIfError();
+    }
+
+    protected override void DebugName(string name)
+    {
     }
 
     protected override void Destroy()

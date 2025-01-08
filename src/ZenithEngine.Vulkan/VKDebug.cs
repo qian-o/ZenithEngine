@@ -3,10 +3,11 @@ using System.Text;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using ZenithEngine.Common;
+using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Vulkan;
 
-internal unsafe class VKDebug : DisposableObject
+internal unsafe class VKDebug : GraphicsResource
 {
     private static readonly bool debugUtilsSupported;
     private static readonly bool debugReportSupported;
@@ -14,7 +15,6 @@ internal unsafe class VKDebug : DisposableObject
     private static readonly PfnDebugUtilsMessengerCallbackEXT pfnUtilsCallback;
     private static readonly PfnDebugReportCallbackEXT pfnReportCallback;
 
-    private readonly VkInstance instance;
     private readonly ExtDebugUtils? utils;
     private readonly ExtDebugReport? report;
     private readonly ExtDebugMarker? marker;
@@ -76,13 +76,11 @@ internal unsafe class VKDebug : DisposableObject
         pfnReportCallback = (PfnDebugReportCallbackEXT)MessageCallback;
     }
 
-    public VKDebug(VKGraphicsContext context)
+    public VKDebug(GraphicsContext context) : base(context)
     {
-        instance = context.Instance;
-
-        utils = context.Vk.TryGetExtension<ExtDebugUtils>(instance);
-        report = context.Vk.TryGetExtension<ExtDebugReport>(instance);
-        marker = context.Vk.TryGetExtension<ExtDebugMarker>(instance);
+        utils = Context.Vk.TryGetExtension<ExtDebugUtils>(Context.Instance);
+        report = Context.Vk.TryGetExtension<ExtDebugReport>(Context.Instance);
+        marker = Context.Vk.TryGetExtension<ExtDebugMarker>(Context.Instance);
 
         if (debugUtilsSupported)
         {
@@ -101,7 +99,7 @@ internal unsafe class VKDebug : DisposableObject
             };
 
             DebugUtilsMessengerEXT messengerEXT;
-            utils!.CreateDebugUtilsMessenger(instance,
+            utils!.CreateDebugUtilsMessenger(Context.Instance,
                                              &createInfo,
                                              null,
                                              &messengerEXT).ThrowIfError();
@@ -122,7 +120,7 @@ internal unsafe class VKDebug : DisposableObject
             };
 
             DebugReportCallbackEXT callbackEXT;
-            report!.CreateDebugReportCallback(instance,
+            report!.CreateDebugReportCallback(Context.Instance,
                                               &createInfo,
                                               null,
                                               &callbackEXT).ThrowIfError();
@@ -132,6 +130,8 @@ internal unsafe class VKDebug : DisposableObject
     }
 
     public static string[] ExtensionNames { get; }
+
+    private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
     public void SetObjectName(VkDevice device,
                               ObjectType type,
@@ -166,16 +166,20 @@ internal unsafe class VKDebug : DisposableObject
         }
     }
 
+    protected override void DebugName(string name)
+    {
+    }
+
     protected override void Destroy()
     {
         if (reportCallback.HasValue)
         {
-            report!.DestroyDebugReportCallback(instance, reportCallback.Value, null);
+            report!.DestroyDebugReportCallback(Context.Instance, reportCallback.Value, null);
         }
 
         if (utilsCallback.HasValue)
         {
-            utils!.DestroyDebugUtilsMessenger(instance, utilsCallback.Value, null);
+            utils!.DestroyDebugUtilsMessenger(Context.Instance, utilsCallback.Value, null);
         }
 
         marker?.Dispose();

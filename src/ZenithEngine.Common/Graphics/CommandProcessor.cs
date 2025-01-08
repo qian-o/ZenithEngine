@@ -9,11 +9,11 @@ public abstract class CommandProcessor(GraphicsContext context,
     private readonly Queue<CommandBuffer> available = new();
 
     private CommandBuffer[] execution = new CommandBuffer[64];
-    private int executionSize;
+    private uint executionLength;
 
     public CommandProcessorType Type { get; } = type;
 
-    public bool CanExecute => executionSize > 0;
+    public bool CanExecute => executionLength > 0;
 
     /// <summary>
     /// Gets the next available command buffer.
@@ -51,7 +51,7 @@ public abstract class CommandProcessor(GraphicsContext context,
             Context.SyncCopyTasks();
         }
 
-        for (int i = 0; i < executionSize; i++)
+        for (uint i = 0; i < executionLength; i++)
         {
             CommandBuffer commandBuffer = execution[i];
 
@@ -60,8 +60,8 @@ public abstract class CommandProcessor(GraphicsContext context,
             available.Enqueue(commandBuffer);
         }
 
-        Array.Clear(execution, 0, executionSize);
-        executionSize = 0;
+        Array.Clear(execution, 0, (int)executionLength);
+        executionLength = 0;
     }
 
     /// <summary>
@@ -77,12 +77,12 @@ public abstract class CommandProcessor(GraphicsContext context,
     {
         using Lock.Scope _ = @lock.EnterScope();
 
-        if (execution.Length == executionSize)
+        if (execution.Length == executionLength)
         {
             Array.Resize(ref execution, execution.Length + 64);
         }
 
-        execution[executionSize++] = commandBuffer;
+        execution[executionLength++] = commandBuffer;
     }
 
     /// <summary>
