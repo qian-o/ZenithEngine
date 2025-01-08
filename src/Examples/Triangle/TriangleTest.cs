@@ -30,11 +30,11 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
         byte[] vs = DxcCompiler.Compile(ShaderStages.Vertex, hlsl, "VertexMain");
         byte[] ps = DxcCompiler.Compile(ShaderStages.Pixel, hlsl, "PixelMain");
 
-        BufferDesc vbDesc = BufferDesc.Default((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.VertexBuffer | BufferUsage.Dynamic);
+        BufferDesc vbDesc = BufferDesc.Default((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.VertexBuffer);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
 
-        BufferDesc ibDesc = BufferDesc.Default((uint)(indices.Length * sizeof(uint)), BufferUsage.IndexBuffer | BufferUsage.Dynamic);
+        BufferDesc ibDesc = BufferDesc.Default((uint)(indices.Length * sizeof(uint)), BufferUsage.IndexBuffer);
 
         indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
 
