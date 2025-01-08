@@ -1,4 +1,5 @@
 ﻿using Common;
+using Hexa.NET.ImGui;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -53,20 +54,21 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
         using Shader vsShader = Context.Factory.CreateShader(in vsDesc);
         using Shader psShader = Context.Factory.CreateShader(in psDesc);
 
-        GraphicsPipelineDesc desc = GraphicsPipelineDesc.Default
+        GraphicsPipelineDesc gpDesc = GraphicsPipelineDesc.Default
         (
             shaders: GraphicsShaderDesc.Default(vertex: vsShader, pixel: psShader),
-            inputLayouts: [Vertex.Layout],
+            inputLayouts: [Vertex.GetLayout()],
             resourceLayouts: [],
             outputs: SwapChain.FrameBuffer.Output,
             renderStates: RenderStateDesc.Default(RasterizerStates.None, DepthStencilStates.None, BlendStates.Opaque)
         );
 
-        pipeline = Context.Factory.CreateGraphicsPipeline(in desc);
+        pipeline = Context.Factory.CreateGraphicsPipeline(in gpDesc);
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)
     {
+        ImGui.ShowDemoWindow();
     }
 
     protected override void OnRender(double deltaTime, double totalTime)

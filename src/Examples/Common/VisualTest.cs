@@ -36,9 +36,9 @@ public abstract unsafe class VisualTest
 
         Window.Update += (a, b) =>
         {
-            OnUpdate(b.DeltaTime, b.TotalTime);
-
             ImGuiController.Update(b.DeltaTime, Window.Size);
+
+            OnUpdate(b.DeltaTime, b.TotalTime);
         };
 
         Window.Render += (a, b) =>
