@@ -221,26 +221,26 @@ internal unsafe partial class VKGraphicsContext
         uint computeQueueCount = 0;
         uint copyQueueCount = 0;
 
-        for (uint i = 0; i < properties.Length; i++)
+        for (int i = 0; i < properties.Length; i++)
         {
             QueueFlags flags = properties[i].QueueFlags;
             uint count = properties[i].QueueCount;
 
             if (flags.HasFlag(QueueFlags.GraphicsBit) && graphicsQueueCount < count)
             {
-                graphicsQueueFamilyIndex = i;
+                graphicsQueueFamilyIndex = (uint)i;
 
                 graphicsQueueCount = count;
             }
             else if (flags.HasFlag(QueueFlags.ComputeBit) && computeQueueCount < count)
             {
-                computeQueueFamilyIndex = i;
+                computeQueueFamilyIndex = (uint)i;
 
                 computeQueueCount = count;
             }
             else if (flags.HasFlag(QueueFlags.TransferBit) && copyQueueCount < count)
             {
-                copyQueueFamilyIndex = i;
+                copyQueueFamilyIndex = (uint)i;
 
                 copyQueueCount = count;
             }

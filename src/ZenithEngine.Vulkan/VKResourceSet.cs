@@ -23,7 +23,7 @@ internal unsafe class VKResourceSet : ResourceSet
         List<VKTexture> srvTextures = [];
         List<VKTexture> uavTextures = [];
 
-        for (uint i = 0; i < writes.Length; i++)
+        for (int i = 0; i < writes.Length; i++)
         {
             LayoutElementDesc element = layout.Desc.Elements[i];
 
@@ -94,7 +94,7 @@ internal unsafe class VKResourceSet : ResourceSet
         {
             DescriptorBufferInfo* infos = allocator.Alloc<DescriptorBufferInfo>(element.Count);
 
-            for (uint i = 0; i < element.Count; i++)
+            for (int i = 0; i < element.Count; i++)
             {
                 VKBuffer buffer = (VKBuffer)resources[i];
 
@@ -115,7 +115,7 @@ internal unsafe class VKResourceSet : ResourceSet
             bool isSrv = element.Type is ResourceType.Texture;
             ImageLayout imageLayout = isSrv ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.General;
 
-            for (uint i = 0; i < element.Count; i++)
+            for (int i = 0; i < element.Count; i++)
             {
                 VKTexture texture = (VKTexture)resources[i];
 
@@ -141,7 +141,7 @@ internal unsafe class VKResourceSet : ResourceSet
         {
             DescriptorImageInfo* infos = allocator.Alloc<DescriptorImageInfo>(element.Count);
 
-            for (uint i = 0; i < element.Count; i++)
+            for (int i = 0; i < element.Count; i++)
             {
                 VKSampler sampler = (VKSampler)resources[i];
 

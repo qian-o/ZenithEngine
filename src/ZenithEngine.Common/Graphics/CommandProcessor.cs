@@ -51,7 +51,7 @@ public abstract class CommandProcessor(GraphicsContext context,
             Context.SyncCopyTasks();
         }
 
-        for (uint i = 0; i < executionLength; i++)
+        for (int i = 0; i < executionLength; i++)
         {
             CommandBuffer commandBuffer = execution[i];
 

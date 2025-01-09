@@ -409,14 +409,14 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
         if (clearColor)
         {
-            for (uint i = 0; i < clearValue.ColorValues.Length; i++)
+            for (int i = 0; i < clearValue.ColorValues.Length; i++)
             {
                 Vector4D<float> color = clearValue.ColorValues[i];
 
                 ClearAttachment clearAttachment = new()
                 {
                     AspectMask = ImageAspectFlags.ColorBit,
-                    ColorAttachment = i,
+                    ColorAttachment = (uint)i,
                     ClearValue = new()
                     {
                         Color = new()
