@@ -25,7 +25,7 @@ internal unsafe class VKDebug : GraphicsResource
     {
         using Vk vk = Vk.GetApi();
 
-        uint extensionCount = 0;
+        uint extensionCount;
         vk.EnumerateInstanceExtensionProperties((string)null!,
                                                 &extensionCount,
                                                 null).ThrowIfError();
