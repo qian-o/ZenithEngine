@@ -1,4 +1,5 @@
-﻿using ZenithEngine.Common.Descriptions;
+﻿using Hexa.NET.ImGui;
+using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 using ZenithEngine.ImGuiWrapper;
@@ -11,8 +12,6 @@ public abstract unsafe class VisualTest
 {
     protected VisualTest(string name, Backend backend)
     {
-        List<double> samples = [];
-
         Window = WindowController.CreateWindow(name);
 
         Context = GraphicsContext.Create(backend);
@@ -52,6 +51,11 @@ public abstract unsafe class VisualTest
         {
             OnRender(b.DeltaTime, b.TotalTime);
 
+            ImGuiHelpers.LeftTopOverlay("Overlay", () =>
+            {
+                ImGui.Text($"FPS: {1.0 / b.DeltaTime:F2}");
+            });
+
             CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
 
             commandBuffer.Begin();
@@ -72,15 +76,6 @@ public abstract unsafe class VisualTest
             CommandProcessor.WaitIdle();
 
             SwapChain.Present();
-
-            samples.Add(b.DeltaTime);
-
-            if (samples.Count > 100)
-            {
-                Window.Title = $"{name} - {1.0 / samples.Average():F2} FPS";
-
-                samples.Clear();
-            }
         };
 
         Window.SizeChanged += (a, b) =>
