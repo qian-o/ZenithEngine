@@ -49,7 +49,7 @@ internal unsafe partial class VKGraphicsContext
 
     private void InitPhysicalDevice()
     {
-        uint physicalDeviceCount = 0;
+        uint physicalDeviceCount;
         Vk.EnumeratePhysicalDevices(Instance, &physicalDeviceCount, null).ThrowIfError();
 
         if (physicalDeviceCount is 0)
@@ -207,7 +207,7 @@ internal unsafe partial class VKGraphicsContext
 
     private (uint Graphics, uint Compute, uint Copy) MatchQueueFamilyIndices(VkPhysicalDevice physicalDevice)
     {
-        uint propertyCount = 0;
+        uint propertyCount;
         Vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propertyCount, null);
 
         QueueFamilyProperties[] properties = new QueueFamilyProperties[propertyCount];

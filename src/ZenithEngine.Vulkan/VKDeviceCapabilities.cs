@@ -7,8 +7,11 @@ namespace ZenithEngine.Vulkan;
 
 internal unsafe class VKDeviceCapabilities : DeviceCapabilities
 {
+    private string deviceName = "Unknown";
     private bool isRayQuerySupported;
     private bool isRayTracingSupported;
+
+    public override string DeviceName => deviceName;
 
     public override bool IsRayQuerySupported => isRayQuerySupported;
 
@@ -16,7 +19,12 @@ internal unsafe class VKDeviceCapabilities : DeviceCapabilities
 
     public void Init(VKGraphicsContext context)
     {
-        uint propertyCount = 0;
+        PhysicalDeviceProperties deviceProperties;
+        context.Vk.GetPhysicalDeviceProperties(context.PhysicalDevice, &deviceProperties);
+
+        deviceName = Utils.PtrToStringUTF8((nint)deviceProperties.DeviceName);
+
+        uint propertyCount;
         context.Vk.EnumerateDeviceExtensionProperties(context.PhysicalDevice,
                                                       (string)null!,
                                                       &propertyCount,

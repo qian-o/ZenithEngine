@@ -53,7 +53,15 @@ public abstract unsafe class VisualTest
 
             ImGuiHelpers.LeftTopOverlay("Overlay", () =>
             {
-                ImGui.Text($"FPS: {1.0 / b.DeltaTime:F2}");
+                ImGui.Text(Context.Capabilities.DeviceName);
+
+                ImGui.Separator();
+
+                ImGui.Text($"Frame Time: {b.DeltaTime * 1000:F2}ms");
+
+                ImGui.Separator();
+
+                ImGui.Text($"FPS: {1 / b.DeltaTime:F2}");
             });
 
             CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();

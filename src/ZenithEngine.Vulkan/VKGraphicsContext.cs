@@ -134,7 +134,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         {
             const string ValidationLayerName = "VK_LAYER_KHRONOS_validation";
 
-            uint layerCount = 0;
+            uint layerCount;
             Vk.EnumerateInstanceLayerProperties(&layerCount, null).ThrowIfError();
 
             LayerProperties[] layers = new LayerProperties[(int)layerCount];

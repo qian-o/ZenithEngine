@@ -51,8 +51,8 @@ public static unsafe class DxcCompiler
                              SilkMarshal.GuidPtrOf<IDxcResult>(),
                              (void**)result.GetAddressOf());
 
-        int status = 0;
-        result.GetStatus(ref status);
+        int status;
+        result.GetStatus(&status);
 
         if (status is not 0)
         {
