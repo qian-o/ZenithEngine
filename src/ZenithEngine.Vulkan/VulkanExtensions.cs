@@ -11,7 +11,7 @@ internal static class VulkanExtensions
     {
         if (result is not VkResult.Success)
         {
-            throw new ZenithEngineException($"Vulkan error: {result}");
+            throw new ZenithEngineException($"Vulkan error: [{result}].");
         }
     }
 

@@ -96,7 +96,7 @@ public unsafe class MemoryAllocator : DisposableObject
         NativeMemory.Free(ptr);
     }
 
-    public void Free(byte** ptr, int count)
+    public void Free(byte** ptr, uint count)
     {
         for (uint i = 0; i < count; i++)
         {

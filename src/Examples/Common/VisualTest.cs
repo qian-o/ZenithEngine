@@ -28,12 +28,12 @@ public abstract unsafe class VisualTest
 
             SwapChain = Context.Factory.CreateSwapChain(in swapChainDesc);
 
-            ImGuiController = new ImGuiController(Context,
-                                                  SwapChain.FrameBuffer.Output,
-                                                  Window,
-                                                  fontConfig: new(Path.Combine(AppContext.BaseDirectory, "Assets", "Fonts", "msyh.ttf"),
-                                                                  18,
-                                                                  static (io) => (nint)io.Fonts.GetGlyphRangesChineseSimplifiedCommon()));
+            ImGuiController = new(Context,
+                                  SwapChain.FrameBuffer.Output,
+                                  Window,
+                                  fontConfig: new(Path.Combine(AppContext.BaseDirectory, "Assets", "Fonts", "msyh.ttf"),
+                                                  18,
+                                                  static (io) => (nint)io.Fonts.GetGlyphRangesChineseSimplifiedCommon()));
 
             CommandProcessor = Context.Factory.CreateCommandProcessor(CommandProcessorType.Graphics);
 
