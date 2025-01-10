@@ -17,11 +17,11 @@ public static unsafe class SpvReflector
 
         List<ReflectResource> resources = [];
 
-        for (int i = 0; i < module->DescriptorSetCount; i++)
+        for (uint i = 0; i < module->DescriptorSetCount; i++)
         {
-            ReflectDescriptorSet set = module->DescriptorSets[i];
+            ReflectDescriptorSet set = module->DescriptorSets[(int)i];
 
-            for (int j = 0; j < set.BindingCount; j++)
+            for (uint j = 0; j < set.BindingCount; j++)
             {
                 DescriptorBinding* binding = set.Bindings[j];
 

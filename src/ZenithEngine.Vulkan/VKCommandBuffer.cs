@@ -525,7 +525,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
         Rect2D[] scs = new Rect2D[count];
 
-        for (int i = 0; i < count; i++)
+        for (uint i = 0; i < count; i++)
         {
             scs[i] = new()
             {
@@ -626,7 +626,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         uint[] offsets = new uint[vkResourceSet.DynamicConstantBufferCount];
         if (constantBufferOffsets is not null)
         {
-            for (int i = 0; i < vkResourceSet.DynamicConstantBufferCount; i++)
+            for (uint i = 0; i < vkResourceSet.DynamicConstantBufferCount; i++)
             {
                 offsets[i] = constantBufferOffsets[i];
             }

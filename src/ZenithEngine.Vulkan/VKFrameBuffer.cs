@@ -25,7 +25,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
         RenderingAttachmentInfo* colorAttachments = Allocator.Alloc<RenderingAttachmentInfo>(colorAttachmentCount);
         RenderingAttachmentInfo* depthStencilAttachment = hasDepthStencil ? Allocator.Alloc<RenderingAttachmentInfo>() : null;
 
-        for (int i = 0; i < colorAttachmentCount; i++)
+        for (uint i = 0; i < colorAttachmentCount; i++)
         {
             FrameBufferAttachmentDesc attachmentDesc = desc.ColorTargets[i];
             Texture target = attachmentDesc.Target;

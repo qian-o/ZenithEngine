@@ -89,7 +89,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
 
             PipelineColorBlendAttachmentState* attachments = Allocator.Alloc<PipelineColorBlendAttachmentState>(attachmentCount);
 
-            for (int i = 0; i < attachmentCount; i++)
+            for (uint i = 0; i < attachmentCount; i++)
             {
                 BlendStateRenderTargetDesc renderTarget = desc.RenderStates.BlendState.IndependentBlendEnabled ? renderTargets[i] : renderTargets[0];
 
@@ -165,13 +165,13 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
 
             uint bindingLocation = 0;
             uint attributeIndex = 0;
-            for (int i = 0; i < vertexInputBindingCount; i++)
+            for (uint i = 0; i < vertexInputBindingCount; i++)
             {
                 LayoutDesc layout = desc.InputLayouts[i];
 
                 bindingDescriptions[i] = new()
                 {
-                    Binding = (uint)i,
+                    Binding = i,
                     Stride = layout.Stride,
                     InputRate = layout.StepRate is 0 ? VertexInputRate.Vertex : VertexInputRate.Instance
                 };
@@ -182,7 +182,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
 
                     attributeDescriptions[attributeIndex] = new()
                     {
-                        Binding = (uint)i,
+                        Binding = i,
                         Location = (uint)(bindingLocation + j),
                         Format = VKFormats.GetElementFormat(element.Format),
                         Offset = (uint)element.Offset

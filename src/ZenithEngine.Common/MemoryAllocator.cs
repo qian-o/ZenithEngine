@@ -23,7 +23,7 @@ public unsafe class MemoryAllocator : DisposableObject
     {
         T* ptr = (T*)Alloc((uint)(sizeof(T) * count));
 
-        for (int i = 0; i < count; i++)
+        for (uint i = 0; i < count; i++)
         {
             ptr[i] = default;
         }
@@ -98,7 +98,7 @@ public unsafe class MemoryAllocator : DisposableObject
 
     public void Free(byte** ptr, int count)
     {
-        for (int i = 0; i < count; i++)
+        for (uint i = 0; i < count; i++)
         {
             Free(ptr[i]);
         }

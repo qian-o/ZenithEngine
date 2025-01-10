@@ -23,13 +23,13 @@ internal unsafe partial class VKGraphicsContext
         PhysicalDeviceMemoryProperties properties;
         Vk.GetPhysicalDeviceMemoryProperties(PhysicalDevice, &properties);
 
-        for (int i = 0; i < properties.MemoryTypeCount; i++)
+        for (uint i = 0; i < properties.MemoryTypeCount; i++)
         {
-            MemoryType memoryType = properties.MemoryTypes[i];
+            MemoryType memoryType = properties.MemoryTypes[(int)i];
 
-            if ((typeBits & (1 << i)) is not 0 && memoryType.PropertyFlags.HasFlag(flags))
+            if ((typeBits & (1 << (int)i)) is not 0 && memoryType.PropertyFlags.HasFlag(flags))
             {
-                return (uint)i;
+                return i;
             }
         }
 

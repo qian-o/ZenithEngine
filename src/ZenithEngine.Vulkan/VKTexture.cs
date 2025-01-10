@@ -150,13 +150,13 @@ internal unsafe class VKTexture : Texture
             return;
         }
 
-        for (int i = 0; i < mipLevels; i++)
+        for (uint i = 0; i < mipLevels; i++)
         {
-            uint mipLevel = baseMipLevel + (uint)i;
+            uint mipLevel = baseMipLevel + i;
 
-            for (int j = 0; j < faceCount; j++)
+            for (uint j = 0; j < faceCount; j++)
             {
-                uint face = (uint)baseFace + (uint)j;
+                uint face = (uint)baseFace + j;
 
                 ImageLayout oldLayout = this[mipLevel, (CubeMapFace)face];
 
