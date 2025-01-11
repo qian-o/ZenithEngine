@@ -49,8 +49,6 @@ public abstract unsafe class VisualTest
 
         Window.Render += (a, b) =>
         {
-            OnRender(b.DeltaTime, b.TotalTime);
-
             ImGuiHelpers.LeftTopOverlay("Overlay", () =>
             {
                 ImGui.Text(Context.Capabilities.DeviceName);
@@ -63,6 +61,8 @@ public abstract unsafe class VisualTest
 
                 ImGui.Text($"FPS: {1 / b.DeltaTime:F2}");
             });
+
+            OnRender(b.DeltaTime, b.TotalTime);
 
             CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
 
