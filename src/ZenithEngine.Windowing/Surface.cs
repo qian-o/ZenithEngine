@@ -39,7 +39,7 @@ internal readonly unsafe struct Surface : ISurface
         }
         else
         {
-            throw new ZenithEngineException("The platform is not supported.");
+            throw new ZenithEngineException(ZenithEngineException.NotSupported(nativeWindow.Kind));
         }
     }
 

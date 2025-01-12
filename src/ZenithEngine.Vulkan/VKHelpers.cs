@@ -61,7 +61,7 @@ internal class VKHelpers
         }
         else
         {
-            throw new InvalidOperationException("Unsupported layout transition.");
+            throw new ZenithEngineException(ZenithEngineException.NotSupported(barrier.OldLayout));
         }
 
         if (barrier.NewLayout is ImageLayout.TransferSrcOptimal)
@@ -101,7 +101,7 @@ internal class VKHelpers
         }
         else
         {
-            throw new InvalidOperationException("Unsupported layout transition.");
+            throw new ZenithEngineException(ZenithEngineException.NotSupported(barrier.OldLayout));
         }
     }
 

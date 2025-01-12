@@ -188,7 +188,7 @@ internal unsafe partial class VKSwapChain : SwapChain
                 }
                 break;
             default:
-                throw new ZenithEngineException("Unsupported surface type.");
+                throw new ZenithEngineException(ZenithEngineException.NotSupported(Desc.Surface.SurfaceType));
         }
     }
 
