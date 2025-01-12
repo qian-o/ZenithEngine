@@ -137,7 +137,7 @@ internal unsafe class VKBuffer : Buffer
 
         Context.Vk.BindBufferMemory(Context.Device,
                                     Buffer,
-                                    DeviceMemory.DeviceMemory,
+                                    deviceMemory.DeviceMemory,
                                     0).ThrowIfError();
 
         BufferDeviceAddressInfo addressInfo = new()
