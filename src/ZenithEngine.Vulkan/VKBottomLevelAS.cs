@@ -38,7 +38,7 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
 
         AccelerationStructureGeometryKHR* geometries = Allocator.Alloc<AccelerationStructureGeometryKHR>(geometryCount);
         AccelerationStructureBuildRangeInfoKHR* buildRangeInfos = Allocator.Alloc<AccelerationStructureBuildRangeInfoKHR>(geometryCount);
-        uint* primitiveCounts = Allocator.Alloc<uint>(geometryCount);
+        uint maxPrimitiveCount = 0;
 
         for (uint i = 0; i < geometryCount; i++)
         {
@@ -104,16 +104,16 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
 
             geometries[i] = geometry;
             buildRangeInfos[i] = buildRangeInfo;
-            primitiveCounts[i] = buildRangeInfo.PrimitiveCount;
+            maxPrimitiveCount = Math.Max(maxPrimitiveCount, buildRangeInfo.PrimitiveCount);
         }
 
         AccelerationStructureBuildGeometryInfoKHR buildGeometryInfo = new()
         {
             SType = StructureType.AccelerationStructureBuildGeometryInfoKhr,
             Type = AccelerationStructureTypeKHR.BottomLevelKhr,
+            Mode = BuildAccelerationStructureModeKHR.BuildKhr,
             GeometryCount = geometryCount,
             PGeometries = geometries,
-            Mode = BuildAccelerationStructureModeKHR.BuildKhr,
             Flags = BuildAccelerationStructureFlagsKHR.PreferFastTraceBitKhr
         };
 
@@ -125,7 +125,7 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
         Context.KhrAccelerationStructure!.GetAccelerationStructureBuildSizes(Context.Device,
                                                                              AccelerationStructureBuildTypeKHR.DeviceKhr,
                                                                              &buildGeometryInfo,
-                                                                             primitiveCounts,
+                                                                             &maxPrimitiveCount,
                                                                              &buildSizesInfo);
 
         AccelerationStructureBuffer = new(Context,

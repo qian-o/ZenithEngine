@@ -15,67 +15,20 @@ internal unsafe class VKTopLevelAS : TopLevelAS
                         VkCommandBuffer commandBuffer,
                         ref readonly TopLevelASDesc desc) : base(context, in desc)
     {
-        uint instanceCount = (uint)desc.Instances.Length;
-
         InstanceBuffer = new(Context,
-                             (uint)(instanceCount * sizeof(AccelerationStructureInstanceKHR)),
+                             (uint)(desc.Instances.Length * sizeof(AccelerationStructureInstanceKHR)),
                              BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr,
                              true);
 
-        MappedResource mapped = Context.MapMemory(InstanceBuffer, MapMode.Write);
-
-        for (uint i = 0; i < instanceCount; i++)
-        {
-            AccelerationStructureInstance item = desc.Instances[i];
-
-            AccelerationStructureInstanceKHR instance = new()
-            {
-                Transform = VKFormats.GetTransformMatrix(item.Transform),
-                InstanceCustomIndex = item.InstanceID,
-                Mask = item.InstanceMask,
-                InstanceShaderBindingTableRecordOffset = item.InstanceContributionToHitGroupIndex,
-                AccelerationStructureReference = item.BottomLevel.VK().Address,
-                Flags = VKFormats.GetGeometryInstanceFlags(item.Options)
-            };
-
-            Unsafe.Copy((byte*)(mapped.Data + (i * sizeof(AccelerationStructureInstanceKHR))), in instance);
-        }
-
-        Context.UnmapMemory(InstanceBuffer);
-
-        AccelerationStructureGeometryKHR geometry = new()
-        {
-            SType = StructureType.AccelerationStructureGeometryKhr,
-            GeometryType = GeometryTypeKHR.InstancesKhr,
-            Geometry = new()
-            {
-                Instances = new()
-                {
-                    SType = StructureType.AccelerationStructureGeometryInstancesDataKhr,
-                    Data = new()
-                    {
-                        DeviceAddress = InstanceBuffer.Address
-                    }
-                }
-            },
-            Flags = GeometryFlagsKHR.OpaqueBitKhr
-        };
-
-        AccelerationStructureBuildRangeInfoKHR buildRangeInfo = new()
-        {
-            PrimitiveCount = instanceCount,
-            PrimitiveOffset = desc.OffsetInBytes,
-            FirstVertex = 0,
-            TransformOffset = 0
-        };
+        FillInstanceBuffer(out AccelerationStructureGeometryKHR geometry, out AccelerationStructureBuildRangeInfoKHR buildRangeInfo);
 
         AccelerationStructureBuildGeometryInfoKHR buildGeometryInfo = new()
         {
             SType = StructureType.AccelerationStructureBuildGeometryInfoKhr,
             Type = AccelerationStructureTypeKHR.TopLevelKhr,
+            Mode = BuildAccelerationStructureModeKHR.BuildKhr,
             GeometryCount = 1,
             PGeometries = &geometry,
-            Mode = BuildAccelerationStructureModeKHR.BuildKhr,
             Flags = VKFormats.GetBuildAccelerationStructureFlags(desc.Options)
         };
 
@@ -87,7 +40,7 @@ internal unsafe class VKTopLevelAS : TopLevelAS
         Context.KhrAccelerationStructure!.GetAccelerationStructureBuildSizes(Context.Device,
                                                                              AccelerationStructureBuildTypeKHR.DeviceKhr,
                                                                              &buildGeometryInfo,
-                                                                             &instanceCount,
+                                                                             &buildRangeInfo.PrimitiveCount,
                                                                              &buildSizesInfo);
 
         AccelerationStructureBuffer = new(Context,
@@ -155,6 +108,33 @@ internal unsafe class VKTopLevelAS : TopLevelAS
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
+    public void UpdateAccelerationStructure(VkCommandBuffer commandBuffer, in TopLevelASDesc newDesc)
+    {
+        Desc = newDesc;
+
+        FillInstanceBuffer(out AccelerationStructureGeometryKHR geometry, out AccelerationStructureBuildRangeInfoKHR buildRangeInfo);
+
+        AccelerationStructureBuildGeometryInfoKHR buildGeometryInfo = new()
+        {
+            SType = StructureType.AccelerationStructureBuildGeometryInfoKhr,
+            Type = AccelerationStructureTypeKHR.TopLevelKhr,
+            Mode = BuildAccelerationStructureModeKHR.UpdateKhr,
+            SrcAccelerationStructure = AccelerationStructure,
+            DstAccelerationStructure = AccelerationStructure,
+            GeometryCount = 1,
+            PGeometries = &geometry,
+            ScratchData = new()
+            {
+                DeviceAddress = ScratchBuffer.Address
+            },
+            Flags = VKFormats.GetBuildAccelerationStructureFlags(Desc.Options)
+        };
+
+        AccelerationStructureBuildRangeInfoKHR* pBuildRangeInfo = &buildRangeInfo;
+
+        Context.KhrAccelerationStructure!.CmdBuildAccelerationStructures(commandBuffer, 1, &buildGeometryInfo, &pBuildRangeInfo);
+    }
+
     protected override void DebugName(string name)
     {
         Context.SetDebugName(ObjectType.AccelerationStructureKhr, AccelerationStructure.Handle, name);
@@ -167,5 +147,57 @@ internal unsafe class VKTopLevelAS : TopLevelAS
         InstanceBuffer.Dispose();
         AccelerationStructureBuffer.Dispose();
         ScratchBuffer.Dispose();
+    }
+
+    private void FillInstanceBuffer(out AccelerationStructureGeometryKHR geometry, out AccelerationStructureBuildRangeInfoKHR buildRangeInfo)
+    {
+        uint instanceCount = (uint)Desc.Instances.Length;
+
+        MappedResource mapped = Context.MapMemory(InstanceBuffer, MapMode.Write);
+
+        for (uint i = 0; i < instanceCount; i++)
+        {
+            AccelerationStructureInstance item = Desc.Instances[i];
+
+            AccelerationStructureInstanceKHR instance = new()
+            {
+                Transform = VKFormats.GetTransformMatrix(item.Transform),
+                InstanceCustomIndex = item.InstanceID,
+                Mask = item.InstanceMask,
+                InstanceShaderBindingTableRecordOffset = item.InstanceContributionToHitGroupIndex,
+                AccelerationStructureReference = item.BottomLevel.VK().Address,
+                Flags = VKFormats.GetGeometryInstanceFlags(item.Options)
+            };
+
+            Unsafe.Copy((byte*)(mapped.Data + (i * sizeof(AccelerationStructureInstanceKHR))), in instance);
+        }
+
+        Context.UnmapMemory(InstanceBuffer);
+
+        geometry = new()
+        {
+            SType = StructureType.AccelerationStructureGeometryKhr,
+            GeometryType = GeometryTypeKHR.InstancesKhr,
+            Geometry = new()
+            {
+                Instances = new()
+                {
+                    SType = StructureType.AccelerationStructureGeometryInstancesDataKhr,
+                    Data = new()
+                    {
+                        DeviceAddress = InstanceBuffer.Address
+                    }
+                }
+            },
+            Flags = GeometryFlagsKHR.OpaqueBitKhr
+        };
+
+        buildRangeInfo = new()
+        {
+            PrimitiveCount = instanceCount,
+            PrimitiveOffset = Desc.OffsetInBytes,
+            FirstVertex = 0,
+            TransformOffset = 0
+        };
     }
 }

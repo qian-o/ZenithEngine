@@ -386,7 +386,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
     public override void UpdateAccelerationStructure(ref TopLevelAS tlas, ref readonly TopLevelASDesc newDesc)
     {
-        throw new NotImplementedException();
+        tlas.VK().UpdateAccelerationStructure(CommandBuffer, in newDesc);
     }
     #endregion
 
