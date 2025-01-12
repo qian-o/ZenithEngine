@@ -376,7 +376,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     #region Acceleration Structure Operations
     public override BottomLevelAS BuildAccelerationStructure(ref readonly BottomLevelASDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKBottomLevelAS(Context, CommandBuffer, in desc);
     }
 
     public override TopLevelAS BuildAccelerationStructure(ref readonly TopLevelASDesc desc)

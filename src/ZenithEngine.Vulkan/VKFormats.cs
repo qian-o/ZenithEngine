@@ -1,9 +1,10 @@
-﻿using Silk.NET.Vulkan;
+﻿using Silk.NET.Maths;
+using Silk.NET.Vulkan;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Vulkan;
 
-internal class VKFormats
+internal unsafe class VKFormats
 {
     #region To Vulkan
     public static ImageType GetImageType(TextureType type)
@@ -143,18 +144,6 @@ internal class VKFormats
         }
 
         return flags;
-    }
-
-    public static ImageLayout GetImageLayout(TextureUsage usage)
-    {
-        return usage switch
-        {
-            TextureUsage.Sampled => ImageLayout.ShaderReadOnlyOptimal,
-            TextureUsage.Storage => ImageLayout.General,
-            TextureUsage.RenderTarget => ImageLayout.ColorAttachmentOptimal,
-            TextureUsage.DepthStencil => ImageLayout.DepthStencilAttachmentOptimal,
-            _ => throw new ArgumentOutOfRangeException(nameof(usage))
-        };
     }
 
     public static SampleCountFlags GetSampleCountFlags(TextureSampleCount count)
@@ -554,6 +543,26 @@ internal class VKFormats
         };
     }
 
+    public static TransformMatrixKHR GetTransformMatrix(Matrix4X4<float> matrix)
+    {
+        TransformMatrixKHR transformMatrix = new();
+
+        transformMatrix.Matrix[0] = matrix.M11;
+        transformMatrix.Matrix[1] = matrix.M12;
+        transformMatrix.Matrix[2] = matrix.M13;
+        transformMatrix.Matrix[3] = matrix.M14;
+        transformMatrix.Matrix[4] = matrix.M21;
+        transformMatrix.Matrix[5] = matrix.M22;
+        transformMatrix.Matrix[6] = matrix.M23;
+        transformMatrix.Matrix[7] = matrix.M24;
+        transformMatrix.Matrix[8] = matrix.M31;
+        transformMatrix.Matrix[9] = matrix.M32;
+        transformMatrix.Matrix[10] = matrix.M33;
+        transformMatrix.Matrix[11] = matrix.M34;
+
+        return transformMatrix;
+    }
+
     public static GeometryFlagsKHR GetGeometryFlags(AccelerationStructureGeometryOptions options)
     {
         GeometryFlagsKHR flags = GeometryFlagsKHR.None;
@@ -705,20 +714,4 @@ internal class VKFormats
         };
     }
     #endregion
-
-    public static ImageAspectFlags GetImageAspectFlags(ImageLayout layout)
-    {
-        ImageAspectFlags flags = ImageAspectFlags.None;
-
-        if (layout is ImageLayout.DepthStencilAttachmentOptimal)
-        {
-            flags |= ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit;
-        }
-        else
-        {
-            flags |= ImageAspectFlags.ColorBit;
-        }
-
-        return flags;
-    }
 }

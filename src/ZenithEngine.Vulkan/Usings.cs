@@ -6,6 +6,7 @@ global using Pipeline = ZenithEngine.Common.Graphics.Pipeline;
 global using PrimitiveTopology = ZenithEngine.Common.Enums.PrimitiveTopology;
 global using Sampler = ZenithEngine.Common.Graphics.Sampler;
 global using Viewport = ZenithEngine.Common.Graphics.Viewport;
+global using VkAccelerationStructure = Silk.NET.Vulkan.AccelerationStructureKHR;
 global using VkBuffer = Silk.NET.Vulkan.Buffer;
 global using VkCommandBuffer = Silk.NET.Vulkan.CommandBuffer;
 global using VkCommandPool = Silk.NET.Vulkan.CommandPool;

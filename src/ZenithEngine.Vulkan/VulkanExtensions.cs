@@ -154,4 +154,14 @@ internal static class VulkanExtensions
 
         return (VKCommandBuffer)commandBuffer;
     }
+
+    public static VKBottomLevelAS VK(this BottomLevelAS bottomLevelAS)
+    {
+        if (bottomLevelAS is not VKBottomLevelAS)
+        {
+            throw new ZenithEngineException("BottomLevelAS is not a Vulkan bottom level acceleration structure.");
+        }
+
+        return (VKBottomLevelAS)bottomLevelAS;
+    }
 }
