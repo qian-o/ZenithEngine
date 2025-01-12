@@ -381,7 +381,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
     public override TopLevelAS BuildAccelerationStructure(ref readonly TopLevelASDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKTopLevelAS(Context, CommandBuffer, in desc);
     }
 
     public override void UpdateAccelerationStructure(ref TopLevelAS tlas, ref readonly TopLevelASDesc newDesc)

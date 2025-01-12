@@ -164,4 +164,14 @@ internal static class VulkanExtensions
 
         return (VKBottomLevelAS)bottomLevelAS;
     }
+
+    public static VKTopLevelAS VK(this TopLevelAS topLevelAS)
+    {
+        if (topLevelAS is not VKTopLevelAS)
+        {
+            throw new ZenithEngineException("TopLevelAS is not a Vulkan top level acceleration structure.");
+        }
+
+        return (VKTopLevelAS)topLevelAS;
+    }
 }
