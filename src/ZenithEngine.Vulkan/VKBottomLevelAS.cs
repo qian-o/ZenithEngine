@@ -9,19 +9,22 @@ namespace ZenithEngine.Vulkan;
 internal unsafe class VKBottomLevelAS : BottomLevelAS
 {
     public VkAccelerationStructure AccelerationStructure;
+    public ulong Address;
 
     public VKBottomLevelAS(GraphicsContext context,
                            VkCommandBuffer commandBuffer,
                            ref readonly BottomLevelASDesc desc) : base(context, in desc)
     {
+        uint geometryCount = (uint)desc.Geometries.Length;
+
         TransformBuffer = new(Context,
-                              (uint)(desc.Geometries.Length * sizeof(TransformMatrixKHR)),
+                              (uint)(geometryCount * sizeof(TransformMatrixKHR)),
                               BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr,
                               true);
 
         MappedResource mapped = Context.MapMemory(TransformBuffer, MapMode.Write);
 
-        for (int i = 0; i < desc.Geometries.Length; i++)
+        for (uint i = 0; i < geometryCount; i++)
         {
             if (desc.Geometries[i] is AccelerationStructureTriangles triangles)
             {
@@ -33,11 +36,11 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
 
         Context.UnmapMemory(TransformBuffer);
 
-        AccelerationStructureGeometryKHR* geometries = Allocator.Alloc<AccelerationStructureGeometryKHR>((uint)desc.Geometries.Length);
-        AccelerationStructureBuildRangeInfoKHR* buildRangeInfos = Allocator.Alloc<AccelerationStructureBuildRangeInfoKHR>((uint)desc.Geometries.Length);
-        uint* primitiveCounts = Allocator.Alloc<uint>((uint)desc.Geometries.Length);
+        AccelerationStructureGeometryKHR* geometries = Allocator.Alloc<AccelerationStructureGeometryKHR>(geometryCount);
+        AccelerationStructureBuildRangeInfoKHR* buildRangeInfos = Allocator.Alloc<AccelerationStructureBuildRangeInfoKHR>(geometryCount);
+        uint* primitiveCounts = Allocator.Alloc<uint>(geometryCount);
 
-        for (int i = 0; i < desc.Geometries.Length; i++)
+        for (uint i = 0; i < geometryCount; i++)
         {
             AccelerationStructureGeometryKHR geometry = new()
             {
@@ -103,6 +106,83 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
             buildRangeInfos[i] = buildRangeInfo;
             primitiveCounts[i] = buildRangeInfo.PrimitiveCount;
         }
+
+        AccelerationStructureBuildGeometryInfoKHR buildGeometryInfo = new()
+        {
+            SType = StructureType.AccelerationStructureBuildGeometryInfoKhr,
+            Type = AccelerationStructureTypeKHR.BottomLevelKhr,
+            GeometryCount = geometryCount,
+            PGeometries = geometries,
+            Mode = BuildAccelerationStructureModeKHR.BuildKhr,
+            Flags = BuildAccelerationStructureFlagsKHR.PreferFastTraceBitKhr
+        };
+
+        AccelerationStructureBuildSizesInfoKHR buildSizesInfo = new()
+        {
+            SType = StructureType.AccelerationStructureBuildSizesInfoKhr
+        };
+
+        Context.KhrAccelerationStructure!.GetAccelerationStructureBuildSizes(Context.Device,
+                                                                             AccelerationStructureBuildTypeKHR.DeviceKhr,
+                                                                             &buildGeometryInfo,
+                                                                             primitiveCounts,
+                                                                             &buildSizesInfo);
+
+        AccelerationStructureBuffer = new(Context,
+                                          (uint)buildSizesInfo.AccelerationStructureSize,
+                                          BufferUsageFlags.AccelerationStructureStorageBitKhr,
+                                          false);
+
+        AccelerationStructureCreateInfoKHR createInfo = new()
+        {
+            SType = StructureType.AccelerationStructureCreateInfoKhr,
+            Buffer = AccelerationStructureBuffer.Buffer,
+            Size = buildSizesInfo.AccelerationStructureSize,
+            Type = AccelerationStructureTypeKHR.BottomLevelKhr
+        };
+
+        Context.KhrAccelerationStructure.CreateAccelerationStructure(Context.Device,
+                                                                     &createInfo,
+                                                                     null,
+                                                                     out AccelerationStructure).ThrowIfError();
+
+        AccelerationStructureDeviceAddressInfoKHR deviceAddressInfo = new()
+        {
+            SType = StructureType.AccelerationStructureDeviceAddressInfoKhr,
+            AccelerationStructure = AccelerationStructure
+        };
+
+        Address = Context.KhrAccelerationStructure.GetAccelerationStructureDeviceAddress(Context.Device, &deviceAddressInfo);
+
+        ScratchBuffer = new(Context, (uint)buildSizesInfo.BuildScratchSize, BufferUsageFlags.StorageBufferBit, false);
+
+        buildGeometryInfo.DstAccelerationStructure = AccelerationStructure;
+        buildGeometryInfo.ScratchData = new()
+        {
+            DeviceAddress = ScratchBuffer.Address
+        };
+
+        Context.KhrAccelerationStructure.CmdBuildAccelerationStructures(commandBuffer, 1, &buildGeometryInfo, &buildRangeInfos);
+
+        MemoryBarrier barrier = new()
+        {
+            SType = StructureType.MemoryBarrier,
+            SrcAccessMask = AccessFlags.AccelerationStructureReadBitKhr | AccessFlags.AccelerationStructureWriteBitKhr,
+            DstAccessMask = AccessFlags.AccelerationStructureReadBitKhr | AccessFlags.AccelerationStructureWriteBitKhr
+        };
+
+        Context.Vk.CmdPipelineBarrier(commandBuffer,
+                                      PipelineStageFlags.AccelerationStructureBuildBitKhr,
+                                      PipelineStageFlags.AccelerationStructureBuildBitKhr,
+                                      DependencyFlags.None,
+                                      1,
+                                      &barrier,
+                                      0,
+                                      null,
+                                      0,
+                                      null);
+
+        Allocator.Release();
     }
 
     public VKBuffer TransformBuffer { get; }
@@ -110,8 +190,6 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
     public VKBuffer AccelerationStructureBuffer { get; }
 
     public VKBuffer ScratchBuffer { get; }
-
-    public ulong Address { get; }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
