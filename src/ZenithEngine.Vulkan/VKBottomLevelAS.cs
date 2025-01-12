@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Silk.NET.Vulkan;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -99,7 +100,7 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
             }
             else
             {
-                throw new NotSupportedException();
+                throw new ZenithEngineException(ZenithEngineException.NotSupported(desc.Geometries[i]));
             }
 
             geometries[i] = geometry;

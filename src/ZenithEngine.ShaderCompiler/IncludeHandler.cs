@@ -32,7 +32,7 @@ internal unsafe class IncludeHandler(Func<string, string>? includeHandler) : Com
 
             if (string.IsNullOrEmpty(shader))
             {
-                throw new InvalidOperationException($"Include file '{fileName}' contains no data.");
+                throw new ZenithEngineException($"Include file '{fileName}' contains no data.");
             }
 
             byte[] source = Encoding.UTF8.GetBytes(shader);

@@ -56,7 +56,7 @@ public static unsafe class SpvReflector
 
             ResourceType.Sampler => binding - Utils.CbvCount - Utils.SrvCount - Utils.UavCount,
 
-            _ => throw new InvalidOperationException("ResourceType doesn't supported.")
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(type))
         };
     }
 }

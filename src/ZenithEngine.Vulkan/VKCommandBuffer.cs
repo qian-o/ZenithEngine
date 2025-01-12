@@ -636,7 +636,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         {
             VKGraphicsPipeline graphicsPipeline => (PipelineBindPoint.Graphics, graphicsPipeline.PipelineLayout),
             VKComputePipeline computePipeline => (PipelineBindPoint.Compute, computePipeline.PipelineLayout),
-            _ => throw new InvalidOperationException()
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(activePipeline))
         };
 
         if (offsets.Length > 0)

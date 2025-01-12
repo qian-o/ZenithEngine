@@ -120,7 +120,7 @@ internal class VKHelpers
 
             ResourceType.Sampler => Utils.CbvCount + Utils.SrvCount + Utils.UavCount + slot,
 
-            _ => throw new InvalidOperationException("ResourceType doesn't supported.")
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(type))
         };
     }
 }

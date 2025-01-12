@@ -1,5 +1,6 @@
 ﻿using Silk.NET.Maths;
 using Silk.NET.Vulkan;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Vulkan;
@@ -14,7 +15,7 @@ internal unsafe class VKFormats
             TextureType.Texture1D => ImageType.Type1D,
             TextureType.Texture2D or TextureType.TextureCube => ImageType.Type2D,
             TextureType.Texture3D => ImageType.Type3D,
-            _ => throw new ArgumentOutOfRangeException(nameof(type))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(type))
         };
     }
 
@@ -26,7 +27,7 @@ internal unsafe class VKFormats
             TextureType.Texture2D => ImageViewType.Type2D,
             TextureType.Texture3D => ImageViewType.Type3D,
             TextureType.TextureCube => ImageViewType.TypeCube,
-            _ => throw new ArgumentOutOfRangeException(nameof(type))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(type))
         };
     }
 
@@ -99,7 +100,7 @@ internal unsafe class VKFormats
             PixelFormat.D24UNormS8UInt => Format.D24UnormS8Uint,
             PixelFormat.D32FloatS8UInt => Format.D32SfloatS8Uint,
 
-            _ => throw new ArgumentOutOfRangeException(nameof(format))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(format))
         };
     }
 
@@ -156,7 +157,7 @@ internal unsafe class VKFormats
             TextureSampleCount.Count8 => SampleCountFlags.Count8Bit,
             TextureSampleCount.Count16 => SampleCountFlags.Count16Bit,
             TextureSampleCount.Count32 => SampleCountFlags.Count32Bit,
-            _ => throw new ArgumentOutOfRangeException(nameof(count))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(count))
         };
     }
 
@@ -213,7 +214,7 @@ internal unsafe class VKFormats
                 mode = SamplerMipmapMode.Linear;
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(filter));
+                throw new ZenithEngineException(ZenithEngineException.NotSupported(filter));
         }
     }
 
@@ -225,7 +226,7 @@ internal unsafe class VKFormats
             AddressMode.Mirror => SamplerAddressMode.MirroredRepeat,
             AddressMode.Clamp => SamplerAddressMode.ClampToEdge,
             AddressMode.Border => SamplerAddressMode.ClampToBorder,
-            _ => throw new ArgumentOutOfRangeException(nameof(mode))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(mode))
         };
     }
 
@@ -241,7 +242,7 @@ internal unsafe class VKFormats
             ComparisonFunction.NotEqual => CompareOp.NotEqual,
             ComparisonFunction.GreaterEqual => CompareOp.GreaterOrEqual,
             ComparisonFunction.Always => CompareOp.Always,
-            _ => throw new ArgumentOutOfRangeException(nameof(function))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(function))
         };
     }
 
@@ -252,7 +253,7 @@ internal unsafe class VKFormats
             SamplerBorderColor.TransparentBlack => BorderColor.FloatTransparentBlack,
             SamplerBorderColor.OpaqueBlack => BorderColor.FloatOpaqueBlack,
             SamplerBorderColor.OpaqueWhite => BorderColor.FloatOpaqueWhite,
-            _ => throw new ArgumentOutOfRangeException(nameof(color))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(color))
         };
     }
 
@@ -269,7 +270,8 @@ internal unsafe class VKFormats
             ResourceType.TextureReadWrite => DescriptorType.StorageImage,
             ResourceType.Sampler => DescriptorType.Sampler,
             ResourceType.AccelerationStructure => DescriptorType.AccelerationStructureKhr,
-            _ => throw new ArgumentOutOfRangeException(nameof(type))
+
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(type))
         };
     }
 
@@ -347,7 +349,7 @@ internal unsafe class VKFormats
             CullMode.None => CullModeFlags.None,
             CullMode.Front => CullModeFlags.FrontBit,
             CullMode.Back => CullModeFlags.BackBit,
-            _ => throw new ArgumentOutOfRangeException(nameof(mode))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(mode))
         };
     }
 
@@ -357,7 +359,7 @@ internal unsafe class VKFormats
         {
             FillMode.Solid => PolygonMode.Fill,
             FillMode.Wireframe => PolygonMode.Line,
-            _ => throw new ArgumentOutOfRangeException(nameof(mode))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(mode))
         };
     }
 
@@ -367,7 +369,7 @@ internal unsafe class VKFormats
         {
             FrontFace.CounterClockwise => VkFrontFace.CounterClockwise,
             FrontFace.Clockwise => VkFrontFace.Clockwise,
-            _ => throw new ArgumentOutOfRangeException(nameof(face))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(face))
         };
     }
 
@@ -383,7 +385,7 @@ internal unsafe class VKFormats
             StencilOperation.Invert => StencilOp.Invert,
             StencilOperation.IncrementAndWrap => StencilOp.IncrementAndWrap,
             StencilOperation.DecrementAndWrap => StencilOp.DecrementAndWrap,
-            _ => throw new ArgumentOutOfRangeException(nameof(operation))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(operation))
         };
     }
 
@@ -403,7 +405,7 @@ internal unsafe class VKFormats
             Blend.InverseDestinationColor => BlendFactor.OneMinusDstColor,
             Blend.BlendFactor => BlendFactor.ConstantColor,
             Blend.InverseBlendFactor => BlendFactor.OneMinusConstantColor,
-            _ => throw new ArgumentOutOfRangeException(nameof(blend))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(blend))
         };
     }
 
@@ -416,7 +418,7 @@ internal unsafe class VKFormats
             BlendOperation.ReverseSubtract => BlendOp.ReverseSubtract,
             BlendOperation.Min => BlendOp.Min,
             BlendOperation.Max => BlendOp.Max,
-            _ => throw new ArgumentOutOfRangeException(nameof(operation))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(operation))
         };
     }
 
@@ -511,7 +513,7 @@ internal unsafe class VKFormats
             ElementFormat.Int3 => Format.R32G32B32Sint,
             ElementFormat.Int4 => Format.R32G32B32A32Sint,
 
-            _ => throw new ArgumentOutOfRangeException(nameof(format))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(format))
         };
     }
 
@@ -529,7 +531,7 @@ internal unsafe class VKFormats
             PrimitiveTopology.TriangleListWithAdjacency => VkPrimitiveTopology.TriangleListWithAdjacency,
             PrimitiveTopology.TriangleStripWithAdjacency => VkPrimitiveTopology.TriangleStripWithAdjacency,
             PrimitiveTopology.PatchList => VkPrimitiveTopology.PatchList,
-            _ => throw new ArgumentOutOfRangeException(nameof(topology))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(topology))
         };
     }
 
@@ -539,7 +541,7 @@ internal unsafe class VKFormats
         {
             IndexFormat.U16Bit => IndexType.Uint16,
             IndexFormat.U32Bit => IndexType.Uint32,
-            _ => throw new ArgumentOutOfRangeException(nameof(format))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(format))
         };
     }
 
@@ -710,7 +712,7 @@ internal unsafe class VKFormats
             Format.D24UnormS8Uint => PixelFormat.D24UNormS8UInt,
             Format.D32SfloatS8Uint => PixelFormat.D32FloatS8UInt,
 
-            _ => throw new ArgumentOutOfRangeException(nameof(format))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(format))
         };
     }
     #endregion

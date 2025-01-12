@@ -1,4 +1,5 @@
-﻿using ZenithEngine.Common.Enums;
+﻿using ZenithEngine.Common;
+using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.ImGuiWrapper;
 
@@ -74,7 +75,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
         {
             ColorSpaceHandling.Legacy => Convert.FromHexString(VSByLegacyHexString),
             ColorSpaceHandling.Linear => Convert.FromHexString(VSByLinearHexString),
-            _ => throw new ArgumentOutOfRangeException(nameof(colorSpaceHandling))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(colorSpaceHandling))
         };
 
         ps = Convert.FromHexString(PSHexString);

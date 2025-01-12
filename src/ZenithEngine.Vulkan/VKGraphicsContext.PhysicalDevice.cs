@@ -43,7 +43,7 @@ internal unsafe partial class VKGraphicsContext
             CommandProcessorType.Graphics => GraphicsQueueFamilyIndex,
             CommandProcessorType.Compute => ComputeQueueFamilyIndex,
             CommandProcessorType.Copy => CopyQueueFamilyIndex,
-            _ => throw new ArgumentOutOfRangeException(nameof(processorType))
+            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(processorType))
         };
     }
 
