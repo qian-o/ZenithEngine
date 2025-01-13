@@ -567,7 +567,11 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
     public override void SetRayTracingPipeline(RayTracingPipeline pipeline)
     {
-        throw new NotImplementedException();
+        activePipeline = pipeline;
+
+        Context.Vk.CmdBindPipeline(CommandBuffer,
+                                   PipelineBindPoint.RayTracingKhr,
+                                   pipeline.VK().Pipeline);
     }
     #endregion
 

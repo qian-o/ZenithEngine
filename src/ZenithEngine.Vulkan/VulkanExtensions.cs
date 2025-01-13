@@ -135,6 +135,16 @@ internal static class VulkanExtensions
         return (VKComputePipeline)pipeline;
     }
 
+    public static VKRayTracingPipeline VK(this RayTracingPipeline pipeline)
+    {
+        if (pipeline is not VKRayTracingPipeline)
+        {
+            throw new ZenithEngineException("RayTracingPipeline is not a Vulkan ray tracing pipeline.");
+        }
+
+        return (VKRayTracingPipeline)pipeline;
+    }
+
     public static VKCommandProcessor VK(this CommandProcessor processor)
     {
         if (processor is not VKCommandProcessor)
