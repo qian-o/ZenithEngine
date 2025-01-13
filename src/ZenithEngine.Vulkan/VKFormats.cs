@@ -640,6 +640,16 @@ internal unsafe class VKFormats
 
         return flags;
     }
+
+    public static RayTracingShaderGroupTypeKHR GetRayTracingShaderGroupType(HitGroupType type)
+    {
+        return type switch
+        {
+            HitGroupType.Triangles => RayTracingShaderGroupTypeKHR.TrianglesHitGroupKhr,
+            HitGroupType.Procedural => RayTracingShaderGroupTypeKHR.ProceduralHitGroupKhr,
+            _ => throw new NotSupportedException(ExceptionHelpers.NotSupported(type))
+        };
+    }
     #endregion
 
     #region To ZenithEngine

@@ -123,7 +123,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
         Height = height;
         Output = OutputDesc.Default(sampleCount,
                                     hasDepthStencil ? desc.DepthStencilTarget!.Value.Target.Desc.Format : null,
-                                    [.. desc.ColorTargets.Select(static x => x.Target.Desc.Format)]);
+                                    [.. desc.ColorTargets.Select(static item => item.Target.Desc.Format)]);
     }
 
     public VkImageView[] ColorViews { get; }
