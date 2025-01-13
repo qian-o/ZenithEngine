@@ -640,7 +640,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         {
             VKGraphicsPipeline graphicsPipeline => (PipelineBindPoint.Graphics, graphicsPipeline.PipelineLayout),
             VKComputePipeline computePipeline => (PipelineBindPoint.Compute, computePipeline.PipelineLayout),
-            _ => throw new NotSupportedException(ExceptionHelper.NotSupported(activePipeline))
+            _ => throw new NotSupportedException(ExceptionHelpers.NotSupported(activePipeline))
         };
 
         if (offsets.Length > 0)

@@ -135,7 +135,7 @@ public static class Utils
             ElementFormat.UInt4 or
             ElementFormat.Int4 => 16,
 
-            _ => throw new NotSupportedException(ExceptionHelper.NotSupported(format))
+            _ => throw new NotSupportedException(ExceptionHelpers.NotSupported(format))
         };
     }
 

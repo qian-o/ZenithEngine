@@ -100,7 +100,7 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
             }
             else
             {
-                throw new NotSupportedException(ExceptionHelper.NotSupported(desc.Geometries[i]));
+                throw new NotSupportedException(ExceptionHelpers.NotSupported(desc.Geometries[i]));
             }
 
             geometries[i] = geometry;

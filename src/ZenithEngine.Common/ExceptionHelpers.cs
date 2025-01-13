@@ -1,6 +1,6 @@
 ﻿namespace ZenithEngine.Common;
 
-public static class ExceptionHelper
+public static class ExceptionHelpers
 {
     public static string NotSupported(object? value)
     {

@@ -56,7 +56,7 @@ public static unsafe class SpvReflector
 
             ResourceType.Sampler => binding - Utils.CbvCount - Utils.SrvCount - Utils.UavCount,
 
-            _ => throw new NotSupportedException(ExceptionHelper.NotSupported(type))
+            _ => throw new NotSupportedException(ExceptionHelpers.NotSupported(type))
         };
     }
 }

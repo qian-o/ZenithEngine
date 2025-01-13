@@ -104,7 +104,7 @@ internal unsafe partial class Window : IWindowProperties
                     WindowUtils.Sdl.SetWindowFullscreen(Handle, (uint)WindowFlags.Fullscreen);
                     break;
                 default:
-                    throw new NotSupportedException(ExceptionHelper.NotSupported(value));
+                    throw new NotSupportedException(ExceptionHelpers.NotSupported(value));
             }
         }
     }
@@ -136,7 +136,7 @@ internal unsafe partial class Window : IWindowProperties
                     WindowUtils.Sdl.SetWindowResizable(Handle, SdlBool.False);
                     break;
                 default:
-                    throw new NotSupportedException(ExceptionHelper.NotSupported(value));
+                    throw new NotSupportedException(ExceptionHelpers.NotSupported(value));
             }
         }
     }

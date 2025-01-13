@@ -43,7 +43,7 @@ internal unsafe partial class VKGraphicsContext
             CommandProcessorType.Graphics => GraphicsQueueFamilyIndex,
             CommandProcessorType.Compute => ComputeQueueFamilyIndex,
             CommandProcessorType.Copy => CopyQueueFamilyIndex,
-            _ => throw new NotSupportedException(ExceptionHelper.NotSupported(processorType))
+            _ => throw new NotSupportedException(ExceptionHelpers.NotSupported(processorType))
         };
     }
 

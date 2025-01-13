@@ -188,7 +188,7 @@ internal unsafe partial class VKSwapChain : SwapChain
                 }
                 break;
             default:
-                throw new NotSupportedException(ExceptionHelper.NotSupported(Desc.Surface.SurfaceType));
+                throw new NotSupportedException(ExceptionHelpers.NotSupported(Desc.Surface.SurfaceType));
         }
     }
 
