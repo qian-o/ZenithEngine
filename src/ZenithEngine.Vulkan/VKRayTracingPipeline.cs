@@ -12,6 +12,15 @@ internal unsafe class VKRayTracingPipeline : RayTracingPipeline
     public VKRayTracingPipeline(GraphicsContext context,
                                 ref readonly RayTracingPipelineDesc desc) : base(context, in desc)
     {
+        RayTracingPipelineCreateInfoKHR createInfo = new()
+        {
+            SType = StructureType.RayTracingPipelineCreateInfoKhr,
+            MaxPipelineRayRecursionDepth = desc.MaxTraceRecursionDepth
+        };
+
+        // Shaders
+        {
+        }
     }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
