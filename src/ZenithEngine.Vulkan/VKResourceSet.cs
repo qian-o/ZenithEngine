@@ -155,7 +155,7 @@ internal unsafe class VKResourceSet : ResourceSet
         }
         else
         {
-            throw new ZenithEngineException(ZenithEngineException.NotSupported(element.Type));
+            throw new NotSupportedException(ExceptionHelper.NotSupported(element.Type));
         }
     }
 }

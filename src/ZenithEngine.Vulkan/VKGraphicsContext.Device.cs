@@ -32,7 +32,7 @@ internal unsafe partial class VKGraphicsContext
             CommandProcessorType.Graphics => GraphicsQueue,
             CommandProcessorType.Compute => ComputeQueue,
             CommandProcessorType.Copy => CopyQueue,
-            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(type))
+            _ => throw new NotSupportedException(ExceptionHelper.NotSupported(type))
         };
     }
 

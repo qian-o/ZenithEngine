@@ -101,7 +101,7 @@ public abstract unsafe class GraphicsContext : DisposableObject
         return backend switch
         {
             Backend.Vulkan => CreateInstance<GraphicsContext>("ZenithEngine.Vulkan", "VKGraphicsContext"),
-            _ => throw new ZenithEngineException("No graphics context available for the specified backend.")
+            _ => throw new NotSupportedException(ExceptionHelper.NotSupported(backend))
         };
     }
 

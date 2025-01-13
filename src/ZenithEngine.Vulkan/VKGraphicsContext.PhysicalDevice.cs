@@ -33,7 +33,7 @@ internal unsafe partial class VKGraphicsContext
             }
         }
 
-        throw new ZenithEngineException("Failed to find suitable memory type.");
+        throw new Exception("Failed to find suitable memory type.");
     }
 
     public uint FindQueueFamilyIndex(CommandProcessorType processorType)
@@ -43,7 +43,7 @@ internal unsafe partial class VKGraphicsContext
             CommandProcessorType.Graphics => GraphicsQueueFamilyIndex,
             CommandProcessorType.Compute => ComputeQueueFamilyIndex,
             CommandProcessorType.Copy => CopyQueueFamilyIndex,
-            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(processorType))
+            _ => throw new NotSupportedException(ExceptionHelper.NotSupported(processorType))
         };
     }
 
@@ -54,7 +54,7 @@ internal unsafe partial class VKGraphicsContext
 
         if (physicalDeviceCount is 0)
         {
-            throw new ZenithEngineException("No physical devices found.");
+            throw new Exception("No physical devices found.");
         }
 
         VkPhysicalDevice[] physicalDevices = new VkPhysicalDevice[physicalDeviceCount];

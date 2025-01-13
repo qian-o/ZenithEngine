@@ -58,7 +58,7 @@ public static unsafe class DxcCompiler
         {
             result.GetErrorBuffer((IDxcBlobEncoding**)eb.GetAddressOf());
 
-            throw new ZenithEngineException($"Shader compilation failed: {Utils.PtrToStringUTF8((nint)eb.GetBufferPointer())}");
+            throw new Exception(Utils.PtrToStringUTF8((nint)eb.GetBufferPointer()));
         }
 
         result.GetResult(rb.GetAddressOf());

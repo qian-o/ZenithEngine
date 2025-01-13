@@ -84,7 +84,7 @@ internal class SpvFormats
             DescriptorType.UniformBuffer => ResourceType.ConstantBuffer,
             DescriptorType.StorageBuffer => rType is SpvResourceType.Srv ? ResourceType.StructuredBuffer : ResourceType.StructuredBufferReadWrite,
             DescriptorType.AccelerationStructureKhr => ResourceType.AccelerationStructure,
-            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(dType))
+            _ => throw new NotSupportedException(ExceptionHelper.NotSupported(dType))
         };
     }
     #endregion

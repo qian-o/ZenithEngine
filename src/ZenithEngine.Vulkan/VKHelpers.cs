@@ -61,7 +61,7 @@ internal class VKHelpers
         }
         else
         {
-            throw new ZenithEngineException(ZenithEngineException.NotSupported(barrier.OldLayout));
+            throw new NotSupportedException(ExceptionHelper.NotSupported(barrier.OldLayout));
         }
 
         if (barrier.NewLayout is ImageLayout.TransferSrcOptimal)
@@ -101,7 +101,7 @@ internal class VKHelpers
         }
         else
         {
-            throw new ZenithEngineException(ZenithEngineException.NotSupported(barrier.OldLayout));
+            throw new NotSupportedException(ExceptionHelper.NotSupported(barrier.OldLayout));
         }
     }
 
@@ -120,7 +120,7 @@ internal class VKHelpers
 
             ResourceType.Sampler => Utils.CbvCount + Utils.SrvCount + Utils.UavCount + slot,
 
-            _ => throw new ZenithEngineException(ZenithEngineException.NotSupported(type))
+            _ => throw new NotSupportedException(ExceptionHelper.NotSupported(type))
         };
     }
 }
