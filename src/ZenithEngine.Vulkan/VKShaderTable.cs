@@ -12,48 +12,53 @@ internal unsafe class VKShaderTable : GraphicsResource
     public StridedDeviceAddressRegionKHR MissRegion;
     public StridedDeviceAddressRegionKHR HitGroupRegion;
 
-    public VKShaderTable(GraphicsContext context, VKRayTracingPipeline pipeline) : base(context)
+    public VKShaderTable(GraphicsContext context,
+                         VkPipeline pipeline,
+                         uint rayGenCount,
+                         uint missCount,
+                         uint hitGroupCount) : base(context)
     {
         uint handleSize = 32;
         uint handleSizeAligned = Utils.AlignedSize(handleSize, 64u);
 
-        uint missCount = (uint)pipeline.Desc.Shaders.Miss.Length;
-        uint hitGroupCount = (uint)pipeline.Desc.HitGroups.Length;
-        uint groupCount = 1 + missCount + hitGroupCount;
+        uint groupCount = rayGenCount + missCount + hitGroupCount;
 
+        uint rayGenSize = rayGenCount * handleSize;
         uint missSize = missCount * handleSize;
         uint hitGroupSize = hitGroupCount * handleSize;
-        uint groupSize = groupCount * handleSize;
 
-        byte* group = Allocator.Alloc<byte>(groupSize);
-        Context.KhrRayTracingPipeline!.GetRayTracingCaptureReplayShaderGroupHandles(Context.Device,
-                                                                                    pipeline.Pipeline,
-                                                                                    0,
-                                                                                    groupCount,
-                                                                                    groupSize,
-                                                                                    group).ThrowIfError();
-
+        uint rayGenSizeAligned = rayGenCount * handleSizeAligned;
         uint missSizeAligned = missCount * handleSizeAligned;
         uint hitGroupSizeAligned = hitGroupCount * handleSizeAligned;
 
-        RayGenBuffer = new(Context, handleSizeAligned, BufferUsageFlags.ShaderBindingTableBitKhr, true);
+        uint dataSize = rayGenSize + missSize + hitGroupSize;
+        byte* data = Allocator.Alloc<byte>(dataSize);
+        Context.KhrRayTracingPipeline!.GetRayTracingCaptureReplayShaderGroupHandles(Context.Device,
+                                                                                    pipeline,
+                                                                                    0,
+                                                                                    groupCount,
+                                                                                    dataSize,
+                                                                                    data).ThrowIfError();
+
+
+        RayGenBuffer = new(Context, rayGenSizeAligned, BufferUsageFlags.ShaderBindingTableBitKhr, true);
         MissBuffer = new(Context, missSizeAligned, BufferUsageFlags.ShaderBindingTableBitKhr, true);
         HitGroupBuffer = new(Context, hitGroupSizeAligned, BufferUsageFlags.ShaderBindingTableBitKhr, true);
 
-        CopyHandles(RayGenBuffer, 1);
-        group += handleSize;
+        CopyHandles(RayGenBuffer, rayGenCount);
+        data += rayGenSize;
 
         CopyHandles(MissBuffer, missCount);
-        group += missSize;
+        data += missSize;
 
         CopyHandles(HitGroupBuffer, hitGroupCount);
-        group += hitGroupSize;
+        data += hitGroupSize;
 
         RayGenRegion = new()
         {
             DeviceAddress = RayGenBuffer.Address,
             Stride = handleSizeAligned,
-            Size = handleSizeAligned
+            Size = rayGenSizeAligned
         };
 
         MissRegion = new()
@@ -70,7 +75,7 @@ internal unsafe class VKShaderTable : GraphicsResource
             Size = hitGroupSizeAligned
         };
 
-        Allocator.Free(group);
+        Allocator.Free(data);
 
         void CopyHandles(VKBuffer buffer, uint count)
         {
@@ -79,7 +84,7 @@ internal unsafe class VKShaderTable : GraphicsResource
             for (uint i = 0; i < count; i++)
             {
                 Unsafe.CopyBlock((byte*)(mapped.Data + (i * handleSizeAligned)),
-                                 group + (i * handleSize),
+                                 data + (i * handleSize),
                                  handleSize);
             }
 
