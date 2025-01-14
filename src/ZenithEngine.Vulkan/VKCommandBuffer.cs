@@ -640,6 +640,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         {
             VKGraphicsPipeline graphicsPipeline => (PipelineBindPoint.Graphics, graphicsPipeline.PipelineLayout),
             VKComputePipeline computePipeline => (PipelineBindPoint.Compute, computePipeline.PipelineLayout),
+            VKRayTracingPipeline rayTracingPipeline => (PipelineBindPoint.RayTracingKhr, rayTracingPipeline.PipelineLayout),
             _ => throw new NotSupportedException(ExceptionHelpers.NotSupported(activePipeline))
         };
 
@@ -742,7 +743,24 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     #region Ray Tracing Operations
     public override void DispatchRays(uint width, uint height, uint depth)
     {
-        throw new NotImplementedException();
+        if (activePipeline is not VKRayTracingPipeline rayTracingPipeline)
+        {
+            throw new NotSupportedException(ExceptionHelpers.NotSupported(activePipeline));
+        }
+
+        StridedDeviceAddressRegionKHR rayGenRegion = rayTracingPipeline.ShaderTable.RayGenRegion;
+        StridedDeviceAddressRegionKHR missRegion = rayTracingPipeline.ShaderTable.MissRegion;
+        StridedDeviceAddressRegionKHR hitGroupRegion = rayTracingPipeline.ShaderTable.HitGroupRegion;
+        StridedDeviceAddressRegionKHR callableRegion = new();
+
+        Context.KhrRayTracingPipeline!.CmdTraceRays(CommandBuffer,
+                                                    &rayGenRegion,
+                                                    &missRegion,
+                                                    &hitGroupRegion,
+                                                    &callableRegion,
+                                                    width,
+                                                    height,
+                                                    depth);
     }
     #endregion
 

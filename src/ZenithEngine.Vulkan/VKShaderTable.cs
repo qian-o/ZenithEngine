@@ -21,8 +21,6 @@ internal unsafe class VKShaderTable : GraphicsResource
         uint handleSize = 32;
         uint handleSizeAligned = Utils.AlignedSize(handleSize, 64u);
 
-        uint groupCount = rayGenCount + missCount + hitGroupCount;
-
         uint rayGenSize = rayGenCount * handleSize;
         uint missSize = missCount * handleSize;
         uint hitGroupSize = hitGroupCount * handleSize;
@@ -31,8 +29,10 @@ internal unsafe class VKShaderTable : GraphicsResource
         uint missSizeAligned = missCount * handleSizeAligned;
         uint hitGroupSizeAligned = hitGroupCount * handleSizeAligned;
 
+        uint groupCount = rayGenCount + missCount + hitGroupCount;
         uint dataSize = rayGenSize + missSize + hitGroupSize;
         byte* data = Allocator.Alloc<byte>(dataSize);
+
         Context.KhrRayTracingPipeline!.GetRayTracingCaptureReplayShaderGroupHandles(Context.Device,
                                                                                     pipeline,
                                                                                     0,
@@ -46,13 +46,8 @@ internal unsafe class VKShaderTable : GraphicsResource
         HitGroupBuffer = new(Context, hitGroupSizeAligned, BufferUsageFlags.ShaderBindingTableBitKhr, true);
 
         CopyHandles(RayGenBuffer, rayGenCount);
-        data += rayGenSize;
-
         CopyHandles(MissBuffer, missCount);
-        data += missSize;
-
         CopyHandles(HitGroupBuffer, hitGroupCount);
-        data += hitGroupSize;
 
         RayGenRegion = new()
         {
@@ -75,7 +70,7 @@ internal unsafe class VKShaderTable : GraphicsResource
             Size = hitGroupSizeAligned
         };
 
-        Allocator.Free(data);
+        Allocator.Release();
 
         void CopyHandles(VKBuffer buffer, uint count)
         {
@@ -84,8 +79,10 @@ internal unsafe class VKShaderTable : GraphicsResource
             for (uint i = 0; i < count; i++)
             {
                 Unsafe.CopyBlock((byte*)(mapped.Data + (i * handleSizeAligned)),
-                                 data + (i * handleSize),
+                                 data,
                                  handleSize);
+
+                data += handleSize;
             }
 
             Context.UnmapMemory(buffer);
@@ -102,6 +99,9 @@ internal unsafe class VKShaderTable : GraphicsResource
 
     protected override void DebugName(string name)
     {
+        Context.SetDebugName(ObjectType.Buffer, RayGenBuffer.VK().Buffer.Handle, $"{name}_RayGenBuffer");
+        Context.SetDebugName(ObjectType.Buffer, MissBuffer.VK().Buffer.Handle, $"{name}_MissBuffer");
+        Context.SetDebugName(ObjectType.Buffer, HitGroupBuffer.VK().Buffer.Handle, $"{name}_HitGroupBuffer");
     }
 
     protected override void Destroy()

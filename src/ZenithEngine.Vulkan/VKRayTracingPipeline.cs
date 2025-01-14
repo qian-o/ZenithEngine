@@ -87,8 +87,12 @@ internal unsafe class VKRayTracingPipeline : RayTracingPipeline
                                                                  null,
                                                                  out Pipeline).ThrowIfError();
 
+        ShaderTable = new(Context, Pipeline, 1, (uint)desc.Shaders.Miss.Length, (uint)desc.HitGroups.Length);
+
         Allocator.Release();
     }
+
+    public VKShaderTable ShaderTable { get; }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
