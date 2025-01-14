@@ -26,8 +26,9 @@ internal unsafe class VKResourceSet : ResourceSet
         for (int i = 0; i < writes.Length; i++)
         {
             LayoutElementDesc element = layout.Desc.Elements[i];
+            GraphicsResource[] resources = desc.Resources[(int)resourceOffset..(int)(resourceOffset + element.Count)];
 
-            writes[i] = new()
+            WriteDescriptorSet write = new()
             {
                 SType = StructureType.WriteDescriptorSet,
                 DstSet = Token.Set,
@@ -36,12 +37,99 @@ internal unsafe class VKResourceSet : ResourceSet
                 DescriptorType = VKFormats.GetDescriptorType(element.Type, element.AllowDynamicOffset)
             };
 
-            FillDescriptors(Allocator,
-                            element,
-                            desc.Resources[(int)resourceOffset..(int)(resourceOffset + element.Count)],
-                            ref writes[i],
-                            srvTextures,
-                            uavTextures);
+            if (element.Type
+                is ResourceType.ConstantBuffer
+                or ResourceType.StructuredBuffer
+                or ResourceType.StructuredBufferReadWrite)
+            {
+                DescriptorBufferInfo* infos = Allocator.Alloc<DescriptorBufferInfo>(element.Count);
+
+                for (uint j = 0; j < element.Count; j++)
+                {
+                    VKBuffer buffer = (VKBuffer)resources[j];
+
+                    infos[j] = new()
+                    {
+                        Buffer = buffer.Buffer,
+                        Offset = 0,
+                        Range = element.Range is 0 ? Vk.WholeSize : element.Range
+                    };
+                }
+
+                write.PBufferInfo = infos;
+            }
+            else if (element.Type is ResourceType.Texture or ResourceType.TextureReadWrite)
+            {
+                DescriptorImageInfo* infos = Allocator.Alloc<DescriptorImageInfo>(element.Count);
+
+                bool isSrv = element.Type is ResourceType.Texture;
+                ImageLayout imageLayout = isSrv ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.General;
+
+                for (uint j = 0; j < element.Count; j++)
+                {
+                    VKTexture texture = (VKTexture)resources[j];
+
+                    infos[j] = new()
+                    {
+                        ImageView = texture.ImageView,
+                        ImageLayout = imageLayout
+                    };
+
+                    if (isSrv)
+                    {
+                        srvTextures.Add(texture);
+                    }
+                    else
+                    {
+                        uavTextures.Add(texture);
+                    }
+                }
+
+                write.PImageInfo = infos;
+            }
+            else if (element.Type is ResourceType.Sampler)
+            {
+                DescriptorImageInfo* infos = Allocator.Alloc<DescriptorImageInfo>(element.Count);
+
+                for (uint j = 0; j < element.Count; j++)
+                {
+                    VKSampler sampler = (VKSampler)resources[j];
+
+                    infos[j] = new()
+                    {
+                        Sampler = sampler.Sampler
+                    };
+                }
+
+                write.PImageInfo = infos;
+            }
+            else if (element.Type is ResourceType.AccelerationStructure)
+            {
+                WriteDescriptorSetAccelerationStructureKHR descriptorSetAccelerationStructure = new()
+                {
+                    SType = StructureType.WriteDescriptorSetAccelerationStructureKhr,
+                    AccelerationStructureCount = element.Count
+                };
+
+                AccelerationStructureKHR* accelerationStructures = Allocator.Alloc<AccelerationStructureKHR>(element.Count);
+
+                for (uint j = 0; j < element.Count; j++)
+                {
+                    VKTopLevelAS topLevelAS = (VKTopLevelAS)resources[j];
+
+                    accelerationStructures[j] = topLevelAS.AccelerationStructure;
+                }
+
+                descriptorSetAccelerationStructure.PAccelerationStructures = accelerationStructures;
+
+                write.PNext = Allocator.Alloc([descriptorSetAccelerationStructure]);
+            }
+            else
+            {
+                throw new NotSupportedException(ExceptionHelpers.NotSupported(element.Type));
+            }
+
+            writes[i] = write;
 
             resourceOffset += element.Count;
         }
@@ -78,105 +166,5 @@ internal unsafe class VKResourceSet : ResourceSet
         Array.Clear(SrvTextures, 0, SrvTextures.Length);
 
         Context.DescriptorSetAllocator!.Free(Token);
-    }
-
-    private static void FillDescriptors(MemoryAllocator allocator,
-                                        LayoutElementDesc element,
-                                        GraphicsResource[] resources,
-                                        ref WriteDescriptorSet write,
-                                        List<VKTexture> srvTextures,
-                                        List<VKTexture> uavTextures)
-    {
-        if (element.Type
-            is ResourceType.ConstantBuffer
-            or ResourceType.StructuredBuffer
-            or ResourceType.StructuredBufferReadWrite)
-        {
-            DescriptorBufferInfo* infos = allocator.Alloc<DescriptorBufferInfo>(element.Count);
-
-            for (uint i = 0; i < element.Count; i++)
-            {
-                VKBuffer buffer = (VKBuffer)resources[i];
-
-                infos[i] = new()
-                {
-                    Buffer = buffer.Buffer,
-                    Offset = 0,
-                    Range = element.Range is 0 ? Vk.WholeSize : element.Range
-                };
-            }
-
-            write.PBufferInfo = infos;
-        }
-        else if (element.Type is ResourceType.Texture or ResourceType.TextureReadWrite)
-        {
-            DescriptorImageInfo* infos = allocator.Alloc<DescriptorImageInfo>(element.Count);
-
-            bool isSrv = element.Type is ResourceType.Texture;
-            ImageLayout imageLayout = isSrv ? ImageLayout.ShaderReadOnlyOptimal : ImageLayout.General;
-
-            for (uint i = 0; i < element.Count; i++)
-            {
-                VKTexture texture = (VKTexture)resources[i];
-
-                infos[i] = new()
-                {
-                    ImageView = texture.ImageView,
-                    ImageLayout = imageLayout
-                };
-
-                if (isSrv)
-                {
-                    srvTextures.Add(texture);
-                }
-                else
-                {
-                    uavTextures.Add(texture);
-                }
-            }
-
-            write.PImageInfo = infos;
-        }
-        else if (element.Type is ResourceType.Sampler)
-        {
-            DescriptorImageInfo* infos = allocator.Alloc<DescriptorImageInfo>(element.Count);
-
-            for (uint i = 0; i < element.Count; i++)
-            {
-                VKSampler sampler = (VKSampler)resources[i];
-
-                infos[i] = new()
-                {
-                    Sampler = sampler.Sampler
-                };
-            }
-
-            write.PImageInfo = infos;
-        }
-        else if (element.Type is ResourceType.AccelerationStructure)
-        {
-            WriteDescriptorSetAccelerationStructureKHR descriptorSetAccelerationStructure = new()
-            {
-                SType = StructureType.WriteDescriptorSetAccelerationStructureKhr,
-                AccelerationStructureCount = element.Count
-            };
-
-            AccelerationStructureKHR* accelerationStructures = allocator.Alloc<AccelerationStructureKHR>(element.Count);
-
-            for (uint i = 0; i < element.Count; i++)
-            {
-                VKTopLevelAS topLevelAS = (VKTopLevelAS)resources[i];
-
-                accelerationStructures[i] = topLevelAS.AccelerationStructure;
-            }
-
-            descriptorSetAccelerationStructure.PAccelerationStructures = accelerationStructures;
-
-            write.PNext = allocator.Alloc([descriptorSetAccelerationStructure]);
-        }
-        else
-        {
-            throw new NotSupportedException(ExceptionHelpers.NotSupported(element.Type));
-        }
     }
 }
