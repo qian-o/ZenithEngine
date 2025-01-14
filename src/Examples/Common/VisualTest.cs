@@ -91,6 +91,8 @@ public abstract unsafe class VisualTest
         Window.SizeChanged += (a, b) =>
         {
             SwapChain.Resize();
+
+            OnSizeChanged(b.Value.X, b.Value.Y);
         };
 
         Window.Unloaded += (a, b) =>
@@ -105,6 +107,10 @@ public abstract unsafe class VisualTest
     }
 
     public IWindow Window { get; }
+
+    public uint Width => Window.Size.X;
+
+    public uint Height => Window.Size.Y;
 
     public GraphicsContext Context { get; }
 
@@ -126,6 +132,8 @@ public abstract unsafe class VisualTest
     protected abstract void OnUpdate(double deltaTime, double totalTime);
 
     protected abstract void OnRender(double deltaTime, double totalTime);
+
+    protected abstract void OnSizeChanged(uint width, uint height);
 
     protected abstract void OnDestroy();
 }

@@ -91,6 +91,10 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
         commandBuffer.Commit();
     }
 
+    protected override void OnSizeChanged(uint width, uint height)
+    {
+    }
+
     protected override void OnDestroy()
     {
         vertexBuffer.Dispose();

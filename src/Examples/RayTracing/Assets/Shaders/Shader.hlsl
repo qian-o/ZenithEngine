@@ -9,6 +9,8 @@
 
 struct [raypayload] Payload
 {
+    bool Hit;
+    
     float3 Normal;
     
     float2 TexCoord;
@@ -32,7 +34,7 @@ void RayGenMain()
     y = 1.0 - y * 2.0;
 
     RayDesc rayDesc;
-    rayDesc.Origin = float3(0.0, 0.0, 0.0);
+    rayDesc.Origin = float3(x, y, -0.001);
     rayDesc.Direction = normalize(float3(x, y, 1.0f));
     rayDesc.TMin = 0.001;
     rayDesc.TMax = 1000.0;
@@ -40,12 +42,13 @@ void RayGenMain()
     Payload payload;
     TraceRay(Scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 1, 0, rayDesc, payload);
 
-    Output[LaunchID.xy] = float4(payload.Normal, 1.0);
+    Output[LaunchID.xy] = payload.Hit ? float4(payload.TexCoord, 1.0, 1.0) : float4(0.0, 0.0, 0.0, 1.0);
 }
 
 [shader("miss")]
 void MissMain(inout Payload payload)
 {
+    payload.Hit = false;
     payload.Normal = float3(0.0, 0.0, 0.0);
     payload.TexCoord = float2(0.0, 0.0);
 }
@@ -63,6 +66,7 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
     Vertex v1 = VertexBuffer[indices.y];
     Vertex v2 = VertexBuffer[indices.z];
     
+    payload.Hit = true;
     payload.Normal = normalize(barycentrics.x * v0.Normal + barycentrics.y * v1.Normal + barycentrics.z * v2.Normal);
     payload.TexCoord = barycentrics.x * v0.TexCoord + barycentrics.y * v1.TexCoord + barycentrics.z * v2.TexCoord;
 }

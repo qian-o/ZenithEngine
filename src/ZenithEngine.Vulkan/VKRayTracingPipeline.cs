@@ -29,17 +29,41 @@ internal unsafe class VKRayTracingPipeline : RayTracingPipeline
                 .. desc.Shaders.AnyHit,
                 .. desc.Shaders.Intersection
             ];
+            string[] entryPoints = [.. shaders.Select(static item => item.Desc.EntryPoint)];
 
             PipelineShaderStageCreateInfo* stages = Allocator.Alloc([.. shaders.Select(static item => item.VK().PipelineShaderStageCreateInfo)]);
 
             createInfo.StageCount = (uint)shaders.Length;
             createInfo.PStages = stages;
 
-            uint groupCount = (uint)desc.HitGroups.Length;
-            string[] entryPoints = [.. shaders.Select(static item => item.Desc.EntryPoint)];
+            uint index = 0;
+            uint groupCount = (uint)(1 + desc.Shaders.Miss.Length + desc.HitGroups.Length);
             RayTracingShaderGroupCreateInfoKHR* groups = Allocator.Alloc<RayTracingShaderGroupCreateInfoKHR>(groupCount);
 
-            for (uint i = 0; i < groupCount; i++)
+            groups[index++] = new()
+            {
+                SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                Type = RayTracingShaderGroupTypeKHR.GeneralKhr,
+                GeneralShader = (uint)Array.IndexOf(entryPoints, desc.Shaders.RayGen.Desc.EntryPoint),
+                ClosestHitShader = Vk.ShaderUnusedKhr,
+                AnyHitShader = Vk.ShaderUnusedKhr,
+                IntersectionShader = Vk.ShaderUnusedKhr
+            };
+
+            for (int i = 0; i < desc.Shaders.Miss.Length; i++)
+            {
+                groups[index++] = new()
+                {
+                    SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
+                    Type = RayTracingShaderGroupTypeKHR.GeneralKhr,
+                    GeneralShader = (uint)Array.IndexOf(entryPoints, desc.Shaders.Miss[i].Desc.EntryPoint),
+                    ClosestHitShader = Vk.ShaderUnusedKhr,
+                    AnyHitShader = Vk.ShaderUnusedKhr,
+                    IntersectionShader = Vk.ShaderUnusedKhr
+                };
+            }
+
+            for (int i = 0; i < desc.HitGroups.Length; i++)
             {
                 HitGroupDesc hitGroup = desc.HitGroups[i];
 
@@ -47,7 +71,7 @@ internal unsafe class VKRayTracingPipeline : RayTracingPipeline
                 uint anyHitIndex = hitGroup.AnyHit is not null ? (uint)Array.IndexOf(entryPoints, hitGroup.AnyHit) : Vk.ShaderUnusedKhr;
                 uint intersectionIndex = hitGroup.Intersection is not null ? (uint)Array.IndexOf(entryPoints, hitGroup.Intersection) : Vk.ShaderUnusedKhr;
 
-                groups[i] = new()
+                groups[index++] = new()
                 {
                     SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
                     Type = VKFormats.GetRayTracingShaderGroupType(hitGroup.Type),
@@ -103,6 +127,8 @@ internal unsafe class VKRayTracingPipeline : RayTracingPipeline
 
     protected override void Destroy()
     {
+        ShaderTable.Dispose();
+
         Context.Vk.DestroyPipeline(Context.Device, Pipeline, null);
         Context.Vk.DestroyPipelineLayout(Context.Device, PipelineLayout, null);
     }

@@ -33,12 +33,12 @@ internal unsafe class VKShaderTable : GraphicsResource
         uint dataSize = rayGenSize + missSize + hitGroupSize;
         byte* data = Allocator.Alloc<byte>(dataSize);
 
-        Context.KhrRayTracingPipeline!.GetRayTracingCaptureReplayShaderGroupHandles(Context.Device,
-                                                                                    pipeline,
-                                                                                    0,
-                                                                                    groupCount,
-                                                                                    dataSize,
-                                                                                    data).ThrowIfError();
+        Context.KhrRayTracingPipeline!.GetRayTracingShaderGroupHandles(Context.Device,
+                                                                       pipeline,
+                                                                       0,
+                                                                       groupCount,
+                                                                       dataSize,
+                                                                       data).ThrowIfError();
 
 
         RayGenBuffer = new(Context, rayGenSizeAligned, BufferUsageFlags.ShaderBindingTableBitKhr, true);
@@ -74,7 +74,7 @@ internal unsafe class VKShaderTable : GraphicsResource
 
         void CopyHandles(VKBuffer buffer, uint count)
         {
-            MappedResource mapped = Context.MapMemory(RayGenBuffer, MapMode.Write);
+            MappedResource mapped = Context.MapMemory(buffer, MapMode.Write);
 
             for (uint i = 0; i < count; i++)
             {

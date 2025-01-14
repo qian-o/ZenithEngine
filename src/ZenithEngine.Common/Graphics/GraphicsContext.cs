@@ -34,9 +34,9 @@ public abstract unsafe class GraphicsContext : DisposableObject
     {
         if (buffer.Desc.Usage.HasFlag(BufferUsage.Dynamic))
         {
-            MappedResource mappedResource = MapMemory(buffer, MapMode.Write);
+            MappedResource mapped = MapMemory(buffer, MapMode.Write);
 
-            Unsafe.CopyBlock((void*)(mappedResource.Data + destinationOffsetInBytes),
+            Unsafe.CopyBlock((void*)(mapped.Data + destinationOffsetInBytes),
                              (void*)source,
                              sourceSizeInBytes);
 

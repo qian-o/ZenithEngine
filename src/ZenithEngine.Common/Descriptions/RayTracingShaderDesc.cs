@@ -17,9 +17,12 @@ public struct RayTracingShaderDesc
     public static RayTracingShaderDesc Default(Shader rayGen,
                                                Shader[] miss,
                                                Shader[] closestHit,
-                                               Shader[] anyHit,
-                                               Shader[] intersection)
+                                               Shader[]? anyHit = null,
+                                               Shader[]? intersection = null)
     {
+        anyHit ??= [];
+        intersection ??= [];
+
         return new()
         {
             RayGen = rayGen,
