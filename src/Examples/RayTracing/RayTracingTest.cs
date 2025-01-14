@@ -1,4 +1,5 @@
 ﻿using Common;
+using Silk.NET.Maths;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -11,8 +12,8 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 {
     private Buffer vertexBuffer = null!;
     private Buffer indexBuffer = null!;
-    private readonly BottomLevelAS bottomLevelAS = null!;
-    private readonly TopLevelAS topLevelAS = null!;
+    private BottomLevelAS bottomLevelAS = null!;
+    private TopLevelAS topLevelAS = null!;
 
     protected override void OnLoad()
     {
@@ -30,7 +31,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         byte[] rayGen = DxcCompiler.Compile(ShaderStages.RayGeneration, hlsl, "RayGenMain");
         byte[] miss = DxcCompiler.Compile(ShaderStages.Miss, hlsl, "MissMain");
         byte[] closestHit = DxcCompiler.Compile(ShaderStages.ClosestHit, hlsl, "ClosestHitMain");
-        
+
         BufferDesc vbDesc = BufferDesc.Default((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
@@ -49,6 +50,10 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
             Context.UpdateBuffer(indexBuffer, (nint)pIndices, (uint)(indices.Length * sizeof(uint)));
         }
 
+        CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
+
+        commandBuffer.Begin();
+
         BottomLevelASDesc blasDesc = BottomLevelASDesc.Default(new AccelerationStructureTriangles(vertexBuffer)
         {
             VertexFormat = PixelFormat.R32G32B32Float,
@@ -57,7 +62,27 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
             VertexOffsetInBytes = 0,
             IndexBuffer = indexBuffer,
             IndexFormat = IndexFormat.UInt32,
+            IndexCount = (uint)indices.Length,
+            IndexOffsetInBytes = 0,
+            Transform = Matrix4X4<float>.Identity
         });
+
+        bottomLevelAS = commandBuffer.BuildAccelerationStructure(in blasDesc);
+
+        TopLevelASDesc tlasDesc = TopLevelASDesc.Default([new AccelerationStructureInstance(bottomLevelAS)
+        {
+            Transform = Matrix4X4<float>.Identity,
+            InstanceID = 0,
+            InstanceMask = 0xFF,
+            InstanceContributionToHitGroupIndex = 0,
+            Options = AccelerationStructureInstanceOptions.None
+        }]);
+
+        topLevelAS = commandBuffer.BuildAccelerationStructure(in tlasDesc);
+
+        commandBuffer.End();
+
+        commandBuffer.Commit();
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)

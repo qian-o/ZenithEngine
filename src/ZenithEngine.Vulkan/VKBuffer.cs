@@ -70,7 +70,7 @@ internal unsafe class VKBuffer : Buffer
     public VKBuffer(GraphicsContext context,
                     uint sizeInBytes,
                     BufferUsageFlags usageFlags,
-                    bool isDynamic) : base(context, in Unsafe.NullRef<BufferDesc>())
+                    bool isDynamic) : base(context, in Unsafe.Unbox<BufferDesc>(BufferDesc.Default(sizeInBytes, BufferUsage.None)))
     {
         BufferCreateInfo createInfo = new()
         {

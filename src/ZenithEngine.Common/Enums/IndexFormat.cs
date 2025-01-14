@@ -3,12 +3,12 @@
 public enum IndexFormat
 {
     /// <summary>
-    /// Each index is a 16-bit unsigned integer.
+    /// Unsigned 16-bit integer format.
     /// </summary>
     UInt16,
 
     /// <summary>
-    /// Each index is a 32-bit unsigned integer.
+    /// Unsigned 32-bit integer format.
     /// </summary>
     UInt32
 }
