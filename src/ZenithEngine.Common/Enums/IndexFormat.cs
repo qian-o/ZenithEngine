@@ -5,10 +5,10 @@ public enum IndexFormat
     /// <summary>
     /// Each index is a 16-bit unsigned integer.
     /// </summary>
-    U16Bit,
+    UInt16,
 
     /// <summary>
     /// Each index is a 32-bit unsigned integer.
     /// </summary>
-    U32Bit
+    UInt32
 }

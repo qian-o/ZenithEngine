@@ -597,7 +597,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     }
 
     public override void SetIndexBuffer(Buffer buffer,
-                                        IndexFormat format = IndexFormat.U16Bit,
+                                        IndexFormat format = IndexFormat.UInt16,
                                         uint offset = 0)
     {
         Context.Vk.CmdBindIndexBuffer(CommandBuffer,

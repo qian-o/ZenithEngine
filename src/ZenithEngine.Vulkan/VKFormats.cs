@@ -65,6 +65,10 @@ internal unsafe class VKFormats
             PixelFormat.R32G32SInt => Format.R32G32Sint,
             PixelFormat.R32G32Float => Format.R32G32Sfloat,
 
+            PixelFormat.R32G32B32UInt => Format.R32G32B32Uint,
+            PixelFormat.R32G32B32SInt => Format.R32G32B32Sint,
+            PixelFormat.R32G32B32Float => Format.R32G32B32Sfloat,
+
             PixelFormat.R8G8B8A8UNorm => Format.R8G8B8A8Unorm,
             PixelFormat.R8G8B8A8UNormSRgb => Format.R8G8B8A8Srgb,
             PixelFormat.R8G8B8A8SNorm => Format.R8G8B8A8SNorm,
@@ -539,8 +543,8 @@ internal unsafe class VKFormats
     {
         return format switch
         {
-            IndexFormat.U16Bit => IndexType.Uint16,
-            IndexFormat.U32Bit => IndexType.Uint32,
+            IndexFormat.UInt16 => IndexType.Uint16,
+            IndexFormat.UInt32 => IndexType.Uint32,
             _ => throw new NotSupportedException(ExceptionHelpers.NotSupported(format))
         };
     }
@@ -686,6 +690,10 @@ internal unsafe class VKFormats
             Format.R32G32Uint => PixelFormat.R32G32UInt,
             Format.R32G32Sint => PixelFormat.R32G32SInt,
             Format.R32G32Sfloat => PixelFormat.R32G32Float,
+
+            Format.R32G32B32Uint => PixelFormat.R32G32B32UInt,
+            Format.R32G32B32Sint => PixelFormat.R32G32B32SInt,
+            Format.R32G32B32Sfloat => PixelFormat.R32G32B32Float,
 
             Format.R8G8B8A8Unorm => PixelFormat.R8G8B8A8UNorm,
             Format.R8G8B8A8Srgb => PixelFormat.R8G8B8A8UNormSRgb,

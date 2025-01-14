@@ -217,7 +217,7 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// <param name="format">Index format.</param>
     /// <param name="offset">Offset in the index buffer.</param>
     public abstract void SetIndexBuffer(Buffer buffer,
-                                        IndexFormat format = IndexFormat.U16Bit,
+                                        IndexFormat format = IndexFormat.UInt16,
                                         uint offset = 0);
 
     /// <summary>
