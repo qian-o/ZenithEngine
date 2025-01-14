@@ -153,6 +153,27 @@ internal unsafe class VKResourceSet : ResourceSet
 
             write.PImageInfo = infos;
         }
+        else if (element.Type is ResourceType.AccelerationStructure)
+        {
+            WriteDescriptorSetAccelerationStructureKHR descriptorSetAccelerationStructure = new()
+            {
+                SType = StructureType.WriteDescriptorSetAccelerationStructureKhr,
+                AccelerationStructureCount = element.Count
+            };
+
+            AccelerationStructureKHR* accelerationStructures = allocator.Alloc<AccelerationStructureKHR>(element.Count);
+
+            for (uint i = 0; i < element.Count; i++)
+            {
+                VKTopLevelAS topLevelAS = (VKTopLevelAS)resources[i];
+
+                accelerationStructures[i] = topLevelAS.AccelerationStructure;
+            }
+
+            descriptorSetAccelerationStructure.PAccelerationStructures = accelerationStructures;
+
+            write.PNext = allocator.Alloc([descriptorSetAccelerationStructure]);
+        }
         else
         {
             throw new NotSupportedException(ExceptionHelpers.NotSupported(element.Type));

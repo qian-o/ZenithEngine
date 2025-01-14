@@ -84,6 +84,26 @@ internal static class VulkanExtensions
         return (VKShader)shader;
     }
 
+    public static VKBottomLevelAS VK(this BottomLevelAS bottomLevelAS)
+    {
+        if (bottomLevelAS is not VKBottomLevelAS)
+        {
+            throw new Exception("BottomLevelAS is not a Vulkan bottom level acceleration structure.");
+        }
+
+        return (VKBottomLevelAS)bottomLevelAS;
+    }
+
+    public static VKTopLevelAS VK(this TopLevelAS topLevelAS)
+    {
+        if (topLevelAS is not VKTopLevelAS)
+        {
+            throw new Exception("TopLevelAS is not a Vulkan top level acceleration structure.");
+        }
+
+        return (VKTopLevelAS)topLevelAS;
+    }
+
     public static VKResourceLayout VK(this ResourceLayout resourceLayout)
     {
         if (resourceLayout is not VKResourceLayout)
@@ -162,25 +182,5 @@ internal static class VulkanExtensions
         }
 
         return (VKCommandBuffer)commandBuffer;
-    }
-
-    public static VKBottomLevelAS VK(this BottomLevelAS bottomLevelAS)
-    {
-        if (bottomLevelAS is not VKBottomLevelAS)
-        {
-            throw new Exception("BottomLevelAS is not a Vulkan bottom level acceleration structure.");
-        }
-
-        return (VKBottomLevelAS)bottomLevelAS;
-    }
-
-    public static VKTopLevelAS VK(this TopLevelAS topLevelAS)
-    {
-        if (topLevelAS is not VKTopLevelAS)
-        {
-            throw new Exception("TopLevelAS is not a Vulkan top level acceleration structure.");
-        }
-
-        return (VKTopLevelAS)topLevelAS;
     }
 }

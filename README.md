@@ -37,7 +37,7 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [ ] Add Vertex and Mesh structures for the material system.
 
 - ZenithEngine.Vulkan
-	- [ ] Improve acceleration structures and ray tracing pipeline.
+	- [x] Improve acceleration structures and ray tracing pipeline.
 
 - ZenithEngine.ShaderCompiler
 	- [ ] Use Slang instead of HLSL.
