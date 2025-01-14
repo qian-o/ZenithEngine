@@ -31,7 +31,7 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
             {
                 TransformMatrixKHR transformMatrix = VKFormats.GetTransformMatrix(triangles.Transform);
 
-                Unsafe.Copy((byte*)(mapped.Data + (i * sizeof(TransformMatrixKHR))), in transformMatrix);
+                Unsafe.Copy((void*)(mapped.Data + (i * sizeof(TransformMatrixKHR))), in transformMatrix);
             }
         }
 

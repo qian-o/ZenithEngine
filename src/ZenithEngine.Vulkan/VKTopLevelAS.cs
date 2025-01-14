@@ -169,7 +169,7 @@ internal unsafe class VKTopLevelAS : TopLevelAS
                 Flags = VKFormats.GetGeometryInstanceFlags(item.Options)
             };
 
-            Unsafe.Copy((byte*)(mapped.Data + (i * sizeof(AccelerationStructureInstanceKHR))), in instance);
+            Unsafe.Copy((void*)(mapped.Data + (i * sizeof(AccelerationStructureInstanceKHR))), in instance);
         }
 
         Context.UnmapMemory(InstanceBuffer);
