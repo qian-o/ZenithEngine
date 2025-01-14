@@ -12,7 +12,7 @@ public abstract unsafe class VisualTest
 {
     protected VisualTest(string name, Backend backend)
     {
-        Window = WindowController.CreateWindow(name);
+        Window = WindowController.CreateWindow(name, 1270, 720);
 
         Context = GraphicsContext.Create(backend);
 
@@ -24,6 +24,8 @@ public abstract unsafe class VisualTest
 
         Window.Loaded += (a, b) =>
         {
+            Window.Center();
+
             SwapChainDesc swapChainDesc = SwapChainDesc.Default(Window.Surface);
 
             SwapChain = Context.Factory.CreateSwapChain(in swapChainDesc);

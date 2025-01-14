@@ -46,6 +46,21 @@ internal unsafe partial class Window : IWindow
         lifetimeStopwatch.Reset();
     }
 
+    public void Center()
+    {
+        if (!IsInitialized())
+        {
+            return;
+        }
+
+        Display display = WindowUtils.GetDisplays()[WindowUtils.Sdl.GetWindowDisplayIndex(Handle)];
+
+        int x = display.MainPosition.X + (int)((display.MainSize.X / 2) - (Size.X / 2));
+        int y = display.MainPosition.Y + (int)((display.MainSize.Y / 2) - (Size.Y / 2));
+
+        WindowUtils.Sdl.SetWindowPosition(Handle, x, y);
+    }
+
     public void Focus()
     {
         if (!IsInitialized())
