@@ -40,7 +40,7 @@ public abstract unsafe class ComObject : DisposableObject
 
         ((delegate* unmanaged[Stdcall]<ObjectHandle*, Guid*, void**, int>*)Handle->VTable)[0] = &QueryInterface;
         ((delegate* unmanaged[Stdcall]<ObjectHandle*, ulong>*)(Handle->VTable + sizeof(nint)))[0] = &AddRef;
-        ((delegate* unmanaged[Stdcall]<ObjectHandle*, ulong>*)(Handle->VTable + (sizeof(nint) * 2)))[0] = &RemoveRef;
+        ((delegate* unmanaged[Stdcall]<ObjectHandle*, ulong>*)(Handle->VTable + (2 * sizeof(nint))))[0] = &RemoveRef;
 
         InitVTable();
     }

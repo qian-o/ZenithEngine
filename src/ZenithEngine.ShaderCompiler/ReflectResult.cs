@@ -37,7 +37,7 @@ public class ReflectResult
         resources = [.. combinedResources];
     }
 
-    public ReflectResource this[string name, ShaderStages? stages = null, uint? setCount = null]
+    public ReflectResource this[string name, ShaderStages? stages = null, uint? count = null]
     {
         get
         {
@@ -48,7 +48,7 @@ public class ReflectResult
                        resource.Slot,
                        resource.Space,
                        resource.Name,
-                       setCount ?? resource.Count);
+                       count ?? resource.Count);
         }
     }
 

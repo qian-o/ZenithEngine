@@ -248,10 +248,10 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
     private void CreateGraphicsResources(OutputDesc outputDesc, ColorSpaceHandling colorSpaceHandling)
     {
-        BufferDesc vbDesc = BufferDesc.Default((uint)sizeof(ImDrawVert) * 5000,
+        BufferDesc vbDesc = BufferDesc.Default((uint)(5000 * sizeof(ImDrawVert)),
                                                BufferUsage.VertexBuffer | BufferUsage.Dynamic);
 
-        BufferDesc ibDesc = BufferDesc.Default(sizeof(ushort) * 10000,
+        BufferDesc ibDesc = BufferDesc.Default(10000 * sizeof(ushort),
                                                BufferUsage.IndexBuffer | BufferUsage.Dynamic);
 
         BufferDesc cbDesc = BufferDesc.Default((uint)sizeof(Constants),

@@ -18,7 +18,6 @@ internal unsafe class VKRayTracingPipeline : RayTracingPipeline
             MaxPipelineRayRecursionDepth = desc.MaxTraceRecursionDepth
         };
 
-
         // Shaders and Hit Groups
         {
             Shader[] shaders =
@@ -29,6 +28,7 @@ internal unsafe class VKRayTracingPipeline : RayTracingPipeline
                 .. desc.Shaders.AnyHit,
                 .. desc.Shaders.Intersection
             ];
+
             string[] entryPoints = [.. shaders.Select(static item => item.Desc.EntryPoint)];
 
             PipelineShaderStageCreateInfo* stages = Allocator.Alloc([.. shaders.Select(static item => item.VK().PipelineShaderStageCreateInfo)]);
