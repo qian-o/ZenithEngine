@@ -29,7 +29,7 @@ internal unsafe partial class Window : IWindowProperties
         {
             if (!IsInitialized())
             {
-                throw new Exception("The window is not initialized.");
+                throw new ZenithEngineException("The window is not initialized.");
             }
 
             return surface ??= new Surface(Handle);
@@ -104,7 +104,7 @@ internal unsafe partial class Window : IWindowProperties
                     WindowUtils.Sdl.SetWindowFullscreen(Handle, (uint)WindowFlags.Fullscreen);
                     break;
                 default:
-                    throw new NotSupportedException(ExceptionHelpers.NotSupported(value));
+                    throw new ZenithEngineException(ExceptionHelpers.NotSupported(value));
             }
         }
     }
@@ -136,7 +136,7 @@ internal unsafe partial class Window : IWindowProperties
                     WindowUtils.Sdl.SetWindowResizable(Handle, SdlBool.False);
                     break;
                 default:
-                    throw new NotSupportedException(ExceptionHelpers.NotSupported(value));
+                    throw new ZenithEngineException(ExceptionHelpers.NotSupported(value));
             }
         }
     }

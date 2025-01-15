@@ -75,7 +75,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
         {
             ColorSpaceHandling.Legacy => Convert.FromHexString(VSByLegacyHexString),
             ColorSpaceHandling.Linear => Convert.FromHexString(VSByLinearHexString),
-            _ => throw new NotSupportedException(ExceptionHelpers.NotSupported(colorSpaceHandling))
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(colorSpaceHandling))
         };
 
         ps = Convert.FromHexString(PSHexString);

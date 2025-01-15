@@ -39,7 +39,7 @@ internal readonly unsafe struct Surface : ISurface
         }
         else
         {
-            throw new NotSupportedException(ExceptionHelpers.NotSupported(nativeWindow.Kind));
+            throw new ZenithEngineException(ExceptionHelpers.NotSupported(nativeWindow.Kind));
         }
     }
 

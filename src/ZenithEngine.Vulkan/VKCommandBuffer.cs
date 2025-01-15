@@ -641,7 +641,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             VKGraphicsPipeline graphicsPipeline => (PipelineBindPoint.Graphics, graphicsPipeline.PipelineLayout),
             VKComputePipeline computePipeline => (PipelineBindPoint.Compute, computePipeline.PipelineLayout),
             VKRayTracingPipeline rayTracingPipeline => (PipelineBindPoint.RayTracingKhr, rayTracingPipeline.PipelineLayout),
-            _ => throw new NotSupportedException(ExceptionHelpers.NotSupported(activePipeline))
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(activePipeline))
         };
 
         if (offsets.Length > 0)
@@ -745,7 +745,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     {
         if (activePipeline is not VKRayTracingPipeline rayTracingPipeline)
         {
-            throw new NotSupportedException(ExceptionHelpers.NotSupported(activePipeline));
+            throw new ZenithEngineException(ExceptionHelpers.NotSupported(activePipeline));
         }
 
         StridedDeviceAddressRegionKHR rayGenRegion = rayTracingPipeline.ShaderTable.RayGenRegion;
