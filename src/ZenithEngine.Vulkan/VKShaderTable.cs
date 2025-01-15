@@ -19,7 +19,7 @@ internal unsafe class VKShaderTable : GraphicsResource
                          uint hitGroupCount) : base(context)
     {
         uint handleSize = 32;
-        uint handleSizeAligned = Utils.AlignedSize(handleSize, 64u);
+        uint handleSizeAligned = Utils.AlignedSize<uint>(handleSize, 64);
 
         uint rayGenSize = rayGenCount * handleSize;
         uint missSize = missCount * handleSize;
@@ -39,7 +39,6 @@ internal unsafe class VKShaderTable : GraphicsResource
                                                                        groupCount,
                                                                        dataSize,
                                                                        data).ThrowIfError();
-
 
         RayGenBuffer = new(Context, rayGenSizeAligned, BufferUsageFlags.ShaderBindingTableBitKhr, true);
         MissBuffer = new(Context, missSizeAligned, BufferUsageFlags.ShaderBindingTableBitKhr, true);
