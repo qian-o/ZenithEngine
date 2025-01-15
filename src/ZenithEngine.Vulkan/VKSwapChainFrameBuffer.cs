@@ -46,7 +46,7 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
 
         colorTargets = new Texture[imageCount];
         frameBuffers = new FrameBuffer[imageCount];
-        for (int i = 0; i < imageCount; i++)
+        for (uint i = 0; i < imageCount; i++)
         {
             TextureDesc desc = TextureDesc.Default(width,
                                                    height,

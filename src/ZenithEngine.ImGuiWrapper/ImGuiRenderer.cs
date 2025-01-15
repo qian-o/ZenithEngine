@@ -139,7 +139,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
         commandBuffer.SetGraphicsPipeline(pipeline);
         commandBuffer.SetVertexBuffer(0, vertexBuffer);
-        commandBuffer.SetIndexBuffer(indexBuffer, IndexFormat.U16Bit);
+        commandBuffer.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
         commandBuffer.SetResourceSet(0, set0);
 
         for (int i = 0, vertexOffset = 0, indexOffset = 0; i < drawDataPtr.CmdListsCount; i++)

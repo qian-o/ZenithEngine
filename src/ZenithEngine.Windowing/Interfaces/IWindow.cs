@@ -8,6 +8,8 @@ public interface IWindow : IWindowEvents, IWindowProperties, IInputController
 
     void Close();
 
+    void Center();
+
     void Focus();
 
     void DoEvents();

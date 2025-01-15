@@ -14,7 +14,6 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 | --------     | :---: | :----: |
 | WPF          | 🚧 | 🚧 |
 | WinUI        | 🚧 | 🚧 |
-| Avalonia     | ❎ | 🚧 |
 | MAUI-Android | ❎ | 🚧 |
 | MAUI-iOS     | ❎ | 🚧 |
 | MAUI-MacOS   | ❎ | 🚧 |
@@ -28,15 +27,19 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [x] Add `ZenithEngine.Windowing` project.
 	- [x] Add `ZenithEngine.ShaderCompiler` project.
 	- [x] Add `ZenithEngine.ImGuiWrapper` project.
+	- [ ] Add `ZenithEngine.WPF` project.
+	- [ ] Add `ZenithEngine.WinUI` project.
 	- [ ] Add `ZenithEngine.Material` project.
 	- [ ] Add `ZenithEngine.Editor` project.
 	- [ ] Add `ZenithEngine.Viewer` project.
 
 - ZenithEngine.Common
 	- [x] Add `GenerateMipmaps` method in Utils.
+	- [ ] Add Vertex and Mesh structures for the material system.
+	- [ ] Add DX11 shared texture support.
 
 - ZenithEngine.Vulkan
-	- [ ] Improve acceleration structures and ray tracing pipeline.
+	- [x] Improve acceleration structures and ray tracing pipeline.
 
 - ZenithEngine.ShaderCompiler
 	- [ ] Use Slang instead of HLSL.

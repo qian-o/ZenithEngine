@@ -61,7 +61,7 @@ internal class VKHelpers
         }
         else
         {
-            throw new InvalidOperationException("Unsupported layout transition.");
+            throw new NotSupportedException(ExceptionHelpers.NotSupported(barrier.OldLayout));
         }
 
         if (barrier.NewLayout is ImageLayout.TransferSrcOptimal)
@@ -101,7 +101,7 @@ internal class VKHelpers
         }
         else
         {
-            throw new InvalidOperationException("Unsupported layout transition.");
+            throw new NotSupportedException(ExceptionHelpers.NotSupported(barrier.OldLayout));
         }
     }
 
@@ -120,7 +120,7 @@ internal class VKHelpers
 
             ResourceType.Sampler => Utils.CbvCount + Utils.SrvCount + Utils.UavCount + slot,
 
-            _ => throw new InvalidOperationException("ResourceType doesn't supported.")
+            _ => throw new NotSupportedException(ExceptionHelpers.NotSupported(type))
         };
     }
 }

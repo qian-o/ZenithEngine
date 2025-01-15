@@ -376,17 +376,17 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     #region Acceleration Structure Operations
     public override BottomLevelAS BuildAccelerationStructure(ref readonly BottomLevelASDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKBottomLevelAS(Context, CommandBuffer, in desc);
     }
 
     public override TopLevelAS BuildAccelerationStructure(ref readonly TopLevelASDesc desc)
     {
-        throw new NotImplementedException();
+        return new VKTopLevelAS(Context, CommandBuffer, in desc);
     }
 
     public override void UpdateAccelerationStructure(ref TopLevelAS tlas, ref readonly TopLevelASDesc newDesc)
     {
-        throw new NotImplementedException();
+        tlas.VK().UpdateAccelerationStructure(CommandBuffer, in newDesc);
     }
     #endregion
 
@@ -409,14 +409,14 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
         if (clearColor)
         {
-            for (uint i = 0; i < clearValue.ColorValues.Length; i++)
+            for (int i = 0; i < clearValue.ColorValues.Length; i++)
             {
                 Vector4D<float> color = clearValue.ColorValues[i];
 
                 ClearAttachment clearAttachment = new()
                 {
                     AspectMask = ImageAspectFlags.ColorBit,
-                    ColorAttachment = i,
+                    ColorAttachment = (uint)i,
                     ClearValue = new()
                     {
                         Color = new()
@@ -525,7 +525,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
         Rect2D[] scs = new Rect2D[count];
 
-        for (int i = 0; i < count; i++)
+        for (uint i = 0; i < count; i++)
         {
             scs[i] = new()
             {
@@ -567,7 +567,11 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
     public override void SetRayTracingPipeline(RayTracingPipeline pipeline)
     {
-        throw new NotImplementedException();
+        activePipeline = pipeline;
+
+        Context.Vk.CmdBindPipeline(CommandBuffer,
+                                   PipelineBindPoint.RayTracingKhr,
+                                   pipeline.VK().Pipeline);
     }
     #endregion
 
@@ -593,7 +597,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     }
 
     public override void SetIndexBuffer(Buffer buffer,
-                                        IndexFormat format = IndexFormat.U16Bit,
+                                        IndexFormat format = IndexFormat.UInt16,
                                         uint offset = 0)
     {
         Context.Vk.CmdBindIndexBuffer(CommandBuffer,
@@ -626,7 +630,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         uint[] offsets = new uint[vkResourceSet.DynamicConstantBufferCount];
         if (constantBufferOffsets is not null)
         {
-            for (int i = 0; i < vkResourceSet.DynamicConstantBufferCount; i++)
+            for (uint i = 0; i < vkResourceSet.DynamicConstantBufferCount; i++)
             {
                 offsets[i] = constantBufferOffsets[i];
             }
@@ -636,7 +640,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         {
             VKGraphicsPipeline graphicsPipeline => (PipelineBindPoint.Graphics, graphicsPipeline.PipelineLayout),
             VKComputePipeline computePipeline => (PipelineBindPoint.Compute, computePipeline.PipelineLayout),
-            _ => throw new InvalidOperationException()
+            VKRayTracingPipeline rayTracingPipeline => (PipelineBindPoint.RayTracingKhr, rayTracingPipeline.PipelineLayout),
+            _ => throw new NotSupportedException(ExceptionHelpers.NotSupported(activePipeline))
         };
 
         if (offsets.Length > 0)
@@ -738,7 +743,24 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     #region Ray Tracing Operations
     public override void DispatchRays(uint width, uint height, uint depth)
     {
-        throw new NotImplementedException();
+        if (activePipeline is not VKRayTracingPipeline rayTracingPipeline)
+        {
+            throw new NotSupportedException(ExceptionHelpers.NotSupported(activePipeline));
+        }
+
+        StridedDeviceAddressRegionKHR rayGenRegion = rayTracingPipeline.ShaderTable.RayGenRegion;
+        StridedDeviceAddressRegionKHR missRegion = rayTracingPipeline.ShaderTable.MissRegion;
+        StridedDeviceAddressRegionKHR hitGroupRegion = rayTracingPipeline.ShaderTable.HitGroupRegion;
+        StridedDeviceAddressRegionKHR callableRegion = new();
+
+        Context.KhrRayTracingPipeline!.CmdTraceRays(CommandBuffer,
+                                                    &rayGenRegion,
+                                                    &missRegion,
+                                                    &hitGroupRegion,
+                                                    &callableRegion,
+                                                    width,
+                                                    height,
+                                                    depth);
     }
     #endregion
 

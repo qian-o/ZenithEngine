@@ -167,7 +167,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             uint attributeIndex = 0;
             for (uint i = 0; i < vertexInputBindingCount; i++)
             {
-                LayoutDesc layout = desc.InputLayouts[(int)i];
+                LayoutDesc layout = desc.InputLayouts[i];
 
                 bindingDescriptions[i] = new()
                 {

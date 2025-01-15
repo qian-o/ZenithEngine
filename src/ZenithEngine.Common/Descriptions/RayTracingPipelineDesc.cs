@@ -10,6 +10,11 @@ public struct RayTracingPipelineDesc
     public RayTracingShaderDesc Shaders;
 
     /// <summary>
+    /// Describes the hit groups input array.
+    /// </summary>
+    public HitGroupDesc[] HitGroups;
+
+    /// <summary>
     /// Describes the resource layouts input array.
     /// </summary>
     public ResourceLayout[] ResourceLayouts;
@@ -22,12 +27,14 @@ public struct RayTracingPipelineDesc
     public uint MaxTraceRecursionDepth;
 
     public static RayTracingPipelineDesc Default(RayTracingShaderDesc shaders,
+                                                 HitGroupDesc[] hitGroups,
                                                  ResourceLayout[] resourceLayouts,
                                                  uint maxTraceRecursionDepth = 6)
     {
         return new()
         {
             Shaders = shaders,
+            HitGroups = hitGroups,
             ResourceLayouts = resourceLayouts,
             MaxTraceRecursionDepth = maxTraceRecursionDepth
         };

@@ -1,4 +1,6 @@
-﻿namespace ZenithEngine.ShaderCompiler;
+﻿using ZenithEngine.Common.Enums;
+
+namespace ZenithEngine.ShaderCompiler;
 
 public class ReflectResult
 {
@@ -35,23 +37,18 @@ public class ReflectResult
         resources = [.. combinedResources];
     }
 
-    public ReflectResource this[string name, uint? setCount = null]
+    public ReflectResource this[string name, ShaderStages? stages = null, uint? setCount = null]
     {
         get
         {
-            if (setCount.HasValue)
-            {
-                ReflectResource resource = resources.FirstOrDefault(item => item.Name == name);
+            ReflectResource resource = resources.FirstOrDefault(item => item.Name == name);
 
-                return new(resource.Stages,
-                           resource.Type,
-                           resource.Slot,
-                           resource.Space,
-                           resource.Name,
-                           setCount.Value);
-            }
-
-            return resources.FirstOrDefault(item => item.Name == name);
+            return new(stages ?? resource.Stages,
+                       resource.Type,
+                       resource.Slot,
+                       resource.Space,
+                       resource.Name,
+                       setCount ?? resource.Count);
         }
     }
 

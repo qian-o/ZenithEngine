@@ -1,5 +1,6 @@
 ﻿using Silk.NET.Maths;
 using Silk.NET.SDL;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Interfaces;
 using ZenithEngine.Windowing.Interfaces;
@@ -28,7 +29,7 @@ internal unsafe partial class Window : IWindowProperties
         {
             if (!IsInitialized())
             {
-                throw new InvalidOperationException("The window is not initialized.");
+                throw new Exception("The window is not initialized.");
             }
 
             return surface ??= new Surface(Handle);
@@ -103,7 +104,7 @@ internal unsafe partial class Window : IWindowProperties
                     WindowUtils.Sdl.SetWindowFullscreen(Handle, (uint)WindowFlags.Fullscreen);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(value), value, null);
+                    throw new NotSupportedException(ExceptionHelpers.NotSupported(value));
             }
         }
     }
@@ -135,7 +136,7 @@ internal unsafe partial class Window : IWindowProperties
                     WindowUtils.Sdl.SetWindowResizable(Handle, SdlBool.False);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(value), value, null);
+                    throw new NotSupportedException(ExceptionHelpers.NotSupported(value));
             }
         }
     }

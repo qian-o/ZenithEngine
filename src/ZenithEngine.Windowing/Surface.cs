@@ -1,6 +1,7 @@
 ﻿using Silk.NET.Core.Contexts;
 using Silk.NET.Maths;
 using Silk.NET.SDL;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Interfaces;
 
@@ -38,7 +39,7 @@ internal readonly unsafe struct Surface : ISurface
         }
         else
         {
-            throw new PlatformNotSupportedException("The platform is not supported.");
+            throw new NotSupportedException(ExceptionHelpers.NotSupported(nativeWindow.Kind));
         }
     }
 

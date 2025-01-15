@@ -4,9 +4,9 @@ public class AccelerationStructureAABBs(Buffer aabbs) : AccelerationStructureGeo
 {
     public Buffer AABBs { get; } = aabbs;
 
-    public ulong Count { get; set; }
+    public uint Count { get; set; }
 
-    public uint Stride { get; set; }
+    public uint StrideInBytes { get; set; }
 
-    public uint Offset { get; set; }
+    public uint OffsetInBytes { get; set; }
 }

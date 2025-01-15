@@ -1,4 +1,5 @@
-﻿using Silk.NET.Vulkan;
+﻿using System.Runtime.CompilerServices;
+using Silk.NET.Vulkan;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -8,6 +9,7 @@ namespace ZenithEngine.Vulkan;
 internal unsafe class VKBuffer : Buffer
 {
     public VkBuffer Buffer;
+    public ulong Address;
 
     public VKBuffer(GraphicsContext context,
                     ref readonly BufferDesc desc) : base(context, in desc)
@@ -60,47 +62,38 @@ internal unsafe class VKBuffer : Buffer
 
         Context.Vk.CreateBuffer(Context.Device, &createInfo, null, out Buffer).ThrowIfError();
 
-        BufferMemoryRequirementsInfo2 requirementsInfo2 = new()
+        DeviceMemory = CreateDeviceMemory(desc.Usage.HasFlag(BufferUsage.Dynamic), out Address);
+
+        Allocator.Release();
+    }
+
+    public VKBuffer(GraphicsContext context,
+                    uint sizeInBytes,
+                    BufferUsageFlags usageFlags,
+                    bool isDynamic) : base(context, in Unsafe.Unbox<BufferDesc>(BufferDesc.Default(sizeInBytes, BufferUsage.None)))
+    {
+        BufferCreateInfo createInfo = new()
         {
-            SType = StructureType.BufferMemoryRequirementsInfo2,
-            Buffer = Buffer
+            SType = StructureType.BufferCreateInfo,
+            Size = sizeInBytes,
+            Usage = usageFlags | BufferUsageFlags.ShaderDeviceAddressBit,
+            SharingMode = Context.SharingEnabled ? SharingMode.Concurrent : SharingMode.Exclusive
         };
 
-        MemoryRequirements2 requirements2 = new()
+        if (Context.SharingEnabled)
         {
-            SType = StructureType.MemoryRequirements2
-        };
+            createInfo.QueueFamilyIndexCount = (uint)Context.QueueFamilyIndices!.Length;
+            createInfo.PQueueFamilyIndices = Allocator.Alloc(Context.QueueFamilyIndices);
+        }
 
-        requirements2.AddNext(out MemoryDedicatedRequirements dedicatedRequirements);
+        Context.Vk.CreateBuffer(Context.Device, &createInfo, null, out Buffer).ThrowIfError();
 
-        Context.Vk.GetBufferMemoryRequirements2(Context.Device, &requirementsInfo2, &requirements2);
-
-        DeviceMemory = new(Context,
-                           desc.Usage.HasFlag(BufferUsage.Dynamic),
-                           requirements2.MemoryRequirements,
-                           dedicatedRequirements.PrefersDedicatedAllocation || dedicatedRequirements.RequiresDedicatedAllocation,
-                           null,
-                           Buffer);
-
-        Context.Vk.BindBufferMemory(Context.Device,
-                                    Buffer,
-                                    DeviceMemory.DeviceMemory,
-                                    0).ThrowIfError();
-
-        BufferDeviceAddressInfo addressInfo = new()
-        {
-            SType = StructureType.BufferDeviceAddressInfo,
-            Buffer = Buffer
-        };
-
-        Address = Context.Vk.GetBufferDeviceAddress(Context.Device, &addressInfo);
+        DeviceMemory = CreateDeviceMemory(isDynamic, out Address);
 
         Allocator.Release();
     }
 
     public VKDeviceMemory DeviceMemory { get; }
-
-    public ulong Address { get; }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
@@ -116,5 +109,45 @@ internal unsafe class VKBuffer : Buffer
         DeviceMemory.Dispose();
 
         Context.Vk.DestroyBuffer(Context.Device, Buffer, null);
+    }
+
+    private VKDeviceMemory CreateDeviceMemory(bool isDynamic, out ulong address)
+    {
+        BufferMemoryRequirementsInfo2 requirementsInfo2 = new()
+        {
+            SType = StructureType.BufferMemoryRequirementsInfo2,
+            Buffer = Buffer
+        };
+
+        MemoryRequirements2 requirements2 = new()
+        {
+            SType = StructureType.MemoryRequirements2
+        };
+
+        requirements2.AddNext(out MemoryDedicatedRequirements dedicatedRequirements);
+
+        Context.Vk.GetBufferMemoryRequirements2(Context.Device, &requirementsInfo2, &requirements2);
+
+        VKDeviceMemory deviceMemory = new(Context,
+                                          isDynamic,
+                                          requirements2.MemoryRequirements,
+                                          dedicatedRequirements.PrefersDedicatedAllocation || dedicatedRequirements.RequiresDedicatedAllocation,
+                                          null,
+                                          Buffer);
+
+        Context.Vk.BindBufferMemory(Context.Device,
+                                    Buffer,
+                                    deviceMemory.DeviceMemory,
+                                    0).ThrowIfError();
+
+        BufferDeviceAddressInfo addressInfo = new()
+        {
+            SType = StructureType.BufferDeviceAddressInfo,
+            Buffer = Buffer
+        };
+
+        address = Context.Vk.GetBufferDeviceAddress(Context.Device, &addressInfo);
+
+        return deviceMemory;
     }
 }

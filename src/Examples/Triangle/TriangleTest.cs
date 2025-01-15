@@ -80,7 +80,7 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
         commandBuffer.SetGraphicsPipeline(pipeline);
 
         commandBuffer.SetVertexBuffer(0, vertexBuffer);
-        commandBuffer.SetIndexBuffer(indexBuffer, IndexFormat.U32Bit);
+        commandBuffer.SetIndexBuffer(indexBuffer, IndexFormat.UInt32);
 
         commandBuffer.DrawIndexed(3);
 
@@ -89,6 +89,10 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
         commandBuffer.End();
 
         commandBuffer.Commit();
+    }
+
+    protected override void OnSizeChanged(uint width, uint height)
+    {
     }
 
     protected override void OnDestroy()

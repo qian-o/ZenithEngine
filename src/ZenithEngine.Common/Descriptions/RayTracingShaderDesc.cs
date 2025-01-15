@@ -8,17 +8,28 @@ public struct RayTracingShaderDesc
 
     public Shader[] Miss;
 
-    public HitGroupDesc[] HitGroups;
+    public Shader[] ClosestHit;
+
+    public Shader[] AnyHit;
+
+    public Shader[] Intersection;
 
     public static RayTracingShaderDesc Default(Shader rayGen,
                                                Shader[] miss,
-                                               HitGroupDesc[] hitGroups)
+                                               Shader[] closestHit,
+                                               Shader[]? anyHit = null,
+                                               Shader[]? intersection = null)
     {
+        anyHit ??= [];
+        intersection ??= [];
+
         return new()
         {
             RayGen = rayGen,
             Miss = miss,
-            HitGroups = hitGroups
+            ClosestHit = closestHit,
+            AnyHit = anyHit,
+            Intersection = intersection
         };
     }
 }

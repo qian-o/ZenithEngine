@@ -123,6 +123,21 @@ public enum PixelFormat
     R32G32Float,
 
     /// <summary>
+    /// RGB component order. Each component is a 32-bit unsigned integer.
+    /// </summary>
+    R32G32B32UInt,
+
+    /// <summary>
+    /// RGB component order. Each component is a 32-bit signed integer.
+    /// </summary>
+    R32G32B32SInt,
+
+    /// <summary>
+    /// RGB component order. Each component is a 32-bit signed floating-point value.
+    /// </summary>
+    R32G32B32Float,
+
+    /// <summary>
     /// RGBA component order. Each component is an 8-bit unsigned normalized integer.
     /// </summary>
     R8G8B8A8UNorm,

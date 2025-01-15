@@ -1,4 +1,5 @@
 ﻿using Silk.NET.SPIRV.Reflect;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.ShaderCompiler;
@@ -83,7 +84,7 @@ internal class SpvFormats
             DescriptorType.UniformBuffer => ResourceType.ConstantBuffer,
             DescriptorType.StorageBuffer => rType is SpvResourceType.Srv ? ResourceType.StructuredBuffer : ResourceType.StructuredBufferReadWrite,
             DescriptorType.AccelerationStructureKhr => ResourceType.AccelerationStructure,
-            _ => throw new ArgumentOutOfRangeException(nameof(dType))
+            _ => throw new NotSupportedException(ExceptionHelpers.NotSupported(dType))
         };
     }
     #endregion

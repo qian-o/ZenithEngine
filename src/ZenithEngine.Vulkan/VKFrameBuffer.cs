@@ -25,7 +25,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
         RenderingAttachmentInfo* colorAttachments = Allocator.Alloc<RenderingAttachmentInfo>(colorAttachmentCount);
         RenderingAttachmentInfo* depthStencilAttachment = hasDepthStencil ? Allocator.Alloc<RenderingAttachmentInfo>() : null;
 
-        for (int i = 0; i < colorAttachmentCount; i++)
+        for (uint i = 0; i < colorAttachmentCount; i++)
         {
             FrameBufferAttachmentDesc attachmentDesc = desc.ColorTargets[i];
             Texture target = attachmentDesc.Target;
@@ -42,7 +42,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             }
             else if (target.Desc.SampleCount != sampleCount)
             {
-                throw new ZenithEngineException("All targets must have the same sample count.");
+                throw new Exception("All targets must have the same sample count.");
             }
 
             VkImageView imageView = target.VK().CreateImageView(attachmentDesc.MipLevel,
@@ -77,7 +77,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             }
             else if (target.Desc.SampleCount != sampleCount)
             {
-                throw new ZenithEngineException("All targets must have the same sample count.");
+                throw new Exception("All targets must have the same sample count.");
             }
 
             VkImageView imageView = target.VK().CreateImageView(attachmentDesc.MipLevel,
@@ -123,7 +123,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
         Height = height;
         Output = OutputDesc.Default(sampleCount,
                                     hasDepthStencil ? desc.DepthStencilTarget!.Value.Target.Desc.Format : null,
-                                    [.. desc.ColorTargets.Select(static x => x.Target.Desc.Format)]);
+                                    [.. desc.ColorTargets.Select(static item => item.Target.Desc.Format)]);
     }
 
     public VkImageView[] ColorViews { get; }

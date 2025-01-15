@@ -12,7 +12,7 @@ public abstract unsafe class VisualTest
 {
     protected VisualTest(string name, Backend backend)
     {
-        Window = WindowController.CreateWindow(name);
+        Window = WindowController.CreateWindow(name, 1270, 720);
 
         Context = GraphicsContext.Create(backend);
 
@@ -24,16 +24,18 @@ public abstract unsafe class VisualTest
 
         Window.Loaded += (a, b) =>
         {
+            Window.Center();
+
             SwapChainDesc swapChainDesc = SwapChainDesc.Default(Window.Surface);
 
             SwapChain = Context.Factory.CreateSwapChain(in swapChainDesc);
 
-            ImGuiController = new ImGuiController(Context,
-                                                  SwapChain.FrameBuffer.Output,
-                                                  Window,
-                                                  fontConfig: new(Path.Combine(AppContext.BaseDirectory, "Assets", "Fonts", "msyh.ttf"),
-                                                                  18,
-                                                                  static (io) => (nint)io.Fonts.GetGlyphRangesChineseSimplifiedCommon()));
+            ImGuiController = new(Context,
+                                  SwapChain.FrameBuffer.Output,
+                                  Window,
+                                  fontConfig: new(Path.Combine(AppContext.BaseDirectory, "Assets", "Fonts", "msyh.ttf"),
+                                                  18,
+                                                  static (io) => (nint)io.Fonts.GetGlyphRangesChineseSimplifiedCommon()));
 
             CommandProcessor = Context.Factory.CreateCommandProcessor(CommandProcessorType.Graphics);
 
@@ -49,8 +51,6 @@ public abstract unsafe class VisualTest
 
         Window.Render += (a, b) =>
         {
-            OnRender(b.DeltaTime, b.TotalTime);
-
             ImGuiHelpers.LeftTopOverlay("Overlay", () =>
             {
                 ImGui.Text(Context.Capabilities.DeviceName);
@@ -63,6 +63,8 @@ public abstract unsafe class VisualTest
 
                 ImGui.Text($"FPS: {1 / b.DeltaTime:F2}");
             });
+
+            OnRender(b.DeltaTime, b.TotalTime);
 
             CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
 
@@ -89,6 +91,8 @@ public abstract unsafe class VisualTest
         Window.SizeChanged += (a, b) =>
         {
             SwapChain.Resize();
+
+            OnSizeChanged(b.Value.X, b.Value.Y);
         };
 
         Window.Unloaded += (a, b) =>
@@ -103,6 +107,10 @@ public abstract unsafe class VisualTest
     }
 
     public IWindow Window { get; }
+
+    public uint Width => Window.Size.X;
+
+    public uint Height => Window.Size.Y;
 
     public GraphicsContext Context { get; }
 
@@ -124,6 +132,8 @@ public abstract unsafe class VisualTest
     protected abstract void OnUpdate(double deltaTime, double totalTime);
 
     protected abstract void OnRender(double deltaTime, double totalTime);
+
+    protected abstract void OnSizeChanged(uint width, uint height);
 
     protected abstract void OnDestroy();
 }

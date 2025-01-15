@@ -154,7 +154,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
             if (!layerFound)
             {
-                throw new ZenithEngineException("Validation layer not found.");
+                throw new Exception("Validation layer not found.");
             }
 
             createInfo.EnabledLayerCount = 1;
