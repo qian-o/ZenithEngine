@@ -10,14 +10,15 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 | Vulkan | ✅ |
 
 ## UI Framework Support
-| Platform     | D3D12 | Vulkan |
-| --------     | :---: | :----: |
-| WPF          | 🚧 | 🚧 |
-| WinUI        | 🚧 | 🚧 |
-| MAUI-Android | ❎ | 🚧 |
-| MAUI-iOS     | ❎ | 🚧 |
-| MAUI-MacOS   | ❎ | 🚧 |
-| MAUI-Windows | 🚧 | 🚧 |
+| Platform | D3D12 | Vulkan |
+| -------- | :---: | :----: |
+| WPF      | 🚧 | 🚧 |
+| WinUI    | 🚧 | 🚧 |
+| Avalonia | ❎ | 🚧 |
+| Android  | ❎ | 🚧 |
+| IOS      | ❎ | 🚧 |
+| MacOS    | ❎ | 🚧 |
+| MAUI     | 🚧 | 🚧 |
 
 ## TODO
 - ZenithEngine
@@ -27,8 +28,13 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [x] Add `ZenithEngine.Windowing` project.
 	- [x] Add `ZenithEngine.ShaderCompiler` project.
 	- [x] Add `ZenithEngine.ImGuiWrapper` project.
-	- [ ] Add `ZenithEngine.Platform.WPF` project.
-	- [ ] Add `ZenithEngine.Platform.WinUI` project.
+	- [ ] Add `ZenithEngine.Targets.WPF` project.
+	- [ ] Add `ZenithEngine.Targets.WinUI` project.
+	- [ ] Add `ZenithEngine.Targets.Avalonia` project.
+	- [ ] Add `ZenithEngine.Targets.Android` project.
+	- [ ] Add `ZenithEngine.Targets.IOS` project.
+	- [ ] Add `ZenithEngine.Targets.MacOS` project.
+	- [ ] Add `ZenithEngine.Targets.MAUI` project.
 	- [ ] Add `ZenithEngine.Material` project.
 	- [ ] Add `ZenithEngine.Editor` project.
 	- [ ] Add `ZenithEngine.Viewer` project.
