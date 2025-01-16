@@ -137,7 +137,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         commandBuffer.Begin();
 
-        commandBuffer.PrepareResources(resourceSet);
+        commandBuffer.PrepareResources([resourceSet]);
 
         commandBuffer.SetRayTracingPipeline(rayTracingPipeline);
         commandBuffer.SetResourceSet(0, resourceSet);

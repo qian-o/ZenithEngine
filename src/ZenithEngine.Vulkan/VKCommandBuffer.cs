@@ -576,6 +576,24 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     #endregion
 
     #region Resource Binding Operations
+    public override void PrepareResources(ResourceSet[] resourceSets)
+    {
+        foreach (ResourceSet resourceSet in resourceSets)
+        {
+            VKResourceSet vkResourceSet = resourceSet.VK();
+
+            foreach (VKTexture texture in vkResourceSet.SrvTextures)
+            {
+                texture.TransitionLayout(CommandBuffer, ImageLayout.ShaderReadOnlyOptimal);
+            }
+
+            foreach (VKTexture texture in vkResourceSet.UavTextures)
+            {
+                texture.TransitionLayout(CommandBuffer, ImageLayout.General);
+            }
+        }
+    }
+
     public override void SetVertexBuffer(uint slot, Buffer buffer, uint offset = 0)
     {
         ulong longOffset = offset;
@@ -604,21 +622,6 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                       buffer.VK().Buffer,
                                       offset,
                                       VKFormats.GetIndexType(format));
-    }
-
-    public override void PrepareResources(ResourceSet resourceSet)
-    {
-        VKResourceSet vkResourceSet = resourceSet.VK();
-
-        foreach (VKTexture texture in vkResourceSet.SrvTextures)
-        {
-            texture.TransitionLayout(CommandBuffer, ImageLayout.ShaderReadOnlyOptimal);
-        }
-
-        foreach (VKTexture texture in vkResourceSet.UavTextures)
-        {
-            texture.TransitionLayout(CommandBuffer, ImageLayout.General);
-        }
     }
 
     public override void SetResourceSet(uint slot,

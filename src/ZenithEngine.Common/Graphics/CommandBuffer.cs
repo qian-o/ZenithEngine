@@ -196,6 +196,12 @@ public abstract class CommandBuffer(GraphicsContext context,
 
     #region Resource Binding Operations
     /// <summary>
+    /// Prepare resources before pipeline binding.
+    /// </summary>
+    /// <param name="resourceSets">Array of resource sets.</param>
+    public abstract void PrepareResources(ResourceSet[] resourceSets);
+
+    /// <summary>
     /// Set the vertex buffer for graphics pipeline.
     /// </summary>
     /// <param name="slot">The vertex buffer slot.</param>
@@ -219,12 +225,6 @@ public abstract class CommandBuffer(GraphicsContext context,
     public abstract void SetIndexBuffer(Buffer buffer,
                                         IndexFormat format = IndexFormat.UInt16,
                                         uint offset = 0);
-
-    /// <summary>
-    /// Prepare resources before pipeline binding.
-    /// </summary>
-    /// <param name="resourceSet">The resource set.</param>
-    public abstract void PrepareResources(ResourceSet resourceSet);
 
     /// <summary>
     /// Set the resource set for pipeline binding.

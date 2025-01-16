@@ -69,10 +69,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
     public void PrepareResources(CommandBuffer commandBuffer)
     {
-        foreach (BindingToken token in bindings.Values)
-        {
-            commandBuffer.PrepareResources(token.ResourceSet);
-        }
+        commandBuffer.PrepareResources([.. bindings.Values.Select(static item => item.ResourceSet)]);
     }
 
     public void Render(CommandBuffer commandBuffer, ImDrawDataPtr drawDataPtr)
