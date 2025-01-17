@@ -4,7 +4,7 @@ namespace Triangle;
 
 internal class Program
 {
-    private static unsafe void Main(string[] _)
+    private static void Main(string[] _)
     {
         new TriangleTest(Backend.Vulkan).Run();
     }

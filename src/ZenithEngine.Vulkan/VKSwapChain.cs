@@ -231,6 +231,12 @@ internal unsafe partial class VKSwapChain : SwapChain
             desiredImages = capabilities.MaxImageCount;
         }
 
+        CompositeAlphaFlagsKHR compositeAlpha = CompositeAlphaFlagsKHR.InheritBitKhr;
+        if (capabilities.SupportedCompositeAlpha.HasFlag(CompositeAlphaFlagsKHR.OpaqueBitKhr))
+        {
+            compositeAlpha = CompositeAlphaFlagsKHR.OpaqueBitKhr;
+        }
+
         SwapchainCreateInfoKHR createInfo = new()
         {
             SType = StructureType.SwapchainCreateInfoKhr,
@@ -242,7 +248,7 @@ internal unsafe partial class VKSwapChain : SwapChain
             ImageArrayLayers = 1,
             ImageUsage = ImageUsageFlags.ColorAttachmentBit,
             PreTransform = SurfaceTransformFlagsKHR.IdentityBitKhr,
-            CompositeAlpha = capabilities.SupportedCompositeAlpha,
+            CompositeAlpha = compositeAlpha,
             PresentMode = ChooseSwapPresentMode(modes),
             ImageSharingMode = SharingMode.Exclusive,
             Clipped = true
