@@ -7,9 +7,15 @@ namespace ZenithEngine.Vulkan;
 
 internal static class VulkanExtensions
 {
+    private static readonly VkResult[] successCodes =
+    [
+        VkResult.Success,
+        VkResult.SuboptimalKhr
+    ];
+
     public static void ThrowIfError(this VkResult result)
     {
-        if (result is not VkResult.Success)
+        if (!successCodes.Contains(result))
         {
             throw new ZenithEngineException($"Vulkan error: [{result}].");
         }

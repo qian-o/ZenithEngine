@@ -266,17 +266,12 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     private void AcquireNextImage()
     {
-        Result result = Context.KhrSwapchain!.AcquireNextImage(Context.Device,
-                                                               Swapchain,
-                                                               ulong.MaxValue,
-                                                               default,
-                                                               fence.Fence,
-                                                               ref CurrentIndex);
-
-        if (result is not Result.Success and not Result.SuboptimalKhr)
-        {
-            result.ThrowIfError();
-        }
+        Context.KhrSwapchain!.AcquireNextImage(Context.Device,
+                                               Swapchain,
+                                               ulong.MaxValue,
+                                               default,
+                                               fence.Fence,
+                                               ref CurrentIndex).ThrowIfError();
 
         fence.Wait();
     }
