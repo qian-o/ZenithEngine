@@ -4,15 +4,15 @@
 Zenith Engine is a modern, cross-platform graphics rendering engine written in C#.
 
 ## Graphics Backends
-| API    | Supported |
-| ---    | :-------: |
-| D3D12  | 🚧 |
-| Vulkan | ✅ |
+| API       | Supported |
+| :-:       | :-------: |
+| DirectX12 | 🚧 |
+| Vulkan    | ✅ |
 
 ## TODO
 - ZenithEngine
 	- [ ] Use `slnx` instead of `sln` for Visual Studio solution.
-	- [ ] Add `ZenithEngine.D3D12` project.
+	- [ ] Add `ZenithEngine.DirectX12` project.
 	- [x] Add `ZenithEngine.Vulkan` project.
 	- [x] Add `ZenithEngine.Windowing` project.
 	- [x] Add `ZenithEngine.ShaderCompiler` project.
@@ -25,10 +25,9 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [x] Add `GenerateMipmaps` method in Utils.
 	- [ ] Add Vertex and Mesh structures for the material system.
 
-- ZenithEngine.Vulkan
-	- [x] Improve acceleration structures and ray tracing pipeline.
-
 - ZenithEngine.ShaderCompiler
+	- [ ] Add DXIL compilation support.
+	- [ ] Use DXC reflection instead of SPIRV.Reflect.
 	- [ ] Use Slang instead of HLSL.
 
 - ZenithEngine.ImGuiWrapper
