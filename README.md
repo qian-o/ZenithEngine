@@ -25,6 +25,9 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [x] Add `GenerateMipmaps` method in Utils.
 	- [ ] Add Vertex and Mesh structures for the material system.
 
+- ZenithEngine.DirectX12
+	- [ ] Create a complete DirectX12 rendering backend.
+
 - ZenithEngine.ShaderCompiler
 	- [ ] Add DXIL compilation support.
 	- [ ] Use DXC reflection instead of SPIRV.Reflect.
