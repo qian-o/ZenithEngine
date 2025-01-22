@@ -57,8 +57,8 @@ public static class BlendStates
         (
             blendEnabled: true,
             sourceBlendColor: Blend.DestinationColor,
-            sourceBlendAlpha: Blend.One,
             destinationBlendColor: Blend.InverseSourceAlpha,
+            sourceBlendAlpha: Blend.One,
             destinationBlendAlpha: Blend.One
         );
 

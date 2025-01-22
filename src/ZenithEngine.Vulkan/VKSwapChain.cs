@@ -41,25 +41,27 @@ internal unsafe partial class VKSwapChain : SwapChain
     public override void Present()
     {
         fixed (SwapchainKHR* pSwapChain = &Swapchain)
-        fixed (uint* pImageIndex = &CurrentIndex)
         {
-            PresentInfoKHR presentInfo = new()
+            fixed (uint* pImageIndex = &CurrentIndex)
             {
-                SType = StructureType.PresentInfoKhr,
-                SwapchainCount = 1,
-                PSwapchains = pSwapChain,
-                PImageIndices = pImageIndex
-            };
+                PresentInfoKHR presentInfo = new()
+                {
+                    SType = StructureType.PresentInfoKhr,
+                    SwapchainCount = 1,
+                    PSwapchains = pSwapChain,
+                    PImageIndices = pImageIndex
+                };
 
-            Result result = Context.KhrSwapchain!.QueuePresent(Context.GraphicsQueue, &presentInfo);
+                Result result = Context.KhrSwapchain!.QueuePresent(Context.GraphicsQueue, &presentInfo);
 
-            if (result is Result.ErrorOutOfDateKhr)
-            {
-                return;
-            }
-            else
-            {
-                result.ThrowIfError();
+                if (result is Result.ErrorOutOfDateKhr)
+                {
+                    return;
+                }
+                else
+                {
+                    result.ThrowIfError();
+                }
             }
         }
 
@@ -315,22 +317,20 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     private PresentModeKHR ChooseSwapPresentMode(PresentModeKHR[] presentModes)
     {
-        PresentModeKHR presentMode = PresentModeKHR.FifoKhr;
-
         if (Desc.VerticalSync && presentModes.Contains(PresentModeKHR.FifoRelaxedKhr))
         {
-            presentMode = PresentModeKHR.FifoRelaxedKhr;
+            return PresentModeKHR.FifoRelaxedKhr;
         }
         else if (presentModes.Contains(PresentModeKHR.MailboxKhr))
         {
-            presentMode = PresentModeKHR.MailboxKhr;
+            return PresentModeKHR.MailboxKhr;
         }
         else if (presentModes.Contains(PresentModeKHR.ImmediateKhr))
         {
-            presentMode = PresentModeKHR.ImmediateKhr;
+            return PresentModeKHR.ImmediateKhr;
         }
 
-        return presentMode;
+        return PresentModeKHR.FifoKhr;
     }
 
     private Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities)

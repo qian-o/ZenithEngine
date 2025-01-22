@@ -82,7 +82,7 @@ public static unsafe class DxcCompiler
         arguments.Add("-fvk-use-dx-layout");
 
         arguments.Add("-fvk-b-shift");
-        arguments.Add($"0");
+        arguments.Add("0");
         arguments.Add("all");
 
         arguments.Add("-fvk-t-shift");

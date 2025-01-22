@@ -1,5 +1,6 @@
 ﻿namespace ZenithEngine.Common.Enums;
 
+[Flags]
 public enum ClearOptions
 {
     None = 0,

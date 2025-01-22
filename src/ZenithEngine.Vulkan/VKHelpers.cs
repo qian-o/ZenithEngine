@@ -5,7 +5,7 @@ using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Vulkan;
 
-internal class VKHelpers
+internal static class VKHelpers
 {
     public static uint GetArrayLayers(TextureDesc desc)
     {

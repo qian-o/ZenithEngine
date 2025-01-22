@@ -72,8 +72,8 @@ internal unsafe class VKDebug : GraphicsResource
             }
         }
 
-        pfnUtilsCallback = (PfnDebugUtilsMessengerCallbackEXT)MessageCallback;
-        pfnReportCallback = (PfnDebugReportCallbackEXT)MessageCallback;
+        pfnUtilsCallback = new(MessageCallback);
+        pfnReportCallback = new(MessageCallback);
     }
 
     public VKDebug(GraphicsContext context) : base(context)

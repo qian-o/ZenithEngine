@@ -6,4 +6,3 @@ public class TimeEventArgs(double deltaTime, double totalTime) : EventArgs
 
     public double TotalTime { get; } = totalTime;
 }
-

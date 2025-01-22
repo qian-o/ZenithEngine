@@ -11,4 +11,3 @@ public class MouseButtonEventArgs(MouseButton button, Vector2D<int> position, ui
 
     public uint Clicks { get; } = clicks;
 }
-

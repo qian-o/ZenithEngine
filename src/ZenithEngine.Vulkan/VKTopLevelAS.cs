@@ -108,7 +108,7 @@ internal unsafe class VKTopLevelAS : TopLevelAS
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    public void UpdateAccelerationStructure(VkCommandBuffer commandBuffer, in TopLevelASDesc newDesc)
+    public void UpdateAccelerationStructure(VkCommandBuffer commandBuffer, ref readonly TopLevelASDesc newDesc)
     {
         Desc = newDesc;
 

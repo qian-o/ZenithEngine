@@ -8,4 +8,3 @@ public class KeyEventArgs(Key key, KeyModifiers modifiers) : EventArgs
 
     public KeyModifiers Modifiers { get; } = modifiers;
 }
-

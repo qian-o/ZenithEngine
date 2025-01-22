@@ -6,7 +6,7 @@ public static class ExceptionHelpers
     {
         if (value is null)
         {
-            return $"This null value is not supported.";
+            return "This null value is not supported.";
         }
         else
         {

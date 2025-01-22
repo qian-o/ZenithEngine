@@ -4,7 +4,7 @@ using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.ShaderCompiler;
 
-internal class SpvFormats
+internal static class SpvFormats
 {
     #region To ZenithEngine
     public static ShaderStages GetShaderStages(ShaderStageFlagBits shaderStageFlagBits)

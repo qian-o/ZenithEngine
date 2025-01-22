@@ -9,4 +9,3 @@ public abstract class ResourceLayout(GraphicsContext context,
 
     public ref ResourceLayoutDesc Desc => ref descInternal;
 }
-

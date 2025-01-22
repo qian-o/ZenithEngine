@@ -52,7 +52,7 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// <param name="buffer">The buffer to update.</param>
     /// <param name="source">Unmanaged pointer to the source data.</param>
     /// <param name="sourceSizeInBytes">Size of the source data in bytes.</param>
-    /// <param name="destinationOffsetInBytes">Offset in the destination buffer to update.</param>  
+    /// <param name="destinationOffsetInBytes">Offset in the destination buffer to update.</param>
     public void UpdateBuffer(Buffer buffer,
                              nint source,
                              uint sourceSizeInBytes,
@@ -72,7 +72,7 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// <param name="destination">The destination buffer.</param>
     /// <param name="sizeInBytes">Size of the source buffer in bytes.</param>
     /// <param name="sourceOffsetInBytes">Offset in the source buffer to copy.</param>
-    /// <param name="destinationOffsetInBytes">Offset in the destination buffer to update.</param>  
+    /// <param name="destinationOffsetInBytes">Offset in the destination buffer to update.</param>
     public abstract void CopyBuffer(Buffer source,
                                     Buffer destination,
                                     uint sizeInBytes,

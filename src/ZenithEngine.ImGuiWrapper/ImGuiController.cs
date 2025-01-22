@@ -11,7 +11,7 @@ namespace ZenithEngine.ImGuiWrapper;
 
 public unsafe class ImGuiController : DisposableObject
 {
-    public const ImGuiMouseButton MouseButtonX1 = (ImGuiMouseButton)3;
+    public const ImGuiMouseButton MouseButtonX1 = ImGuiMouseButton.Right | ImGuiMouseButton.Middle;
     public const ImGuiMouseButton MouseButtonX2 = (ImGuiMouseButton)4;
 
     public ImGuiContextPtr ImGuiContext;
@@ -246,7 +246,6 @@ public unsafe class ImGuiController : DisposableObject
         };
 
         return result is not ImGuiKey.None;
-
 
         static ImGuiKey KeyToImGuiKeyShortcut(Key keyToConvert, Key startKey1, ImGuiKey startKey2)
         {

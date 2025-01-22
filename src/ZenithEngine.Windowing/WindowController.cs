@@ -39,10 +39,7 @@ public static unsafe class WindowController
                 window.DoEvents();
             }
 
-            foreach (IWindow window in addWindows)
-            {
-                windows.Add(window);
-            }
+            windows.AddRange(addWindows);
 
             foreach (IWindow window in removeWindows)
             {

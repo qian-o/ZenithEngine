@@ -52,10 +52,7 @@ public class BufferAllocator(GraphicsContext context) : GraphicsResource(context
             available.Clear();
         }
 
-        foreach (Buffer item in inUse)
-        {
-            available.Add(item);
-        }
+        available.AddRange(inUse);
     }
 
     protected override void DebugName(string name)

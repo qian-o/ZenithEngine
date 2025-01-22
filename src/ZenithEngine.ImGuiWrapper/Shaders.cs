@@ -3,7 +3,7 @@ using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.ImGuiWrapper;
 
-internal class Shaders
+internal static class Shaders
 {
     public const string HLSL = @"
 struct Constants

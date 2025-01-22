@@ -192,13 +192,8 @@ internal unsafe class ImGuiRenderer : DisposableObject
         }
 
         ulong id = 0;
-        while (true)
+        while (bindings.ContainsKey(id))
         {
-            if (!bindings.ContainsKey(id))
-            {
-                break;
-            }
-
             id++;
         }
 
