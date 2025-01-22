@@ -11,9 +11,6 @@ namespace ZenithEngine.ImGuiWrapper;
 
 public unsafe class ImGuiController : DisposableObject
 {
-    public const ImGuiMouseButton MouseButtonX1 = ImGuiMouseButton.Right | ImGuiMouseButton.Middle;
-    public const ImGuiMouseButton MouseButtonX2 = (ImGuiMouseButton)4;
-
     public ImGuiContextPtr ImGuiContext;
 
     private bool frameBegun;
@@ -261,8 +258,8 @@ public unsafe class ImGuiController : DisposableObject
             MouseButton.Left => ImGuiMouseButton.Left,
             MouseButton.Right => ImGuiMouseButton.Right,
             MouseButton.Middle => ImGuiMouseButton.Middle,
-            MouseButton.Button4 => MouseButtonX1,
-            MouseButton.Button5 => MouseButtonX2,
+            MouseButton.Button4 => ImGuiMouseButton.Right | ImGuiMouseButton.Middle,
+            MouseButton.Button5 => (ImGuiMouseButton)4,
             _ => ImGuiMouseButton.Count
         };
 
