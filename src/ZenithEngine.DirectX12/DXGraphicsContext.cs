@@ -1,5 +1,4 @@
 ﻿using Silk.NET.Direct3D12;
-using Silk.NET.DXGI;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
@@ -10,15 +9,12 @@ internal unsafe class DXGraphicsContext : GraphicsContext
     public DXGraphicsContext()
     {
         D3D12 = D3D12.GetApi();
-        DXGI = DXGI.GetApi(null);
         Backend = Backend.DirectX12;
         Capabilities = null!;
         Factory = null!;
     }
 
     public D3D12 D3D12 { get; }
-
-    public DXGI DXGI { get; }
 
     public override Backend Backend { get; }
 
