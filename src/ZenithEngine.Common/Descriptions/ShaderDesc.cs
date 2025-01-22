@@ -11,7 +11,6 @@ public struct ShaderDesc
 
     /// <summary>
     /// An array containing the raw shader bytes.
-    /// Shader bytecode in SPIR-V format.
     /// </summary>
     public byte[] ShaderBytes;
 

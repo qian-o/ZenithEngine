@@ -117,7 +117,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
             ApplicationVersion = new Version32(1, 0, 0),
             PEngineName = allocator.AllocUTF8("Zenith Engine"),
             EngineVersion = new Version32(1, 0, 0),
-            ApiVersion = (Version32)VulkanApiVersion
+            ApiVersion = new Version32(1, 3, 0)
         };
 
         InstanceCreateInfo createInfo = new()
