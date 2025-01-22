@@ -98,6 +98,7 @@ public abstract unsafe class GraphicsContext : DisposableObject
     {
         return backend switch
         {
+            Backend.DirectX12 => CreateInstance<GraphicsContext>("ZenithEngine.DirectX12", "DXGraphicsContext"),
             Backend.Vulkan => CreateInstance<GraphicsContext>("ZenithEngine.Vulkan", "VKGraphicsContext"),
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(backend))
         };
