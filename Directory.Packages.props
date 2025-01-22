@@ -8,6 +8,7 @@
 		<PackageVersion Include="Hexa.NET.ImGui" Version="2.2.4" />
 		<PackageVersion Include="Roslynator.Analyzers" Version="4.12.10" />
 		<PackageVersion Include="Silk.NET.Direct3D.Compilers" Version="2.22.0" />
+		<PackageVersion Include="Silk.NET.Direct3D12" Version="2.22.0" />
 		<PackageVersion Include="Silk.NET.Maths" Version="2.22.0" />
 		<PackageVersion Include="Silk.NET.SDL" Version="2.22.0" />
 		<PackageVersion Include="Silk.NET.SPIRV.Reflect" Version="2.22.0" />
