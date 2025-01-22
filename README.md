@@ -9,17 +9,6 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 | D3D12  | 🚧 |
 | Vulkan | ✅ |
 
-## UI Framework Support
-| Platform | D3D12 | Vulkan |
-| -------- | :---: | :----: |
-| WPF      | 🚧 | 🚧 |
-| WinUI    | 🚧 | 🚧 |
-| Avalonia | ❎ | 🚧 |
-| Android  | ❎ | 🚧 |
-| IOS      | ❎ | 🚧 |
-| MacOS    | ❎ | 🚧 |
-| MAUI     | 🚧 | 🚧 |
-
 ## TODO
 - ZenithEngine
 	- [ ] Use `slnx` instead of `sln` for Visual Studio solution.
@@ -28,13 +17,6 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [x] Add `ZenithEngine.Windowing` project.
 	- [x] Add `ZenithEngine.ShaderCompiler` project.
 	- [x] Add `ZenithEngine.ImGuiWrapper` project.
-	- [ ] Add `ZenithEngine.Targets.WPF` project.
-	- [ ] Add `ZenithEngine.Targets.WinUI` project.
-	- [ ] Add `ZenithEngine.Targets.Avalonia` project.
-	- [ ] Add `ZenithEngine.Targets.Android` project.
-	- [ ] Add `ZenithEngine.Targets.IOS` project.
-	- [ ] Add `ZenithEngine.Targets.MacOS` project.
-	- [ ] Add `ZenithEngine.Targets.MAUI` project.
 	- [ ] Add `ZenithEngine.Material` project.
 	- [ ] Add `ZenithEngine.Editor` project.
 	- [ ] Add `ZenithEngine.Viewer` project.
@@ -42,7 +24,6 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - ZenithEngine.Common
 	- [x] Add `GenerateMipmaps` method in Utils.
 	- [ ] Add Vertex and Mesh structures for the material system.
-	- [ ] Add DX11 shared texture support.
 
 - ZenithEngine.Vulkan
 	- [x] Improve acceleration structures and ray tracing pipeline.
