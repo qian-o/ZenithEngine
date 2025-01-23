@@ -55,12 +55,7 @@ internal unsafe class DXGraphicsContext : GraphicsContext
             debugInterface.Dispose();
         }
 
-        Device = D3D12.CreateDevice<ID3D12Device>(ref Unsafe.NullRef<IUnknown>(), D3DFeatureLevel.Level122);
-
-        if (Device.Handle is null)
-        {
-            Device = D3D12.CreateDevice<ID3D12Device>(ref Unsafe.NullRef<IUnknown>(), D3DFeatureLevel.Level120);
-        }
+        D3D12.CreateDevice(ref Unsafe.NullRef<IUnknown>(), D3DFeatureLevel.Level120, out Device).ThrowIfError();
     }
 
     protected override void DestroyInternal()
