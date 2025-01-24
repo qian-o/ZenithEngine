@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
-using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
@@ -43,8 +42,6 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         {
             return;
         }
-
-        using MemoryAllocator allocator = new();
 
         if (useDebugLayer)
         {
