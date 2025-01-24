@@ -4,7 +4,7 @@ using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
 
-internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(context)
+internal class DXResourceFactory(DXGraphicsContext context) : ResourceFactory(context)
 {
     public override SwapChain CreateSwapChain(ref readonly SwapChainDesc desc)
     {
