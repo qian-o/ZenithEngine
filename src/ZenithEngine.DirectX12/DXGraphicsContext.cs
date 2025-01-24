@@ -15,17 +15,17 @@ internal unsafe class DXGraphicsContext : GraphicsContext
     {
         D3D12 = D3D12.GetApi();
         Backend = Backend.DirectX12;
-        Capabilities = null!;
-        Factory = null!;
+        Capabilities = new(this);
+        Factory = new(this);
     }
 
     public D3D12 D3D12 { get; }
 
     public override Backend Backend { get; }
 
-    public override DeviceCapabilities Capabilities { get; }
+    public override DXDeviceCapabilities Capabilities { get; }
 
-    public override ResourceFactory Factory { get; }
+    public override DXResourceFactory Factory { get; }
 
     public override MappedResource MapMemory(Buffer buffer, MapMode mode)
     {
@@ -56,10 +56,12 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         }
 
         D3D12.CreateDevice(ref Unsafe.NullRef<IUnknown>(), D3DFeatureLevel.Level120, out Device).ThrowIfError();
+
+        Capabilities.Init();
     }
 
     protected override void DestroyInternal()
     {
-        throw new NotImplementedException();
+        Device.Dispose();
     }
 }

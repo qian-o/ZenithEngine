@@ -5,7 +5,7 @@ using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Vulkan;
 
-internal unsafe class VKDeviceCapabilities : DeviceCapabilities
+internal unsafe class VKDeviceCapabilities(VKGraphicsContext context) : DeviceCapabilities
 {
     private string deviceName = "Unknown";
     private bool isRayQuerySupported;
@@ -17,7 +17,7 @@ internal unsafe class VKDeviceCapabilities : DeviceCapabilities
 
     public override bool IsRayTracingSupported => isRayTracingSupported;
 
-    public void Init(VKGraphicsContext context)
+    public void Init()
     {
         PhysicalDeviceProperties deviceProperties;
         context.Vk.GetPhysicalDeviceProperties(context.PhysicalDevice, &deviceProperties);

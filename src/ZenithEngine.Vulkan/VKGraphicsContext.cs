@@ -16,7 +16,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
     {
         Vk = Vk.GetApi();
         Backend = Backend.Vulkan;
-        Capabilities = new();
+        Capabilities = new(this);
         Factory = new(this);
     }
 
