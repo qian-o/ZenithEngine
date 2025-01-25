@@ -15,13 +15,22 @@ internal static class Program
 
     private static void DetectPlatform(Backend backend)
     {
-        using GraphicsContext context = GraphicsContext.Create(backend);
-        context.CreateDevice();
+        try
+        {
+            using GraphicsContext context = GraphicsContext.Create(backend);
+            context.CreateDevice();
 
-        Console.WriteLine($"Backend: {backend}");
-        Console.WriteLine($"    Device: {context.Capabilities.DeviceName}");
-        Console.WriteLine($"    Ray Query: {context.Capabilities.IsRayQuerySupported}");
-        Console.WriteLine($"    Ray Tracing: {context.Capabilities.IsRayTracingSupported}");
-        Console.WriteLine();
+            Console.WriteLine($"Backend: {backend}");
+            Console.WriteLine($"    Device: {context.Capabilities.DeviceName}");
+            Console.WriteLine($"    Ray Query: {context.Capabilities.IsRayQuerySupported}");
+            Console.WriteLine($"    Ray Tracing: {context.Capabilities.IsRayTracingSupported}");
+            Console.WriteLine();
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"Backend: {backend}");
+            Console.WriteLine("    Failed to create device.");
+            Console.WriteLine();
+        }
     }
 }
