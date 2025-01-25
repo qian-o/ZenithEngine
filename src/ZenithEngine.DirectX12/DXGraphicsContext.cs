@@ -1,6 +1,6 @@
-﻿using System.Runtime.CompilerServices;
-using Silk.NET.Core.Native;
+﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
+using Silk.NET.DXGI;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
@@ -8,17 +8,22 @@ namespace ZenithEngine.DirectX12;
 
 internal unsafe class DXGraphicsContext : GraphicsContext
 {
+    public ComPtr<IDXGIFactory6> Factory6;
+    public ComPtr<IDXGIAdapter> Adapter;
     public ComPtr<ID3D12Device> Device;
 
     public DXGraphicsContext()
     {
         D3D12 = D3D12.GetApi();
+        DXGI = DXGI.GetApi(null);
         Backend = Backend.DirectX12;
         Capabilities = new(this);
         Factory = new(this);
     }
 
     public D3D12 D3D12 { get; }
+
+    public DXGI DXGI { get; }
 
     public override Backend Backend { get; }
 
@@ -52,7 +57,11 @@ internal unsafe class DXGraphicsContext : GraphicsContext
             debugInterface.Dispose();
         }
 
-        D3D12.CreateDevice(ref Unsafe.NullRef<IUnknown>(), D3DFeatureLevel.Level120, out Device).ThrowIfError();
+        DXGI.CreateDXGIFactory1(out Factory6).ThrowIfError();
+
+        Factory6.EnumAdapterByGpuPreference(0, GpuPreference.HighPerformance, out Adapter).ThrowIfError();
+
+        D3D12.CreateDevice(Adapter, D3DFeatureLevel.Level120, out Device).ThrowIfError();
 
         Capabilities.Init();
     }
@@ -60,5 +69,7 @@ internal unsafe class DXGraphicsContext : GraphicsContext
     protected override void DestroyInternal()
     {
         Device.Dispose();
+        Adapter.Dispose();
+        Factory6.Dispose();
     }
 }
