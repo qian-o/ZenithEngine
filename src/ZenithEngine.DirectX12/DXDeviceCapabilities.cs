@@ -1,5 +1,7 @@
 ﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
+using Silk.NET.DXGI;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
@@ -18,16 +20,22 @@ internal unsafe class DXDeviceCapabilities(DXGraphicsContext context) : DeviceCa
 
     public void Init()
     {
-        deviceName = "DirectX 12";
+        AdapterDesc desc;
+        context.Adapter.GetDesc(&desc);
 
-        using ComPtr<ID3D12Device5> device5 = context.Device.QueryInterface<ID3D12Device5>();
+        deviceName = Utils.PtrToStringUni((nint)desc.Description);
 
-        if (device5.Handle is not null)
+        if (context.Device.QueryInterface(out ComPtr<ID3D12Device5> device5) is 0)
         {
             isRayQuerySupported = true;
             isRayTracingSupported = true;
-
-            device5.Dispose();
         }
+        else
+        {
+            isRayQuerySupported = false;
+            isRayTracingSupported = false;
+        }
+
+        device5.Dispose();
     }
 }

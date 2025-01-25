@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RayTracing", "src\Examples\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenithEngine.DirectX12", "src\ZenithEngine.DirectX12\ZenithEngine.DirectX12.csproj", "{21100CD8-B04D-41DF-8F5E-E02EE20DDDAD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlatformDetection", "src\Examples\PlatformDetection\PlatformDetection.csproj", "{5330A16C-E777-41BA-B5C0-4E773687CA0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,10 @@ Global
 		{21100CD8-B04D-41DF-8F5E-E02EE20DDDAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21100CD8-B04D-41DF-8F5E-E02EE20DDDAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21100CD8-B04D-41DF-8F5E-E02EE20DDDAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5330A16C-E777-41BA-B5C0-4E773687CA0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5330A16C-E777-41BA-B5C0-4E773687CA0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5330A16C-E777-41BA-B5C0-4E773687CA0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5330A16C-E777-41BA-B5C0-4E773687CA0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,5 +86,6 @@ Global
 		{B8F2CA0B-8573-4F73-8DC0-99CE76A6D27D} = {B14D733F-0FA6-4861-BCD5-E166EE6E2DAA}
 		{E4748968-BDD8-4D9B-8147-52DB910F05B7} = {B14D733F-0FA6-4861-BCD5-E166EE6E2DAA}
 		{D39421AB-0178-4008-9294-AAD47100663F} = {B14D733F-0FA6-4861-BCD5-E166EE6E2DAA}
+		{5330A16C-E777-41BA-B5C0-4E773687CA0E} = {B14D733F-0FA6-4861-BCD5-E166EE6E2DAA}
 	EndGlobalSection
 EndGlobal

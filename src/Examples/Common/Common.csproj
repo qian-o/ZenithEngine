@@ -2,6 +2,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\ZenithEngine.Common\ZenithEngine.Common.csproj" />
+		<ProjectReference Include="..\..\ZenithEngine.DirectX12\ZenithEngine.DirectX12.csproj" />
 		<ProjectReference Include="..\..\ZenithEngine.ImGuiWrapper\ZenithEngine.ImGuiWrapper.csproj" />
 		<ProjectReference Include="..\..\ZenithEngine.ShaderCompiler\ZenithEngine.ShaderCompiler.csproj" />
 		<ProjectReference Include="..\..\ZenithEngine.Vulkan\ZenithEngine.Vulkan.csproj" />
