@@ -8,6 +8,8 @@ namespace ZenithEngine.DirectX12;
 
 internal unsafe class DXGraphicsContext : GraphicsContext
 {
+    public const int DefaultShader4ComponentMapping = 0x1688;
+
     public ComPtr<IDXGIFactory6> Factory6;
     public ComPtr<IDXGIAdapter> Adapter;
     public ComPtr<ID3D12Device> Device;

@@ -14,6 +14,16 @@ internal static class DirectX12Extensions
         }
     }
 
+    public static DXBuffer DX(this Buffer buffer)
+    {
+        if (buffer is not DXBuffer)
+        {
+            throw new ZenithEngineException("Buffer is not a DirectX12 buffer.");
+        }
+
+        return (DXBuffer)buffer;
+    }
+
     public static DXCommandProcessor DX(this CommandProcessor processor)
     {
         if (processor is not DXCommandProcessor)

@@ -15,7 +15,7 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override Buffer CreateBuffer(ref readonly BufferDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXBuffer(Context, in desc);
     }
 
     public override Texture CreateTexture(ref readonly TextureDesc desc)
