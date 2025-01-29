@@ -7,11 +7,11 @@ namespace ZenithEngine.DirectX12;
 
 internal class DXDescriptorAllocator : GraphicsResource
 {
+    public ComPtr<ID3D12DescriptorHeap> Heap;
+
     private readonly uint descriptorSize;
     private readonly bool[] descriptorUsed;
     private readonly Lock @lock;
-
-    public ComPtr<ID3D12DescriptorHeap> Heap;
 
     private CpuDescriptorHandle cpuStart;
 
@@ -19,10 +19,6 @@ internal class DXDescriptorAllocator : GraphicsResource
                                  DescriptorHeapType heapType,
                                  uint count) : base(context)
     {
-        descriptorSize = Context.Device.GetDescriptorHandleIncrementSize(heapType);
-        descriptorUsed = new bool[count];
-        @lock = new();
-
         DescriptorHeapDesc desc = new()
         {
             Type = heapType,
@@ -32,6 +28,10 @@ internal class DXDescriptorAllocator : GraphicsResource
         };
 
         Context.Device.CreateDescriptorHeap(in desc, out Heap);
+
+        descriptorSize = Context.Device.GetDescriptorHandleIncrementSize(heapType);
+        descriptorUsed = new bool[count];
+        @lock = new();
 
         cpuStart = Heap.GetCPUDescriptorHandleForHeapStart();
     }

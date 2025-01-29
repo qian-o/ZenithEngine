@@ -4,8 +4,10 @@ using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Vulkan;
 
-internal class VKResourceFactory(VKGraphicsContext context) : ResourceFactory(context)
+internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(context)
 {
+    private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+
     public override SwapChain CreateSwapChain(ref readonly SwapChainDesc desc)
     {
         return new VKSwapChain(Context, in desc);

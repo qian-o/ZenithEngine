@@ -35,6 +35,8 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
     public DXDescriptorAllocator? SamplerAllocator { get; private set; }
 
+    public DXCommandProcessor? DefaultGraphicsCommandProcessor { get; private set; }
+
     public override Backend Backend { get; }
 
     public override DXDeviceCapabilities Capabilities { get; }
@@ -78,12 +80,14 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         DsvAllocator = new(this, DescriptorHeapType.Dsv, 128);
         CbvSrvUavAllocator = new(this, DescriptorHeapType.CbvSrvUav, 4096);
         SamplerAllocator = new(this, DescriptorHeapType.Sampler, 128);
+        DefaultGraphicsCommandProcessor = new(this, CommandProcessorType.Graphics);
 
         Capabilities.Init();
     }
 
     protected override void DestroyInternal()
     {
+        DefaultGraphicsCommandProcessor?.Dispose();
         SamplerAllocator?.Dispose();
         CbvSrvUavAllocator?.Dispose();
         DsvAllocator?.Dispose();
@@ -102,5 +106,6 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         DsvAllocator = null;
         CbvSrvUavAllocator = null;
         SamplerAllocator = null;
+        DefaultGraphicsCommandProcessor = null;
     }
 }

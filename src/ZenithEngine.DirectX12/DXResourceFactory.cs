@@ -4,8 +4,10 @@ using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
 
-internal class DXResourceFactory(DXGraphicsContext context) : ResourceFactory(context)
+internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(context)
 {
+    private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
+
     public override SwapChain CreateSwapChain(ref readonly SwapChainDesc desc)
     {
         throw new NotImplementedException();
@@ -63,6 +65,11 @@ internal class DXResourceFactory(DXGraphicsContext context) : ResourceFactory(co
 
     public override CommandProcessor CreateCommandProcessor(CommandProcessorType type)
     {
-        throw new NotImplementedException();
+        if (type is CommandProcessorType.Graphics)
+        {
+            return Context.DefaultGraphicsCommandProcessor!;
+        }
+
+        return new DXCommandProcessor(Context, type);
     }
 }
