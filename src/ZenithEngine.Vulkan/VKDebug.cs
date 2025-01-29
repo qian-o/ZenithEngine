@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
@@ -272,13 +273,14 @@ internal unsafe class VKDebug : GraphicsResource
         if (OperatingSystem.IsWindows())
         {
             Console.ForegroundColor = color;
-        }
 
-        Console.WriteLine(message);
+            Console.WriteLine(message);
 
-        if (OperatingSystem.IsWindows())
-        {
             Console.ResetColor();
+        }
+        else
+        {
+            Debug.WriteLine(message);
         }
     }
 }

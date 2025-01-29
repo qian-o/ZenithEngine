@@ -25,6 +25,8 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
     public DXGI DXGI { get; }
 
+    public DXDebug? Debug { get; private set; }
+
     public override Backend Backend { get; }
 
     public override DXDeviceCapabilities Capabilities { get; }
@@ -43,7 +45,7 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
     protected override void CreateDeviceInternal(bool useDebugLayer)
     {
-        if (Device.Handle is not null)
+        if (Factory6.Handle is not null)
         {
             return;
         }
@@ -63,13 +65,22 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
         D3D12.CreateDevice(Adapter, D3DFeatureLevel.Level120, out Device).ThrowIfError();
 
+        Debug = useDebugLayer ? new(this) : null;
+
         Capabilities.Init();
     }
 
     protected override void DestroyInternal()
     {
+        Debug?.Dispose();
+
         Device.Dispose();
         Adapter.Dispose();
         Factory6.Dispose();
+
+        DXGI.Dispose();
+        D3D12.Dispose();
+
+        Debug = null;
     }
 }
