@@ -40,7 +40,7 @@ internal unsafe class DXDebug : GraphicsResource
     {
         Context.Device.QueryInterface(out ComPtr<ID3D12InfoQueue1> infoQueue).ThrowIfError();
 
-        infoQueue.UnregisterMessageCallback(callbackCookie);
+        infoQueue.UnregisterMessageCallback(callbackCookie).ThrowIfError();
 
         infoQueue.Dispose();
     }

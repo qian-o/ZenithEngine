@@ -100,12 +100,12 @@ internal static class DXFormats
     {
         return count switch
         {
-            TextureSampleCount.Count1 => new SampleDesc(1, 0),
-            TextureSampleCount.Count2 => new SampleDesc(2, 0),
-            TextureSampleCount.Count4 => new SampleDesc(4, 0),
-            TextureSampleCount.Count8 => new SampleDesc(8, 0),
-            TextureSampleCount.Count16 => new SampleDesc(16, 0),
-            TextureSampleCount.Count32 => new SampleDesc(32, 0),
+            TextureSampleCount.Count1 => new(1, 0),
+            TextureSampleCount.Count2 => new(2, 0),
+            TextureSampleCount.Count4 => new(4, 0),
+            TextureSampleCount.Count8 => new(8, 0),
+            TextureSampleCount.Count16 => new(16, 0),
+            TextureSampleCount.Count32 => new(32, 0),
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(count))
         };
     }
