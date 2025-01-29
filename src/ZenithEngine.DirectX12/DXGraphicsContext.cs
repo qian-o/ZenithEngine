@@ -27,6 +27,14 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
     public DXDebug? Debug { get; private set; }
 
+    public DXDescriptorAllocator? RtvAllocator { get; private set; }
+
+    public DXDescriptorAllocator? DsvAllocator { get; private set; }
+
+    public DXDescriptorAllocator? CbvSrvUavAllocator { get; private set; }
+
+    public DXDescriptorAllocator? SamplerAllocator { get; private set; }
+
     public override Backend Backend { get; }
 
     public override DXDeviceCapabilities Capabilities { get; }
@@ -66,12 +74,20 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         D3D12.CreateDevice(Adapter, D3DFeatureLevel.Level120, out Device).ThrowIfError();
 
         Debug = useDebugLayer ? new(this) : null;
+        RtvAllocator = new(this, DescriptorHeapType.Rtv, 128);
+        DsvAllocator = new(this, DescriptorHeapType.Dsv, 128);
+        CbvSrvUavAllocator = new(this, DescriptorHeapType.CbvSrvUav, 4096);
+        SamplerAllocator = new(this, DescriptorHeapType.Sampler, 128);
 
         Capabilities.Init();
     }
 
     protected override void DestroyInternal()
     {
+        SamplerAllocator?.Dispose();
+        CbvSrvUavAllocator?.Dispose();
+        DsvAllocator?.Dispose();
+        RtvAllocator?.Dispose();
         Debug?.Dispose();
 
         Device.Dispose();
@@ -82,5 +98,9 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         D3D12.Dispose();
 
         Debug = null;
+        RtvAllocator = null;
+        DsvAllocator = null;
+        CbvSrvUavAllocator = null;
+        SamplerAllocator = null;
     }
 }

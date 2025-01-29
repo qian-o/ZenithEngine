@@ -11,11 +11,11 @@ namespace ZenithEngine.Common;
 
 public static class Utils
 {
-    public const uint CbvCount = 20;
+    public const uint CbvCount = 32;
 
-    public const uint SrvCount = 20;
+    public const uint SrvCount = 32;
 
-    public const uint UavCount = 20;
+    public const uint UavCount = 32;
 
     public const uint SmpCount = 16;
 
