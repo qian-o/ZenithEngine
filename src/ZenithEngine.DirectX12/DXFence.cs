@@ -29,7 +29,7 @@ internal unsafe class DXFence : GraphicsResource
 
         if (Fence.GetCompletedValue() < fenceValue)
         {
-            Fence.SetEventOnCompletion(fenceValue, (void*)waitHandle.SafeWaitHandle.DangerousGetHandle());
+            Fence.SetEventOnCompletion(fenceValue, (void*)waitHandle.SafeWaitHandle.DangerousGetHandle()).ThrowIfError();
 
             waitHandle.WaitOne();
             waitHandle.Reset();
@@ -38,7 +38,7 @@ internal unsafe class DXFence : GraphicsResource
 
     protected override void DebugName(string name)
     {
-        Fence.SetName(name);
+        Fence.SetName(name).ThrowIfError();
     }
 
     protected override void Destroy()

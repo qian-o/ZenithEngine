@@ -102,7 +102,7 @@ internal unsafe class DXBuffer : Buffer
 
     protected override void DebugName(string name)
     {
-        Resource.SetName(name);
+        Resource.SetName(name).ThrowIfError();
     }
 
     protected override void Destroy()

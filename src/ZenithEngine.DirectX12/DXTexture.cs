@@ -74,7 +74,9 @@ internal unsafe class DXTexture : Texture
                                                clearValue,
                                                out Resource).ThrowIfError();
 
-        rowSizes = new ulong[desc.MipLevels * DXHelpers.GetDepthOrArraySize(desc)];
+        uint subresourceCount = desc.MipLevels * DXHelpers.GetDepthOrArraySize(desc);
+
+        rowSizes = new ulong[subresourceCount];
         for (int i = 0; i < rowSizes.Length; i++)
         {
             ulong rowSize;
@@ -90,7 +92,7 @@ internal unsafe class DXTexture : Texture
             rowSizes[i] = rowSize;
         }
 
-        resourceStates = new ResourceStates[desc.MipLevels * DXHelpers.GetDepthOrArraySize(desc)];
+        resourceStates = new ResourceStates[subresourceCount];
         Array.Fill(resourceStates, initialResourceState);
 
         Allocator.Release();
@@ -152,7 +154,7 @@ internal unsafe class DXTexture : Texture
 
     protected override void DebugName(string name)
     {
-        Resource.SetName(name);
+        Resource.SetName(name).ThrowIfError();
     }
 
     protected override void Destroy()

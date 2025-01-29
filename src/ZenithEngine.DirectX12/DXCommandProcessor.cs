@@ -29,7 +29,7 @@ internal class DXCommandProcessor : CommandProcessor
             NodeMask = 0
         };
 
-        Context.Device.CreateCommandQueue(in desc, out Queue);
+        Context.Device.CreateCommandQueue(in desc, out Queue).ThrowIfError();
 
         fence = new(Context);
     }
@@ -53,7 +53,7 @@ internal class DXCommandProcessor : CommandProcessor
 
     protected override void DebugName(string name)
     {
-        Queue.SetName(name);
+        Queue.SetName(name).ThrowIfError();
     }
 
     protected override void Destroy()

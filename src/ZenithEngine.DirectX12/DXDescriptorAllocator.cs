@@ -27,7 +27,7 @@ internal class DXDescriptorAllocator : GraphicsResource
             NodeMask = 0
         };
 
-        Context.Device.CreateDescriptorHeap(in desc, out Heap);
+        Context.Device.CreateDescriptorHeap(in desc, out Heap).ThrowIfError();
 
         descriptorSize = Context.Device.GetDescriptorHandleIncrementSize(heapType);
         descriptorUsed = new bool[count];
@@ -71,7 +71,7 @@ internal class DXDescriptorAllocator : GraphicsResource
 
     protected override void DebugName(string name)
     {
-        Heap.SetName(name);
+        Heap.SetName(name).ThrowIfError();
     }
 
     protected override void Destroy()
