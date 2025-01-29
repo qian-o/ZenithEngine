@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
@@ -89,7 +88,7 @@ internal unsafe class DXDebug : GraphicsResource
         }
         else
         {
-            Debug.WriteLine(message);
+            Console.WriteLine(message);
         }
     }
 }

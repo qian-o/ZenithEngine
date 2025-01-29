@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
@@ -280,7 +279,7 @@ internal unsafe class VKDebug : GraphicsResource
         }
         else
         {
-            Debug.WriteLine(message);
+            Console.WriteLine(message);
         }
     }
 }
