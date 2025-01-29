@@ -77,6 +77,7 @@ internal unsafe class VKTexture : Texture
                                     VKHelpers.GetArrayLayers(desc));
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
+        Array.Fill(imageLayouts, ImageLayout.Undefined);
 
         Allocator.Release();
     }
@@ -93,21 +94,22 @@ internal unsafe class VKTexture : Texture
                                     VKHelpers.GetArrayLayers(desc));
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
+        Array.Fill(imageLayouts, ImageLayout.Undefined);
     }
-
-    public VKDeviceMemory? DeviceMemory { get; }
 
     public ImageLayout this[uint mipLevel, CubeMapFace face]
     {
         get
         {
-            return imageLayouts[(mipLevel * VKHelpers.GetArrayLayers(Desc)) + (uint)face];
+            return imageLayouts[VKHelpers.GetArrayLayerIndex(Desc, mipLevel, face)];
         }
-        set
+        private set
         {
-            imageLayouts[(mipLevel * VKHelpers.GetArrayLayers(Desc)) + (uint)face] = value;
+            imageLayouts[VKHelpers.GetArrayLayerIndex(Desc, mipLevel, face)] = value;
         }
     }
+
+    public VKDeviceMemory? DeviceMemory { get; }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 

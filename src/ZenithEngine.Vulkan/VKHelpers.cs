@@ -12,6 +12,11 @@ internal static class VKHelpers
         return desc.Type is TextureType.TextureCube ? 6u : 1u;
     }
 
+    public static uint GetArrayLayerIndex(TextureDesc desc, uint mipLevel, CubeMapFace face)
+    {
+        return (mipLevel * GetArrayLayers(desc)) + (uint)face;
+    }
+
     public static void MatchImageLayout(ref ImageMemoryBarrier barrier,
                                         out PipelineStageFlags src,
                                         out PipelineStageFlags dst)

@@ -35,31 +35,26 @@ internal unsafe class DXBuffer : Buffer
             Flags = ResourceFlags.None
         };
 
+        HeapProperties heapProperties = new(HeapType.Default);
+        ResourceStates initialResourceState = ResourceStates.Common;
+
         if (desc.Usage.HasFlag(BufferUsage.StorageBufferReadWrite))
         {
             resourceDesc.Flags |= ResourceFlags.AllowUnorderedAccess;
         }
 
-        HeapProperties heapProperties;
-        ResourceStates resourceStates;
-
         if (desc.Usage.HasFlag(BufferUsage.Dynamic))
         {
             heapProperties = new(HeapType.Upload);
-            resourceStates = ResourceStates.GenericRead;
-        }
-        else
-        {
-            heapProperties = new(HeapType.Default);
-            resourceStates = ResourceStates.Common;
+            initialResourceState = ResourceStates.GenericRead;
         }
 
         Context.Device.CreateCommittedResource(in heapProperties,
                                                HeapFlags.None,
                                                in resourceDesc,
-                                               resourceStates,
+                                               initialResourceState,
                                                null,
-                                               out Resource);
+                                               out Resource).ThrowIfError();
     }
 
     public uint SizeInBytes { get; }
