@@ -47,12 +47,15 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
     public override MappedResource MapMemory(Buffer buffer, MapMode mode)
     {
-        throw new NotImplementedException();
+        void* data = null;
+        buffer.DX().Resource.Map(0, (Range*)null, &data).ThrowIfError();
+
+        return new(buffer, mode, (nint)data, buffer.Desc.SizeInBytes);
     }
 
     public override void UnmapMemory(Buffer buffer)
     {
-        throw new NotImplementedException();
+        buffer.DX().Resource.Unmap(0, (Range*)null);
     }
 
     protected override void CreateDeviceInternal(bool useDebugLayer)
