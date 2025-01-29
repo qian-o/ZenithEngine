@@ -20,7 +20,7 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override Texture CreateTexture(ref readonly TextureDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXTexture(Context, in desc);
     }
 
     public override Sampler CreateSampler(ref readonly SamplerDesc desc)
