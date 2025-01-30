@@ -109,5 +109,22 @@ internal static class DXFormats
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(count))
         };
     }
+
+    public static SrvDimension GetSrvDimension(TextureType type, bool isMultiSampled)
+    {
+        if (type is TextureType.Texture2D && isMultiSampled)
+        {
+            return SrvDimension.Texture2Dms;
+        }
+
+        return type switch
+        {
+            TextureType.Texture1D => SrvDimension.Texture1D,
+            TextureType.Texture2D => SrvDimension.Texture2D,
+            TextureType.Texture3D => SrvDimension.Texture3D,
+            TextureType.TextureCube => SrvDimension.Texturecube,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
+        };
+    }
     #endregion
 }

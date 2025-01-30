@@ -63,3 +63,4 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 
 ## Draft
 - All structs that involve the static method `Default` should be changed to `Create` or `New`.
+- Add `Texture1DArray`, `Texture2DArray`, `TextureCubeArray` support.

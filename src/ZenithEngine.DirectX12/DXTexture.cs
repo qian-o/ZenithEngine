@@ -1,5 +1,6 @@
 ﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -13,8 +14,6 @@ internal unsafe class DXTexture : Texture
     private readonly ulong[] rowSizes;
     private readonly ResourceStates[] resourceStates;
 
-    private CpuDescriptorHandle rtv;
-    private CpuDescriptorHandle dsv;
     private CpuDescriptorHandle srv;
     private CpuDescriptorHandle uav;
 
@@ -98,32 +97,6 @@ internal unsafe class DXTexture : Texture
         Allocator.Release();
     }
 
-    public ref readonly CpuDescriptorHandle Rtv
-    {
-        get
-        {
-            if (rtv.Ptr is 0)
-            {
-                InitRtv();
-            }
-
-            return ref rtv;
-        }
-    }
-
-    public ref readonly CpuDescriptorHandle Dsv
-    {
-        get
-        {
-            if (dsv.Ptr is 0)
-            {
-                InitDsv();
-            }
-
-            return ref dsv;
-        }
-    }
-
     public ref readonly CpuDescriptorHandle Srv
     {
         get
@@ -169,36 +142,51 @@ internal unsafe class DXTexture : Texture
             Context.CbvSrvUavAllocator!.Free(srv);
         }
 
-        if (dsv.Ptr is not 0)
-        {
-            Context.DsvAllocator!.Free(dsv);
-        }
-
-        if (rtv.Ptr is not 0)
-        {
-            Context.RtvAllocator!.Free(rtv);
-        }
-
         Resource.Dispose();
-    }
-
-    private void InitRtv()
-    {
-        throw new NotImplementedException();
-    }
-
-    private void InitDsv()
-    {
-        throw new NotImplementedException();
     }
 
     private void InitSrv()
     {
-        throw new NotImplementedException();
+        ShaderResourceViewDesc desc = new()
+        {
+            Format = DXFormats.GetFormat(Desc.Format),
+            ViewDimension = DXFormats.GetSrvDimension(Desc.Type, Desc.SampleCount is not TextureSampleCount.Count1),
+            Shader4ComponentMapping = DXGraphicsContext.DefaultShader4ComponentMapping
+        };
+
+        if (Desc.Type == TextureType.Texture1D)
+        {
+            desc.Texture1D.MipLevels = Desc.MipLevels;
+        }
+        else if (Desc.Type == TextureType.Texture2D)
+        {
+            desc.ViewDimension = SrvDimension.Texture2D;
+            desc.Texture2D.MipLevels = Desc.MipLevels;
+        }
+        else if (Desc.Type == TextureType.Texture3D)
+        {
+            desc.ViewDimension = SrvDimension.Texture3D;
+            desc.Texture3D.MipLevels = Desc.MipLevels;
+        }
+        else if (Desc.Type == TextureType.TextureCube)
+        {
+            desc.ViewDimension = SrvDimension.Texturecube;
+            desc.TextureCube.MipLevels = Desc.MipLevels;
+        }
+        else
+        {
+            throw new ZenithEngineException(ExceptionHelpers.NotSupported(Desc.Type));
+        }
+
+        srv = Context.CbvSrvUavAllocator!.Alloc();
+
+        Context.Device.CreateShaderResourceView(Resource, in desc, srv);
     }
 
     private void InitUav()
     {
-        throw new NotImplementedException();
+        UnorderedAccessViewDesc desc = new()
+        {
+        };
     }
 }
