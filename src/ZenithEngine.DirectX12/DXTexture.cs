@@ -150,44 +150,68 @@ internal unsafe class DXTexture : Texture
         ShaderResourceViewDesc desc = new()
         {
             Format = DXFormats.GetFormat(Desc.Format),
-            ViewDimension = DXFormats.GetSrvDimension(Desc.Type, Desc.SampleCount is not TextureSampleCount.Count1),
             Shader4ComponentMapping = DXGraphicsContext.DefaultShader4ComponentMapping
         };
 
-        if (Desc.Type is TextureType.Texture1D)
+        bool isMultiSampled = Desc.SampleCount is not TextureSampleCount.Count1;
+
+        switch (Desc.Type)
         {
-            desc.Texture1D.MipLevels = Desc.MipLevels;
-        }
-        else if (Desc.Type is TextureType.Texture1DArray)
-        {
-            desc.Texture1DArray.MipLevels = Desc.MipLevels;
-            desc.Texture1DArray.ArraySize = Desc.ArrayLayers;
-        }
-        else if (Desc.Type is TextureType.Texture2D)
-        {
-            desc.Texture2D.MipLevels = Desc.MipLevels;
-        }
-        else if (Desc.Type is TextureType.Texture2DArray)
-        {
-            desc.Texture2DArray.MipLevels = Desc.MipLevels;
-            desc.Texture2DArray.ArraySize = Desc.ArrayLayers;
-        }
-        else if (Desc.Type is TextureType.Texture3D)
-        {
-            desc.Texture3D.MipLevels = Desc.MipLevels;
-        }
-        else if (Desc.Type is TextureType.TextureCube)
-        {
-            desc.TextureCube.MipLevels = Desc.MipLevels;
-        }
-        else if (Desc.Type is TextureType.TextureCubeArray)
-        {
-            desc.TextureCubeArray.MipLevels = Desc.MipLevels;
-            desc.TextureCubeArray.NumCubes = Desc.ArrayLayers;
-        }
-        else
-        {
-            throw new ZenithEngineException(ExceptionHelpers.NotSupported(Desc.Type));
+            case TextureType.Texture1D:
+                {
+                    desc.ViewDimension = SrvDimension.Texture1D;
+                    desc.Texture1D.MipLevels = Desc.MipLevels;
+                }
+                break;
+            case TextureType.Texture1DArray:
+                {
+                    desc.ViewDimension = SrvDimension.Texture1Darray;
+                    desc.Texture1DArray.MipLevels = Desc.MipLevels;
+                    desc.Texture1DArray.ArraySize = Desc.ArrayLayers;
+                }
+                break;
+            case TextureType.Texture2D:
+                {
+                    desc.ViewDimension = isMultiSampled ? SrvDimension.Texture2Dms : SrvDimension.Texture2D;
+                    desc.Texture2D.MipLevels = Desc.MipLevels;
+                }
+                break;
+            case TextureType.Texture2DArray:
+                {
+                    if (isMultiSampled)
+                    {
+                        desc.ViewDimension = SrvDimension.Texture2Dmsarray;
+                        desc.Texture2DMSArray.ArraySize = Desc.ArrayLayers;
+                    }
+                    else
+                    {
+                        desc.ViewDimension = SrvDimension.Texture2Darray;
+                        desc.Texture2DArray.MipLevels = Desc.MipLevels;
+                        desc.Texture2DArray.ArraySize = Desc.ArrayLayers;
+                    }
+                }
+                break;
+            case TextureType.Texture3D:
+                {
+                    desc.ViewDimension = SrvDimension.Texture3D;
+                    desc.Texture3D.MipLevels = Desc.MipLevels;
+                }
+                break;
+            case TextureType.TextureCube:
+                {
+                    desc.ViewDimension = SrvDimension.Texturecube;
+                    desc.TextureCube.MipLevels = Desc.MipLevels;
+                }
+                break;
+            case TextureType.TextureCubeArray:
+                {
+                    desc.ViewDimension = SrvDimension.Texturecubearray;
+                    desc.TextureCubeArray.MipLevels = Desc.MipLevels;
+                    desc.TextureCubeArray.NumCubes = Desc.ArrayLayers;
+                }
+                break;
+            default:
+                throw new ZenithEngineException(ExceptionHelpers.NotSupported(Desc.Type));
         }
 
         srv = Context.CbvSrvUavAllocator!.Alloc();
@@ -199,25 +223,43 @@ internal unsafe class DXTexture : Texture
     {
         UnorderedAccessViewDesc desc = new()
         {
-            Format = DXFormats.GetFormat(Desc.Format),
-            ViewDimension = DXFormats.GetUavDimension(Desc.Type),
+            Format = DXFormats.GetFormat(Desc.Format)
         };
 
-        if (Desc.Type is TextureType.Texture1DArray)
+        switch (Desc.Type)
         {
-            desc.Texture1DArray.ArraySize = Desc.ArrayLayers;
-        }
-        else if (Desc.Type is TextureType.Texture2DArray or TextureType.TextureCube or TextureType.TextureCubeArray)
-        {
-            desc.Texture2DArray.ArraySize = Desc.ArrayLayers;
-        }
-        else if (Desc.Type is TextureType.Texture3D)
-        {
-            desc.Texture3D.WSize = Desc.Depth;
-        }
-        else
-        {
-            throw new ZenithEngineException(ExceptionHelpers.NotSupported(Desc.Type));
+            case TextureType.Texture1D:
+                {
+                    desc.ViewDimension = UavDimension.Texture1D;
+                }
+                break;
+            case TextureType.Texture1DArray:
+                {
+                    desc.ViewDimension = UavDimension.Texture1Darray;
+                    desc.Texture1DArray.ArraySize = Desc.ArrayLayers;
+                }
+                break;
+            case TextureType.Texture2D:
+                {
+                    desc.ViewDimension = UavDimension.Texture2D;
+                }
+                break;
+            case TextureType.Texture2DArray:
+            case TextureType.TextureCube:
+            case TextureType.TextureCubeArray:
+                {
+                    desc.ViewDimension = UavDimension.Texture2Darray;
+                    desc.Texture2DArray.ArraySize = Desc.ArrayLayers;
+                }
+                break;
+            case TextureType.Texture3D:
+                {
+                    desc.ViewDimension = UavDimension.Texture3D;
+                    desc.Texture3D.WSize = Desc.Depth;
+                }
+                break;
+            default:
+                throw new ZenithEngineException(ExceptionHelpers.NotSupported(Desc.Type));
         }
 
         uav = Context.CbvSrvUavAllocator!.Alloc();

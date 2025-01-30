@@ -116,38 +116,5 @@ internal static class DXFormats
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(count))
         };
     }
-
-    public static SrvDimension GetSrvDimension(TextureType type, bool isMultiSampled)
-    {
-        return type switch
-        {
-            TextureType.Texture1D => SrvDimension.Texture1D,
-            TextureType.Texture1DArray => SrvDimension.Texture1Darray,
-            TextureType.Texture2D => isMultiSampled ? SrvDimension.Texture2Dms : SrvDimension.Texture2D,
-            TextureType.Texture2DArray => isMultiSampled ? SrvDimension.Texture2Dmsarray : SrvDimension.Texture2Darray,
-            TextureType.Texture3D => SrvDimension.Texture3D,
-            TextureType.TextureCube => SrvDimension.Texturecube,
-            TextureType.TextureCubeArray => SrvDimension.Texturecubearray,
-            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
-        };
-    }
-
-    public static UavDimension GetUavDimension(TextureType type)
-    {
-        return type switch
-        {
-            TextureType.Texture1D => UavDimension.Texture1D,
-            TextureType.Texture1DArray => UavDimension.Texture1Darray,
-            TextureType.Texture2D => UavDimension.Texture2D,
-
-            TextureType.Texture2DArray or
-            TextureType.TextureCube or
-            TextureType.TextureCubeArray => UavDimension.Texture2Darray,
-
-            TextureType.Texture3D => UavDimension.Texture3D,
-
-            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
-        };
-    }
     #endregion
 }
