@@ -22,6 +22,8 @@ public abstract unsafe class VisualTest
         Context.CreateDevice();
 #endif
 
+        List<double> avgFrameTimes = new(1000);
+
         Window.Loaded += (a, b) =>
         {
             Window.Center();
@@ -86,6 +88,13 @@ public abstract unsafe class VisualTest
             CommandProcessor.WaitIdle();
 
             SwapChain.Present();
+
+            if (avgFrameTimes.Count is 1000)
+            {
+                avgFrameTimes.RemoveAt(0);
+            }
+
+            avgFrameTimes.Add(b.DeltaTime);
         };
 
         Window.SizeChanged += (a, b) =>
@@ -103,6 +112,10 @@ public abstract unsafe class VisualTest
             ImGuiController.Dispose();
             SwapChain.Dispose();
             Context.Dispose();
+
+            Console.WriteLine($"Backend: {backend}");
+            Console.WriteLine($"Average Frame Time: {avgFrameTimes.Average() * 1000:F2}ms");
+            Console.WriteLine($"Average FPS: {1 / avgFrameTimes.Average():F2}");
         };
     }
 

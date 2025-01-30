@@ -15,6 +15,8 @@ internal unsafe class VKTexture : Texture
     public VKTexture(GraphicsContext context,
                      ref readonly TextureDesc desc) : base(context, in desc)
     {
+        bool isCube = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray;
+
         ImageCreateInfo createInfo = new()
         {
             SType = StructureType.ImageCreateInfo,
@@ -33,7 +35,7 @@ internal unsafe class VKTexture : Texture
             Usage = VKFormats.GetImageUsageFlags(desc.Usage),
             SharingMode = Context.SharingEnabled ? SharingMode.Concurrent : SharingMode.Exclusive,
             InitialLayout = ImageLayout.Preinitialized,
-            Flags = desc.Type is TextureType.TextureCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
+            Flags = isCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
         };
 
         if (Context.SharingEnabled)
@@ -71,12 +73,14 @@ internal unsafe class VKTexture : Texture
                                    DeviceMemory.DeviceMemory,
                                    0).ThrowIfError();
 
-        ImageView = CreateImageView(0,
+        ImageView = CreateImageView(desc.Type,
+                                    0,
                                     desc.MipLevels,
-                                    CubeMapFace.PositiveX,
+                                    0,
                                     VKHelpers.GetArrayLayers(desc));
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
+        Array.Fill(imageLayouts, ImageLayout.Undefined);
 
         Allocator.Release();
     }
@@ -87,48 +91,51 @@ internal unsafe class VKTexture : Texture
     {
         Image = image;
 
-        ImageView = CreateImageView(0,
+        ImageView = CreateImageView(desc.Type,
+                                    0,
                                     desc.MipLevels,
-                                    CubeMapFace.PositiveX,
+                                    0,
                                     VKHelpers.GetArrayLayers(desc));
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
+        Array.Fill(imageLayouts, ImageLayout.Undefined);
+    }
+
+    public ImageLayout this[uint mipLevel, uint arrayLayer, CubeMapFace face]
+    {
+        get
+        {
+            return imageLayouts[VKHelpers.GetArrayLayerIndex(Desc, mipLevel, arrayLayer, face)];
+        }
+        private set
+        {
+            imageLayouts[VKHelpers.GetArrayLayerIndex(Desc, mipLevel, arrayLayer, face)] = value;
+        }
     }
 
     public VKDeviceMemory? DeviceMemory { get; }
 
-    public ImageLayout this[uint mipLevel, CubeMapFace face]
-    {
-        get
-        {
-            return imageLayouts[(mipLevel * VKHelpers.GetArrayLayers(Desc)) + (uint)face];
-        }
-        set
-        {
-            imageLayouts[(mipLevel * VKHelpers.GetArrayLayers(Desc)) + (uint)face] = value;
-        }
-    }
-
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    public VkImageView CreateImageView(uint baseMipLevel,
+    public VkImageView CreateImageView(TextureType type,
+                                       uint baseMipLevel,
                                        uint mipLevels,
-                                       CubeMapFace baseFace,
-                                       uint faceCount)
+                                       uint baseArrayLayer,
+                                       uint arrayLayers)
     {
         ImageViewCreateInfo createInfo = new()
         {
             SType = StructureType.ImageViewCreateInfo,
             Image = Image,
-            ViewType = VKFormats.GetImageViewType(Desc.Type),
+            ViewType = VKFormats.GetImageViewType(type),
             Format = VKFormats.GetPixelFormat(Desc.Format),
             SubresourceRange = new()
             {
                 AspectMask = VKFormats.GetImageAspectFlags(Desc.Usage),
                 BaseMipLevel = baseMipLevel,
                 LevelCount = mipLevels,
-                BaseArrayLayer = (uint)baseFace,
-                LayerCount = faceCount
+                BaseArrayLayer = baseArrayLayer,
+                LayerCount = arrayLayers
             }
         };
 
@@ -138,9 +145,23 @@ internal unsafe class VKTexture : Texture
         return imageView;
     }
 
+    public VkImageView CreateImageView(TextureType type,
+                                       uint mipLevel,
+                                       uint arrayLayer,
+                                       CubeMapFace face)
+    {
+        return CreateImageView(type,
+                               mipLevel,
+                               1,
+                               VKHelpers.GetArrayLayerIndex(Desc, mipLevel, arrayLayer, face),
+                               1);
+    }
+
     public void TransitionLayout(VkCommandBuffer commandBuffer,
                                  uint baseMipLevel,
                                  uint mipLevels,
+                                 uint baseArrayLayer,
+                                 uint arrayLayers,
                                  CubeMapFace baseFace,
                                  uint faceCount,
                                  ImageLayout newLayout)
@@ -154,46 +175,51 @@ internal unsafe class VKTexture : Texture
         {
             uint mipLevel = baseMipLevel + i;
 
-            for (uint j = 0; j < faceCount; j++)
+            for (uint j = 0; j < arrayLayers; j++)
             {
-                uint face = (uint)baseFace + j;
+                uint arrayLayer = baseArrayLayer + j;
 
-                ImageLayout oldLayout = this[mipLevel, (CubeMapFace)face];
-
-                if (oldLayout == newLayout)
+                for (uint k = 0; k < faceCount; k++)
                 {
-                    continue;
-                }
+                    uint face = (uint)baseFace + k;
 
-                ImageMemoryBarrier barrier = new()
-                {
-                    SType = StructureType.ImageMemoryBarrier,
-                    OldLayout = oldLayout,
-                    NewLayout = newLayout,
-                    Image = Image,
-                    SubresourceRange = new()
+                    ImageLayout oldLayout = this[mipLevel, arrayLayer, (CubeMapFace)face];
+
+                    if (oldLayout == newLayout)
                     {
-                        AspectMask = VKFormats.GetImageAspectFlags(Desc.Usage),
-                        BaseMipLevel = mipLevel,
-                        LevelCount = 1,
-                        BaseArrayLayer = face,
-                        LayerCount = 1
+                        continue;
                     }
-                };
 
-                VKHelpers.MatchImageLayout(ref barrier, out PipelineStageFlags src, out PipelineStageFlags dst);
+                    ImageMemoryBarrier barrier = new()
+                    {
+                        SType = StructureType.ImageMemoryBarrier,
+                        OldLayout = oldLayout,
+                        NewLayout = newLayout,
+                        Image = Image,
+                        SubresourceRange = new()
+                        {
+                            AspectMask = VKFormats.GetImageAspectFlags(Desc.Usage),
+                            BaseMipLevel = mipLevel,
+                            LevelCount = 1,
+                            BaseArrayLayer = face,
+                            LayerCount = 1
+                        }
+                    };
 
-                Context.Vk.CmdPipelineBarrier(commandBuffer,
-                                              src,
-                                              dst,
-                                              0,
-                                              null,
-                                              0,
-                                              null,
-                                              1,
-                                              &barrier);
+                    VKHelpers.MatchImageLayout(ref barrier, out PipelineStageFlags src, out PipelineStageFlags dst);
 
-                this[mipLevel, (CubeMapFace)face] = newLayout;
+                    Context.Vk.CmdPipelineBarrier(commandBuffer,
+                                                  src,
+                                                  dst,
+                                                  0,
+                                                  null,
+                                                  0,
+                                                  null,
+                                                  1,
+                                                  &barrier);
+
+                    this[mipLevel, arrayLayer, (CubeMapFace)face] = newLayout;
+                }
             }
         }
     }
@@ -203,6 +229,8 @@ internal unsafe class VKTexture : Texture
         TransitionLayout(commandBuffer,
                          0,
                          Desc.MipLevels,
+                         0,
+                         Desc.ArrayLayers,
                          CubeMapFace.PositiveX,
                          VKHelpers.GetArrayLayers(Desc),
                          newLayout);

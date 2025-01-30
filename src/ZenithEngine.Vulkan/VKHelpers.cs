@@ -9,7 +9,29 @@ internal static class VKHelpers
 {
     public static uint GetArrayLayers(TextureDesc desc)
     {
-        return desc.Type is TextureType.TextureCube ? 6u : 1u;
+        uint initialLayers = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
+
+        if (desc.Type is TextureType.Texture1DArray or TextureType.Texture2DArray or TextureType.TextureCubeArray)
+        {
+            return desc.ArrayLayers * initialLayers;
+        }
+
+        return initialLayers;
+    }
+
+    public static uint GetArrayLayerIndex(TextureDesc desc,
+                                          uint mipLevel,
+                                          uint arrayLayer,
+                                          CubeMapFace face)
+    {
+        uint initialLayers = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
+
+        if (desc.Type is TextureType.Texture1DArray or TextureType.Texture2DArray or TextureType.TextureCubeArray)
+        {
+            return (mipLevel * GetArrayLayers(desc)) + (arrayLayer * initialLayers) + (uint)face;
+        }
+
+        return (mipLevel * GetArrayLayers(desc)) + (uint)face;
     }
 
     public static void MatchImageLayout(ref ImageMemoryBarrier barrier,

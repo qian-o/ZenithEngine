@@ -45,10 +45,10 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 throw new ZenithEngineException("All targets must have the same sample count.");
             }
 
-            VkImageView imageView = target.VK().CreateImageView(attachmentDesc.MipLevel,
-                                                                1,
-                                                                attachmentDesc.Face,
-                                                                1);
+            VkImageView imageView = target.VK().CreateImageView(TextureType.Texture2D,
+                                                                attachmentDesc.MipLevel,
+                                                                attachmentDesc.ArrayLayer,
+                                                                attachmentDesc.Face);
 
             colorAttachments[i] = new()
             {
@@ -80,10 +80,10 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 throw new ZenithEngineException("All targets must have the same sample count.");
             }
 
-            VkImageView imageView = target.VK().CreateImageView(attachmentDesc.MipLevel,
-                                                                1,
-                                                                attachmentDesc.Face,
-                                                                1);
+            VkImageView imageView = target.VK().CreateImageView(TextureType.Texture2D,
+                                                                attachmentDesc.MipLevel,
+                                                                attachmentDesc.ArrayLayer,
+                                                                attachmentDesc.Face);
 
             depthStencilAttachment[0] = new()
             {
@@ -145,6 +145,8 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             desc.Target.VK().TransitionLayout(commandBuffer,
                                               desc.MipLevel,
                                               1,
+                                              desc.ArrayLayer,
+                                              1,
                                               desc.Face,
                                               1,
                                               ImageLayout.ColorAttachmentOptimal);
@@ -156,6 +158,8 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
             desc.Target.VK().TransitionLayout(commandBuffer,
                                               desc.MipLevel,
+                                              1,
+                                              desc.ArrayLayer,
                                               1,
                                               desc.Face,
                                               1,
@@ -185,6 +189,8 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 texture.TransitionLayout(commandBuffer,
                                          desc.MipLevel,
                                          1,
+                                         desc.ArrayLayer,
+                                         1,
                                          desc.Face,
                                          1,
                                          imageLayout);
@@ -201,6 +207,8 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             {
                 texture.TransitionLayout(commandBuffer,
                                          desc.MipLevel,
+                                         1,
+                                         desc.ArrayLayer,
                                          1,
                                          desc.Face,
                                          1,

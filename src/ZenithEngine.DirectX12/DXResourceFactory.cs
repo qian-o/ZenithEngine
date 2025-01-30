@@ -2,69 +2,74 @@
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
-namespace ZenithEngine.Vulkan;
+namespace ZenithEngine.DirectX12;
 
-internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(context)
+internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(context)
 {
-    private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+    private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
     public override SwapChain CreateSwapChain(ref readonly SwapChainDesc desc)
     {
-        return new VKSwapChain(Context, in desc);
+        throw new NotImplementedException();
     }
 
     public override Buffer CreateBuffer(ref readonly BufferDesc desc)
     {
-        return new VKBuffer(Context, in desc);
+        return new DXBuffer(Context, in desc);
     }
 
     public override Texture CreateTexture(ref readonly TextureDesc desc)
     {
-        return new VKTexture(Context, in desc);
+        return new DXTexture(Context, in desc);
     }
 
     public override Sampler CreateSampler(ref readonly SamplerDesc desc)
     {
-        return new VKSampler(Context, in desc);
+        throw new NotImplementedException();
     }
 
     public override Shader CreateShader(ref readonly ShaderDesc desc)
     {
-        return new VKShader(Context, in desc);
+        throw new NotImplementedException();
     }
 
     public override ResourceLayout CreateResourceLayout(ref readonly ResourceLayoutDesc desc)
     {
-        return new VKResourceLayout(Context, in desc);
+        throw new NotImplementedException();
     }
 
     public override ResourceSet CreateResourceSet(ref readonly ResourceSetDesc desc)
     {
-        return new VKResourceSet(Context, in desc);
+        throw new NotImplementedException();
     }
 
     public override FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc)
     {
-        return new VKFrameBuffer(Context, in desc);
+        throw new NotImplementedException();
     }
 
     public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc)
     {
-        return new VKGraphicsPipeline(Context, in desc);
+        throw new NotImplementedException();
     }
 
     public override ComputePipeline CreateComputePipeline(ref readonly ComputePipelineDesc desc)
     {
-        return new VKComputePipeline(Context, in desc);
+        throw new NotImplementedException();
     }
 
     public override RayTracingPipeline CreateRayTracingPipeline(ref readonly RayTracingPipelineDesc desc)
     {
-        return new VKRayTracingPipeline(Context, in desc);
+        throw new NotImplementedException();
     }
 
     public override CommandProcessor CreateCommandProcessor(CommandProcessorType type)
     {
-        return new VKCommandProcessor(Context, type);
+        if (type is CommandProcessorType.Graphics)
+        {
+            return Context.DefaultGraphicsCommandProcessor!;
+        }
+
+        return new DXCommandProcessor(Context, type);
     }
 }

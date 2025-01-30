@@ -126,10 +126,14 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
         VKTexture vkTexture = texture.VK();
 
-        ImageLayout oldLayout = vkTexture[region.Position.MipLevel, region.Position.Face];
+        ImageLayout oldLayout = vkTexture[region.Position.MipLevel,
+                                          region.Position.ArrayLayer,
+                                          region.Position.Face];
 
         vkTexture.TransitionLayout(CommandBuffer,
                                    region.Position.MipLevel,
+                                   1,
+                                   region.Position.ArrayLayer,
                                    1,
                                    region.Position.Face,
                                    1,
@@ -168,6 +172,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         vkTexture.TransitionLayout(CommandBuffer,
                                    region.Position.MipLevel,
                                    1,
+                                   region.Position.ArrayLayer,
+                                   1,
                                    region.Position.Face,
                                    1,
                                    oldLayout);
@@ -184,11 +190,17 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         VKTexture src = source.VK();
         VKTexture dst = destination.VK();
 
-        ImageLayout srcOldLayout = src[sourcePosition.MipLevel, sourcePosition.Face];
-        ImageLayout dstOldLayout = dst[destinationPosition.MipLevel, destinationPosition.Face];
+        ImageLayout srcOldLayout = src[sourcePosition.MipLevel,
+                                       sourcePosition.ArrayLayer,
+                                       sourcePosition.Face];
+        ImageLayout dstOldLayout = dst[destinationPosition.MipLevel,
+                                       destinationPosition.ArrayLayer,
+                                       destinationPosition.Face];
 
         src.TransitionLayout(CommandBuffer,
                              sourcePosition.MipLevel,
+                             1,
+                             sourcePosition.ArrayLayer,
                              1,
                              sourcePosition.Face,
                              1,
@@ -196,6 +208,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
         dst.TransitionLayout(CommandBuffer,
                              destinationPosition.MipLevel,
+                             1,
+                             destinationPosition.ArrayLayer,
                              1,
                              destinationPosition.Face,
                              1,
@@ -248,12 +262,16 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         src.TransitionLayout(CommandBuffer,
                              sourcePosition.MipLevel,
                              1,
+                             sourcePosition.ArrayLayer,
+                             1,
                              sourcePosition.Face,
                              1,
                              srcOldLayout);
 
         dst.TransitionLayout(CommandBuffer,
                              destinationPosition.MipLevel,
+                             1,
+                             destinationPosition.ArrayLayer,
                              1,
                              destinationPosition.Face,
                              1,
@@ -296,11 +314,17 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         VKTexture src = source.VK();
         VKTexture dst = destination.VK();
 
-        ImageLayout srcOldLayout = src[sourcePosition.MipLevel, sourcePosition.Face];
-        ImageLayout dstOldLayout = dst[destinationPosition.MipLevel, destinationPosition.Face];
+        ImageLayout srcOldLayout = src[sourcePosition.MipLevel,
+                                       sourcePosition.ArrayLayer,
+                                       sourcePosition.Face];
+        ImageLayout dstOldLayout = dst[destinationPosition.MipLevel,
+                                       destinationPosition.ArrayLayer,
+                                       destinationPosition.Face];
 
         src.TransitionLayout(CommandBuffer,
                              sourcePosition.MipLevel,
+                             1,
+                             sourcePosition.ArrayLayer,
                              1,
                              sourcePosition.Face,
                              1,
@@ -308,6 +332,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
         dst.TransitionLayout(CommandBuffer,
                              destinationPosition.MipLevel,
+                             1,
+                             destinationPosition.ArrayLayer,
                              1,
                              destinationPosition.Face,
                              1,
@@ -360,12 +386,16 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         src.TransitionLayout(CommandBuffer,
                              sourcePosition.MipLevel,
                              1,
+                             sourcePosition.ArrayLayer,
+                             1,
                              sourcePosition.Face,
                              1,
                              srcOldLayout);
 
         dst.TransitionLayout(CommandBuffer,
                              destinationPosition.MipLevel,
+                             1,
+                             destinationPosition.ArrayLayer,
                              1,
                              destinationPosition.Face,
                              1,

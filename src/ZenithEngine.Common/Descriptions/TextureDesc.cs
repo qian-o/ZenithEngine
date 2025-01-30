@@ -35,6 +35,11 @@ public struct TextureDesc
     public uint MipLevels;
 
     /// <summary>
+    /// The number of array layers.
+    /// </summary>
+    public uint ArrayLayers;
+
+    /// <summary>
     /// Controls how the Texture is permitted to be used. If the Texture will be sampled from a shader.
     /// </summary>
     public TextureUsage Usage;
@@ -46,10 +51,11 @@ public struct TextureDesc
 
     public static TextureDesc Default(uint width,
                                       uint height,
-                                      uint depth,
-                                      uint mipLevels,
                                       TextureType type = TextureType.Texture2D,
                                       PixelFormat format = PixelFormat.R8G8B8A8UNorm,
+                                      uint depth = 1,
+                                      uint mipLevels = 1,
+                                      uint arrayLayers = 1,
                                       TextureUsage usage = TextureUsage.Sampled,
                                       TextureSampleCount sampleCount = TextureSampleCount.Count1)
     {
@@ -61,6 +67,7 @@ public struct TextureDesc
             Height = height,
             Depth = depth,
             MipLevels = mipLevels,
+            ArrayLayers = arrayLayers,
             Usage = usage,
             SampleCount = sampleCount
         };

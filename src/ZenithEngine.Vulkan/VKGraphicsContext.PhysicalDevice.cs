@@ -87,7 +87,7 @@ internal unsafe partial class VKGraphicsContext
 
         PhysicalDevice = bestPhysicalDevice;
 
-        Capabilities.Init(this);
+        Capabilities.Init();
     }
 
     private uint CalcPhysicalDeviceScore(VkPhysicalDevice physicalDevice)

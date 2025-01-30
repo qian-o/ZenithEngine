@@ -93,7 +93,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         commandBuffer.Commit();
 
-        TextureDesc outputDesc = TextureDesc.Default(Width, Height, 1, 1, usage: TextureUsage.Sampled | TextureUsage.Storage);
+        TextureDesc outputDesc = TextureDesc.Default(Width, Height, usage: TextureUsage.Sampled | TextureUsage.Storage);
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
@@ -155,7 +155,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         ImGuiController.RemoveBinding(output);
 
-        TextureDesc outputDesc = TextureDesc.Default(width, height, 1, 1, usage: TextureUsage.Sampled | TextureUsage.Storage);
+        TextureDesc outputDesc = TextureDesc.Default(width, height, usage: TextureUsage.Sampled | TextureUsage.Storage);
 
         output = Context.Factory.CreateTexture(in outputDesc);
 

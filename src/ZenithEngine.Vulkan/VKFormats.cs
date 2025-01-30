@@ -24,9 +24,12 @@ internal static unsafe class VKFormats
         return type switch
         {
             TextureType.Texture1D => ImageViewType.Type1D,
+            TextureType.Texture1DArray => ImageViewType.Type1DArray,
             TextureType.Texture2D => ImageViewType.Type2D,
+            TextureType.Texture2DArray => ImageViewType.Type2DArray,
             TextureType.Texture3D => ImageViewType.Type3D,
             TextureType.TextureCube => ImageViewType.TypeCube,
+            TextureType.TextureCubeArray => ImageViewType.TypeCubeArray,
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
         };
     }
