@@ -7,11 +7,33 @@ internal static class DXHelpers
 {
     public static ushort GetDepthOrArraySize(TextureDesc desc)
     {
-        return desc.Type == TextureType.TextureCube ? (ushort)6 : (ushort)desc.Depth;
+        if (desc.Type is TextureType.Texture3D)
+        {
+            return (ushort)desc.Depth;
+        }
+
+        uint initialLayers = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
+
+        if (desc.Type is TextureType.Texture1DArray or TextureType.Texture2DArray or TextureType.TextureCubeArray)
+        {
+            return (ushort)(desc.ArrayLayers * initialLayers);
+        }
+
+        return (ushort)initialLayers;
     }
 
-    public static uint GetDepthOrArrayIndex(TextureDesc desc, uint mipLevel, CubeMapFace face)
+    public static uint GetDepthOrArrayIndex(TextureDesc desc,
+                                            uint mipLevel,
+                                            uint arrayLayer,
+                                            CubeMapFace face)
     {
+        uint initialLayers = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
+
+        if (desc.Type is TextureType.Texture1DArray or TextureType.Texture2DArray or TextureType.TextureCubeArray)
+        {
+            return (mipLevel * GetDepthOrArraySize(desc)) + (arrayLayer * initialLayers) + (uint)face;
+        }
+
         return (mipLevel * GetDepthOrArraySize(desc)) + (uint)face;
     }
 }

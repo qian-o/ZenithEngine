@@ -12,9 +12,16 @@ internal static class DXFormats
     {
         return type switch
         {
-            TextureType.Texture1D => ResourceDimension.Texture1D,
-            TextureType.Texture2D or TextureType.TextureCube => ResourceDimension.Texture2D,
+            TextureType.Texture1D or
+            TextureType.Texture1DArray => ResourceDimension.Texture1D,
+
+            TextureType.Texture2D or
+            TextureType.Texture2DArray or
+            TextureType.TextureCube or
+            TextureType.TextureCubeArray => ResourceDimension.Texture2D,
+
             TextureType.Texture3D => ResourceDimension.Texture3D,
+
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
         };
     }
@@ -112,17 +119,35 @@ internal static class DXFormats
 
     public static SrvDimension GetSrvDimension(TextureType type, bool isMultiSampled)
     {
-        if (type is TextureType.Texture2D && isMultiSampled)
-        {
-            return SrvDimension.Texture2Dms;
-        }
-
         return type switch
         {
             TextureType.Texture1D => SrvDimension.Texture1D,
-            TextureType.Texture2D => SrvDimension.Texture2D,
+            TextureType.Texture1DArray => SrvDimension.Texture1Darray,
+            TextureType.Texture2D => isMultiSampled ? SrvDimension.Texture2Dms : SrvDimension.Texture2D,
+            TextureType.Texture2DArray => isMultiSampled ? SrvDimension.Texture2Dmsarray : SrvDimension.Texture2Darray,
             TextureType.Texture3D => SrvDimension.Texture3D,
             TextureType.TextureCube => SrvDimension.Texturecube,
+            TextureType.TextureCubeArray => SrvDimension.Texturecubearray,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
+        };
+    }
+
+    public static UavDimension GetUavDimension(TextureType type)
+    {
+        return type switch
+        {
+            TextureType.Texture1D => UavDimension.Texture1D,
+
+            TextureType.Texture1DArray => UavDimension.Texture1Darray,
+
+            TextureType.Texture2D => UavDimension.Texture2D,
+
+            TextureType.Texture2DArray or
+            TextureType.TextureCube or
+            TextureType.TextureCubeArray => UavDimension.Texture2Darray,
+
+            TextureType.Texture3D => UavDimension.Texture3D,
+
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
         };
     }

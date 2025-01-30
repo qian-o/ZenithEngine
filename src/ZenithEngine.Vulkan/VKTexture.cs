@@ -15,7 +15,7 @@ internal unsafe class VKTexture : Texture
     public VKTexture(GraphicsContext context,
                      ref readonly TextureDesc desc) : base(context, in desc)
     {
-        bool isCubeMap = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray;
+        bool isCube = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray;
 
         ImageCreateInfo createInfo = new()
         {
@@ -35,7 +35,7 @@ internal unsafe class VKTexture : Texture
             Usage = VKFormats.GetImageUsageFlags(desc.Usage),
             SharingMode = Context.SharingEnabled ? SharingMode.Concurrent : SharingMode.Exclusive,
             InitialLayout = ImageLayout.Preinitialized,
-            Flags = isCubeMap ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
+            Flags = isCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
         };
 
         if (Context.SharingEnabled)
