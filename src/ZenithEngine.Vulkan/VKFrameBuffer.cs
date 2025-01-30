@@ -45,10 +45,10 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 throw new ZenithEngineException("All targets must have the same sample count.");
             }
 
-            VkImageView imageView = target.VK().CreateImageView(TextureType.Texture2D,
-                                                                attachmentDesc.MipLevel,
-                                                                attachmentDesc.ArrayLayer,
-                                                                attachmentDesc.Face);
+            VkImageView imageView = CreateImageView(target.VK(),
+                                                    attachmentDesc.MipLevel,
+                                                    attachmentDesc.ArrayLayer,
+                                                    attachmentDesc.Face);
 
             colorAttachments[i] = new()
             {
@@ -80,10 +80,10 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 throw new ZenithEngineException("All targets must have the same sample count.");
             }
 
-            VkImageView imageView = target.VK().CreateImageView(TextureType.Texture2D,
-                                                                attachmentDesc.MipLevel,
-                                                                attachmentDesc.ArrayLayer,
-                                                                attachmentDesc.Face);
+            VkImageView imageView = CreateImageView(target.VK(),
+                                                    attachmentDesc.MipLevel,
+                                                    attachmentDesc.ArrayLayer,
+                                                    attachmentDesc.Face);
 
             depthStencilAttachment[0] = new()
             {
@@ -241,5 +241,32 @@ internal unsafe class VKFrameBuffer : FrameBuffer
         {
             Context.Vk.DestroyImageView(Context.Device, DepthStencilView.Value, null);
         }
+    }
+
+    private VkImageView CreateImageView(VKTexture texture,
+                                        uint mipLevel,
+                                        uint arrayLayer,
+                                        CubeMapFace face)
+    {
+        ImageViewCreateInfo createInfo = new()
+        {
+            SType = StructureType.ImageViewCreateInfo,
+            Image = texture.Image,
+            ViewType = ImageViewType.Type2D,
+            Format = VKFormats.GetPixelFormat(texture.Desc.Format),
+            SubresourceRange = new()
+            {
+                AspectMask = VKFormats.GetImageAspectFlags(texture.Desc.Usage),
+                BaseMipLevel = mipLevel,
+                LevelCount = 1,
+                BaseArrayLayer = VKHelpers.GetArrayLayerIndex(texture.Desc, mipLevel, arrayLayer, face),
+                LayerCount = 1
+            }
+        };
+
+        VkImageView imageView;
+        Context.Vk.CreateImageView(Context.Device, &createInfo, null, &imageView).ThrowIfError();
+
+        return imageView;
     }
 }
