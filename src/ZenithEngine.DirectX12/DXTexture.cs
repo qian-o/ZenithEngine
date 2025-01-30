@@ -97,6 +97,18 @@ internal unsafe class DXTexture : Texture
         Allocator.Release();
     }
 
+    public ResourceStates this[uint mipLevel, uint arrayLayer, CubeMapFace face]
+    {
+        get
+        {
+            return resourceStates[DXHelpers.GetDepthOrArrayIndex(Desc, mipLevel, arrayLayer, face)];
+        }
+        private set
+        {
+            resourceStates[DXHelpers.GetDepthOrArrayIndex(Desc, mipLevel, arrayLayer, face)] = value;
+        }
+    }
+
     public ref readonly CpuDescriptorHandle Srv
     {
         get
@@ -124,6 +136,16 @@ internal unsafe class DXTexture : Texture
     }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
+
+    public CpuDescriptorHandle GetRtv(uint mipLevel, uint arrayLayer, CubeMapFace face)
+    {
+        throw new NotImplementedException();
+    }
+
+    public CpuDescriptorHandle GetDsv(uint mipLevel, uint arrayLayer, CubeMapFace face)
+    {
+        throw new NotImplementedException();
+    }
 
     protected override void DebugName(string name)
     {
