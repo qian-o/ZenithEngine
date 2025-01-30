@@ -137,9 +137,7 @@ internal static class DXFormats
         return type switch
         {
             TextureType.Texture1D => UavDimension.Texture1D,
-
             TextureType.Texture1DArray => UavDimension.Texture1Darray,
-
             TextureType.Texture2D => UavDimension.Texture2D,
 
             TextureType.Texture2DArray or

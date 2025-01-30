@@ -29,11 +29,6 @@ internal static class DXHelpers
     {
         uint initialLayers = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
 
-        if (desc.Type is TextureType.Texture1DArray or TextureType.Texture2DArray or TextureType.TextureCubeArray)
-        {
-            return (mipLevel * GetDepthOrArraySize(desc)) + (arrayLayer * initialLayers) + (uint)face;
-        }
-
-        return (mipLevel * GetDepthOrArraySize(desc)) + (uint)face;
+        return (mipLevel * GetDepthOrArraySize(desc)) + (arrayLayer * initialLayers) + (uint)face;
     }
 }

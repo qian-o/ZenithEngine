@@ -26,12 +26,7 @@ internal static class VKHelpers
     {
         uint initialLayers = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
 
-        if (desc.Type is TextureType.Texture1DArray or TextureType.Texture2DArray or TextureType.TextureCubeArray)
-        {
-            return (mipLevel * GetArrayLayers(desc)) + (arrayLayer * initialLayers) + (uint)face;
-        }
-
-        return (mipLevel * GetArrayLayers(desc)) + (uint)face;
+        return (mipLevel * GetArrayLayers(desc)) + (arrayLayer * initialLayers) + (uint)face;
     }
 
     public static void MatchImageLayout(ref ImageMemoryBarrier barrier,

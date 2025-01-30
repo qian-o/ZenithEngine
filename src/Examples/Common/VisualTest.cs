@@ -59,11 +59,11 @@ public abstract unsafe class VisualTest
 
                 ImGui.Separator();
 
-                ImGui.Text($"Frame Time: {b.DeltaTime * 1000:F2}ms");
+                ImGui.Text($"Frame Time: {b.DeltaTime * 1000.0:F2}ms");
 
                 ImGui.Separator();
 
-                ImGui.Text($"FPS: {1 / b.DeltaTime:F2}");
+                ImGui.Text($"FPS: {1.0 / b.DeltaTime:F2}");
             });
 
             OnRender(b.DeltaTime, b.TotalTime);
