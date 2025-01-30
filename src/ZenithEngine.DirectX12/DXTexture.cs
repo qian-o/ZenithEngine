@@ -183,7 +183,7 @@ internal unsafe class DXTexture : Texture
         else if (Desc.Type is TextureType.TextureCubeArray)
         {
             desc.TextureCubeArray.MipLevels = Desc.MipLevels;
-            desc.TextureCubeArray.NumCubes = Desc.ArrayLayers / 6;
+            desc.TextureCubeArray.NumCubes = Desc.ArrayLayers;
         }
         else
         {
@@ -205,20 +205,14 @@ internal unsafe class DXTexture : Texture
 
         if (Desc.Type is TextureType.Texture1DArray)
         {
-            desc.Texture1DArray.MipSlice = 0;
-            desc.Texture1DArray.FirstArraySlice = 0;
             desc.Texture1DArray.ArraySize = Desc.ArrayLayers;
         }
         else if (Desc.Type is TextureType.Texture2DArray or TextureType.TextureCube or TextureType.TextureCubeArray)
         {
-            desc.Texture2DArray.MipSlice = 0;
-            desc.Texture2DArray.FirstArraySlice = 0;
             desc.Texture2DArray.ArraySize = Desc.ArrayLayers;
         }
         else if (Desc.Type is TextureType.Texture3D)
         {
-            desc.Texture3D.MipSlice = 0;
-            desc.Texture3D.FirstWSlice = 0;
             desc.Texture3D.WSize = Desc.Depth;
         }
         else
