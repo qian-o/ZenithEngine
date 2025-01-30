@@ -12,7 +12,7 @@ public struct TexturePosition
 
     public uint MipLevel;
 
-    public uint LayerIndex;
+    public uint ArrayLayer;
 
     public CubeMapFace Face;
 
@@ -20,7 +20,7 @@ public struct TexturePosition
                                           uint y = 0,
                                           uint z = 0,
                                           uint mipLevel = 0,
-                                          uint layerIndex = 0,
+                                          uint arrayLayer = 0,
                                           CubeMapFace face = CubeMapFace.PositiveX)
     {
         return new()
@@ -29,7 +29,7 @@ public struct TexturePosition
             Y = y,
             Z = z,
             MipLevel = mipLevel,
-            LayerIndex = layerIndex,
+            ArrayLayer = arrayLayer,
             Face = face
         };
     }

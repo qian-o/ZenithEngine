@@ -16,9 +16,9 @@ public struct FrameBufferAttachmentDesc
     public uint MipLevel;
 
     /// <summary>
-    /// The layer index to render to.
+    /// The array layer to render to.
     /// </summary>
-    public uint LayerIndex;
+    public uint ArrayLayer;
 
     /// <summary>
     /// If the target is a cube map, the face to render to. (Cube Map exclusive)
@@ -27,14 +27,14 @@ public struct FrameBufferAttachmentDesc
 
     public static FrameBufferAttachmentDesc Default(Texture target,
                                                     uint mipLevel = 0,
-                                                    uint layerIndex = 0,
+                                                    uint arrayLayer = 0,
                                                     CubeMapFace face = CubeMapFace.PositiveX)
     {
         return new()
         {
             Target = target,
             MipLevel = mipLevel,
-            LayerIndex = layerIndex,
+            ArrayLayer = arrayLayer,
             Face = face
         };
     }
