@@ -15,6 +15,8 @@ internal unsafe class VKTexture : Texture
     public VKTexture(GraphicsContext context,
                      ref readonly TextureDesc desc) : base(context, in desc)
     {
+        bool isCubeMap = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray;
+
         ImageCreateInfo createInfo = new()
         {
             SType = StructureType.ImageCreateInfo,
@@ -33,7 +35,7 @@ internal unsafe class VKTexture : Texture
             Usage = VKFormats.GetImageUsageFlags(desc.Usage),
             SharingMode = Context.SharingEnabled ? SharingMode.Concurrent : SharingMode.Exclusive,
             InitialLayout = ImageLayout.Preinitialized,
-            Flags = desc.Type is TextureType.TextureCube ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
+            Flags = isCubeMap ? ImageCreateFlags.CreateCubeCompatibleBit : ImageCreateFlags.None
         };
 
         if (Context.SharingEnabled)
@@ -71,9 +73,10 @@ internal unsafe class VKTexture : Texture
                                    DeviceMemory.DeviceMemory,
                                    0).ThrowIfError();
 
-        ImageView = CreateImageView(0,
+        ImageView = CreateImageView(desc.Type,
+                                    0,
                                     desc.MipLevels,
-                                    CubeMapFace.PositiveX,
+                                    0,
                                     VKHelpers.GetArrayLayers(desc));
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
@@ -88,9 +91,10 @@ internal unsafe class VKTexture : Texture
     {
         Image = image;
 
-        ImageView = CreateImageView(0,
+        ImageView = CreateImageView(desc.Type,
+                                    0,
                                     desc.MipLevels,
-                                    CubeMapFace.PositiveX,
+                                    0,
                                     VKHelpers.GetArrayLayers(desc));
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
@@ -113,24 +117,25 @@ internal unsafe class VKTexture : Texture
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    public VkImageView CreateImageView(uint baseMipLevel,
+    public VkImageView CreateImageView(TextureType type,
+                                       uint baseMipLevel,
                                        uint mipLevels,
-                                       CubeMapFace baseFace,
-                                       uint faceCount)
+                                       uint baseArrayLayer,
+                                       uint arrayLayers)
     {
         ImageViewCreateInfo createInfo = new()
         {
             SType = StructureType.ImageViewCreateInfo,
             Image = Image,
-            ViewType = VKFormats.GetImageViewType(Desc.Type),
+            ViewType = VKFormats.GetImageViewType(type),
             Format = VKFormats.GetPixelFormat(Desc.Format),
             SubresourceRange = new()
             {
                 AspectMask = VKFormats.GetImageAspectFlags(Desc.Usage),
                 BaseMipLevel = baseMipLevel,
                 LevelCount = mipLevels,
-                BaseArrayLayer = (uint)baseFace,
-                LayerCount = faceCount
+                BaseArrayLayer = baseArrayLayer,
+                LayerCount = arrayLayers
             }
         };
 
@@ -138,6 +143,18 @@ internal unsafe class VKTexture : Texture
         Context.Vk.CreateImageView(Context.Device, &createInfo, null, &imageView).ThrowIfError();
 
         return imageView;
+    }
+
+    public VkImageView CreateImageView(TextureType type,
+                                       uint mipLevel,
+                                       uint arrayLayer,
+                                       CubeMapFace face)
+    {
+        return CreateImageView(type,
+                               mipLevel,
+                               1,
+                               VKHelpers.GetArrayLayerIndex(Desc, mipLevel, arrayLayer, face),
+                               1);
     }
 
     public void TransitionLayout(VkCommandBuffer commandBuffer,

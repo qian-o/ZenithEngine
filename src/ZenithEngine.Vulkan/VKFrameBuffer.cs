@@ -45,10 +45,10 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 throw new ZenithEngineException("All targets must have the same sample count.");
             }
 
-            VkImageView imageView = target.VK().CreateImageView(attachmentDesc.MipLevel,
-                                                                1,
-                                                                attachmentDesc.Face,
-                                                                1);
+            VkImageView imageView = target.VK().CreateImageView(TextureType.Texture2D,
+                                                                attachmentDesc.MipLevel,
+                                                                attachmentDesc.ArrayLayer,
+                                                                attachmentDesc.Face);
 
             colorAttachments[i] = new()
             {
@@ -80,10 +80,10 @@ internal unsafe class VKFrameBuffer : FrameBuffer
                 throw new ZenithEngineException("All targets must have the same sample count.");
             }
 
-            VkImageView imageView = target.VK().CreateImageView(attachmentDesc.MipLevel,
-                                                                1,
-                                                                attachmentDesc.Face,
-                                                                1);
+            VkImageView imageView = target.VK().CreateImageView(TextureType.Texture2D,
+                                                                attachmentDesc.MipLevel,
+                                                                attachmentDesc.ArrayLayer,
+                                                                attachmentDesc.Face);
 
             depthStencilAttachment[0] = new()
             {
