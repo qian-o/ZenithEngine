@@ -36,8 +36,6 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
         {
             TextureDesc desc = TextureDesc.Default(width,
                                                    height,
-                                                   1,
-                                                   1,
                                                    format: swapChain.Desc.DepthStencilTargetFormat.Value,
                                                    usage: TextureUsage.DepthStencil);
 
@@ -50,8 +48,6 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
         {
             TextureDesc desc = TextureDesc.Default(width,
                                                    height,
-                                                   1,
-                                                   1,
                                                    format: VKFormats.GetPixelFormat(imageFormat),
                                                    usage: TextureUsage.RenderTarget);
 

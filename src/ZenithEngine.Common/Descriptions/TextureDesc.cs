@@ -30,6 +30,16 @@ public struct TextureDesc
     public uint Depth;
 
     /// <summary>
+    /// The number of textures in the texture array.
+    /// </summary>
+    public uint ArraySize;
+
+    /// <summary>
+    /// Number of texture faces used in TextureCube and TextureCubeArray.
+    /// </summary>
+    public uint Faces;
+
+    /// <summary>
     /// The number of mipmap levels.
     /// </summary>
     public uint MipLevels;
@@ -46,10 +56,12 @@ public struct TextureDesc
 
     public static TextureDesc Default(uint width,
                                       uint height,
-                                      uint depth,
-                                      uint mipLevels,
                                       TextureType type = TextureType.Texture2D,
                                       PixelFormat format = PixelFormat.R8G8B8A8UNorm,
+                                      uint depth = 1,
+                                      uint arraySize = 1,
+                                      uint faces = 1,
+                                      uint mipLevels = 1,
                                       TextureUsage usage = TextureUsage.Sampled,
                                       TextureSampleCount sampleCount = TextureSampleCount.Count1)
     {
@@ -60,6 +72,8 @@ public struct TextureDesc
             Width = width,
             Height = height,
             Depth = depth,
+            ArraySize = arraySize,
+            Faces = faces,
             MipLevels = mipLevels,
             Usage = usage,
             SampleCount = sampleCount
