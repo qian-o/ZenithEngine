@@ -22,7 +22,7 @@ public abstract unsafe class VisualTest
         Context.CreateDevice();
 #endif
 
-        List<double> avgFrameTimes = new(6000);
+        List<double> avgFrameTimes = new(1000);
 
         Window.Loaded += (a, b) =>
         {
@@ -89,7 +89,7 @@ public abstract unsafe class VisualTest
 
             SwapChain.Present();
 
-            if (avgFrameTimes.Count == 6000)
+            if (avgFrameTimes.Count is 1000)
             {
                 avgFrameTimes.RemoveAt(0);
             }
