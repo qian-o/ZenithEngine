@@ -11,7 +11,6 @@ internal unsafe class DXTexture : Texture
 {
     public ComPtr<ID3D12Resource> Resource;
 
-    private readonly ulong[] rowSizes;
     private readonly ResourceStates[] resourceStates;
 
     private CpuDescriptorHandle srv;
@@ -73,25 +72,7 @@ internal unsafe class DXTexture : Texture
                                                clearValue,
                                                out Resource).ThrowIfError();
 
-        uint subresourceCount = desc.MipLevels * DXHelpers.GetDepthOrArraySize(desc);
-
-        rowSizes = new ulong[subresourceCount];
-        for (int i = 0; i < rowSizes.Length; i++)
-        {
-            ulong rowSize;
-            Context.Device.GetCopyableFootprints(in resourceDesc,
-                                                 (uint)i,
-                                                 1,
-                                                 0,
-                                                 null,
-                                                 null,
-                                                 &rowSize,
-                                                 null);
-
-            rowSizes[i] = rowSize;
-        }
-
-        resourceStates = new ResourceStates[subresourceCount];
+        resourceStates = new ResourceStates[desc.MipLevels * DXHelpers.GetDepthOrArraySize(desc)];
         Array.Fill(resourceStates, initialResourceState);
 
         Allocator.Release();
@@ -139,12 +120,152 @@ internal unsafe class DXTexture : Texture
 
     public CpuDescriptorHandle GetRtv(uint mipLevel, uint arrayLayer, CubeMapFace face)
     {
-        throw new NotImplementedException();
+        RenderTargetViewDesc desc = new()
+        {
+            Format = DXFormats.GetFormat(Desc.Format)
+        };
+
+        bool isMultiSampled = Desc.SampleCount is not TextureSampleCount.Count1;
+
+        switch (Desc.Type)
+        {
+            case TextureType.Texture1D:
+                {
+                    desc.ViewDimension = RtvDimension.Texture1D;
+                    desc.Texture1D.MipSlice = mipLevel;
+                }
+                break;
+            case TextureType.Texture1DArray:
+                {
+                    desc.ViewDimension = RtvDimension.Texture1Darray;
+                    desc.Texture1DArray.MipSlice = mipLevel;
+                    desc.Texture1DArray.FirstArraySlice = arrayLayer;
+                    desc.Texture1DArray.ArraySize = 1;
+                }
+                break;
+            case TextureType.Texture2D:
+                {
+                    desc.ViewDimension = isMultiSampled ? RtvDimension.Texture2Dms : RtvDimension.Texture2D;
+                    desc.Texture2D.MipSlice = mipLevel;
+                }
+                break;
+            case TextureType.Texture2DArray:
+                {
+                    if (isMultiSampled)
+                    {
+                        desc.ViewDimension = RtvDimension.Texture2Dmsarray;
+                        desc.Texture2DMSArray.FirstArraySlice = arrayLayer;
+                        desc.Texture2DMSArray.ArraySize = 1;
+                    }
+                    else
+                    {
+                        desc.ViewDimension = RtvDimension.Texture2Darray;
+                        desc.Texture2DArray.MipSlice = mipLevel;
+                        desc.Texture2DArray.FirstArraySlice = arrayLayer;
+                        desc.Texture2DArray.ArraySize = 1;
+                    }
+                }
+                break;
+            case TextureType.Texture3D:
+                {
+                    desc.ViewDimension = RtvDimension.Texture3D;
+                    desc.Texture3D.MipSlice = mipLevel;
+                    desc.Texture3D.FirstWSlice = 0;
+                    desc.Texture3D.WSize = Desc.Depth;
+                }
+                break;
+            case TextureType.TextureCube:
+            case TextureType.TextureCubeArray:
+                {
+                    desc.ViewDimension = RtvDimension.Texture2Darray;
+                    desc.Texture2DArray.MipSlice = mipLevel;
+                    desc.Texture2DArray.FirstArraySlice = DXHelpers.GetDepthOrArrayIndex(Desc,
+                                                                                         mipLevel,
+                                                                                         arrayLayer,
+                                                                                         face);
+                    desc.Texture2DArray.ArraySize = 1;
+                }
+                break;
+            default:
+                throw new ZenithEngineException(ExceptionHelpers.NotSupported(Desc.Type));
+        }
+
+        CpuDescriptorHandle rtv = Context.RtvAllocator!.Alloc();
+
+        Context.Device.CreateRenderTargetView(Resource, in desc, rtv);
+
+        return rtv;
     }
 
     public CpuDescriptorHandle GetDsv(uint mipLevel, uint arrayLayer, CubeMapFace face)
     {
-        throw new NotImplementedException();
+        DepthStencilViewDesc desc = new()
+        {
+            Format = DXFormats.GetFormat(Desc.Format)
+        };
+
+        bool isMultiSampled = Desc.SampleCount is not TextureSampleCount.Count1;
+
+        switch (Desc.Type)
+        {
+            case TextureType.Texture1D:
+                {
+                    desc.ViewDimension = DsvDimension.Texture1D;
+                    desc.Texture1D.MipSlice = mipLevel;
+                }
+                break;
+            case TextureType.Texture1DArray:
+                {
+                    desc.ViewDimension = DsvDimension.Texture1Darray;
+                    desc.Texture1DArray.MipSlice = mipLevel;
+                    desc.Texture1DArray.FirstArraySlice = arrayLayer;
+                    desc.Texture1DArray.ArraySize = 1;
+                }
+                break;
+            case TextureType.Texture2D:
+                {
+                    desc.ViewDimension = isMultiSampled ? DsvDimension.Texture2Dms : DsvDimension.Texture2D;
+                    desc.Texture2D.MipSlice = mipLevel;
+                }
+                break;
+            case TextureType.Texture2DArray:
+                {
+                    if (isMultiSampled)
+                    {
+                        desc.ViewDimension = DsvDimension.Texture2Dmsarray;
+                        desc.Texture2DMSArray.FirstArraySlice = arrayLayer;
+                        desc.Texture2DMSArray.ArraySize = 1;
+                    }
+                    else
+                    {
+                        desc.ViewDimension = DsvDimension.Texture2Darray;
+                        desc.Texture2DArray.MipSlice = mipLevel;
+                        desc.Texture2DArray.FirstArraySlice = arrayLayer;
+                        desc.Texture2DArray.ArraySize = 1;
+                    }
+                }
+                break;
+            case TextureType.TextureCube:
+            case TextureType.TextureCubeArray:
+                {
+                    desc.ViewDimension = DsvDimension.Texture2Darray;
+                    desc.Texture2DArray.MipSlice = mipLevel;
+                    desc.Texture2DArray.FirstArraySlice = DXHelpers.GetDepthOrArrayIndex(Desc,
+                                                                                         mipLevel,
+                                                                                         arrayLayer,
+                                                                                         face);
+                    desc.Texture2DArray.ArraySize = 1;
+                }
+                break;
+            default:
+                throw new ZenithEngineException(ExceptionHelpers.NotSupported(Desc.Type));
+        }
+
+        CpuDescriptorHandle dsv = Context.DsvAllocator!.Alloc();
+
+        Context.Device.CreateDepthStencilView(Resource, in desc, dsv);
+
+        return dsv;
     }
 
     protected override void DebugName(string name)
