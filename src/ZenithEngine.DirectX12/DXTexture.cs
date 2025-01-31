@@ -268,6 +268,70 @@ internal unsafe class DXTexture : Texture
         return dsv;
     }
 
+    public void TransitionState(ComPtr<ID3D12GraphicsCommandList> commandList,
+                                uint baseMipLevel,
+                                uint mipLevels,
+                                uint baseArrayLayer,
+                                uint arrayLayers,
+                                CubeMapFace baseFace,
+                                uint faceCount,
+                                ResourceStates newState)
+    {
+        for (uint i = 0; i < mipLevels; i++)
+        {
+            uint mipLevel = baseMipLevel + i;
+
+            for (uint j = 0; j < arrayLayers; j++)
+            {
+                uint arrayLayer = baseArrayLayer + j;
+
+                for (uint k = 0; k < faceCount; k++)
+                {
+                    uint face = (uint)baseFace + k;
+
+                    ResourceStates oldState = this[mipLevel, arrayLayer, (CubeMapFace)face];
+
+                    if (oldState == newState)
+                    {
+                        continue;
+                    }
+
+                    ResourceBarrier barrier = new()
+                    {
+                        Type = ResourceBarrierType.Transition,
+                        Transition = new()
+                        {
+                            PResource = Resource,
+                            Subresource = DXHelpers.GetDepthOrArrayIndex(Desc,
+                                                                         mipLevel,
+                                                                         arrayLayer,
+                                                                         (CubeMapFace)face),
+                            StateBefore = oldState,
+                            StateAfter = newState
+                        }
+                    };
+
+                    commandList.ResourceBarrier(1, &barrier);
+
+                    this[mipLevel, arrayLayer, (CubeMapFace)face] = newState;
+                }
+            }
+        }
+    }
+
+    public void TransitionState(ComPtr<ID3D12GraphicsCommandList> commandList,
+                                ResourceStates newState)
+    {
+        TransitionState(commandList,
+                        0,
+                        Desc.MipLevels,
+                        0,
+                        Desc.ArrayLayers,
+                        CubeMapFace.PositiveX,
+                        DXHelpers.GetInitialLayers(Desc.Type),
+                        newState);
+    }
+
     protected override void DebugName(string name)
     {
         Resource.SetName(name).ThrowIfError();

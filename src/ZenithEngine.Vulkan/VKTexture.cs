@@ -184,7 +184,7 @@ internal unsafe class VKTexture : Texture
                          0,
                          Desc.ArrayLayers,
                          CubeMapFace.PositiveX,
-                         VKHelpers.GetArrayLayers(Desc),
+                         VKHelpers.GetInitialLayers(Desc.Type),
                          newLayout);
     }
 
