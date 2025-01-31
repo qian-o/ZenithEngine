@@ -30,7 +30,7 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override Shader CreateShader(ref readonly ShaderDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXShader(Context, in desc);
     }
 
     public override ResourceLayout CreateResourceLayout(ref readonly ResourceLayoutDesc desc)

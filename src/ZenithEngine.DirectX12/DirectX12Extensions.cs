@@ -44,6 +44,16 @@ internal static class DirectX12Extensions
         return (DXSampler)sampler;
     }
 
+    public static DXShader DX(this Shader shader)
+    {
+        if (shader is not DXShader)
+        {
+            throw new ZenithEngineException("Shader is not a DirectX12 shader.");
+        }
+
+        return (DXShader)shader;
+    }
+
     public static DXCommandProcessor DX(this CommandProcessor processor)
     {
         if (processor is not DXCommandProcessor)
