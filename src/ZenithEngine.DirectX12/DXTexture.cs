@@ -65,9 +65,9 @@ internal unsafe class DXTexture : Texture
             clearValue->DepthStencil = new(1.0f, 0);
         }
 
-        Context.Device.CreateCommittedResource(in heapProperties,
+        Context.Device.CreateCommittedResource(&heapProperties,
                                                HeapFlags.None,
-                                               in resourceDesc,
+                                               &resourceDesc,
                                                initialResourceState,
                                                clearValue,
                                                out Resource).ThrowIfError();
@@ -192,7 +192,7 @@ internal unsafe class DXTexture : Texture
 
         CpuDescriptorHandle rtv = Context.RtvAllocator!.Alloc();
 
-        Context.Device.CreateRenderTargetView(Resource, in desc, rtv);
+        Context.Device.CreateRenderTargetView(Resource, &desc, rtv);
 
         return rtv;
     }
@@ -263,7 +263,7 @@ internal unsafe class DXTexture : Texture
 
         CpuDescriptorHandle dsv = Context.DsvAllocator!.Alloc();
 
-        Context.Device.CreateDepthStencilView(Resource, in desc, dsv);
+        Context.Device.CreateDepthStencilView(Resource, &desc, dsv);
 
         return dsv;
     }
@@ -423,7 +423,7 @@ internal unsafe class DXTexture : Texture
 
         srv = Context.CbvSrvUavAllocator!.Alloc();
 
-        Context.Device.CreateShaderResourceView(Resource, in desc, srv);
+        Context.Device.CreateShaderResourceView(Resource, &desc, srv);
     }
 
     private void InitUav()
@@ -471,6 +471,6 @@ internal unsafe class DXTexture : Texture
 
         uav = Context.CbvSrvUavAllocator!.Alloc();
 
-        Context.Device.CreateUnorderedAccessView(Resource, null, in desc, uav);
+        Context.Device.CreateUnorderedAccessView(Resource, (ID3D12Resource*)null, &desc, uav);
     }
 }

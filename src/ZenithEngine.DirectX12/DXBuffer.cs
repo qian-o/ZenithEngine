@@ -49,9 +49,9 @@ internal unsafe class DXBuffer : Buffer
             initialResourceState = ResourceStates.GenericRead;
         }
 
-        Context.Device.CreateCommittedResource(in heapProperties,
+        Context.Device.CreateCommittedResource(&heapProperties,
                                                HeapFlags.None,
-                                               in resourceDesc,
+                                               &resourceDesc,
                                                initialResourceState,
                                                null,
                                                out Resource).ThrowIfError();
@@ -135,7 +135,7 @@ internal unsafe class DXBuffer : Buffer
 
         cbv = Context.CbvSrvUavAllocator!.Alloc();
 
-        Context.Device.CreateConstantBufferView(in desc, cbv);
+        Context.Device.CreateConstantBufferView(&desc, cbv);
     }
 
     private void InitSrv()
@@ -156,7 +156,7 @@ internal unsafe class DXBuffer : Buffer
 
         srv = Context.CbvSrvUavAllocator!.Alloc();
 
-        Context.Device.CreateShaderResourceView(Resource, in desc, srv);
+        Context.Device.CreateShaderResourceView(Resource, &desc, srv);
     }
 
     private void InitUav()
@@ -177,6 +177,6 @@ internal unsafe class DXBuffer : Buffer
 
         uav = Context.CbvSrvUavAllocator!.Alloc();
 
-        Context.Device.CreateUnorderedAccessView(Resource, null, in desc, uav);
+        Context.Device.CreateUnorderedAccessView(Resource, (ID3D12Resource*)null, &desc, uav);
     }
 }

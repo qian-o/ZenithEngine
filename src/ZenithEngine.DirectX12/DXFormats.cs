@@ -116,5 +116,50 @@ internal static class DXFormats
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(count))
         };
     }
+
+    public static Filter GetFilter(SamplerFilter filter, bool isComparison)
+    {
+        return filter switch
+        {
+            SamplerFilter.MinPointMagPointMipPoint => isComparison ? Filter.ComparisonMinMagMipPoint : Filter.MinMagMipPoint,
+            SamplerFilter.MinPointMagPointMipLinear => isComparison ? Filter.ComparisonMinMagPointMipLinear : Filter.MinMagPointMipLinear,
+            SamplerFilter.MinPointMagLinearMipPoint => isComparison ? Filter.ComparisonMinPointMagLinearMipPoint : Filter.MinPointMagLinearMipPoint,
+            SamplerFilter.MinPointMagLinearMipLinear => isComparison ? Filter.ComparisonMinPointMagMipLinear : Filter.MinPointMagMipLinear,
+            SamplerFilter.MinLinearMagPointMipPoint => isComparison ? Filter.ComparisonMinLinearMagMipPoint : Filter.MinLinearMagMipPoint,
+            SamplerFilter.MinLinearMagPointMipLinear => isComparison ? Filter.ComparisonMinLinearMagPointMipLinear : Filter.MinLinearMagPointMipLinear,
+            SamplerFilter.MinLinearMagLinearMipPoint => isComparison ? Filter.ComparisonMinMagLinearMipPoint : Filter.MinMagLinearMipPoint,
+            SamplerFilter.MinLinearMagLinearMipLinear => isComparison ? Filter.ComparisonMinMagMipLinear : Filter.MinMagMipLinear,
+            SamplerFilter.Anisotropic => isComparison ? Filter.ComparisonAnisotropic : Filter.Anisotropic,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(filter))
+        };
+    }
+
+    public static TextureAddressMode GetTextureAddressMode(AddressMode mode)
+    {
+        return mode switch
+        {
+            AddressMode.Wrap => TextureAddressMode.Wrap,
+            AddressMode.Mirror => TextureAddressMode.Mirror,
+            AddressMode.Clamp => TextureAddressMode.Clamp,
+            AddressMode.Border => TextureAddressMode.Border,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(mode))
+        };
+    }
+
+    public static ComparisonFunc GetComparisonFunc(ComparisonFunction func)
+    {
+        return func switch
+        {
+            ComparisonFunction.Never => ComparisonFunc.Never,
+            ComparisonFunction.Less => ComparisonFunc.Less,
+            ComparisonFunction.Equal => ComparisonFunc.Equal,
+            ComparisonFunction.LessEqual => ComparisonFunc.LessEqual,
+            ComparisonFunction.Greater => ComparisonFunc.Greater,
+            ComparisonFunction.NotEqual => ComparisonFunc.NotEqual,
+            ComparisonFunction.GreaterEqual => ComparisonFunc.GreaterEqual,
+            ComparisonFunction.Always => ComparisonFunc.Always,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(func))
+        };
+    }
     #endregion
 }

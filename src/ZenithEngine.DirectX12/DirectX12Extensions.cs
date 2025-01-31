@@ -34,6 +34,16 @@ internal static class DirectX12Extensions
         return (DXTexture)texture;
     }
 
+    public static DXSampler DX(this Sampler sampler)
+    {
+        if (sampler is not DXSampler)
+        {
+            throw new ZenithEngineException("Sampler is not a DirectX12 sampler.");
+        }
+
+        return (DXSampler)sampler;
+    }
+
     public static DXCommandProcessor DX(this CommandProcessor processor)
     {
         if (processor is not DXCommandProcessor)

@@ -6,7 +6,7 @@ using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
 
-internal class DXCommandProcessor : CommandProcessor
+internal unsafe class DXCommandProcessor : CommandProcessor
 {
     public ComPtr<ID3D12CommandQueue> Queue;
 
@@ -29,7 +29,7 @@ internal class DXCommandProcessor : CommandProcessor
             NodeMask = 0
         };
 
-        Context.Device.CreateCommandQueue(in desc, out Queue).ThrowIfError();
+        Context.Device.CreateCommandQueue(&desc, out Queue).ThrowIfError();
 
         fence = new(Context);
     }
