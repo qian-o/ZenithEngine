@@ -50,7 +50,7 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXGraphicsPipeline(Context, in desc);
     }
 
     public override ComputePipeline CreateComputePipeline(ref readonly ComputePipelineDesc desc)
