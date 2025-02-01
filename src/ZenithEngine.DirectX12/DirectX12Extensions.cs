@@ -113,4 +113,14 @@ internal static class DirectX12Extensions
 
         return (DXCommandProcessor)processor;
     }
+
+    public static DXCommandBuffer DX(this CommandBuffer buffer)
+    {
+        if (buffer is not DXCommandBuffer)
+        {
+            throw new ZenithEngineException("CommandBuffer is not a DirectX12 command buffer.");
+        }
+
+        return (DXCommandBuffer)buffer;
+    }
 }

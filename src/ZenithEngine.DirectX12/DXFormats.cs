@@ -349,5 +349,16 @@ internal static class DXFormats
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(topology))
         };
     }
+
+    public static CommandListType GetCommandListType(CommandProcessorType type)
+    {
+        return type switch
+        {
+            CommandProcessorType.Graphics => CommandListType.Direct,
+            CommandProcessorType.Compute => CommandListType.Compute,
+            CommandProcessorType.Copy => CommandListType.Copy,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
+        };
+    }
     #endregion
 }
