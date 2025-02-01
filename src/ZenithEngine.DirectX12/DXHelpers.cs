@@ -1,10 +1,20 @@
-﻿using ZenithEngine.Common.Descriptions;
+﻿using System.Collections.ObjectModel;
+using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.DirectX12;
 
 internal static class DXHelpers
 {
+    public static ReadOnlyCollection<ShaderStages> GraphicsShaderStages { get; } = new(
+    [
+        ShaderStages.Vertex,
+        ShaderStages.Hull,
+        ShaderStages.Domain,
+        ShaderStages.Geometry,
+        ShaderStages.Pixel
+    ]);
+
     public static uint GetInitialLayers(TextureType type)
     {
         return type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
