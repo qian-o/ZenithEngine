@@ -54,6 +54,16 @@ internal static class DirectX12Extensions
         return (DXShader)shader;
     }
 
+    public static DXFrameBuffer DX(this FrameBuffer frameBuffer)
+    {
+        if (frameBuffer is not DXFrameBuffer)
+        {
+            throw new ZenithEngineException("FrameBuffer is not a DirectX12 frame buffer.");
+        }
+
+        return (DXFrameBuffer)frameBuffer;
+    }
+
     public static DXCommandProcessor DX(this CommandProcessor processor)
     {
         if (processor is not DXCommandProcessor)

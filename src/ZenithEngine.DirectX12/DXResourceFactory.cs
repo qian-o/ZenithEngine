@@ -45,7 +45,7 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXFrameBuffer(Context, in desc);
     }
 
     public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc)

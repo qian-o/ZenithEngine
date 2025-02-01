@@ -429,7 +429,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
         VKFrameBuffer vkFrameBuffer = frameBuffer.VK();
 
-        vkFrameBuffer.TransitionToIntermedialLayout(CommandBuffer);
+        vkFrameBuffer.TransitionToIntermediateLayout(CommandBuffer);
 
         Context.Vk.CmdBeginRendering(CommandBuffer, in vkFrameBuffer.RenderingInfo);
 

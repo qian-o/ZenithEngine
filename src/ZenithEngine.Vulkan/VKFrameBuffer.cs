@@ -141,7 +141,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    public void TransitionToIntermedialLayout(VkCommandBuffer commandBuffer)
+    public void TransitionToIntermediateLayout(VkCommandBuffer commandBuffer)
     {
         foreach (FrameBufferAttachmentDesc desc in Desc.ColorTargets)
         {
@@ -157,7 +157,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
         if (Desc.DepthStencilTarget is not null)
         {
-            FrameBufferAttachmentDesc desc = Desc.DepthStencilTarget!.Value;
+            FrameBufferAttachmentDesc desc = Desc.DepthStencilTarget.Value;
 
             desc.Target.VK().TransitionLayout(commandBuffer,
                                               desc.MipLevel,
@@ -202,7 +202,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
         if (Desc.DepthStencilTarget is not null)
         {
-            FrameBufferAttachmentDesc desc = Desc.DepthStencilTarget!.Value;
+            FrameBufferAttachmentDesc desc = Desc.DepthStencilTarget.Value;
 
             VKTexture texture = desc.Target.VK();
 
