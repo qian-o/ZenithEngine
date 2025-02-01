@@ -89,10 +89,11 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     protected override void Destroy()
     {
+        swapChainFrameBuffer.Dispose();
+        fence.Dispose();
+
         DestroySwapChain();
         DestroySurface();
-
-        fence.Dispose();
     }
 
     private void CreateSurface()
@@ -293,8 +294,6 @@ internal unsafe partial class VKSwapChain : SwapChain
         {
             return;
         }
-
-        swapChainFrameBuffer.DestroyFrameBuffers();
 
         Context.KhrSwapchain!.DestroySwapchain(Context.Device, Swapchain, null);
     }

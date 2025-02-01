@@ -18,6 +18,8 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
 
     public void CreateFrameBuffers(uint width, uint height, Format imageFormat)
     {
+        DestroyFrameBuffers();
+
         uint imageCount;
         Context.KhrSwapchain!.GetSwapchainImages(Context.Device,
                                                  swapChain.Swapchain,
@@ -58,7 +60,16 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
         }
     }
 
-    public void DestroyFrameBuffers()
+    protected override void DebugName(string name)
+    {
+    }
+
+    protected override void Destroy()
+    {
+        DestroyFrameBuffers();
+    }
+
+    private void DestroyFrameBuffers()
     {
         foreach (FrameBuffer frameBuffer in frameBuffers)
         {
@@ -75,14 +86,5 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
         depthStencilTarget = null;
         colorTargets = [];
         frameBuffers = [];
-    }
-
-    protected override void DebugName(string name)
-    {
-    }
-
-    protected override void Destroy()
-    {
-        DestroyFrameBuffers();
     }
 }
