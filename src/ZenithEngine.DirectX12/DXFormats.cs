@@ -161,5 +161,89 @@ internal static class DXFormats
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(func))
         };
     }
+
+    public static DxFillMode GetFillMode(FillMode mode)
+    {
+        return mode switch
+        {
+            FillMode.Solid => DxFillMode.Solid,
+            FillMode.Wireframe => DxFillMode.Wireframe,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(mode))
+        };
+    }
+
+    public static DxCullMode GetCullMode(CullMode mode)
+    {
+        return mode switch
+        {
+            CullMode.None => DxCullMode.None,
+            CullMode.Back => DxCullMode.Back,
+            CullMode.Front => DxCullMode.Front,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(mode))
+        };
+    }
+
+    public static StencilOp GetStencilOp(StencilOperation operation)
+    {
+        return operation switch
+        {
+            StencilOperation.Keep => StencilOp.Keep,
+            StencilOperation.Zero => StencilOp.Zero,
+            StencilOperation.Replace => StencilOp.Replace,
+            StencilOperation.IncrementAndClamp => StencilOp.IncrSat,
+            StencilOperation.DecrementAndClamp => StencilOp.DecrSat,
+            StencilOperation.Invert => StencilOp.Invert,
+            StencilOperation.IncrementAndWrap => StencilOp.Incr,
+            StencilOperation.DecrementAndWrap => StencilOp.Decr,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(operation))
+        };
+    }
+
+    public static DxBlend GetBlend(Blend blend)
+    {
+        return blend switch
+        {
+            Blend.Zero => DxBlend.Zero,
+            Blend.One => DxBlend.One,
+            Blend.SourceAlpha => DxBlend.SrcAlpha,
+            Blend.InverseSourceAlpha => DxBlend.InvSrcAlpha,
+            Blend.DestinationAlpha => DxBlend.DestAlpha,
+            Blend.InverseDestinationAlpha => DxBlend.InvDestAlpha,
+            Blend.SourceColor => DxBlend.SrcColor,
+            Blend.InverseSourceColor => DxBlend.InvSrcColor,
+            Blend.DestinationColor => DxBlend.DestColor,
+            Blend.InverseDestinationColor => DxBlend.InvDestColor,
+            Blend.BlendFactor => DxBlend.BlendFactor,
+            Blend.InverseBlendFactor => DxBlend.InvBlendFactor,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(blend))
+        };
+    }
+
+    public static BlendOp GetBlendOp(BlendOperation operation)
+    {
+        return operation switch
+        {
+            BlendOperation.Add => BlendOp.Add,
+            BlendOperation.Subtract => BlendOp.Subtract,
+            BlendOperation.ReverseSubtract => BlendOp.RevSubtract,
+            BlendOperation.Min => BlendOp.Min,
+            BlendOperation.Max => BlendOp.Max,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(operation))
+        };
+    }
+
+    public static ColorWriteEnable GetColorWriteEnable(ColorWriteChannels channels)
+    {
+        return channels switch
+        {
+            ColorWriteChannels.None => ColorWriteEnable.None,
+            ColorWriteChannels.Red => ColorWriteEnable.Red,
+            ColorWriteChannels.Green => ColorWriteEnable.Green,
+            ColorWriteChannels.Blue => ColorWriteEnable.Blue,
+            ColorWriteChannels.Alpha => ColorWriteEnable.Alpha,
+            ColorWriteChannels.All => ColorWriteEnable.All,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(channels))
+        };
+    }
     #endregion
 }

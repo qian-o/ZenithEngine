@@ -96,13 +96,13 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
                 attachments[i] = new()
                 {
                     BlendEnable = renderTarget.BlendEnabled,
-                    SrcColorBlendFactor = VKFormats.GetBlendFactor(renderTargets[i].SourceBlendColor),
-                    DstColorBlendFactor = VKFormats.GetBlendFactor(renderTargets[i].DestinationBlendColor),
-                    ColorBlendOp = VKFormats.GetBlendOp(renderTargets[i].BlendOperationColor),
-                    SrcAlphaBlendFactor = VKFormats.GetBlendFactor(renderTargets[i].SourceBlendAlpha),
-                    DstAlphaBlendFactor = VKFormats.GetBlendFactor(renderTargets[i].DestinationBlendAlpha),
-                    AlphaBlendOp = VKFormats.GetBlendOp(renderTargets[i].BlendOperationAlpha),
-                    ColorWriteMask = VKFormats.GetColorComponentFlags(renderTargets[i].ColorWriteChannels)
+                    SrcColorBlendFactor = VKFormats.GetBlendFactor(renderTarget.SourceBlendColor),
+                    DstColorBlendFactor = VKFormats.GetBlendFactor(renderTarget.DestinationBlendColor),
+                    ColorBlendOp = VKFormats.GetBlendOp(renderTarget.BlendOperationColor),
+                    SrcAlphaBlendFactor = VKFormats.GetBlendFactor(renderTarget.SourceBlendAlpha),
+                    DstAlphaBlendFactor = VKFormats.GetBlendFactor(renderTarget.DestinationBlendAlpha),
+                    AlphaBlendOp = VKFormats.GetBlendOp(renderTarget.BlendOperationAlpha),
+                    ColorWriteMask = VKFormats.GetColorComponentFlags(renderTarget.ColorWriteChannels)
                 };
             }
 
