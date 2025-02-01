@@ -10,22 +10,25 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 {
     public RenderingInfo RenderingInfo;
 
+    private readonly VkImageView[] colorViews;
+    private readonly VkImageView depthStencilView;
+
     public VKFrameBuffer(GraphicsContext context,
                          ref readonly FrameBufferDesc desc) : base(context, in desc)
     {
-        uint colorAttachmentCount = (uint)desc.ColorTargets.Length;
-        bool hasDepthStencil = desc.DepthStencilTarget.HasValue;
+        ColorAttachmentCount = (uint)desc.ColorTargets.Length;
+        HasDepthStencilAttachment = desc.DepthStencilTarget.HasValue;
 
-        ColorViews = new VkImageView[colorAttachmentCount];
+        colorViews = new VkImageView[ColorAttachmentCount];
 
         uint width = 0;
         uint height = 0;
         TextureSampleCount sampleCount = TextureSampleCount.Count1;
 
-        RenderingAttachmentInfo* colorAttachments = Allocator.Alloc<RenderingAttachmentInfo>(colorAttachmentCount);
-        RenderingAttachmentInfo* depthStencilAttachment = hasDepthStencil ? Allocator.Alloc<RenderingAttachmentInfo>() : null;
+        RenderingAttachmentInfo* colorAttachments = Allocator.Alloc<RenderingAttachmentInfo>(ColorAttachmentCount);
+        RenderingAttachmentInfo* depthStencilAttachment = HasDepthStencilAttachment ? Allocator.Alloc<RenderingAttachmentInfo>() : null;
 
-        for (uint i = 0; i < colorAttachmentCount; i++)
+        for (uint i = 0; i < ColorAttachmentCount; i++)
         {
             FrameBufferAttachmentDesc attachmentDesc = desc.ColorTargets[i];
             Texture target = attachmentDesc.Target;
@@ -53,19 +56,19 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             colorAttachments[i] = new()
             {
                 SType = StructureType.RenderingAttachmentInfo,
-                ImageView = ColorViews[i] = imageView,
+                ImageView = colorViews[i] = imageView,
                 ImageLayout = ImageLayout.AttachmentOptimal,
                 LoadOp = AttachmentLoadOp.Load,
                 StoreOp = AttachmentStoreOp.Store
             };
         }
 
-        if (hasDepthStencil)
+        if (HasDepthStencilAttachment)
         {
             FrameBufferAttachmentDesc attachmentDesc = desc.DepthStencilTarget!.Value;
             Texture target = attachmentDesc.Target;
 
-            if (colorAttachmentCount is 0)
+            if (ColorAttachmentCount is 0)
             {
                 Utils.GetMipDimensions(target.Desc.Width,
                                        target.Desc.Height,
@@ -88,7 +91,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             depthStencilAttachment[0] = new()
             {
                 SType = StructureType.RenderingAttachmentInfo,
-                ImageView = (DepthStencilView = imageView).Value,
+                ImageView = depthStencilView = imageView,
                 ImageLayout = ImageLayout.AttachmentOptimal,
                 LoadOp = AttachmentLoadOp.Load,
                 StoreOp = AttachmentStoreOp.Store
@@ -113,7 +116,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             },
             LayerCount = 1,
             ViewMask = 0,
-            ColorAttachmentCount = colorAttachmentCount,
+            ColorAttachmentCount = ColorAttachmentCount,
             PColorAttachments = colorAttachments,
             PDepthAttachment = depthStencilAttachment,
             PStencilAttachment = depthStencilAttachment
@@ -122,13 +125,13 @@ internal unsafe class VKFrameBuffer : FrameBuffer
         Width = width;
         Height = height;
         Output = OutputDesc.Default(sampleCount,
-                                    hasDepthStencil ? desc.DepthStencilTarget!.Value.Target.Desc.Format : null,
+                                    HasDepthStencilAttachment ? desc.DepthStencilTarget!.Value.Target.Desc.Format : null,
                                     [.. desc.ColorTargets.Select(static item => item.Target.Desc.Format)]);
     }
 
-    public VkImageView[] ColorViews { get; }
+    public override uint ColorAttachmentCount { get; }
 
-    public VkImageView? DepthStencilView { get; }
+    public override bool HasDepthStencilAttachment { get; }
 
     public override uint Width { get; }
 
@@ -219,27 +222,27 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
     protected override void DebugName(string name)
     {
-        for (int i = 0; i < ColorViews.Length; i++)
+        for (int i = 0; i < ColorAttachmentCount; i++)
         {
-            Context.SetDebugName(ObjectType.ImageView, ColorViews[i].Handle, $"{name} Color Target[{i}]");
+            Context.SetDebugName(ObjectType.ImageView, colorViews[i].Handle, $"{name} Color Target[{i}]");
         }
 
-        if (DepthStencilView is not null)
+        if (HasDepthStencilAttachment)
         {
-            Context.SetDebugName(ObjectType.ImageView, DepthStencilView.Value.Handle, $"{name} Depth Stencil Target");
+            Context.SetDebugName(ObjectType.ImageView, depthStencilView.Handle, $"{name} Depth Stencil Target");
         }
     }
 
     protected override void Destroy()
     {
-        for (int i = 0; i < ColorViews.Length; i++)
+        for (int i = 0; i < ColorAttachmentCount; i++)
         {
-            Context.Vk.DestroyImageView(Context.Device, ColorViews[i], null);
+            Context.Vk.DestroyImageView(Context.Device, colorViews[i], null);
         }
 
-        if (DepthStencilView is not null)
+        if (HasDepthStencilAttachment)
         {
-            Context.Vk.DestroyImageView(Context.Device, DepthStencilView.Value, null);
+            Context.Vk.DestroyImageView(Context.Device, depthStencilView, null);
         }
     }
 

@@ -510,9 +510,9 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             Context.Vk.CmdClearAttachments(CommandBuffer, 1, &clearAttachment, 1, &clearRect);
         }
 
-        Viewport[] viewports = new Viewport[vkFrameBuffer.ColorViews.Length];
-        Vector2D<int>[] scissorsByOffset = new Vector2D<int>[vkFrameBuffer.ColorViews.Length];
-        Vector2D<uint>[] scissorsByExtent = new Vector2D<uint>[vkFrameBuffer.ColorViews.Length];
+        Viewport[] viewports = new Viewport[vkFrameBuffer.ColorAttachmentCount];
+        Vector2D<int>[] scissorsByOffset = new Vector2D<int>[vkFrameBuffer.ColorAttachmentCount];
+        Vector2D<uint>[] scissorsByExtent = new Vector2D<uint>[vkFrameBuffer.ColorAttachmentCount];
 
         Array.Fill(viewports, new(0, 0, vkFrameBuffer.Width, vkFrameBuffer.Height));
         Array.Fill(scissorsByOffset, new(0, 0));
