@@ -182,6 +182,10 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             {
                 imageLayout = ImageLayout.ShaderReadOnlyOptimal;
             }
+            else if (texture.Desc.Usage.HasFlag(TextureUsage.Storage))
+            {
+                imageLayout = ImageLayout.General;
+            }
             else if (texture.Desc.Usage.HasFlag(TextureUsage.RenderTarget))
             {
                 imageLayout = ImageLayout.PresentSrcKhr;
