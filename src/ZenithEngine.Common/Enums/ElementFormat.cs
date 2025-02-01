@@ -13,11 +13,6 @@ public enum ElementFormat
     UByte2,
 
     /// <summary>
-    /// Three unsigned 8-bit values.
-    /// </summary>
-    UByte3,
-
-    /// <summary>
     /// Four unsigned 8-bit values.
     /// </summary>
     UByte4,
@@ -31,11 +26,6 @@ public enum ElementFormat
     /// Two signed 8-bit values.
     /// </summary>
     Byte2,
-
-    /// <summary>
-    /// Three signed 8-bit values.
-    /// </summary>
-    Byte3,
 
     /// <summary>
     /// Four signed 8-bit values.
@@ -53,11 +43,6 @@ public enum ElementFormat
     UByte2Normalized,
 
     /// <summary>
-    /// Three unsigned normalized 8-bit values.
-    /// </summary>
-    UByte3Normalized,
-
-    /// <summary>
     /// Four unsigned normalized 8-bit values.
     /// </summary>
     UByte4Normalized,
@@ -71,11 +56,6 @@ public enum ElementFormat
     /// Two signed normalized 8-bit values.
     /// </summary>
     Byte2Normalized,
-
-    /// <summary>
-    /// Three signed normalized 8-bit values.
-    /// </summary>
-    Byte3Normalized,
 
     /// <summary>
     /// Four signed normalized 8-bit values.
@@ -93,11 +73,6 @@ public enum ElementFormat
     UShort2,
 
     /// <summary>
-    /// Three unsigned 16-bit values.
-    /// </summary>
-    UShort3,
-
-    /// <summary>
     /// Four unsigned 16-bit values.
     /// </summary>
     UShort4,
@@ -111,11 +86,6 @@ public enum ElementFormat
     /// Two signed 16-bit values.
     /// </summary>
     Short2,
-
-    /// <summary>
-    /// Three signed 16-bit values.
-    /// </summary>
-    Short3,
 
     /// <summary>
     /// Four signed 16-bit values.
@@ -133,11 +103,6 @@ public enum ElementFormat
     UShort2Normalized,
 
     /// <summary>
-    /// Three unsigned normalized 16-bit values.
-    /// </summary>
-    UShort3Normalized,
-
-    /// <summary>
     /// Four unsigned normalized 16-bit values.
     /// </summary>
     UShort4Normalized,
@@ -153,11 +118,6 @@ public enum ElementFormat
     Short2Normalized,
 
     /// <summary>
-    /// Three signed normalized 16-bit values.
-    /// </summary>
-    Short3Normalized,
-
-    /// <summary>
     /// Four signed normalized 16-bit values.
     /// </summary>
     Short4Normalized,
@@ -171,11 +131,6 @@ public enum ElementFormat
     /// Two half-precision floating-point values.
     /// </summary>
     Half2,
-
-    /// <summary>
-    /// Three half-precision floating-point values.
-    /// </summary>
-    Half3,
 
     /// <summary>
     /// Four half-precision floating-point values.

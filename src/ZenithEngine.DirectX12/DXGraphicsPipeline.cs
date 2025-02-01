@@ -6,7 +6,7 @@ using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
 
-internal class DXGraphicsPipeline : GraphicsPipeline
+internal unsafe class DXGraphicsPipeline : GraphicsPipeline
 {
     public ComPtr<ID3D12RootSignature> RootSignature;
     public ComPtr<ID3D12PipelineState> PipelineState;
@@ -96,6 +96,66 @@ internal class DXGraphicsPipeline : GraphicsPipeline
                     RenderTargetWriteMask = (byte)DXFormats.GetColorWriteEnable(renderTarget.ColorWriteChannels)
                 };
             }
+        }
+
+        // Shaders
+        {
+            if (desc.Shaders.Vertex is not null)
+            {
+                graphicsPipelineStateDesc.VS = desc.Shaders.Vertex.DX().Shader;
+            }
+
+            if (desc.Shaders.Hull is not null)
+            {
+                graphicsPipelineStateDesc.PS = desc.Shaders.Hull.DX().Shader;
+            }
+
+            if (desc.Shaders.Domain is not null)
+            {
+                graphicsPipelineStateDesc.DS = desc.Shaders.Domain.DX().Shader;
+            }
+
+            if (desc.Shaders.Geometry is not null)
+            {
+                graphicsPipelineStateDesc.GS = desc.Shaders.Geometry.DX().Shader;
+            }
+
+            if (desc.Shaders.Pixel is not null)
+            {
+                graphicsPipelineStateDesc.PS = desc.Shaders.Pixel.DX().Shader;
+            }
+        }
+
+        // Input Layouts
+        {
+            uint numElements = (uint)desc.InputLayouts.Sum(x => x.Elements.Length);
+            InputElementDesc* pInputElementDescs = Allocator.Alloc<InputElementDesc>(numElements);
+
+            uint offset = 0;
+            for (int i = 0; i < desc.InputLayouts.Length; i++)
+            {
+                LayoutDesc layoutDesc = desc.InputLayouts[i];
+
+                foreach (ElementDesc elementDesc in layoutDesc.Elements)
+                {
+                    pInputElementDescs[offset++] = new()
+                    {
+                        SemanticName = Allocator.AllocUTF8(elementDesc.Semantic.ToString().ToUpper()),
+                        SemanticIndex = elementDesc.SemanticIndex,
+                        Format = DXFormats.GetFormat(elementDesc.Format),
+                        InputSlot = (uint)i,
+                        AlignedByteOffset = (uint)elementDesc.Offset,
+                        InputSlotClass = DXFormats.GetInputClassification(layoutDesc.StepFunction),
+                        InstanceDataStepRate = layoutDesc.StepRate
+                    };
+                }
+            }
+
+            graphicsPipelineStateDesc.InputLayout = new()
+            {
+                NumElements = numElements,
+                PInputElementDescs = pInputElementDescs
+            };
         }
     }
 

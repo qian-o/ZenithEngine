@@ -245,5 +245,74 @@ internal static class DXFormats
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(channels))
         };
     }
+
+    public static Format GetFormat(ElementFormat format)
+    {
+        return format switch
+        {
+            ElementFormat.UByte1 => Format.FormatR8Uint,
+            ElementFormat.UByte2 => Format.FormatR8G8Uint,
+            ElementFormat.UByte4 => Format.FormatR8G8B8A8Uint,
+
+            ElementFormat.Byte1 => Format.FormatR8Sint,
+            ElementFormat.Byte2 => Format.FormatR8G8Sint,
+            ElementFormat.Byte4 => Format.FormatR8G8B8A8Sint,
+
+            ElementFormat.UByte1Normalized => Format.FormatR8Unorm,
+            ElementFormat.UByte2Normalized => Format.FormatR8G8Unorm,
+            ElementFormat.UByte4Normalized => Format.FormatR8G8B8A8Unorm,
+
+            ElementFormat.Byte1Normalized => Format.FormatR8SNorm,
+            ElementFormat.Byte2Normalized => Format.FormatR8G8SNorm,
+            ElementFormat.Byte4Normalized => Format.FormatR8G8B8A8SNorm,
+
+            ElementFormat.UShort1 => Format.FormatR16Uint,
+            ElementFormat.UShort2 => Format.FormatR16G16Uint,
+            ElementFormat.UShort4 => Format.FormatR16G16B16A16Uint,
+
+            ElementFormat.Short1 => Format.FormatR16Sint,
+            ElementFormat.Short2 => Format.FormatR16G16Sint,
+            ElementFormat.Short4 => Format.FormatR16G16B16A16Sint,
+
+            ElementFormat.UShort1Normalized => Format.FormatR16Unorm,
+            ElementFormat.UShort2Normalized => Format.FormatR16G16Unorm,
+            ElementFormat.UShort4Normalized => Format.FormatR16G16B16A16Unorm,
+
+            ElementFormat.Short1Normalized => Format.FormatR16SNorm,
+            ElementFormat.Short2Normalized => Format.FormatR16G16SNorm,
+            ElementFormat.Short4Normalized => Format.FormatR16G16B16A16SNorm,
+
+            ElementFormat.Half1 => Format.FormatR16Float,
+            ElementFormat.Half2 => Format.FormatR16G16Float,
+            ElementFormat.Half4 => Format.FormatR16G16B16A16Float,
+
+            ElementFormat.Float1 => Format.FormatR32Float,
+            ElementFormat.Float2 => Format.FormatR32G32Float,
+            ElementFormat.Float3 => Format.FormatR32G32B32Float,
+            ElementFormat.Float4 => Format.FormatR32G32B32A32Float,
+
+            ElementFormat.UInt1 => Format.FormatR32Uint,
+            ElementFormat.UInt2 => Format.FormatR32G32Uint,
+            ElementFormat.UInt3 => Format.FormatR32G32B32Uint,
+            ElementFormat.UInt4 => Format.FormatR32G32B32A32Uint,
+
+            ElementFormat.Int1 => Format.FormatR32Sint,
+            ElementFormat.Int2 => Format.FormatR32G32Sint,
+            ElementFormat.Int3 => Format.FormatR32G32B32Sint,
+            ElementFormat.Int4 => Format.FormatR32G32B32A32Sint,
+
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(format))
+        };
+    }
+
+    public static InputClassification GetInputClassification(VertexStepFunction function)
+    {
+        return function switch
+        {
+            VertexStepFunction.PerVertexData => InputClassification.PerVertexData,
+            VertexStepFunction.PerInstanceData => InputClassification.PerInstanceData,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(function))
+        };
+    }
     #endregion
 }
