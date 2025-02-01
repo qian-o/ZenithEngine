@@ -35,12 +35,12 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override ResourceLayout CreateResourceLayout(ref readonly ResourceLayoutDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXResourceLayout(Context, in desc);
     }
 
     public override ResourceSet CreateResourceSet(ref readonly ResourceSetDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXResourceSet(Context, in desc);
     }
 
     public override FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc)

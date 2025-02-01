@@ -64,6 +64,26 @@ internal static class DirectX12Extensions
         return (DXShader)shader;
     }
 
+    public static DXResourceLayout DX(this ResourceLayout layout)
+    {
+        if (layout is not DXResourceLayout)
+        {
+            throw new ZenithEngineException("ResourceLayout is not a DirectX12 resource layout.");
+        }
+
+        return (DXResourceLayout)layout;
+    }
+
+    public static DXResourceSet DX(this ResourceSet set)
+    {
+        if (set is not DXResourceSet)
+        {
+            throw new ZenithEngineException("ResourceSet is not a DirectX12 resource set.");
+        }
+
+        return (DXResourceSet)set;
+    }
+
     public static DXFrameBuffer DX(this FrameBuffer frameBuffer)
     {
         if (frameBuffer is not DXFrameBuffer)
