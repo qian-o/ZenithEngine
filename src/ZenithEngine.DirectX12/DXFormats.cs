@@ -314,5 +314,40 @@ internal static class DXFormats
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(function))
         };
     }
+
+    public static ShaderVisibility GetShaderVisibility(ShaderStages stage)
+    {
+        return stage switch
+        {
+            ShaderStages.Vertex => ShaderVisibility.Vertex,
+            ShaderStages.Hull => ShaderVisibility.Hull,
+            ShaderStages.Domain => ShaderVisibility.Domain,
+            ShaderStages.Geometry => ShaderVisibility.Geometry,
+            ShaderStages.Pixel => ShaderVisibility.Pixel,
+            _ => ShaderVisibility.All
+        };
+    }
+
+    public static PrimitiveTopologyType GetPrimitiveTopologyType(PrimitiveTopology topology)
+    {
+        return topology switch
+        {
+            PrimitiveTopology.PointList => PrimitiveTopologyType.Point,
+
+            PrimitiveTopology.LineList or
+            PrimitiveTopology.LineStrip or
+            PrimitiveTopology.LineListWithAdjacency or
+            PrimitiveTopology.LineStripWithAdjacency => PrimitiveTopologyType.Line,
+
+            PrimitiveTopology.TriangleList or
+            PrimitiveTopology.TriangleStrip or
+            PrimitiveTopology.TriangleListWithAdjacency or
+            PrimitiveTopology.TriangleStripWithAdjacency => PrimitiveTopologyType.Triangle,
+
+            >= PrimitiveTopology.PatchList => PrimitiveTopologyType.Patch,
+
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(topology))
+        };
+    }
     #endregion
 }

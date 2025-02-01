@@ -528,7 +528,7 @@ internal static unsafe class VKFormats
             PrimitiveTopology.LineStripWithAdjacency => VkPrimitiveTopology.LineStripWithAdjacency,
             PrimitiveTopology.TriangleListWithAdjacency => VkPrimitiveTopology.TriangleListWithAdjacency,
             PrimitiveTopology.TriangleStripWithAdjacency => VkPrimitiveTopology.TriangleStripWithAdjacency,
-            PrimitiveTopology.PatchList => VkPrimitiveTopology.PatchList,
+            >= PrimitiveTopology.PatchList => VkPrimitiveTopology.PatchList,
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(topology))
         };
     }

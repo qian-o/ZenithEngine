@@ -157,13 +157,96 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
                 PInputElementDescs = pInputElementDescs
             };
         }
+
+        // Resource Layouts
+        {
+            uint numParameters = (uint)desc.ResourceLayouts.Sum(x => x.DX().GraphicsRootParameterCount);
+            RootParameter* pRootParameters = Allocator.Alloc<RootParameter>(numParameters);
+
+            uint offset = 0;
+            for (int i = 0; i < desc.ResourceLayouts.Length; i++)
+            {
+                DXResourceLayout resourceLayout = desc.ResourceLayouts[i].DX();
+
+                foreach (ShaderStages stage in DXHelpers.GraphicsShaderStages)
+                {
+                    if (resourceLayout.CalculateDescriptorTableRanges((uint)i,
+                                                                      out DescriptorRange[] cbvSrvUavRanges,
+                                                                      out DescriptorRange[] samplerRanges,
+                                                                      stage))
+                    {
+                        if (cbvSrvUavRanges.Length > 0)
+                        {
+                            pRootParameters[offset++] = new()
+                            {
+                                ParameterType = RootParameterType.TypeDescriptorTable,
+                                DescriptorTable = new()
+                                {
+                                    NumDescriptorRanges = (uint)cbvSrvUavRanges.Length,
+                                    PDescriptorRanges = Allocator.Alloc(cbvSrvUavRanges)
+                                }
+                            };
+                        }
+
+                        if (samplerRanges.Length > 0)
+                        {
+                            pRootParameters[offset++] = new()
+                            {
+                                ParameterType = RootParameterType.TypeDescriptorTable,
+                                ShaderVisibility = DXFormats.GetShaderVisibility(stage),
+                                DescriptorTable = new()
+                                {
+                                    NumDescriptorRanges = (uint)samplerRanges.Length,
+                                    PDescriptorRanges = Allocator.Alloc(samplerRanges)
+                                }
+                            };
+                        }
+                    }
+                }
+            }
+
+            RootSignatureDesc rootSignatureDesc = new()
+            {
+                NumParameters = numParameters,
+                PParameters = pRootParameters,
+                Flags = RootSignatureFlags.AllowInputAssemblerInputLayout
+            };
+
+            ComPtr<ID3D10Blob> blob = null;
+            ComPtr<ID3D10Blob> error = null;
+
+            Context.D3D12.SerializeRootSignature(&rootSignatureDesc,
+                                                 D3DRootSignatureVersion.Version1,
+                                                 ref blob,
+                                                 ref error).ThrowIfError();
+
+            Context.Device.CreateRootSignature(0,
+                                               blob.GetBufferPointer(),
+                                               blob.GetBufferSize(),
+                                               out RootSignature).ThrowIfError();
+
+            blob.Dispose();
+            error.Dispose();
+
+            graphicsPipelineStateDesc.PRootSignature = RootSignature;
+        }
+
+        // Primitive Topology
+        {
+            graphicsPipelineStateDesc.PrimitiveTopologyType = DXFormats.GetPrimitiveTopologyType(desc.PrimitiveTopology);
+        }
     }
+
+    private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
     protected override void DebugName(string name)
     {
+        PipelineState.SetName(name);
     }
 
     protected override void Destroy()
     {
+        RootSignature.Dispose();
+        PipelineState.Dispose();
     }
 }
