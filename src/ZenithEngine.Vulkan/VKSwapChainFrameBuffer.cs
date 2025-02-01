@@ -8,13 +8,11 @@ namespace ZenithEngine.Vulkan;
 internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
                                              VKSwapChain swapChain) : GraphicsResource(context)
 {
-    public uint CurrentIndex;
-
     private Texture? depthStencilTarget;
     private Texture[] colorTargets = [];
     private FrameBuffer[] frameBuffers = [];
 
-    public FrameBuffer FrameBuffer => frameBuffers[CurrentIndex];
+    public FrameBuffer this[uint index] => frameBuffers[index];
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 

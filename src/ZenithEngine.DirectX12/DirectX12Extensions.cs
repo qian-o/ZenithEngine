@@ -14,6 +14,16 @@ internal static class DirectX12Extensions
         }
     }
 
+    public static DXSwapChain DX(this SwapChain swapChain)
+    {
+        if (swapChain is not DXSwapChain)
+        {
+            throw new ZenithEngineException("SwapChain is not a DirectX12 swap chain.");
+        }
+
+        return (DXSwapChain)swapChain;
+    }
+
     public static DXBuffer DX(this Buffer buffer)
     {
         if (buffer is not DXBuffer)

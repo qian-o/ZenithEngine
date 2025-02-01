@@ -10,7 +10,7 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override SwapChain CreateSwapChain(ref readonly SwapChainDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXSwapChain(Context, in desc);
     }
 
     public override Buffer CreateBuffer(ref readonly BufferDesc desc)
