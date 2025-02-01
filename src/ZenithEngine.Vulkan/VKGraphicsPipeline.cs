@@ -252,7 +252,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
         // Outputs
         {
             uint colorAttachmentCount = (uint)desc.Outputs.ColorAttachments.Length;
-            Format* colorAttachmentFormats = Allocator.Alloc([.. desc.Outputs.ColorAttachments.Select(static item => VKFormats.GetPixelFormat(item))]);
+            Format* colorAttachmentFormats = Allocator.Alloc([.. desc.Outputs.ColorAttachments.Select(VKFormats.GetPixelFormat)]);
 
             PipelineViewportStateCreateInfo viewportState = new()
             {

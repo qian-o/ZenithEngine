@@ -1,19 +1,18 @@
-﻿using System.Collections.ObjectModel;
-using ZenithEngine.Common.Descriptions;
+﻿using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.DirectX12;
 
 internal static class DXHelpers
 {
-    public static ReadOnlyCollection<ShaderStages> GraphicsShaderStages { get; } = new(
+    public static ShaderStages[] GraphicsShaderStages { get; } =
     [
         ShaderStages.Vertex,
         ShaderStages.Hull,
         ShaderStages.Domain,
         ShaderStages.Geometry,
         ShaderStages.Pixel
-    ]);
+    ];
 
     public static uint GetInitialLayers(TextureType type)
     {

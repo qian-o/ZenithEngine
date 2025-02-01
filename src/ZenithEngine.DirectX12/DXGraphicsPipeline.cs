@@ -1,5 +1,6 @@
 ﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
+using Silk.NET.DXGI;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -128,7 +129,7 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
 
         // Input Layouts
         {
-            uint numElements = (uint)desc.InputLayouts.Sum(x => x.Elements.Length);
+            uint numElements = (uint)desc.InputLayouts.Sum(static item => item.Elements.Length);
             InputElementDesc* pInputElementDescs = Allocator.Alloc<InputElementDesc>(numElements);
 
             uint offset = 0;
@@ -160,7 +161,7 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
 
         // Resource Layouts
         {
-            uint numParameters = (uint)desc.ResourceLayouts.Sum(x => x.DX().GraphicsRootParameterCount);
+            uint numParameters = (uint)desc.ResourceLayouts.Sum(static item => item.DX().GraphicsRootParameterCount);
             RootParameter* pRootParameters = Allocator.Alloc<RootParameter>(numParameters);
 
             uint offset = 0;
@@ -235,7 +236,30 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
         {
             graphicsPipelineStateDesc.PrimitiveTopologyType = DXFormats.GetPrimitiveTopologyType(desc.PrimitiveTopology);
         }
+
+        // Outputs
+        {
+            graphicsPipelineStateDesc.NumRenderTargets = (uint)desc.Outputs.ColorAttachments.Length;
+            graphicsPipelineStateDesc.DSVFormat = desc.Outputs.DepthStencilAttachment is not null ? DXFormats.GetFormat(desc.Outputs.DepthStencilAttachment.Value) : Format.FormatUnknown;
+            graphicsPipelineStateDesc.SampleDesc = DXFormats.GetSampleDesc(desc.Outputs.SampleCount);
+
+            Span<Format> rtvFormats = graphicsPipelineStateDesc.RTVFormats.AsSpan();
+
+            for (int i = 0; i < desc.Outputs.ColorAttachments.Length; i++)
+            {
+                rtvFormats[i] = DXFormats.GetFormat(desc.Outputs.ColorAttachments[i]);
+            }
+        }
+
+        Context.Device.CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
+                                                   out PipelineState).ThrowIfError();
+
+        VertexStrides = [.. desc.InputLayouts.Select(static item => item.Stride)];
+
+        Allocator.Release();
     }
+
+    public uint[] VertexStrides { get; }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 

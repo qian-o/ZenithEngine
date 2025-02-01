@@ -183,7 +183,7 @@ internal unsafe class DXFrameBuffer : FrameBuffer
 
     protected override void Destroy()
     {
-        for (int i = 0; i < ColorAttachmentCount; i++)
+        for (uint i = 0; i < ColorAttachmentCount; i++)
         {
             Context.RtvAllocator!.Free(RtvHandles[i]);
         }
