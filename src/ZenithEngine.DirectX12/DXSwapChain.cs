@@ -29,10 +29,28 @@ internal unsafe class DXSwapChain : SwapChain
 
     public override void Present()
     {
+        SwapChain3.Present(Desc.VerticalSync ? 1u : 0u, DXGI.PresentAllowTearing).ThrowIfError();
+
+        Context.DefaultGraphicsCommandProcessor!.WaitIdle();
+
+        BackBufferIndex = SwapChain3.GetCurrentBackBufferIndex();
     }
 
     public override void Resize()
     {
+        Context.DefaultGraphicsCommandProcessor!.WaitIdle();
+
+        Vector2D<uint> size = Desc.Surface.GetSize();
+
+        SwapChain3.ResizeBuffers(BufferCount,
+                                 size.X,
+                                 size.Y,
+                                 DXFormats.GetFormat(Desc.ColorTargetFormat),
+                                 (uint)SwapChainFlag.AllowTearing).ThrowIfError();
+
+        swapChainFrameBuffer.CreateFrameBuffers(size.X, size.Y);
+
+        BackBufferIndex = SwapChain3.GetCurrentBackBufferIndex();
     }
 
     public override void RefreshSurface(ISurface surface)
@@ -48,6 +66,8 @@ internal unsafe class DXSwapChain : SwapChain
 
     protected override void Destroy()
     {
+        swapChainFrameBuffer.Dispose();
+
         DestroySwapChain();
     }
 
@@ -78,7 +98,9 @@ internal unsafe class DXSwapChain : SwapChain
                                                 (ComPtr<IDXGIOutput>)null,
                                                 ref SwapChain3).ThrowIfError();
 
-        swapChainFrameBuffer.CreateFrameBuffers(size.X, size.Y, desc.Format);
+        swapChainFrameBuffer.CreateFrameBuffers(size.X, size.Y);
+
+        BackBufferIndex = SwapChain3.GetCurrentBackBufferIndex();
     }
 
     private void DestroySwapChain()
@@ -87,8 +109,6 @@ internal unsafe class DXSwapChain : SwapChain
         {
             return;
         }
-
-        swapChainFrameBuffer.DestroyFrameBuffers();
 
         SwapChain3.Dispose();
     }

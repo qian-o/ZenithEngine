@@ -78,6 +78,16 @@ internal unsafe class DXTexture : Texture
         Allocator.Release();
     }
 
+    public DXTexture(GraphicsContext context,
+                     ref readonly TextureDesc desc,
+                     ComPtr<ID3D12Resource> resource) : base(context, in desc)
+    {
+        Resource = resource;
+
+        resourceStates = new ResourceStates[desc.MipLevels * DXHelpers.GetDepthOrArraySize(desc)];
+        Array.Fill(resourceStates, ResourceStates.Common);
+    }
+
     public ResourceStates this[uint mipLevel, uint arrayLayer, CubeMapFace face]
     {
         get
