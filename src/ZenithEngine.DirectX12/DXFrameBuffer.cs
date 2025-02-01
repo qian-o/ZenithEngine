@@ -125,7 +125,56 @@ internal unsafe class DXFrameBuffer : FrameBuffer
 
     public void TransitionToFinalState(ComPtr<ID3D12GraphicsCommandList> commandList)
     {
-        throw new NotImplementedException();
+        foreach (FrameBufferAttachmentDesc desc in Desc.ColorTargets)
+        {
+            DXTexture texture = desc.Target.DX();
+
+            ResourceStates state;
+            if (texture.Desc.Usage.HasFlag(TextureUsage.Sampled))
+            {
+                state = ResourceStates.Common;
+            }
+            else if (texture.Desc.Usage.HasFlag(TextureUsage.Storage))
+            {
+                state = ResourceStates.UnorderedAccess;
+            }
+            else if (texture.Desc.Usage.HasFlag(TextureUsage.RenderTarget))
+            {
+                state = ResourceStates.Present;
+            }
+            else
+            {
+                continue;
+            }
+
+            texture.TransitionState(commandList,
+                                    desc.MipLevel,
+                                    1,
+                                    desc.ArrayLayer,
+                                    1,
+                                    desc.Face,
+                                    1,
+                                    state);
+        }
+
+        if (Desc.DepthStencilTarget is not null)
+        {
+            FrameBufferAttachmentDesc desc = Desc.DepthStencilTarget.Value;
+
+            DXTexture texture = desc.Target.DX();
+
+            if (texture.Desc.Usage.HasFlag(TextureUsage.Sampled))
+            {
+                texture.TransitionState(commandList,
+                                        desc.MipLevel,
+                                        1,
+                                        desc.ArrayLayer,
+                                        1,
+                                        desc.Face,
+                                        1,
+                                        ResourceStates.Common);
+            }
+        }
     }
 
     protected override void DebugName(string name)

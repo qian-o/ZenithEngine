@@ -176,32 +176,32 @@ internal unsafe class VKFrameBuffer : FrameBuffer
         {
             VKTexture texture = desc.Target.VK();
 
-            ImageLayout imageLayout = ImageLayout.Undefined;
-
+            ImageLayout layout;
             if (texture.Desc.Usage.HasFlag(TextureUsage.Sampled))
             {
-                imageLayout = ImageLayout.ShaderReadOnlyOptimal;
+                layout = ImageLayout.ShaderReadOnlyOptimal;
             }
             else if (texture.Desc.Usage.HasFlag(TextureUsage.Storage))
             {
-                imageLayout = ImageLayout.General;
+                layout = ImageLayout.General;
             }
             else if (texture.Desc.Usage.HasFlag(TextureUsage.RenderTarget))
             {
-                imageLayout = ImageLayout.PresentSrcKhr;
+                layout = ImageLayout.PresentSrcKhr;
+            }
+            else
+            {
+                continue;
             }
 
-            if (imageLayout is not ImageLayout.Undefined)
-            {
-                texture.TransitionLayout(commandBuffer,
-                                         desc.MipLevel,
-                                         1,
-                                         desc.ArrayLayer,
-                                         1,
-                                         desc.Face,
-                                         1,
-                                         imageLayout);
-            }
+            texture.TransitionLayout(commandBuffer,
+                                     desc.MipLevel,
+                                     1,
+                                     desc.ArrayLayer,
+                                     1,
+                                     desc.Face,
+                                     1,
+                                     layout);
         }
 
         if (Desc.DepthStencilTarget is not null)
