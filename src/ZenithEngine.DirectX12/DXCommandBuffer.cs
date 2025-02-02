@@ -117,7 +117,70 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                        uint sourceSizeInBytes,
                                        TextureRegion region)
     {
-        throw new NotImplementedException();
+        Buffer temporary = BufferAllocator.Buffer(sourceSizeInBytes);
+
+        Context.UpdateBuffer(temporary, source, sourceSizeInBytes);
+
+        DXTexture dxTexture = texture.DX();
+
+        ResourceStates old = dxTexture[region.Position.MipLevel,
+                                       region.Position.ArrayLayer,
+                                       region.Position.Face];
+
+        dxTexture.TransitionState(CommandList,
+                                  region.Position.MipLevel,
+                                  1,
+                                  region.Position.ArrayLayer,
+                                  1,
+                                  region.Position.Face,
+                                  1,
+                                  ResourceStates.CopyDest);
+
+        TextureCopyLocation srcLocation = new()
+        {
+            PResource = temporary.DX().Resource,
+            Type = TextureCopyType.PlacedFootprint,
+            PlacedFootprint = new()
+            {
+                Offset = 0,
+                Footprint = new()
+                {
+                    Format = DXFormats.GetFormat(dxTexture.Desc.Format),
+                    Width = region.Width,
+                    Height = region.Height,
+                    Depth = region.Depth,
+                    RowPitch = dxTexture.GetRowPitch(region.Position.MipLevel,
+                                                     region.Position.ArrayLayer,
+                                                     region.Position.Face)
+                }
+            }
+        };
+
+        TextureCopyLocation dstLocation = new()
+        {
+            PResource = dxTexture.Resource,
+            Type = TextureCopyType.SubresourceIndex,
+            SubresourceIndex = DXHelpers.GetDepthOrArrayIndex(dxTexture.Desc,
+                                                              region.Position.MipLevel,
+                                                              region.Position.ArrayLayer,
+                                                              region.Position.Face)
+        };
+
+        CommandList.CopyTextureRegion(&dstLocation,
+                                      region.Position.X,
+                                      region.Position.Y,
+                                      region.Position.Z,
+                                      &srcLocation,
+                                      (Box*)null);
+
+        dxTexture.TransitionState(CommandList,
+                                  region.Position.MipLevel,
+                                  1,
+                                  region.Position.ArrayLayer,
+                                  1,
+                                  region.Position.Face,
+                                  1,
+                                  old);
     }
 
     public override void CopyTexture(Texture source,
@@ -128,7 +191,85 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                      uint height,
                                      uint depth)
     {
-        throw new NotImplementedException();
+        DXTexture src = source.DX();
+        DXTexture dst = destination.DX();
+
+        ResourceStates srcOldState = src[sourcePosition.MipLevel,
+                                         sourcePosition.ArrayLayer,
+                                         sourcePosition.Face];
+        ResourceStates dstOldState = dst[destinationPosition.MipLevel,
+                                         destinationPosition.ArrayLayer,
+                                         destinationPosition.Face];
+
+        src.TransitionState(CommandList,
+                            sourcePosition.MipLevel,
+                            1,
+                            sourcePosition.ArrayLayer,
+                            1,
+                            sourcePosition.Face,
+                            1,
+                            ResourceStates.CopySource);
+
+        dst.TransitionState(CommandList,
+                            destinationPosition.MipLevel,
+                            1,
+                            destinationPosition.ArrayLayer,
+                            1,
+                            destinationPosition.Face,
+                            1,
+                            ResourceStates.CopyDest);
+
+        TextureCopyLocation srcLocation = new()
+        {
+            PResource = src.Resource,
+            Type = TextureCopyType.SubresourceIndex,
+            SubresourceIndex = DXHelpers.GetDepthOrArrayIndex(src.Desc,
+                                                              sourcePosition.MipLevel,
+                                                              sourcePosition.ArrayLayer,
+                                                              sourcePosition.Face)
+        };
+
+        TextureCopyLocation dstLocation = new()
+        {
+            PResource = dst.Resource,
+            Type = TextureCopyType.SubresourceIndex,
+            SubresourceIndex = DXHelpers.GetDepthOrArrayIndex(dst.Desc,
+                                                              destinationPosition.MipLevel,
+                                                              destinationPosition.ArrayLayer,
+                                                              destinationPosition.Face)
+        };
+
+        Box box = new(sourcePosition.X,
+                      sourcePosition.Y,
+                      sourcePosition.Z,
+                      sourcePosition.X + width,
+                      sourcePosition.Y + height,
+                      sourcePosition.Z + depth);
+
+        CommandList.CopyTextureRegion(&dstLocation,
+                                      destinationPosition.X,
+                                      destinationPosition.Y,
+                                      destinationPosition.Z,
+                                      &srcLocation,
+                                      &box);
+
+        src.TransitionState(CommandList,
+                            sourcePosition.MipLevel,
+                            1,
+                            sourcePosition.ArrayLayer,
+                            1,
+                            sourcePosition.Face,
+                            1,
+                            srcOldState);
+
+        dst.TransitionState(CommandList,
+                            destinationPosition.MipLevel,
+                            1,
+                            destinationPosition.ArrayLayer,
+                            1,
+                            destinationPosition.Face,
+                            1,
+                            dstOldState);
     }
 
     public override void ResolveTexture(Texture source,
@@ -136,7 +277,63 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                         Texture destination,
                                         TexturePosition destinationPosition)
     {
-        throw new NotImplementedException();
+        DXTexture src = source.DX();
+        DXTexture dst = destination.DX();
+
+        ResourceStates srcOldState = src[sourcePosition.MipLevel,
+                                         sourcePosition.ArrayLayer,
+                                         sourcePosition.Face];
+        ResourceStates dstOldState = dst[destinationPosition.MipLevel,
+                                         destinationPosition.ArrayLayer,
+                                         destinationPosition.Face];
+
+        src.TransitionState(CommandList,
+                            sourcePosition.MipLevel,
+                            1,
+                            sourcePosition.ArrayLayer,
+                            1,
+                            sourcePosition.Face,
+                            1,
+                            ResourceStates.ResolveSource);
+
+        dst.TransitionState(CommandList,
+                            destinationPosition.MipLevel,
+                            1,
+                            destinationPosition.ArrayLayer,
+                            1,
+                            destinationPosition.Face,
+                            1,
+                            ResourceStates.ResolveDest);
+
+        CommandList.ResolveSubresource(dst.Resource,
+                                       DXHelpers.GetDepthOrArrayIndex(dst.Desc,
+                                                                      destinationPosition.MipLevel,
+                                                                      destinationPosition.ArrayLayer,
+                                                                      destinationPosition.Face),
+                                       src.Resource,
+                                       DXHelpers.GetDepthOrArrayIndex(src.Desc,
+                                                                      sourcePosition.MipLevel,
+                                                                      sourcePosition.ArrayLayer,
+                                                                      sourcePosition.Face),
+                                       DXFormats.GetFormat(dst.Desc.Format));
+
+        src.TransitionState(CommandList,
+                            sourcePosition.MipLevel,
+                            1,
+                            sourcePosition.ArrayLayer,
+                            1,
+                            sourcePosition.Face,
+                            1,
+                            srcOldState);
+
+        dst.TransitionState(CommandList,
+                            destinationPosition.MipLevel,
+                            1,
+                            destinationPosition.ArrayLayer,
+                            1,
+                            destinationPosition.Face,
+                            1,
+                            dstOldState);
     }
     #endregion
 

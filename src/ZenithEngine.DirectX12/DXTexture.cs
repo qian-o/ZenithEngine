@@ -11,7 +11,7 @@ internal unsafe class DXTexture : Texture
 {
     public ComPtr<ID3D12Resource> Resource;
 
-    private readonly ResourceStates[] resourceStates;
+    private readonly ResourceStates[] states;
 
     private CpuDescriptorHandle srv;
     private CpuDescriptorHandle uav;
@@ -72,8 +72,8 @@ internal unsafe class DXTexture : Texture
                                                clearValue,
                                                out Resource).ThrowIfError();
 
-        resourceStates = new ResourceStates[desc.MipLevels * DXHelpers.GetDepthOrArraySize(desc)];
-        Array.Fill(resourceStates, initialResourceState);
+        states = new ResourceStates[desc.MipLevels * DXHelpers.GetDepthOrArraySize(desc)];
+        Array.Fill(states, initialResourceState);
 
         Allocator.Release();
     }
@@ -84,19 +84,19 @@ internal unsafe class DXTexture : Texture
     {
         Resource = resource;
 
-        resourceStates = new ResourceStates[desc.MipLevels * DXHelpers.GetDepthOrArraySize(desc)];
-        Array.Fill(resourceStates, ResourceStates.Common);
+        states = new ResourceStates[desc.MipLevels * DXHelpers.GetDepthOrArraySize(desc)];
+        Array.Fill(states, ResourceStates.Common);
     }
 
     public ResourceStates this[uint mipLevel, uint arrayLayer, CubeMapFace face]
     {
         get
         {
-            return resourceStates[DXHelpers.GetDepthOrArrayIndex(Desc, mipLevel, arrayLayer, face)];
+            return states[DXHelpers.GetDepthOrArrayIndex(Desc, mipLevel, arrayLayer, face)];
         }
         private set
         {
-            resourceStates[DXHelpers.GetDepthOrArrayIndex(Desc, mipLevel, arrayLayer, face)] = value;
+            states[DXHelpers.GetDepthOrArrayIndex(Desc, mipLevel, arrayLayer, face)] = value;
         }
     }
 
@@ -340,6 +340,26 @@ internal unsafe class DXTexture : Texture
                         CubeMapFace.PositiveX,
                         DXHelpers.GetInitialLayers(Desc.Type),
                         newState);
+    }
+
+    public uint GetRowPitch(uint mipLevel, uint arrayLayer, CubeMapFace face)
+    {
+        ResourceDesc desc = Resource.GetDesc();
+
+        ulong rowPitch;
+        Context.Device.GetCopyableFootprints(in desc,
+                                             DXHelpers.GetDepthOrArrayIndex(Desc,
+                                                                            mipLevel,
+                                                                            arrayLayer,
+                                                                            face),
+                                             1,
+                                             0,
+                                             null,
+                                             null,
+                                             &rowPitch,
+                                             null);
+
+        return (uint)rowPitch;
     }
 
     protected override void DebugName(string name)
