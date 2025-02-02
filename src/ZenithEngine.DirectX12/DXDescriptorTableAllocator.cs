@@ -12,8 +12,8 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
     private readonly uint descriptorSize;
     private readonly CpuDescriptorHandle[] cpuHandles;
 
-    private uint currentOffset;
-    private bool isDirty;
+    private readonly uint currentOffset;
+    private readonly bool isDirty;
 
     public DXDescriptorTableAllocator(GraphicsContext context,
                                       DescriptorHeapType heapType,
