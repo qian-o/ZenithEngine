@@ -9,9 +9,9 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
     public ComPtr<ID3D12DescriptorHeap> CpuHeap;
     public ComPtr<ID3D12DescriptorHeap> GpuHeap;
 
-    private readonly uint descriptorSize;
     private readonly CpuDescriptorHandle cpuStart;
     private readonly CpuDescriptorHandle gpuStart;
+    private readonly uint descriptorSize;
 
     private uint offset;
     private bool dirty;
@@ -37,9 +37,9 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
         Context.Device.CreateDescriptorHeap(&cpuDesc, out CpuHeap).ThrowIfError();
         Context.Device.CreateDescriptorHeap(&gpuDesc, out GpuHeap).ThrowIfError();
 
-        descriptorSize = Context.Device.GetDescriptorHandleIncrementSize(heapType);
         cpuStart = CpuHeap.GetCPUDescriptorHandleForHeapStart();
         gpuStart = GpuHeap.GetCPUDescriptorHandleForHeapStart();
+        descriptorSize = Context.Device.GetDescriptorHandleIncrementSize(heapType);
 
         HeapType = heapType;
     }
