@@ -10,10 +10,12 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
     public ComPtr<ID3D12DescriptorHeap> GpuHeap;
 
     private readonly uint descriptorSize;
-    private readonly CpuDescriptorHandle[] cpuHandles;
+    private readonly CpuDescriptorHandle cpuStart;
+    private readonly CpuDescriptorHandle gpuStart;
+    private readonly CpuDescriptorHandle[] descriptorUsed;
 
-    private readonly uint currentOffset;
-    private readonly bool isDirty;
+    private uint offset;
+    private bool dirty;
 
     public DXDescriptorTableAllocator(GraphicsContext context,
                                       DescriptorHeapType heapType,
@@ -37,7 +39,9 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
         Context.Device.CreateDescriptorHeap(&gpuDesc, out GpuHeap).ThrowIfError();
 
         descriptorSize = Context.Device.GetDescriptorHandleIncrementSize(heapType);
-        cpuHandles = new CpuDescriptorHandle[numDescriptors];
+        cpuStart = CpuHeap.GetCPUDescriptorHandleForHeapStart();
+        gpuStart = GpuHeap.GetCPUDescriptorHandleForHeapStart();
+        descriptorUsed = new CpuDescriptorHandle[numDescriptors];
 
         HeapType = heapType;
     }
@@ -45,6 +49,53 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
     public DescriptorHeapType HeapType { get; }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
+
+    public CpuDescriptorHandle Alloc(CpuDescriptorHandle[] handles)
+    {
+        CpuDescriptorHandle table = new(gpuStart.Ptr + (offset * descriptorSize));
+
+        foreach (CpuDescriptorHandle handle in handles)
+        {
+            if (descriptorUsed[offset].Ptr == handle.Ptr)
+            {
+                continue;
+            }
+
+            descriptorUsed[offset] = handle;
+
+            Context.Device.CopyDescriptorsSimple(1,
+                                                 new(cpuStart.Ptr + (offset * descriptorSize)),
+                                                 handle,
+                                                 HeapType);
+
+            offset++;
+        }
+
+        dirty = true;
+
+        return table;
+    }
+
+    public void Submit()
+    {
+        if (!dirty)
+        {
+            return;
+        }
+
+        Context.Device.CopyDescriptorsSimple(offset,
+                                             GpuHeap.GetCPUDescriptorHandleForHeapStart(),
+                                             CpuHeap.GetCPUDescriptorHandleForHeapStart(),
+                                             HeapType);
+    }
+
+    public void Reset()
+    {
+        Array.Clear(descriptorUsed, 0, descriptorUsed.Length);
+
+        offset = 0;
+        dirty = false;
+    }
 
     protected override void DebugName(string name)
     {

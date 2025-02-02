@@ -1,6 +1,7 @@
 ﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using Silk.NET.Maths;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -12,8 +13,12 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     public ComPtr<ID3D12CommandAllocator> CommandAllocator;
     public ComPtr<ID3D12GraphicsCommandList> CommandList;
 
-    // private FrameBuffer? activeFrameBuffer;
-    // private Pipeline? activePipeline;
+    private readonly DXDescriptorTableAllocator? cbvSrvUavAllocator;
+    private readonly DXDescriptorTableAllocator? samplerAllocator;
+    private readonly ComPtr<ID3D12DescriptorHeap>[]? descriptorHeaps;
+
+    private FrameBuffer? activeFrameBuffer;
+    private Pipeline? activePipeline;
 
     public DXCommandBuffer(GraphicsContext context,
                            CommandProcessor processor) : base(context, processor)
@@ -26,6 +31,23 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                          CommandAllocator,
                                          (ComPtr<ID3D12PipelineState>)null,
                                          out CommandList).ThrowIfError();
+
+        if (ProcessorType is not CommandProcessorType.Copy)
+        {
+            cbvSrvUavAllocator = new(Context,
+                                     DescriptorHeapType.CbvSrvUav,
+                                     (Utils.CbvCount + Utils.SrvCount + Utils.UavCount) * 10);
+
+            samplerAllocator = new(Context,
+                                   DescriptorHeapType.Sampler,
+                                   Utils.SmpCount * 10);
+
+            descriptorHeaps =
+            [
+                cbvSrvUavAllocator.CpuHeap,
+                samplerAllocator.CpuHeap
+            ];
+        }
     }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
@@ -33,12 +55,32 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #region Command Buffer Management
     public override void Begin()
     {
-        throw new NotImplementedException();
+        if (descriptorHeaps is not null)
+        {
+            fixed (ID3D12DescriptorHeap** heaps = descriptorHeaps[0])
+            {
+                CommandList.SetDescriptorHeaps(2, heaps);
+            }
+        }
     }
 
     public override void End()
     {
-        throw new NotImplementedException();
+        CommandList.Close();
+
+        activeFrameBuffer = null;
+        activePipeline = null;
+    }
+
+    public override void Reset()
+    {
+        CommandAllocator.Reset();
+        CommandList.Reset(CommandAllocator, (ID3D12PipelineState*)null);
+
+        cbvSrvUavAllocator?.Reset();
+        samplerAllocator?.Reset();
+
+        base.Reset();
     }
     #endregion
 
@@ -102,7 +144,9 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #region Rendering Operations
     public override void BeginRendering(FrameBuffer frameBuffer, ClearValue clearValue)
     {
-        throw new NotImplementedException();
+        EndRendering();
+
+        activeFrameBuffer = frameBuffer;
     }
 
     public override void EndRendering()
@@ -124,17 +168,17 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #region Pipeline Operations
     public override void SetGraphicsPipeline(GraphicsPipeline pipeline)
     {
-        throw new NotImplementedException();
+        activePipeline = pipeline;
     }
 
     public override void SetComputePipeline(ComputePipeline pipeline)
     {
-        throw new NotImplementedException();
+        activePipeline = pipeline;
     }
 
     public override void SetRayTracingPipeline(RayTracingPipeline pipeline)
     {
-        throw new NotImplementedException();
+        activePipeline = pipeline;
     }
     #endregion
 
@@ -232,6 +276,9 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
     protected override void Destroy()
     {
+        samplerAllocator?.Dispose();
+        cbvSrvUavAllocator?.Dispose();
+
         CommandList.Dispose();
         CommandAllocator.Dispose();
 
