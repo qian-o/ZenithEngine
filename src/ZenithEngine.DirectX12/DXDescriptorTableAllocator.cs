@@ -12,7 +12,6 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
     private readonly uint descriptorSize;
     private readonly CpuDescriptorHandle cpuStart;
     private readonly CpuDescriptorHandle gpuStart;
-    private readonly CpuDescriptorHandle[] descriptorUsed;
 
     private uint offset;
     private bool dirty;
@@ -41,7 +40,6 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
         descriptorSize = Context.Device.GetDescriptorHandleIncrementSize(heapType);
         cpuStart = CpuHeap.GetCPUDescriptorHandleForHeapStart();
         gpuStart = GpuHeap.GetCPUDescriptorHandleForHeapStart();
-        descriptorUsed = new CpuDescriptorHandle[numDescriptors];
 
         HeapType = heapType;
     }
@@ -56,13 +54,6 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
 
         foreach (CpuDescriptorHandle handle in handles)
         {
-            if (descriptorUsed[offset].Ptr == handle.Ptr)
-            {
-                continue;
-            }
-
-            descriptorUsed[offset] = handle;
-
             Context.Device.CopyDescriptorsSimple(1,
                                                  new(cpuStart.Ptr + (offset * descriptorSize)),
                                                  handle,
@@ -91,8 +82,6 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
 
     public void Reset()
     {
-        Array.Clear(descriptorUsed, 0, descriptorUsed.Length);
-
         offset = 0;
         dirty = false;
     }
