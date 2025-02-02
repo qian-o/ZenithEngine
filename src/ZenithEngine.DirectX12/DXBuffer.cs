@@ -55,9 +55,13 @@ internal unsafe class DXBuffer : Buffer
                                                initialResourceState,
                                                null,
                                                out Resource).ThrowIfError();
+
+        State = initialResourceState;
     }
 
     public uint SizeInBytes { get; }
+
+    public ResourceStates State { get; private set; }
 
     public ref readonly CpuDescriptorHandle Cbv
     {
@@ -99,6 +103,31 @@ internal unsafe class DXBuffer : Buffer
     }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
+
+    public void TransitionState(ComPtr<ID3D12GraphicsCommandList> commandList,
+                                ResourceStates newState)
+    {
+        if (State == newState)
+        {
+            return;
+        }
+
+        ResourceBarrier barrier = new()
+        {
+            Type = ResourceBarrierType.Transition,
+            Transition = new()
+            {
+                PResource = Resource,
+                Subresource = 0,
+                StateBefore = State,
+                StateAfter = newState
+            }
+        };
+
+        commandList.ResourceBarrier(1, &barrier);
+
+        State = newState;
+    }
 
     protected override void DebugName(string name)
     {

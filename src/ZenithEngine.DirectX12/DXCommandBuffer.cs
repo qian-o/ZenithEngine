@@ -91,7 +91,23 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                     uint sourceOffsetInBytes = 0,
                                     uint destinationOffsetInBytes = 0)
     {
-        throw new NotImplementedException();
+        DXBuffer src = source.DX();
+        DXBuffer dst = destination.DX();
+
+        ResourceStates srcOldState = src.State;
+        ResourceStates dstOldState = dst.State;
+
+        src.TransitionState(CommandList, ResourceStates.CopySource);
+        dst.TransitionState(CommandList, ResourceStates.CopyDest);
+
+        CommandList.CopyBufferRegion(dst.Resource,
+                                     destinationOffsetInBytes,
+                                     src.Resource,
+                                     sourceOffsetInBytes,
+                                     sizeInBytes);
+
+        src.TransitionState(CommandList, srcOldState);
+        dst.TransitionState(CommandList, dstOldState);
     }
     #endregion
 
