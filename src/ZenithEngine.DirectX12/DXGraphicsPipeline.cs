@@ -263,6 +263,14 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
+    public void Apply(ComPtr<ID3D12GraphicsCommandList> commandList)
+    {
+        commandList.SetPipelineState(PipelineState);
+        commandList.SetGraphicsRootSignature(RootSignature);
+        commandList.OMSetStencilRef((uint)Desc.RenderStates.StencilReference);
+        commandList.IASetPrimitiveTopology(DXFormats.GetPrimitiveTopology(Desc.PrimitiveTopology));
+    }
+
     protected override void DebugName(string name)
     {
         PipelineState.SetName(name);

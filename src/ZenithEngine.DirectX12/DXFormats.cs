@@ -1,4 +1,5 @@
-﻿using Silk.NET.Direct3D12;
+﻿using Silk.NET.Core.Native;
+using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
@@ -346,6 +347,24 @@ internal static class DXFormats
 
             >= PrimitiveTopology.PatchList => PrimitiveTopologyType.Patch,
 
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(topology))
+        };
+    }
+
+    public static D3DPrimitiveTopology GetPrimitiveTopology(PrimitiveTopology topology)
+    {
+        return topology switch
+        {
+            PrimitiveTopology.PointList => D3DPrimitiveTopology.D3DPrimitiveTopologyPointlist,
+            PrimitiveTopology.LineList => D3DPrimitiveTopology.D3DPrimitiveTopologyLinelist,
+            PrimitiveTopology.LineStrip => D3DPrimitiveTopology.D3DPrimitiveTopologyLinestrip,
+            PrimitiveTopology.TriangleList => D3DPrimitiveTopology.D3DPrimitiveTopologyTrianglelist,
+            PrimitiveTopology.TriangleStrip => D3DPrimitiveTopology.D3DPrimitiveTopologyTrianglestrip,
+            PrimitiveTopology.LineListWithAdjacency => D3DPrimitiveTopology.D3DPrimitiveTopologyLinelistAdj,
+            PrimitiveTopology.LineStripWithAdjacency => D3DPrimitiveTopology.D3DPrimitiveTopologyLinestripAdj,
+            PrimitiveTopology.TriangleListWithAdjacency => D3DPrimitiveTopology.D3DPrimitiveTopologyTrianglelistAdj,
+            PrimitiveTopology.TriangleStripWithAdjacency => D3DPrimitiveTopology.D3DPrimitiveTopologyTrianglestripAdj,
+            >= PrimitiveTopology.PatchList => D3DPrimitiveTopology.D3DPrimitiveTopology1ControlPointPatchlist + (PrimitiveTopology.PatchList - topology),
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(topology))
         };
     }

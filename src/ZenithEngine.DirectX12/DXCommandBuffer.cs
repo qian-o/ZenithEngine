@@ -460,6 +460,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     public override void SetGraphicsPipeline(GraphicsPipeline pipeline)
     {
         activePipeline = pipeline;
+
+        pipeline.DX().Apply(CommandList);
     }
 
     public override void SetComputePipeline(ComputePipeline pipeline)
@@ -476,7 +478,12 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #region Resource Binding Operations
     public override void PrepareResources(ResourceSet[] resourceSets)
     {
-        throw new NotImplementedException();
+        // foreach (ResourceSet resourceSet in resourceSets)
+        // {
+        //     DXResourceSet dxResourceSet = resourceSet.DX();
+
+        //     // TODO: Transition resources state.
+        // }
     }
 
     public override void SetVertexBuffer(uint slot, Buffer buffer, uint offset = 0)

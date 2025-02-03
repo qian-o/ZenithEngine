@@ -626,6 +626,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
     public override void SetVertexBuffer(uint slot, Buffer buffer, uint offset = 0)
     {
+        ValidatePipeline<VKGraphicsPipeline>(out _);
+
         ulong longOffset = offset;
 
         Context.Vk.CmdBindVertexBuffers(CommandBuffer,
@@ -637,6 +639,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
     public override void SetVertexBuffers(Buffer[] buffers, uint[] offsets)
     {
+        ValidatePipeline<VKGraphicsPipeline>(out _);
+
         Context.Vk.CmdBindVertexBuffers(CommandBuffer,
                                         0,
                                         (uint)buffers.Length,
@@ -648,6 +652,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                         IndexFormat format = IndexFormat.UInt16,
                                         uint offset = 0)
     {
+        ValidatePipeline<VKGraphicsPipeline>(out _);
+
         Context.Vk.CmdBindIndexBuffer(CommandBuffer,
                                       buffer.VK().Buffer,
                                       offset,
@@ -708,6 +714,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                        uint startVertexLocation = 0,
                                        uint startInstanceLocation = 0)
     {
+        ValidatePipeline<VKGraphicsPipeline>(out _);
+
         Context.Vk.CmdDraw(CommandBuffer,
                            vertexCountPerInstance,
                            instanceCount,
@@ -720,6 +728,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                                uint drawCount,
                                                uint stride)
     {
+        ValidatePipeline<VKGraphicsPipeline>(out _);
+
         Context.Vk.CmdDrawIndirect(CommandBuffer,
                                    argBuffer.VK().Buffer,
                                    offset,
@@ -731,6 +741,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                      uint startIndexLocation = 0,
                                      uint baseVertexLocation = 0)
     {
+        ValidatePipeline<VKGraphicsPipeline>(out _);
+
         Context.Vk.CmdDrawIndexed(CommandBuffer,
                                   indexCount,
                                   1,
@@ -745,6 +757,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                               uint baseVertexLocation = 0,
                                               uint startInstanceLocation = 0)
     {
+        ValidatePipeline<VKGraphicsPipeline>(out _);
+
         Context.Vk.CmdDrawIndexed(CommandBuffer,
                                   indexCountPerInstance,
                                   instanceCount,
@@ -758,6 +772,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                                       uint drawCount,
                                                       uint stride)
     {
+        ValidatePipeline<VKGraphicsPipeline>(out _);
+
         Context.Vk.CmdDrawIndexedIndirect(CommandBuffer,
                                           argBuffer.VK().Buffer,
                                           offset,
@@ -769,6 +785,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     #region Compute Operations
     public override void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ)
     {
+        ValidatePipeline<VKComputePipeline>(out _);
+
         Context.Vk.CmdDispatch(CommandBuffer, groupCountX, groupCountY, groupCountZ);
     }
     #endregion
@@ -776,14 +794,11 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     #region Ray Tracing Operations
     public override void DispatchRays(uint width, uint height, uint depth)
     {
-        if (activePipeline is not VKRayTracingPipeline rayTracingPipeline)
-        {
-            throw new ZenithEngineException(ExceptionHelpers.NotSupported(activePipeline));
-        }
+        ValidatePipeline(out VKRayTracingPipeline vkPipeline);
 
-        StridedDeviceAddressRegionKHR rayGenRegion = rayTracingPipeline.ShaderTable.RayGenRegion;
-        StridedDeviceAddressRegionKHR missRegion = rayTracingPipeline.ShaderTable.MissRegion;
-        StridedDeviceAddressRegionKHR hitGroupRegion = rayTracingPipeline.ShaderTable.HitGroupRegion;
+        StridedDeviceAddressRegionKHR rayGenRegion = vkPipeline.ShaderTable.RayGenRegion;
+        StridedDeviceAddressRegionKHR missRegion = vkPipeline.ShaderTable.MissRegion;
+        StridedDeviceAddressRegionKHR hitGroupRegion = vkPipeline.ShaderTable.HitGroupRegion;
         StridedDeviceAddressRegionKHR callableRegion = new();
 
         Context.KhrRayTracingPipeline!.CmdTraceRays(CommandBuffer,
@@ -807,5 +822,20 @@ internal unsafe class VKCommandBuffer : CommandBuffer
         Context.Vk.DestroyCommandPool(Context.Device, CommandPool, null);
 
         base.Destroy();
+    }
+
+    private void ValidatePipeline<T>(out T pipeline) where T : Pipeline
+    {
+        if (activePipeline is null)
+        {
+            throw new ZenithEngineException("The pipeline is not bound.");
+        }
+
+        if (activePipeline is not T castedPipeline)
+        {
+            throw new ZenithEngineException(ExceptionHelpers.NotSupported(activePipeline));
+        }
+
+        pipeline = castedPipeline;
     }
 }
