@@ -271,6 +271,11 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
         commandList.IASetPrimitiveTopology(DXFormats.GetPrimitiveTopology(Desc.PrimitiveTopology));
     }
 
+    public uint GetRootParameterOffset(uint slot)
+    {
+        return (uint)Desc.ResourceLayouts.Take((int)slot).Sum(static item => item.DX().GraphicsRootParameterCount);
+    }
+
     protected override void DebugName(string name)
     {
         PipelineState.SetName(name);

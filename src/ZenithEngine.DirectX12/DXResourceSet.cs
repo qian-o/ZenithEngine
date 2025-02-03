@@ -1,4 +1,6 @@
-﻿using ZenithEngine.Common.Descriptions;
+﻿using Silk.NET.Core.Native;
+using Silk.NET.Direct3D12;
+using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
@@ -52,6 +54,14 @@ internal class DXResourceSet : ResourceSet
     public DXTexture[] UavTextures { get; }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
+
+    public void Bind(ComPtr<ID3D12GraphicsCommandList> commandList,
+                     DXDescriptorTableAllocator cbvSrvUavAllocator,
+                     DXDescriptorTableAllocator samplerAllocator,
+                     uint rootParameterOffset,
+                     uint[]? constantBufferOffsets)
+    {
+    }
 
     protected override void DebugName(string name)
     {
