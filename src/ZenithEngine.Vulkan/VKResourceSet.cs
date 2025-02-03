@@ -17,11 +17,11 @@ internal unsafe class VKResourceSet : ResourceSet
 
         Token = Context.DescriptorSetAllocator!.Alloc(layout.DescriptorSetLayout, layout.Counts);
 
-        WriteDescriptorSet[] writes = new WriteDescriptorSet[layout.Desc.Elements.Length];
-
         uint resourceOffset = 0;
         List<VKTexture> srvTextures = [];
         List<VKTexture> uavTextures = [];
+
+        WriteDescriptorSet[] writes = new WriteDescriptorSet[layout.Desc.Elements.Length];
 
         for (int i = 0; i < writes.Length; i++)
         {

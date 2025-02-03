@@ -478,12 +478,20 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #region Resource Binding Operations
     public override void PrepareResources(ResourceSet[] resourceSets)
     {
-        // foreach (ResourceSet resourceSet in resourceSets)
-        // {
-        //     DXResourceSet dxResourceSet = resourceSet.DX();
+        foreach (ResourceSet resourceSet in resourceSets)
+        {
+            DXResourceSet dxResourceSet = resourceSet.DX();
 
-        //     // TODO: Transition resources state.
-        // }
+            foreach (DXTexture texture in dxResourceSet.SrvTextures)
+            {
+                texture.TransitionState(CommandList, ResourceStates.Common);
+            }
+
+            foreach (DXTexture texture in dxResourceSet.UavTextures)
+            {
+                texture.TransitionState(CommandList, ResourceStates.UnorderedAccess);
+            }
+        }
     }
 
     public override void SetVertexBuffer(uint slot, Buffer buffer, uint offset = 0)
