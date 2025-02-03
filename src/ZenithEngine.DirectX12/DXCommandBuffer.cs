@@ -573,7 +573,10 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                        uint startVertexLocation = 0,
                                        uint startInstanceLocation = 0)
     {
-        throw new NotImplementedException();
+        ValidatePipeline<DXGraphicsPipeline>(out _);
+
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
     }
 
     public override void DrawInstancedIndirect(Buffer argBuffer,
@@ -581,14 +584,20 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                                uint drawCount,
                                                uint stride)
     {
-        throw new NotImplementedException();
+        ValidatePipeline<DXGraphicsPipeline>(out _);
+
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
     }
 
     public override void DrawIndexed(uint indexCount,
                                      uint startIndexLocation = 0,
                                      uint baseVertexLocation = 0)
     {
-        throw new NotImplementedException();
+        ValidatePipeline<DXGraphicsPipeline>(out _);
+
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
     }
 
     public override void DrawIndexedInstanced(uint indexCountPerInstance,
@@ -597,7 +606,10 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                               uint baseVertexLocation = 0,
                                               uint startInstanceLocation = 0)
     {
-        throw new NotImplementedException();
+        ValidatePipeline<DXGraphicsPipeline>(out _);
+
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
     }
 
     public override void DrawIndexedInstancedIndirect(Buffer argBuffer,
@@ -605,21 +617,26 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                                       uint drawCount,
                                                       uint stride)
     {
-        throw new NotImplementedException();
+        ValidatePipeline<DXGraphicsPipeline>(out _);
+
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
     }
     #endregion
 
     #region Compute Operations
     public override void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ)
     {
-        throw new NotImplementedException();
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
     }
     #endregion
 
     #region Ray Tracing Operations
     public override void DispatchRays(uint width, uint height, uint depth)
     {
-        throw new NotImplementedException();
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
     }
     #endregion
 
