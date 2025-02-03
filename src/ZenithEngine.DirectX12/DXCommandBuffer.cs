@@ -360,21 +360,99 @@ internal unsafe class DXCommandBuffer : CommandBuffer
         EndRendering();
 
         activeFrameBuffer = frameBuffer;
+
+        DXFrameBuffer dxFrameBuffer = frameBuffer.DX();
+
+        dxFrameBuffer.TransitionToIntermediateState(CommandList);
+
+        CommandList.OMSetRenderTargets(dxFrameBuffer.ColorAttachmentCount,
+                                       dxFrameBuffer.RtvHandles,
+                                       false,
+                                       dxFrameBuffer.DsvHandle);
+
+        bool clearColor = clearValue.Options.HasFlag(ClearOptions.Color);
+        bool clearDepth = clearValue.Options.HasFlag(ClearOptions.Depth);
+        bool clearStencil = clearValue.Options.HasFlag(ClearOptions.Stencil);
+
+        if (clearColor)
+        {
+            for (int i = 0; i < clearValue.ColorValues.Length; i++)
+            {
+                ref float red = ref clearValue.ColorValues[i].X;
+
+                CommandList.ClearRenderTargetView(dxFrameBuffer.RtvHandles[i],
+                                                  ref red,
+                                                  0,
+                                                  null);
+            }
+        }
+
+        if (clearDepth || clearStencil)
+        {
+            const int depthFlags = (int)ClearFlags.Depth;
+            const int stencilFlags = (int)ClearFlags.Stencil;
+
+            CommandList.ClearDepthStencilView(*dxFrameBuffer.DsvHandle,
+                                              (ClearFlags)((clearDepth ? depthFlags : 0) + (clearDepth ? stencilFlags : 0)),
+                                              clearValue.Depth,
+                                              clearValue.Stencil,
+                                              0,
+                                              (Box2D<int>*)null);
+        }
+
+        Viewport[] viewports = new Viewport[dxFrameBuffer.ColorAttachmentCount];
+        Vector2D<int>[] scissorsByOffset = new Vector2D<int>[dxFrameBuffer.ColorAttachmentCount];
+        Vector2D<uint>[] scissorsByExtent = new Vector2D<uint>[dxFrameBuffer.ColorAttachmentCount];
+
+        Array.Fill(viewports, new(0, 0, dxFrameBuffer.Width, dxFrameBuffer.Height));
+        Array.Fill(scissorsByOffset, new(0, 0));
+        Array.Fill(scissorsByExtent, new(dxFrameBuffer.Width, dxFrameBuffer.Height));
+
+        SetViewports(viewports);
+        SetScissorRectangles(scissorsByOffset, scissorsByExtent);
     }
 
     public override void EndRendering()
     {
-        throw new NotImplementedException();
+        if (activeFrameBuffer is null)
+        {
+            return;
+        }
+
+        activeFrameBuffer.DX().TransitionToFinalState(CommandList);
+
+        activeFrameBuffer = null;
     }
 
     public override void SetViewports(Viewport[] viewports)
     {
-        throw new NotImplementedException();
+        CommandList.RSSetViewports((uint)viewports.Length, [.. viewports.Select(static item => new DxViewport
+        {
+            TopLeftX = item.X,
+            TopLeftY = item.Y,
+            Width = item.Width,
+            Height = item.Height,
+            MinDepth = item.MinDepth,
+            MaxDepth = item.MaxDepth
+        })]);
     }
 
     public override void SetScissorRectangles(Vector2D<int>[] offsets, Vector2D<uint>[] extents)
     {
-        throw new NotImplementedException();
+        uint count = (uint)Math.Min(offsets.Length, extents.Length);
+
+        Box2D<int>[] scs = new Box2D<int>[count];
+
+        for (uint i = 0; i < count; i++)
+        {
+            scs[i] = new()
+            {
+                Min = offsets[i],
+                Max = offsets[i] + extents[i].As<int>()
+            };
+        }
+
+        CommandList.RSSetScissorRects(count, scs);
     }
     #endregion
 

@@ -7,6 +7,7 @@ global using DxClearValue = Silk.NET.Direct3D12.ClearValue;
 global using DxCullMode = Silk.NET.Direct3D12.CullMode;
 global using DxFillMode = Silk.NET.Direct3D12.FillMode;
 global using DxSamplerDesc = Silk.NET.Direct3D12.SamplerDesc;
+global using DxViewport = Silk.NET.Direct3D12.Viewport;
 global using FillMode = ZenithEngine.Common.Enums.FillMode;
 global using Range = Silk.NET.Direct3D12.Range;
 global using ResourceSet = ZenithEngine.Common.Graphics.ResourceSet;
