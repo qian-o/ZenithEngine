@@ -488,19 +488,56 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
     public override void SetVertexBuffer(uint slot, Buffer buffer, uint offset = 0)
     {
-        throw new NotImplementedException();
+        ValidatePipeline(out DXGraphicsPipeline dxPipeline);
+
+        VertexBufferView view = new()
+        {
+            BufferLocation = buffer.DX().Resource.GetGPUVirtualAddress() + offset,
+            SizeInBytes = buffer.Desc.SizeInBytes - offset,
+            StrideInBytes = dxPipeline.VertexStrides[slot]
+        };
+
+        CommandList.IASetVertexBuffers(slot, 1, &view);
     }
 
     public override void SetVertexBuffers(Buffer[] buffers, uint[] offsets)
     {
-        throw new NotImplementedException();
+        ValidatePipeline(out DXGraphicsPipeline dxPipeline);
+
+        uint count = (uint)Math.Min(buffers.Length, offsets.Length);
+
+        VertexBufferView[] views = new VertexBufferView[count];
+
+        for (uint i = 0; i < count; i++)
+        {
+            DXBuffer buffer = buffers[i].DX();
+            uint offset = offsets[i];
+
+            views[i] = new()
+            {
+                BufferLocation = buffer.Resource.GetGPUVirtualAddress() + offset,
+                SizeInBytes = buffer.Desc.SizeInBytes - offset,
+                StrideInBytes = dxPipeline.VertexStrides[i]
+            };
+        }
+
+        CommandList.IASetVertexBuffers(0, count, views);
     }
 
     public override void SetIndexBuffer(Buffer buffer,
                                         IndexFormat format = IndexFormat.UInt16,
                                         uint offset = 0)
     {
-        throw new NotImplementedException();
+        ValidatePipeline<DXGraphicsPipeline>(out _);
+
+        IndexBufferView view = new()
+        {
+            BufferLocation = buffer.DX().Resource.GetGPUVirtualAddress() + offset,
+            SizeInBytes = buffer.Desc.SizeInBytes - offset,
+            Format = DXFormats.GetFormat(format)
+        };
+
+        CommandList.IASetIndexBuffer(&view);
     }
 
     public override void SetResourceSet(uint slot,
@@ -581,5 +618,20 @@ internal unsafe class DXCommandBuffer : CommandBuffer
         CommandAllocator.Dispose();
 
         base.Destroy();
+    }
+
+    private void ValidatePipeline<T>(out T pipeline) where T : Pipeline
+    {
+        if (activePipeline is null)
+        {
+            throw new ZenithEngineException("The pipeline is not bound.");
+        }
+
+        if (activePipeline is not T castedPipeline)
+        {
+            throw new ZenithEngineException(ExceptionHelpers.NotSupported(activePipeline));
+        }
+
+        pipeline = castedPipeline;
     }
 }

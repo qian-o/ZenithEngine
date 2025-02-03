@@ -379,5 +379,15 @@ internal static class DXFormats
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
         };
     }
+
+    public static Format GetFormat(IndexFormat format)
+    {
+        return format switch
+        {
+            IndexFormat.UInt16 => Format.FormatR16Uint,
+            IndexFormat.UInt32 => Format.FormatR32Uint,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(format))
+        };
+    }
     #endregion
 }
