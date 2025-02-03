@@ -8,12 +8,12 @@ namespace ZenithEngine.DirectX12;
 
 internal class DXResourceLayout : ResourceLayout
 {
-    private readonly DXResourceIndices[] indices;
+    private readonly DXResourceBinding[] bindings;
 
     public DXResourceLayout(GraphicsContext context,
                             ref readonly ResourceLayoutDesc desc) : base(context, in desc)
     {
-        indices = new DXResourceIndices[desc.Elements.Length];
+        bindings = new DXResourceBinding[desc.Elements.Length];
 
         uint index = 0;
         int dynamicOffsetIndex = 0;
@@ -26,17 +26,17 @@ internal class DXResourceLayout : ResourceLayout
                 or ResourceType.StructuredBuffer
                 or ResourceType.StructuredBufferReadWrite && element.AllowDynamicOffset)
             {
-                indices[i] = new(element.Stages,
-                                 element.Type,
-                                 [.. Enumerable.Range((int)index, (int)element.Count).Select(x => (uint)x)],
-                                 dynamicOffsetIndex++);
+                bindings[i] = new(element.Stages,
+                                  element.Type,
+                                  [.. Enumerable.Range((int)index, (int)element.Count).Select(x => (uint)x)],
+                                  dynamicOffsetIndex++);
             }
             else
             {
-                indices[i] = new(element.Stages,
-                                 element.Type,
-                                 [.. Enumerable.Range((int)index, (int)element.Count).Select(x => (uint)x)],
-                                 -1);
+                bindings[i] = new(element.Stages,
+                                  element.Type,
+                                  [.. Enumerable.Range((int)index, (int)element.Count).Select(x => (uint)x)],
+                                  -1);
             }
 
             index += element.Count;
@@ -167,14 +167,14 @@ internal class DXResourceLayout : ResourceLayout
         return cbvSrvUavRanges.Length > 0 || samplerRanges.Length > 0;
     }
 
-    public bool CalculateResourceIndices(out DXResourceIndices[] cbvSrvUavIndices,
-                                         out DXResourceIndices[] samplerIndices,
-                                         ShaderStages stage = ShaderStages.None)
+    public bool CalculateResourceBindings(out DXResourceBinding[] cbvSrvUavBindings,
+                                          out DXResourceBinding[] samplerBindings,
+                                          ShaderStages stage = ShaderStages.None)
     {
-        List<DXResourceIndices> cbvSrvUavIndicesList = [];
-        List<DXResourceIndices> samplerIndicesList = [];
+        List<DXResourceBinding> cbvSrvUavBindingsList = [];
+        List<DXResourceBinding> samplerBindingsList = [];
 
-        foreach (DXResourceIndices indices in indices)
+        foreach (DXResourceBinding indices in bindings)
         {
             if (stage is not ShaderStages.None && !indices.Stages.HasFlag(stage))
             {
@@ -183,18 +183,18 @@ internal class DXResourceLayout : ResourceLayout
 
             if (indices.Type is ResourceType.Sampler)
             {
-                samplerIndicesList.Add(indices);
+                samplerBindingsList.Add(indices);
             }
             else
             {
-                cbvSrvUavIndicesList.Add(indices);
+                cbvSrvUavBindingsList.Add(indices);
             }
         }
 
-        cbvSrvUavIndices = [.. cbvSrvUavIndicesList];
-        samplerIndices = [.. samplerIndicesList];
+        cbvSrvUavBindings = [.. cbvSrvUavBindingsList];
+        samplerBindings = [.. samplerBindingsList];
 
-        return cbvSrvUavIndices.Length > 0 || samplerIndices.Length > 0;
+        return cbvSrvUavBindings.Length > 0 || samplerBindings.Length > 0;
     }
 
     protected override void DebugName(string name)

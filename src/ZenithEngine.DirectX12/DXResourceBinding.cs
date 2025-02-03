@@ -2,7 +2,7 @@
 
 namespace ZenithEngine.DirectX12;
 
-internal readonly struct DXResourceIndices(ShaderStages stages,
+internal readonly struct DXResourceBinding(ShaderStages stages,
                                            ResourceType type,
                                            uint[] indices,
                                            int dynamicOffsetIndex)
