@@ -10,30 +10,32 @@ internal unsafe class VKDescriptorSetAllocator(GraphicsContext context) : Graphi
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    public VKDescriptorAllocationToken Alloc(VkDescriptorSetLayout descriptorSetLayout,
-                                             VKResourceCounts counts)
+    public VKDescriptorAllocationToken Alloc(VKResourceLayout layout)
     {
         using Lock.Scope _ = @lock.EnterScope();
 
-        if (pools.FirstOrDefault(item => item.CanAlloc(counts)) is not VKDescriptorPool pool)
+        if (pools.FirstOrDefault(item => item.CanAlloc(layout.Counts)) is not VKDescriptorPool pool)
         {
             pools.Add(pool = new(Context));
         }
 
-        DescriptorSetAllocateInfo allocateInfo = new()
+        fixed (DescriptorSetLayout* descriptorSetLayout = &layout.DescriptorSetLayout)
         {
-            SType = StructureType.DescriptorSetAllocateInfo,
-            DescriptorPool = pool.Pool,
-            DescriptorSetCount = 1,
-            PSetLayouts = &descriptorSetLayout
-        };
+            DescriptorSetAllocateInfo allocateInfo = new()
+            {
+                SType = StructureType.DescriptorSetAllocateInfo,
+                DescriptorPool = pool.Pool,
+                DescriptorSetCount = 1,
+                PSetLayouts = descriptorSetLayout
+            };
 
-        VkDescriptorSet set;
-        Context.Vk.AllocateDescriptorSets(Context.Device,
-                                          &allocateInfo,
-                                          &set).ThrowIfError();
+            VkDescriptorSet set;
+            Context.Vk.AllocateDescriptorSets(Context.Device,
+                                              &allocateInfo,
+                                              &set).ThrowIfError();
 
-        return new(pool, set);
+            return new(pool, set);
+        }
     }
 
     public void Free(VKDescriptorAllocationToken token)

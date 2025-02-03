@@ -13,19 +13,19 @@ internal unsafe class VKResourceSet : ResourceSet
     public VKResourceSet(GraphicsContext context,
                          ref readonly ResourceSetDesc desc) : base(context, in desc)
     {
-        VKResourceLayout layout = desc.Layout.VK();
-
-        Token = Context.DescriptorSetAllocator!.Alloc(layout.DescriptorSetLayout, layout.Counts);
+        Token = Context.DescriptorSetAllocator!.Alloc(desc.Layout.VK());
 
         uint resourceOffset = 0;
         List<VKTexture> srvTextures = [];
         List<VKTexture> uavTextures = [];
 
-        WriteDescriptorSet[] writes = new WriteDescriptorSet[layout.Desc.Elements.Length];
+        ResourceLayoutDesc layoutDesc = desc.Layout.Desc;
 
-        for (int i = 0; i < writes.Length; i++)
+        WriteDescriptorSet[] writes = new WriteDescriptorSet[layoutDesc.Elements.Length];
+
+        for (int i = 0; i < layoutDesc.Elements.Length; i++)
         {
-            LayoutElementDesc element = layout.Desc.Elements[i];
+            LayoutElementDesc element = layoutDesc.Elements[i];
             GraphicsResource[] resources = desc.Resources[(int)resourceOffset..(int)(resourceOffset + element.Count)];
 
             WriteDescriptorSet write = new()
@@ -140,7 +140,7 @@ internal unsafe class VKResourceSet : ResourceSet
                                         0,
                                         (CopyDescriptorSet*)null);
 
-        DynamicConstantBufferCount = layout.Desc.DynamicConstantBufferCount;
+        DynamicConstantBufferCount = layoutDesc.DynamicConstantBufferCount;
         SrvTextures = [.. srvTextures];
         UavTextures = [.. uavTextures];
 
