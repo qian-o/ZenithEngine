@@ -58,9 +58,16 @@ internal class DXResourceSet : ResourceSet
     public void Bind(ComPtr<ID3D12GraphicsCommandList> commandList,
                      DXDescriptorTableAllocator cbvSrvUavAllocator,
                      DXDescriptorTableAllocator samplerAllocator,
+                     bool isGraphics,
                      uint rootParameterOffset,
                      uint[]? constantBufferOffsets)
     {
+        if (isGraphics)
+        {
+            foreach (ShaderStages stage in DXHelpers.GraphicsShaderStages)
+            {
+            }
+        }
     }
 
     protected override void DebugName(string name)

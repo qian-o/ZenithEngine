@@ -552,15 +552,16 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                         ResourceSet resourceSet,
                                         uint[]? constantBufferOffsets = null)
     {
-        uint rootParameterOffset = activePipeline switch
+        (bool isGraphics, uint rootParameterOffset) = activePipeline switch
         {
-            DXGraphicsPipeline graphicsPipeline => graphicsPipeline.GetRootParameterOffset(slot),
+            DXGraphicsPipeline graphicsPipeline => (true, graphicsPipeline.GetRootParameterOffset(slot)),
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(activePipeline))
         };
 
         resourceSet.DX().Bind(CommandList,
                               cbvSrvUavAllocator!,
                               samplerAllocator!,
+                              isGraphics,
                               rootParameterOffset,
                               constantBufferOffsets);
     }
