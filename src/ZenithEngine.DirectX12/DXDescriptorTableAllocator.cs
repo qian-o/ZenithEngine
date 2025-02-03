@@ -48,23 +48,30 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
-    public GpuDescriptorHandle Alloc(CpuDescriptorHandle[] handles)
+    public void UpdateDescriptor(CpuDescriptorHandle handle)
     {
-        GpuDescriptorHandle table = new(gpuStart.Ptr + (offset * descriptorSize));
+        Context.Device.CopyDescriptorsSimple(1,
+                                             new(cpuStart.Ptr + (offset * descriptorSize)),
+                                             handle,
+                                             HeapType);
 
-        foreach (CpuDescriptorHandle handle in handles)
-        {
-            Context.Device.CopyDescriptorsSimple(1,
-                                                 new(cpuStart.Ptr + (offset * descriptorSize)),
-                                                 handle,
-                                                 HeapType);
+        offset++;
+        dirty = true;
+    }
 
-            offset++;
-        }
+    public CpuDescriptorHandle UpdateDescriptorHandle()
+    {
+        CpuDescriptorHandle handle = new(cpuStart.Ptr + (offset * descriptorSize));
 
+        offset++;
         dirty = true;
 
-        return table;
+        return handle;
+    }
+
+    public GpuDescriptorHandle GetCurrentTableHandle()
+    {
+        return new(gpuStart.Ptr + (offset * descriptorSize));
     }
 
     public void Submit()

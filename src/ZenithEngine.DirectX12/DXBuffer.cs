@@ -69,7 +69,7 @@ internal unsafe class DXBuffer : Buffer
         {
             if (cbv.Ptr is 0)
             {
-                cbv = GetCbv(0, SizeInBytes);
+                InitCbv();
             }
 
             return ref cbv;
@@ -82,7 +82,7 @@ internal unsafe class DXBuffer : Buffer
         {
             if (srv.Ptr is 0)
             {
-                srv = GetSrv(0, SizeInBytes);
+                InitSrv();
             }
 
             return ref srv;
@@ -95,7 +95,7 @@ internal unsafe class DXBuffer : Buffer
         {
             if (uav.Ptr is 0)
             {
-                uav = GetUav(0, SizeInBytes);
+                InitUav();
             }
 
             return ref uav;
@@ -103,67 +103,6 @@ internal unsafe class DXBuffer : Buffer
     }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
-
-    public CpuDescriptorHandle GetCbv(uint offsetInBytes, uint sizeInBytes)
-    {
-        ConstantBufferViewDesc desc = new()
-        {
-            BufferLocation = Resource.GetGPUVirtualAddress() + offsetInBytes,
-            SizeInBytes = sizeInBytes
-        };
-
-        CpuDescriptorHandle handle = Context.CbvSrvUavAllocator!.Alloc();
-
-        Context.Device.CreateConstantBufferView(&desc, handle);
-
-        return handle;
-    }
-
-    public CpuDescriptorHandle GetSrv(uint offsetInBytes, uint sizeInBytes)
-    {
-        ShaderResourceViewDesc desc = new()
-        {
-            Format = Format.FormatUnknown,
-            ViewDimension = SrvDimension.Buffer,
-            Shader4ComponentMapping = DXGraphicsContext.DefaultShader4ComponentMapping,
-            Buffer = new()
-            {
-                FirstElement = offsetInBytes / Desc.StructureStrideInBytes,
-                NumElements = sizeInBytes / Desc.StructureStrideInBytes,
-                StructureByteStride = Desc.StructureStrideInBytes,
-                Flags = BufferSrvFlags.None
-            }
-        };
-
-        CpuDescriptorHandle handle = Context.CbvSrvUavAllocator!.Alloc();
-
-        Context.Device.CreateShaderResourceView(Resource, &desc, handle);
-
-        return handle;
-    }
-
-    public CpuDescriptorHandle GetUav(uint offsetInBytes, uint sizeInBytes)
-    {
-        UnorderedAccessViewDesc desc = new()
-        {
-            Format = Format.FormatUnknown,
-            ViewDimension = UavDimension.Buffer,
-            Buffer = new()
-            {
-                FirstElement = offsetInBytes / Desc.StructureStrideInBytes,
-                NumElements = sizeInBytes / Desc.StructureStrideInBytes,
-                StructureByteStride = Desc.StructureStrideInBytes,
-                CounterOffsetInBytes = 0,
-                Flags = BufferUavFlags.None
-            }
-        };
-
-        CpuDescriptorHandle handle = Context.CbvSrvUavAllocator!.Alloc();
-
-        Context.Device.CreateUnorderedAccessView(Resource, (ID3D12Resource*)null, &desc, handle);
-
-        return handle;
-    }
 
     public void TransitionState(ComPtr<ID3D12GraphicsCommandList> commandList,
                                 ResourceStates newState)
@@ -213,5 +152,60 @@ internal unsafe class DXBuffer : Buffer
         }
 
         Resource.Dispose();
+    }
+
+    private void InitCbv()
+    {
+        ConstantBufferViewDesc desc = new()
+        {
+            BufferLocation = Resource.GetGPUVirtualAddress(),
+            SizeInBytes = SizeInBytes
+        };
+
+        cbv = Context.CbvSrvUavAllocator!.Alloc();
+
+        Context.Device.CreateConstantBufferView(&desc, cbv);
+    }
+
+    private void InitSrv()
+    {
+        ShaderResourceViewDesc desc = new()
+        {
+            Format = Format.FormatUnknown,
+            ViewDimension = SrvDimension.Buffer,
+            Shader4ComponentMapping = DXGraphicsContext.DefaultShader4ComponentMapping,
+            Buffer = new()
+            {
+                FirstElement = 0,
+                NumElements = SizeInBytes / Desc.StructureStrideInBytes,
+                StructureByteStride = Desc.StructureStrideInBytes,
+                Flags = BufferSrvFlags.None
+            }
+        };
+
+        srv = Context.CbvSrvUavAllocator!.Alloc();
+
+        Context.Device.CreateShaderResourceView(Resource, &desc, srv);
+    }
+
+    private void InitUav()
+    {
+        UnorderedAccessViewDesc desc = new()
+        {
+            Format = Format.FormatUnknown,
+            ViewDimension = UavDimension.Buffer,
+            Buffer = new()
+            {
+                FirstElement = 0,
+                NumElements = SizeInBytes / Desc.StructureStrideInBytes,
+                StructureByteStride = Desc.StructureStrideInBytes,
+                CounterOffsetInBytes = 0,
+                Flags = BufferUavFlags.None
+            }
+        };
+
+        uav = Context.CbvSrvUavAllocator!.Alloc();
+
+        Context.Device.CreateUnorderedAccessView(Resource, (ID3D12Resource*)null, &desc, uav);
     }
 }

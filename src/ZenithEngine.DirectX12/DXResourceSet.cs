@@ -1,5 +1,6 @@
 ﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
+using Silk.NET.DXGI;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
@@ -7,7 +8,7 @@ using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
 
-internal class DXResourceSet : ResourceSet
+internal unsafe class DXResourceSet : ResourceSet
 {
     public DXResourceSet(GraphicsContext context,
                          ref readonly ResourceSetDesc desc) : base(context, in desc)
@@ -75,20 +76,24 @@ internal class DXResourceSet : ResourceSet
                 {
                     if (cbvSrvUavBindings.Length > 0)
                     {
-                        CpuDescriptorHandle[] handles = GetDescriptorHandles(cbvSrvUavBindings,
-                                                                             constantBufferOffsets);
-
                         commandList.SetGraphicsRootDescriptorTable(rootParameterOffset++,
-                                                                   cbvSrvUavAllocator.Alloc(handles));
+                                                                   cbvSrvUavAllocator.GetCurrentTableHandle());
+
+                        UpdateDescriptorTable(cbvSrvUavAllocator,
+                                              samplerAllocator,
+                                              cbvSrvUavBindings,
+                                              constantBufferOffsets);
                     }
 
                     if (samplerBindings.Length > 0)
                     {
-                        CpuDescriptorHandle[] handles = GetDescriptorHandles(samplerBindings,
-                                                                             constantBufferOffsets);
-
                         commandList.SetGraphicsRootDescriptorTable(rootParameterOffset++,
-                                                                   samplerAllocator.Alloc(handles));
+                                                                   samplerAllocator.GetCurrentTableHandle());
+
+                        UpdateDescriptorTable(cbvSrvUavAllocator,
+                                              samplerAllocator,
+                                              samplerBindings,
+                                              constantBufferOffsets);
                     }
                 }
             }
@@ -98,20 +103,24 @@ internal class DXResourceSet : ResourceSet
         {
             if (cbvSrvUavBindings.Length > 0)
             {
-                CpuDescriptorHandle[] handles = GetDescriptorHandles(cbvSrvUavBindings,
-                                                                     constantBufferOffsets);
-
                 commandList.SetGraphicsRootDescriptorTable(rootParameterOffset++,
-                                                           cbvSrvUavAllocator.Alloc(handles));
+                                                           cbvSrvUavAllocator.GetCurrentTableHandle());
+
+                UpdateDescriptorTable(cbvSrvUavAllocator,
+                                      samplerAllocator,
+                                      cbvSrvUavBindings,
+                                      constantBufferOffsets);
             }
 
             if (samplerBindings.Length > 0)
             {
-                CpuDescriptorHandle[] handles = GetDescriptorHandles(samplerBindings,
-                                                                     constantBufferOffsets);
-
                 commandList.SetGraphicsRootDescriptorTable(rootParameterOffset++,
-                                                           samplerAllocator.Alloc(handles));
+                                                           samplerAllocator.GetCurrentTableHandle());
+
+                UpdateDescriptorTable(cbvSrvUavAllocator,
+                                      samplerAllocator,
+                                      samplerBindings,
+                                      constantBufferOffsets);
             }
         }
     }
@@ -126,11 +135,11 @@ internal class DXResourceSet : ResourceSet
         Array.Clear(SrvTextures, 0, SrvTextures.Length);
     }
 
-    private CpuDescriptorHandle[] GetDescriptorHandles(DXResourceBinding[] bindings,
-                                                       uint[]? constantBufferOffsets)
+    private void UpdateDescriptorTable(DXDescriptorTableAllocator cbvSrvUavAllocator,
+                                       DXDescriptorTableAllocator samplerAllocator,
+                                       DXResourceBinding[] bindings,
+                                       uint[]? constantBufferOffsets)
     {
-        CpuDescriptorHandle[] handles = new CpuDescriptorHandle[bindings.Sum(static item => item.Indices.Length)];
-
         uint offset = 0;
         foreach (DXResourceBinding binding in bindings)
         {
@@ -146,11 +155,21 @@ internal class DXResourceSet : ResourceSet
 
                             if (binding.DynamicOffsetIndex is not -1)
                             {
-                                // TODO: Implement dynamic constant buffer offset.
+                                uint offsetInBytes = constantBufferOffsets![binding.DynamicOffsetIndex];
+                                uint sizeInBytes = binding.Range is not 0 ? Utils.AlignedSize(binding.Range, 256u) : buffer.SizeInBytes - offsetInBytes;
+
+                                ConstantBufferViewDesc desc = new()
+                                {
+                                    BufferLocation = buffer.Resource.GetGPUVirtualAddress() + offsetInBytes,
+                                    SizeInBytes = sizeInBytes
+                                };
+
+                                Context.Device.CreateConstantBufferView(&desc,
+                                                                        cbvSrvUavAllocator.UpdateDescriptorHandle());
                             }
                             else
                             {
-                                handles[offset] = buffer.Cbv;
+                                cbvSrvUavAllocator.UpdateDescriptor(buffer.Cbv);
                             }
                         }
                         break;
@@ -160,11 +179,30 @@ internal class DXResourceSet : ResourceSet
 
                             if (binding.DynamicOffsetIndex is not -1)
                             {
-                                // TODO: Implement dynamic structured buffer offset.
+                                uint offsetInBytes = constantBufferOffsets![binding.DynamicOffsetIndex];
+                                uint sizeInBytes = binding.Range is not 0 ? binding.Range : buffer.SizeInBytes - offsetInBytes;
+
+                                ShaderResourceViewDesc desc = new()
+                                {
+                                    Format = Format.FormatUnknown,
+                                    ViewDimension = SrvDimension.Buffer,
+                                    Shader4ComponentMapping = DXGraphicsContext.DefaultShader4ComponentMapping,
+                                    Buffer = new()
+                                    {
+                                        FirstElement = offsetInBytes / buffer.Desc.StructureStrideInBytes,
+                                        NumElements = sizeInBytes / buffer.Desc.StructureStrideInBytes,
+                                        StructureByteStride = buffer.Desc.StructureStrideInBytes,
+                                        Flags = BufferSrvFlags.None
+                                    }
+                                };
+
+                                Context.Device.CreateShaderResourceView(buffer.Resource,
+                                                                        &desc,
+                                                                        cbvSrvUavAllocator.UpdateDescriptorHandle());
                             }
                             else
                             {
-                                handles[offset] = buffer.Srv;
+                                cbvSrvUavAllocator.UpdateDescriptor(buffer.Srv);
                             }
                         }
                         break;
@@ -174,27 +212,47 @@ internal class DXResourceSet : ResourceSet
 
                             if (binding.DynamicOffsetIndex is not -1)
                             {
-                                // TODO: Implement dynamic structured buffer offset.
+                                uint offsetInBytes = constantBufferOffsets![binding.DynamicOffsetIndex];
+                                uint sizeInBytes = binding.Range is not 0 ? binding.Range : buffer.SizeInBytes - offsetInBytes;
+
+                                UnorderedAccessViewDesc desc = new()
+                                {
+                                    Format = Format.FormatUnknown,
+                                    ViewDimension = UavDimension.Buffer,
+                                    Buffer = new()
+                                    {
+                                        FirstElement = offsetInBytes / buffer.Desc.StructureStrideInBytes,
+                                        NumElements = sizeInBytes / buffer.Desc.StructureStrideInBytes,
+                                        StructureByteStride = buffer.Desc.StructureStrideInBytes,
+                                        CounterOffsetInBytes = 0,
+                                        Flags = BufferUavFlags.None
+                                    }
+                                };
+
+                                Context.Device.CreateUnorderedAccessView(buffer.Resource,
+                                                                         (ID3D12Resource*)null,
+                                                                         &desc,
+                                                                         cbvSrvUavAllocator.UpdateDescriptorHandle());
                             }
                             else
                             {
-                                handles[offset] = buffer.Uav;
+                                cbvSrvUavAllocator.UpdateDescriptor(buffer.Uav);
                             }
                         }
                         break;
                     case ResourceType.Texture:
                         {
-                            handles[offset] = ((DXTexture)resource).Srv;
+                            cbvSrvUavAllocator.UpdateDescriptor(((DXTexture)resource).Srv);
                         }
                         break;
                     case ResourceType.TextureReadWrite:
                         {
-                            handles[offset] = ((DXTexture)resource).Uav;
+                            cbvSrvUavAllocator.UpdateDescriptor(((DXTexture)resource).Uav);
                         }
                         break;
                     case ResourceType.Sampler:
                         {
-                            handles[offset] = ((DXSampler)resource).Handle;
+                            samplerAllocator.UpdateDescriptor(((DXSampler)resource).Handle);
                         }
                         break;
                     case ResourceType.AccelerationStructure:
@@ -209,7 +267,5 @@ internal class DXResourceSet : ResourceSet
                 offset++;
             }
         }
-
-        return handles;
     }
 }
