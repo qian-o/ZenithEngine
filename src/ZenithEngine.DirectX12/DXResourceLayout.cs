@@ -8,9 +8,40 @@ namespace ZenithEngine.DirectX12;
 
 internal class DXResourceLayout : ResourceLayout
 {
+    private readonly DXResourceRange[] ranges;
+
     public DXResourceLayout(GraphicsContext context,
                             ref readonly ResourceLayoutDesc desc) : base(context, in desc)
     {
+        ranges = new DXResourceRange[desc.Elements.Length];
+
+        uint index = 0;
+        int dynamicOffsetIndex = 0;
+        for (int i = 0; i < desc.Elements.Length; i++)
+        {
+            LayoutElementDesc element = desc.Elements[i];
+
+            if (element.Type
+                is ResourceType.ConstantBuffer
+                or ResourceType.StructuredBuffer
+                or ResourceType.StructuredBufferReadWrite && element.AllowDynamicOffset)
+            {
+                ranges[i] = new(element.Stages,
+                                element.Type,
+                                [.. Enumerable.Range((int)index, (int)element.Count).Select(x => (uint)x)],
+                                dynamicOffsetIndex++);
+            }
+            else
+            {
+                ranges[i] = new(element.Stages,
+                                element.Type,
+                                [.. Enumerable.Range((int)index, (int)element.Count).Select(x => (uint)x)],
+                                -1);
+            }
+
+            index += element.Count;
+        }
+
         if (CalculateDescriptorTableRanges(0,
                                            out DescriptorRange[] cbvSrvUavRanges,
                                            out DescriptorRange[] samplerRanges))
@@ -136,43 +167,34 @@ internal class DXResourceLayout : ResourceLayout
         return cbvSrvUavRanges.Length > 0 || samplerRanges.Length > 0;
     }
 
-    public bool CalculateResourceIndices(out uint[] cbvSrvUavIndices,
-                                         out uint[] samplerIndices,
-                                         ShaderStages stage = ShaderStages.None)
+    public bool CalculateResourceRanges(out DXResourceRange[] cbvSrvUavRanges,
+                                        out DXResourceRange[] samplerRanges,
+                                        ShaderStages stage = ShaderStages.None)
     {
-        List<uint> cbvSrvUavIndicesList = [];
-        List<uint> samplerIndicesList = [];
+        List<DXResourceRange> cbvSrvUavRangesList = [];
+        List<DXResourceRange> samplerRangesList = [];
 
-        uint index = 0;
-        foreach (LayoutElementDesc element in Desc.Elements)
+        foreach (DXResourceRange range in ranges)
         {
-            if (stage is not ShaderStages.None && !element.Stages.HasFlag(stage))
+            if (stage is not ShaderStages.None && !range.Stages.HasFlag(stage))
             {
-                index += element.Count;
-
                 continue;
             }
 
-            if (element.Type is ResourceType.Sampler)
+            if (range.Type is ResourceType.Sampler)
             {
-                for (uint i = 0; i < element.Count; i++)
-                {
-                    samplerIndicesList.Add(index++);
-                }
+                samplerRangesList.Add(range);
             }
             else
             {
-                for (uint i = 0; i < element.Count; i++)
-                {
-                    cbvSrvUavIndicesList.Add(index++);
-                }
+                cbvSrvUavRangesList.Add(range);
             }
         }
 
-        cbvSrvUavIndices = [.. cbvSrvUavIndicesList];
-        samplerIndices = [.. samplerIndicesList];
+        cbvSrvUavRanges = [.. cbvSrvUavRangesList];
+        samplerRanges = [.. samplerRangesList];
 
-        return cbvSrvUavIndices.Length > 0 || samplerIndices.Length > 0;
+        return cbvSrvUavRanges.Length > 0 || samplerRanges.Length > 0;
     }
 
     protected override void DebugName(string name)

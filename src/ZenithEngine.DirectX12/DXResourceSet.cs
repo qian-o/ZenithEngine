@@ -68,22 +68,22 @@ internal class DXResourceSet : ResourceSet
         {
             foreach (ShaderStages stage in DXHelpers.GraphicsShaderStages)
             {
-                if (layout.CalculateResourceIndices(out uint[] cbvSrvUavIndices,
-                                                    out uint[] samplerIndices,
-                                                    stage))
+                if (layout.CalculateResourceRanges(out DXResourceRange[] cbvSrvUavRanges,
+                                                   out DXResourceRange[] samplerRanges,
+                                                   stage))
                 {
-                    if (cbvSrvUavIndices.Length > 0)
+                    if (cbvSrvUavRanges.Length > 0)
                     {
-                        CpuDescriptorHandle[] handles = GetDescriptorHandles(cbvSrvUavIndices,
+                        CpuDescriptorHandle[] handles = GetDescriptorHandles(cbvSrvUavRanges,
                                                                              constantBufferOffsets);
 
                         commandList.SetGraphicsRootDescriptorTable(rootParameterOffset++,
                                                                    cbvSrvUavAllocator.Alloc(handles));
                     }
 
-                    if (samplerIndices.Length > 0)
+                    if (samplerRanges.Length > 0)
                     {
-                        CpuDescriptorHandle[] handles = GetDescriptorHandles(samplerIndices,
+                        CpuDescriptorHandle[] handles = GetDescriptorHandles(samplerRanges,
                                                                              constantBufferOffsets);
 
                         commandList.SetGraphicsRootDescriptorTable(rootParameterOffset++,
@@ -92,21 +92,21 @@ internal class DXResourceSet : ResourceSet
                 }
             }
         }
-        else if (layout.CalculateResourceIndices(out uint[] cbvSrvUavIndices,
-                                                 out uint[] samplerIndices))
+        else if (layout.CalculateResourceRanges(out DXResourceRange[] cbvSrvUavRanges,
+                                                out DXResourceRange[] samplerRanges))
         {
-            if (cbvSrvUavIndices.Length > 0)
+            if (cbvSrvUavRanges.Length > 0)
             {
-                CpuDescriptorHandle[] handles = GetDescriptorHandles(cbvSrvUavIndices,
+                CpuDescriptorHandle[] handles = GetDescriptorHandles(cbvSrvUavRanges,
                                                                      constantBufferOffsets);
 
                 commandList.SetGraphicsRootDescriptorTable(rootParameterOffset++,
                                                            cbvSrvUavAllocator.Alloc(handles));
             }
 
-            if (samplerIndices.Length > 0)
+            if (samplerRanges.Length > 0)
             {
-                CpuDescriptorHandle[] handles = GetDescriptorHandles(samplerIndices,
+                CpuDescriptorHandle[] handles = GetDescriptorHandles(samplerRanges,
                                                                      constantBufferOffsets);
 
                 commandList.SetGraphicsRootDescriptorTable(rootParameterOffset++,
@@ -125,7 +125,7 @@ internal class DXResourceSet : ResourceSet
         Array.Clear(SrvTextures, 0, SrvTextures.Length);
     }
 
-    private CpuDescriptorHandle[] GetDescriptorHandles(uint[] samplerIndices,
+    private CpuDescriptorHandle[] GetDescriptorHandles(DXResourceRange[] ranges,
                                                        uint[]? constantBufferOffsets)
     {
         throw new NotImplementedException();
