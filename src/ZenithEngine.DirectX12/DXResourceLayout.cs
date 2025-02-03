@@ -136,6 +136,45 @@ internal class DXResourceLayout : ResourceLayout
         return cbvSrvUavRanges.Length > 0 || samplerRanges.Length > 0;
     }
 
+    public bool CalculateResourceIndices(out uint[] cbvSrvUavIndices,
+                                         out uint[] samplerIndices,
+                                         ShaderStages stage = ShaderStages.None)
+    {
+        List<uint> cbvSrvUavIndicesList = [];
+        List<uint> samplerIndicesList = [];
+
+        uint index = 0;
+        foreach (LayoutElementDesc element in Desc.Elements)
+        {
+            if (stage is not ShaderStages.None && !element.Stages.HasFlag(stage))
+            {
+                index += element.Count;
+
+                continue;
+            }
+
+            if (element.Type is ResourceType.Sampler)
+            {
+                for (uint i = 0; i < element.Count; i++)
+                {
+                    samplerIndicesList.Add(index++);
+                }
+            }
+            else
+            {
+                for (uint i = 0; i < element.Count; i++)
+                {
+                    cbvSrvUavIndicesList.Add(index++);
+                }
+            }
+        }
+
+        cbvSrvUavIndices = [.. cbvSrvUavIndicesList];
+        samplerIndices = [.. samplerIndicesList];
+
+        return cbvSrvUavIndices.Length > 0 || samplerIndices.Length > 0;
+    }
+
     protected override void DebugName(string name)
     {
     }

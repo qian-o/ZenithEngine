@@ -10,7 +10,7 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
     public ComPtr<ID3D12DescriptorHeap> GpuHeap;
 
     private readonly CpuDescriptorHandle cpuStart;
-    private readonly CpuDescriptorHandle gpuStart;
+    private readonly GpuDescriptorHandle gpuStart;
     private readonly uint descriptorSize;
 
     private uint offset;
@@ -38,7 +38,7 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
         Context.Device.CreateDescriptorHeap(&gpuDesc, out GpuHeap).ThrowIfError();
 
         cpuStart = CpuHeap.GetCPUDescriptorHandleForHeapStart();
-        gpuStart = GpuHeap.GetCPUDescriptorHandleForHeapStart();
+        gpuStart = GpuHeap.GetGPUDescriptorHandleForHeapStart();
         descriptorSize = Context.Device.GetDescriptorHandleIncrementSize(heapType);
 
         HeapType = heapType;
@@ -48,9 +48,9 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
-    public CpuDescriptorHandle Alloc(CpuDescriptorHandle[] handles)
+    public GpuDescriptorHandle Alloc(CpuDescriptorHandle[] handles)
     {
-        CpuDescriptorHandle table = new(gpuStart.Ptr + (offset * descriptorSize));
+        GpuDescriptorHandle table = new(gpuStart.Ptr + (offset * descriptorSize));
 
         foreach (CpuDescriptorHandle handle in handles)
         {
