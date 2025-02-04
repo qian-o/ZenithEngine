@@ -271,7 +271,7 @@ public abstract class CommandBuffer(GraphicsContext context,
     public abstract void DrawIndexed(uint indexCount,
                                      uint instanceCount,
                                      uint firstIndex = 0,
-                                     uint vertexOffset = 0,
+                                     int vertexOffset = 0,
                                      uint firstInstance = 0);
 
     /// <summary>

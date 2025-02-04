@@ -739,7 +739,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     public override void DrawIndexed(uint indexCount,
                                      uint instanceCount,
                                      uint firstIndex = 0,
-                                     uint vertexOffset = 0,
+                                     int vertexOffset = 0,
                                      uint firstInstance = 0)
     {
         ValidatePipeline<VKGraphicsPipeline>(out _);
@@ -748,7 +748,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                   indexCount,
                                   instanceCount,
                                   firstIndex,
-                                  (int)vertexOffset,
+                                  vertexOffset,
                                   firstInstance);
     }
 

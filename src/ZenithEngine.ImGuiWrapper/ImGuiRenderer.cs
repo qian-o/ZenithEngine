@@ -173,7 +173,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
                     commandBuffer.DrawIndexed(drawCmd.ElemCount,
                                               1,
                                               firstIndex: (uint)(drawCmd.IdxOffset + indexOffset),
-                                              vertexOffset: (uint)(drawCmd.VtxOffset + vertexOffset));
+                                              vertexOffset: (int)(drawCmd.VtxOffset + vertexOffset));
                 }
             }
 

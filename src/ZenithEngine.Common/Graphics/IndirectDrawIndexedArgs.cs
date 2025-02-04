@@ -8,7 +8,7 @@ public struct IndirectDrawIndexedArgs
 
     public uint FirstIndex;
 
-    public uint VertexOffset;
+    public int VertexOffset;
 
     public uint FirstInstance;
 }

@@ -585,7 +585,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     public override void DrawIndexed(uint indexCount,
                                      uint instanceCount,
                                      uint firstIndex = 0,
-                                     uint vertexOffset = 0,
+                                     int vertexOffset = 0,
                                      uint firstInstance = 0)
     {
     }
