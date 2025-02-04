@@ -14,6 +14,10 @@ internal unsafe class DXGraphicsContext : GraphicsContext
     public ComPtr<IDXGIAdapter> Adapter;
     public ComPtr<ID3D12Device> Device;
 
+    public ComPtr<ID3D12CommandSignature> DrawSignature;
+    public ComPtr<ID3D12CommandSignature> DrawIndexedSignature;
+    public ComPtr<ID3D12CommandSignature> DispatchSignature;
+
     public DXGraphicsContext()
     {
         D3D12 = D3D12.GetApi();
@@ -36,8 +40,6 @@ internal unsafe class DXGraphicsContext : GraphicsContext
     public DXDescriptorAllocator? CbvSrvUavAllocator { get; private set; }
 
     public DXDescriptorAllocator? SamplerAllocator { get; private set; }
-
-    public DXCommandSignatureManager? CommandSignatureManager { get; private set; }
 
     public DXCommandProcessor? DefaultGraphicsCommandProcessor { get; private set; }
 
@@ -82,12 +84,41 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
         D3D12.CreateDevice(Adapter, D3DFeatureLevel.Level120, out Device).ThrowIfError();
 
+        IndirectArgumentDesc indirectArgumentDesc = new()
+        {
+            Type = IndirectArgumentType.Draw
+        };
+
+        CommandSignatureDesc commandSignatureDesc = new()
+        {
+            ByteStride = (uint)sizeof(IndirectDrawArgs),
+            NumArgumentDescs = 1,
+            PArgumentDescs = &indirectArgumentDesc
+        };
+
+        Device.CreateCommandSignature(&commandSignatureDesc,
+                                      (ComPtr<ID3D12RootSignature>)null,
+                                      out DrawSignature).ThrowIfError();
+
+        indirectArgumentDesc.Type = IndirectArgumentType.DrawIndexed;
+        commandSignatureDesc.ByteStride = (uint)sizeof(IndirectDrawIndexedArgs);
+
+        Device.CreateCommandSignature(&commandSignatureDesc,
+                                      (ComPtr<ID3D12RootSignature>)null,
+                                      out DrawIndexedSignature).ThrowIfError();
+
+        indirectArgumentDesc.Type = IndirectArgumentType.Dispatch;
+        commandSignatureDesc.ByteStride = (uint)sizeof(IndirectDispatchArgs);
+
+        Device.CreateCommandSignature(&commandSignatureDesc,
+                                      (ComPtr<ID3D12RootSignature>)null,
+                                      out DispatchSignature).ThrowIfError();
+
         Debug = useDebugLayer ? new(this) : null;
         RtvAllocator = new(this, DescriptorHeapType.Rtv, 128);
         DsvAllocator = new(this, DescriptorHeapType.Dsv, 128);
         CbvSrvUavAllocator = new(this, DescriptorHeapType.CbvSrvUav, 4096);
         SamplerAllocator = new(this, DescriptorHeapType.Sampler, 128);
-        CommandSignatureManager = new(this);
         DefaultGraphicsCommandProcessor = new(this, CommandProcessorType.Graphics);
 
         Capabilities.Init();
@@ -96,12 +127,15 @@ internal unsafe class DXGraphicsContext : GraphicsContext
     protected override void DestroyInternal()
     {
         DefaultGraphicsCommandProcessor?.Dispose();
-        CommandSignatureManager?.Dispose();
         SamplerAllocator?.Dispose();
         CbvSrvUavAllocator?.Dispose();
         DsvAllocator?.Dispose();
         RtvAllocator?.Dispose();
         Debug?.Dispose();
+
+        DispatchSignature.Dispose();
+        DrawIndexedSignature.Dispose();
+        DrawSignature.Dispose();
 
         Device.Dispose();
         Adapter.Dispose();
@@ -115,7 +149,6 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         DsvAllocator = null;
         CbvSrvUavAllocator = null;
         SamplerAllocator = null;
-        CommandSignatureManager = null;
         DefaultGraphicsCommandProcessor = null;
     }
 }
