@@ -598,7 +598,9 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #endregion
 
     #region Compute Operations
-    public override void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ)
+    public override void Dispatch(uint groupCountX,
+                                  uint groupCountY,
+                                  uint groupCountZ)
     {
     }
 

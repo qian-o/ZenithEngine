@@ -733,7 +733,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                    argBuffer.VK().Buffer,
                                    offset,
                                    drawCount,
-                                   0);
+                                   (uint)sizeof(IndirectDrawArgs));
     }
 
     public override void DrawIndexed(uint indexCount,
@@ -762,12 +762,14 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                           argBuffer.VK().Buffer,
                                           offset,
                                           drawCount,
-                                          0);
+                                          (uint)sizeof(IndirectDrawIndexedArgs));
     }
     #endregion
 
     #region Compute Operations
-    public override void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ)
+    public override void Dispatch(uint groupCountX,
+                                  uint groupCountY,
+                                  uint groupCountZ)
     {
         ValidatePipeline<VKComputePipeline>(out _);
 

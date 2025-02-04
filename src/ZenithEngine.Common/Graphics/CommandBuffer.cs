@@ -292,7 +292,9 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// <param name="groupCountX">Groups in X direction.</param>
     /// <param name="groupCountY">Groups in Y direction.</param>
     /// <param name="groupCountZ">Groups in Z direction.</param>
-    public abstract void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ);
+    public abstract void Dispatch(uint groupCountX,
+                                  uint groupCountY,
+                                  uint groupCountZ);
 
     /// <summary>
     /// Dispatch compute shader with indirect parameters.
