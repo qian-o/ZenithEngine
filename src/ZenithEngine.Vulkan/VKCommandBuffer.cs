@@ -709,24 +709,23 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     #endregion
 
     #region Drawing Operations
-    public override void DrawInstanced(uint vertexCountPerInstance,
-                                       uint instanceCount,
-                                       uint startVertexLocation = 0,
-                                       uint startInstanceLocation = 0)
+    public override void Draw(uint vertexCount,
+                              uint instanceCount,
+                              uint firstVertex = 0,
+                              uint firstInstance = 0)
     {
         ValidatePipeline<VKGraphicsPipeline>(out _);
 
         Context.Vk.CmdDraw(CommandBuffer,
-                           vertexCountPerInstance,
+                           vertexCount,
                            instanceCount,
-                           startVertexLocation,
-                           startInstanceLocation);
+                           firstVertex,
+                           firstInstance);
     }
 
-    public override void DrawInstancedIndirect(Buffer argBuffer,
-                                               uint offset,
-                                               uint drawCount,
-                                               uint stride)
+    public override void DrawIndirect(Buffer argBuffer,
+                                      uint offset,
+                                      uint drawCount)
     {
         ValidatePipeline<VKGraphicsPipeline>(out _);
 
@@ -734,43 +733,28 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                    argBuffer.VK().Buffer,
                                    offset,
                                    drawCount,
-                                   stride);
+                                   0);
     }
 
     public override void DrawIndexed(uint indexCount,
-                                     uint startIndexLocation = 0,
-                                     uint baseVertexLocation = 0)
+                                     uint instanceCount,
+                                     uint firstIndex = 0,
+                                     uint vertexOffset = 0,
+                                     uint firstInstance = 0)
     {
         ValidatePipeline<VKGraphicsPipeline>(out _);
 
         Context.Vk.CmdDrawIndexed(CommandBuffer,
                                   indexCount,
-                                  1,
-                                  startIndexLocation,
-                                  (int)baseVertexLocation,
-                                  0);
-    }
-
-    public override void DrawIndexedInstanced(uint indexCountPerInstance,
-                                              uint instanceCount,
-                                              uint startIndexLocation = 0,
-                                              uint baseVertexLocation = 0,
-                                              uint startInstanceLocation = 0)
-    {
-        ValidatePipeline<VKGraphicsPipeline>(out _);
-
-        Context.Vk.CmdDrawIndexed(CommandBuffer,
-                                  indexCountPerInstance,
                                   instanceCount,
-                                  startIndexLocation,
-                                  (int)baseVertexLocation,
-                                  startInstanceLocation);
+                                  firstIndex,
+                                  (int)vertexOffset,
+                                  firstInstance);
     }
 
-    public override void DrawIndexedInstancedIndirect(Buffer argBuffer,
-                                                      uint offset,
-                                                      uint drawCount,
-                                                      uint stride)
+    public override void DrawIndexedIndirect(Buffer argBuffer,
+                                             uint offset,
+                                             uint drawCount)
     {
         ValidatePipeline<VKGraphicsPipeline>(out _);
 
@@ -778,7 +762,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                           argBuffer.VK().Buffer,
                                           offset,
                                           drawCount,
-                                          stride);
+                                          0);
     }
     #endregion
 
@@ -787,7 +771,19 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     {
         ValidatePipeline<VKComputePipeline>(out _);
 
-        Context.Vk.CmdDispatch(CommandBuffer, groupCountX, groupCountY, groupCountZ);
+        Context.Vk.CmdDispatch(CommandBuffer,
+                               groupCountX,
+                               groupCountY,
+                               groupCountZ);
+    }
+
+    public override void DispatchIndirect(Buffer argBuffer, uint offset)
+    {
+        ValidatePipeline<VKComputePipeline>(out _);
+
+        Context.Vk.CmdDispatchIndirect(CommandBuffer,
+                                       argBuffer.VK().Buffer,
+                                       offset);
     }
     #endregion
 

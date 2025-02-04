@@ -171,8 +171,9 @@ internal unsafe class ImGuiRenderer : DisposableObject
                     commandBuffer.SetResourceSet(1, bindings[drawCmd.TextureId.Handle].ResourceSet);
 
                     commandBuffer.DrawIndexed(drawCmd.ElemCount,
-                                              (uint)(drawCmd.IdxOffset + indexOffset),
-                                              (uint)(drawCmd.VtxOffset + vertexOffset));
+                                              1,
+                                              firstIndex: (uint)(drawCmd.IdxOffset + indexOffset),
+                                              vertexOffset: (uint)(drawCmd.VtxOffset + vertexOffset));
                 }
             }
 

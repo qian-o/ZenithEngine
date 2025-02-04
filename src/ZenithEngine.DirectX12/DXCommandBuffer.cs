@@ -569,98 +569,41 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #endregion
 
     #region Drawing Operations
-    public override void DrawInstanced(uint vertexCountPerInstance,
-                                       uint instanceCount,
-                                       uint startVertexLocation = 0,
-                                       uint startInstanceLocation = 0)
+    public override void Draw(uint vertexCount,
+                              uint instanceCount,
+                              uint firstVertex = 0,
+                              uint firstInstance = 0)
     {
-        ValidatePipeline<DXGraphicsPipeline>(out _);
-
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
-
-        CommandList.DrawInstanced(vertexCountPerInstance,
-                                  instanceCount,
-                                  startVertexLocation,
-                                  startInstanceLocation);
     }
 
-    public override void DrawInstancedIndirect(Buffer argBuffer,
-                                               uint offset,
-                                               uint drawCount,
-                                               uint stride)
+    public override void DrawIndirect(Buffer argBuffer,
+                                      uint offset,
+                                      uint drawCount)
     {
-        ValidatePipeline<DXGraphicsPipeline>(out _);
-
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
-
-        CommandList.ExecuteIndirect(Context.CommandSignatureManager!.GetDrawIndexedSignature(stride),
-                                    drawCount,
-                                    argBuffer.DX().Resource,
-                                    offset,
-                                    (ID3D12Resource*)null,
-                                    0);
     }
 
     public override void DrawIndexed(uint indexCount,
-                                     uint startIndexLocation = 0,
-                                     uint baseVertexLocation = 0)
+                                     uint instanceCount,
+                                     uint firstIndex = 0,
+                                     uint vertexOffset = 0,
+                                     uint firstInstance = 0)
     {
-        ValidatePipeline<DXGraphicsPipeline>(out _);
-
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
-
-        CommandList.DrawIndexedInstanced(indexCount,
-                                         1,
-                                         startIndexLocation,
-                                         (int)baseVertexLocation,
-                                         0);
     }
 
-    public override void DrawIndexedInstanced(uint indexCountPerInstance,
-                                              uint instanceCount,
-                                              uint startIndexLocation = 0,
-                                              uint baseVertexLocation = 0,
-                                              uint startInstanceLocation = 0)
+    public override void DrawIndexedIndirect(Buffer argBuffer,
+                                             uint offset,
+                                             uint drawCount)
     {
-        ValidatePipeline<DXGraphicsPipeline>(out _);
-
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
-
-        CommandList.DrawIndexedInstanced(indexCountPerInstance,
-                                         instanceCount,
-                                         startIndexLocation,
-                                         (int)baseVertexLocation,
-                                         startInstanceLocation);
-    }
-
-    public override void DrawIndexedInstancedIndirect(Buffer argBuffer,
-                                                      uint offset,
-                                                      uint drawCount,
-                                                      uint stride)
-    {
-        ValidatePipeline<DXGraphicsPipeline>(out _);
-
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
-
-        CommandList.ExecuteIndirect(Context.CommandSignatureManager!.GetDrawIndexedSignature(stride),
-                                    drawCount,
-                                    argBuffer.DX().Resource,
-                                    offset,
-                                    (ID3D12Resource*)null,
-                                    0);
     }
     #endregion
 
     #region Compute Operations
     public override void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ)
     {
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
+    }
+
+    public override void DispatchIndirect(Buffer argBuffer, uint offset)
+    {
     }
     #endregion
 
