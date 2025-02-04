@@ -13,8 +13,11 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     public ComPtr<ID3D12CommandAllocator> CommandAllocator;
     public ComPtr<ID3D12GraphicsCommandList> CommandList;
 
+    private readonly DXCommandSignatureManager? commandSignatureManager;
+
     private readonly DXDescriptorTableAllocator? cbvSrvUavAllocator;
     private readonly DXDescriptorTableAllocator? samplerAllocator;
+
     private readonly ComPtr<ID3D12DescriptorHeap>[]? descriptorHeaps;
 
     private FrameBuffer? activeFrameBuffer;
@@ -34,6 +37,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
         if (ProcessorType is not CommandProcessorType.Copy)
         {
+            commandSignatureManager = new(Context);
+
             cbvSrvUavAllocator = new(Context,
                                      DescriptorHeapType.CbvSrvUav,
                                      (Utils.CbvCount + Utils.SrvCount + Utils.UavCount) * 10);
@@ -55,9 +60,9 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #region Command Buffer Management
     public override void Begin()
     {
-        if (descriptorHeaps is not null)
+        if (ProcessorType is not CommandProcessorType.Copy)
         {
-            fixed (ID3D12DescriptorHeap** heaps = descriptorHeaps[0])
+            fixed (ID3D12DescriptorHeap** heaps = descriptorHeaps![0])
             {
                 CommandList.SetDescriptorHeaps(2, heaps);
             }
@@ -593,6 +598,13 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
         cbvSrvUavAllocator?.Submit();
         samplerAllocator?.Submit();
+
+        CommandList.ExecuteIndirect(commandSignatureManager!.GetDrawIndexedSignature(stride),
+                                    drawCount,
+                                    argBuffer.DX().Resource,
+                                    offset,
+                                    (ID3D12Resource*)null,
+                                    0);
     }
 
     public override void DrawIndexed(uint indexCount,
@@ -638,6 +650,13 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
         cbvSrvUavAllocator?.Submit();
         samplerAllocator?.Submit();
+
+        CommandList.ExecuteIndirect(commandSignatureManager!.GetDrawIndexedSignature(stride),
+                                    drawCount,
+                                    argBuffer.DX().Resource,
+                                    offset,
+                                    (ID3D12Resource*)null,
+                                    0);
     }
     #endregion
 
@@ -666,6 +685,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     {
         samplerAllocator?.Dispose();
         cbvSrvUavAllocator?.Dispose();
+
+        commandSignatureManager?.Dispose();
 
         CommandList.Dispose();
         CommandAllocator.Dispose();
