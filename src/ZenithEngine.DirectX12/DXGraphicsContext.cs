@@ -37,6 +37,8 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
     public DXDescriptorAllocator? SamplerAllocator { get; private set; }
 
+    public DXCommandSignatureManager? CommandSignatureManager { get; private set; }
+
     public DXCommandProcessor? DefaultGraphicsCommandProcessor { get; private set; }
 
     public override Backend Backend { get; }
@@ -85,6 +87,7 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         DsvAllocator = new(this, DescriptorHeapType.Dsv, 128);
         CbvSrvUavAllocator = new(this, DescriptorHeapType.CbvSrvUav, 4096);
         SamplerAllocator = new(this, DescriptorHeapType.Sampler, 128);
+        CommandSignatureManager = new(this);
         DefaultGraphicsCommandProcessor = new(this, CommandProcessorType.Graphics);
 
         Capabilities.Init();
@@ -93,6 +96,7 @@ internal unsafe class DXGraphicsContext : GraphicsContext
     protected override void DestroyInternal()
     {
         DefaultGraphicsCommandProcessor?.Dispose();
+        CommandSignatureManager?.Dispose();
         SamplerAllocator?.Dispose();
         CbvSrvUavAllocator?.Dispose();
         DsvAllocator?.Dispose();
@@ -111,6 +115,7 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         DsvAllocator = null;
         CbvSrvUavAllocator = null;
         SamplerAllocator = null;
+        CommandSignatureManager = null;
         DefaultGraphicsCommandProcessor = null;
     }
 }

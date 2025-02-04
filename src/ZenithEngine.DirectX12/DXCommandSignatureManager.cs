@@ -6,6 +6,8 @@ namespace ZenithEngine.DirectX12;
 
 internal unsafe class DXCommandSignatureManager(GraphicsContext context) : GraphicsResource(context)
 {
+    private readonly Lock drawSignaturesLock = new();
+    private readonly Lock drawIndexedSignaturesLock = new();
     private readonly Dictionary<uint, ComPtr<ID3D12CommandSignature>> drawSignatures = [];
     private readonly Dictionary<uint, ComPtr<ID3D12CommandSignature>> drawIndexedSignatures = [];
 
@@ -13,6 +15,8 @@ internal unsafe class DXCommandSignatureManager(GraphicsContext context) : Graph
 
     public ComPtr<ID3D12CommandSignature> GetDrawSignature(uint stride)
     {
+        using Lock.Scope _ = drawSignaturesLock.EnterScope();
+
         if (!drawSignatures.TryGetValue(stride, out ComPtr<ID3D12CommandSignature> signature))
         {
             drawSignatures.Add(stride, signature = CreateSignature(IndirectArgumentType.Draw, stride));
@@ -23,6 +27,8 @@ internal unsafe class DXCommandSignatureManager(GraphicsContext context) : Graph
 
     public ComPtr<ID3D12CommandSignature> GetDrawIndexedSignature(uint stride)
     {
+        using Lock.Scope _ = drawIndexedSignaturesLock.EnterScope();
+
         if (!drawIndexedSignatures.TryGetValue(stride, out ComPtr<ID3D12CommandSignature> signature))
         {
             drawIndexedSignatures.Add(stride, signature = CreateSignature(IndirectArgumentType.DrawIndexed, stride));
