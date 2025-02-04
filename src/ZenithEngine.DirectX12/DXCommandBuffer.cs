@@ -577,6 +577,11 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
         cbvSrvUavAllocator?.Submit();
         samplerAllocator?.Submit();
+
+        CommandList.DrawInstanced(vertexCountPerInstance,
+                                  instanceCount,
+                                  startVertexLocation,
+                                  startInstanceLocation);
     }
 
     public override void DrawInstancedIndirect(Buffer argBuffer,
@@ -598,6 +603,12 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
         cbvSrvUavAllocator?.Submit();
         samplerAllocator?.Submit();
+
+        CommandList.DrawIndexedInstanced(indexCount,
+                                         1,
+                                         startIndexLocation,
+                                         (int)baseVertexLocation,
+                                         0);
     }
 
     public override void DrawIndexedInstanced(uint indexCountPerInstance,
@@ -610,6 +621,12 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
         cbvSrvUavAllocator?.Submit();
         samplerAllocator?.Submit();
+
+        CommandList.DrawIndexedInstanced(indexCountPerInstance,
+                                         instanceCount,
+                                         startIndexLocation,
+                                         (int)baseVertexLocation,
+                                         startInstanceLocation);
     }
 
     public override void DrawIndexedInstancedIndirect(Buffer argBuffer,
