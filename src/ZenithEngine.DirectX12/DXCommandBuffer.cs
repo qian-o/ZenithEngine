@@ -574,12 +574,32 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                               uint firstVertex = 0,
                               uint firstInstance = 0)
     {
+        ValidatePipeline<DXGraphicsPipeline>(out _);
+
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
+
+        CommandList.DrawInstanced(vertexCount,
+                                  instanceCount,
+                                  firstVertex,
+                                  firstInstance);
     }
 
     public override void DrawIndirect(Buffer argBuffer,
                                       uint offset,
                                       uint drawCount)
     {
+        ValidatePipeline<DXGraphicsPipeline>(out _);
+
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
+
+        CommandList.ExecuteIndirect(Context.DrawSignature,
+                                    drawCount,
+                                    argBuffer.DX().Resource,
+                                    offset,
+                                    (ID3D12Resource*)null,
+                                    0);
     }
 
     public override void DrawIndexed(uint indexCount,
@@ -588,12 +608,33 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                      int vertexOffset = 0,
                                      uint firstInstance = 0)
     {
+        ValidatePipeline<DXGraphicsPipeline>(out _);
+
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
+
+        CommandList.DrawIndexedInstanced(indexCount,
+                                         instanceCount,
+                                         firstIndex,
+                                         vertexOffset,
+                                         firstInstance);
     }
 
     public override void DrawIndexedIndirect(Buffer argBuffer,
                                              uint offset,
                                              uint drawCount)
     {
+        ValidatePipeline<DXGraphicsPipeline>(out _);
+
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
+
+        CommandList.ExecuteIndirect(Context.DrawIndexedSignature,
+                                    drawCount,
+                                    argBuffer.DX().Resource,
+                                    offset,
+                                    (ID3D12Resource*)null,
+                                    0);
     }
     #endregion
 
@@ -602,10 +643,25 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                   uint groupCountY,
                                   uint groupCountZ)
     {
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
+
+        CommandList.Dispatch(groupCountX,
+                             groupCountY,
+                             groupCountZ);
     }
 
     public override void DispatchIndirect(Buffer argBuffer, uint offset)
     {
+        cbvSrvUavAllocator?.Submit();
+        samplerAllocator?.Submit();
+
+        CommandList.ExecuteIndirect(Context.DispatchSignature,
+                                    1,
+                                    argBuffer.DX().Resource,
+                                    offset,
+                                    (ID3D12Resource*)null,
+                                    0);
     }
     #endregion
 
