@@ -68,6 +68,9 @@ public static unsafe class DxcCompiler
     {
         using ComPtr<IDxcBlob> reflection = default;
 
-        result.GetOutput(OutKind.Reflection, SilkMarshal.GuidPtrOf<IDxcBlob>(), (void**)reflection.GetAddressOf(), null);
+        result.GetOutput(OutKind.Reflection,
+                         SilkMarshal.GuidPtrOf<IDxcBlob>(),
+                         (void**)reflection.GetAddressOf(),
+                         null);
     }
 }
