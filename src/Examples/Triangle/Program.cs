@@ -6,6 +6,6 @@ internal static class Program
 {
     private static void Main(string[] _)
     {
-        new TriangleTest(Backend.Vulkan).Run();
+        new TriangleTest(Backend.DirectX12).Run();
     }
 }
