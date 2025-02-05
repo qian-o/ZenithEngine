@@ -96,6 +96,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
         DXBuffer dst = destination.DX();
 
         bool isDynamicSrc = src.Desc.Usage.HasFlag(BufferUsage.Dynamic);
+        bool isDynamicDst = dst.Desc.Usage.HasFlag(BufferUsage.Dynamic);
 
         ResourceStates srcOldState = src.State;
         ResourceStates dstOldState = dst.State;
@@ -105,7 +106,10 @@ internal unsafe class DXCommandBuffer : CommandBuffer
             src.TransitionState(CommandList, ResourceStates.CopySource);
         }
 
-        dst.TransitionState(CommandList, ResourceStates.CopyDest);
+        if (!isDynamicDst)
+        {
+            dst.TransitionState(CommandList, ResourceStates.CopyDest);
+        }
 
         CommandList.CopyBufferRegion(dst.Resource,
                                      destinationOffsetInBytes,
@@ -118,7 +122,10 @@ internal unsafe class DXCommandBuffer : CommandBuffer
             src.TransitionState(CommandList, srcOldState);
         }
 
-        dst.TransitionState(CommandList, dstOldState);
+        if (!isDynamicDst)
+        {
+            dst.TransitionState(CommandList, dstOldState);
+        }
     }
     #endregion
 
