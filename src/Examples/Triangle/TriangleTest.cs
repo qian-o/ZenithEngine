@@ -1,4 +1,6 @@
-﻿using Common;
+﻿using System.Runtime.InteropServices;
+using Common;
+using Silk.NET.Maths;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -9,8 +11,18 @@ namespace Triangle;
 
 internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test", backend)
 {
+    [StructLayout(LayoutKind.Explicit)]
+    private struct Constants
+    {
+        [FieldOffset(0)]
+        public Matrix4X4<float> Model;
+    }
+
     private Buffer vertexBuffer = null!;
     private Buffer indexBuffer = null!;
+    private Buffer constantsBuffer = null!;
+    private ResourceLayout layout = null!;
+    private ResourceSet set = null!;
     private GraphicsPipeline pipeline = null!;
 
     protected override void OnLoad()
@@ -24,6 +36,11 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
 
         uint[] indices = [0, 1, 2];
 
+        Constants constants = new()
+        {
+            Model = Matrix4X4<float>.Identity
+        };
+
         string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
 
         BufferDesc vbDesc = BufferDesc.Default((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.VertexBuffer);
@@ -33,6 +50,10 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
         BufferDesc ibDesc = BufferDesc.Default((uint)(indices.Length * sizeof(uint)), BufferUsage.IndexBuffer);
 
         indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
+
+        BufferDesc cbDesc = BufferDesc.Default((uint)sizeof(Constants), BufferUsage.ConstantBuffer);
+
+        constantsBuffer = Context.Factory.CreateBuffer(in cbDesc);
 
         fixed (Vertex* pVertices = vertices)
         {
@@ -44,14 +65,27 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
             Context.UpdateBuffer(indexBuffer, (nint)pIndices, (uint)(indices.Length * sizeof(uint)));
         }
 
+        Context.UpdateBuffer(constantsBuffer, (nint)(&constants), (uint)sizeof(Constants));
+
         using Shader vsShader = Context.Factory.CompileShader(ShaderStages.Vertex, hlsl, "VertexMain");
         using Shader psShader = Context.Factory.CompileShader(ShaderStages.Pixel, hlsl, "PixelMain");
+
+        ResourceLayoutDesc layoutDesc = ResourceLayoutDesc.Default
+        (
+            LayoutElementDesc.Default(ShaderStages.Vertex, ResourceType.ConstantBuffer, 0)
+        );
+
+        layout = Context.Factory.CreateResourceLayout(in layoutDesc);
+
+        ResourceSetDesc setDesc = ResourceSetDesc.Default(layout, constantsBuffer);
+
+        set = Context.Factory.CreateResourceSet(in setDesc);
 
         GraphicsPipelineDesc gpDesc = GraphicsPipelineDesc.Default
         (
             shaders: GraphicsShaderDesc.Default(vertex: vsShader, pixel: psShader),
             inputLayouts: [Vertex.GetLayout()],
-            resourceLayouts: [],
+            resourceLayouts: [layout],
             outputs: SwapChain.FrameBuffer.Output,
             renderStates: RenderStateDesc.Default(RasterizerStates.None, DepthStencilStates.None, BlendStates.Opaque)
         );
@@ -75,6 +109,7 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
 
         commandBuffer.SetVertexBuffer(0, vertexBuffer);
         commandBuffer.SetIndexBuffer(indexBuffer, IndexFormat.UInt32);
+        commandBuffer.SetResourceSet(0, set);
 
         commandBuffer.DrawIndexed(3, 1);
 
@@ -93,6 +128,9 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
     {
         vertexBuffer.Dispose();
         indexBuffer.Dispose();
+        constantsBuffer.Dispose();
+        layout.Dispose();
+        set.Dispose();
         pipeline.Dispose();
     }
 }

@@ -6,8 +6,8 @@ internal static class Program
 {
     private static void Main(string[] _)
     {
-        Console.Write("Enter the backend (0: DirectX12, 1: Vulkan): ");
+        Console.Write("Enter the backend (1: DirectX12, 2: Vulkan): ");
 
-        new TriangleTest(Console.ReadLine() == "0" ? Backend.DirectX12 : Backend.Vulkan).Run();
+        new TriangleTest(Console.ReadLine() == "1" ? Backend.DirectX12 : Backend.Vulkan).Run();
     }
 }

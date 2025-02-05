@@ -1,4 +1,9 @@
-﻿struct VertexInput
+﻿struct Constants
+{
+    float4x4 Model;
+};
+
+struct VertexInput
 {
     float3 Position : POSITION;
     
@@ -16,10 +21,12 @@ struct VertexOutput
     float2 TexCoord : TEXCOORD0;
 };
 
+ConstantBuffer<Constants> constants : register(b0, space0);
+
 VertexOutput VertexMain(VertexInput input)
 {
     VertexOutput output;
-    output.Position = float4(input.Position, 1.0);
+    output.Position = mul(constants.Model, float4(input.Position, 1.0));
     output.Normal = input.Normal;
     output.TexCoord = input.TexCoord;
 
