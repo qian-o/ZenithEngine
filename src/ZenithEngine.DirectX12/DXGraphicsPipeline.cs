@@ -17,7 +17,7 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
     {
         GraphicsPipelineStateDesc graphicsPipelineStateDesc = new()
         {
-            SampleMask = uint.MaxValue,
+            SampleMask = uint.MaxValue
         };
 
         // Render States

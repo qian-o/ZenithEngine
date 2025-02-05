@@ -69,7 +69,7 @@ public static class Utils
                              out uint mipWidth,
                              out uint mipHeight);
 
-            mipmaps[i] = mipmaps[i - 1].Clone(ctx => ctx.Resize((int)mipWidth, (int)mipHeight, resampler));
+            mipmaps[i] = mipmaps[i - 1].Clone(context => context.Resize((int)mipWidth, (int)mipHeight, resampler));
         }
 
         return mipmaps;

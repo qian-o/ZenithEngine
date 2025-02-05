@@ -29,7 +29,7 @@ internal class DXResourceLayout : ResourceLayout
                 bindings[i] = new(element.Stages,
                                   element.Type,
                                   element.Range,
-                                  [.. Enumerable.Range((int)index, (int)element.Count).Select(x => (uint)x)],
+                                  [.. Enumerable.Range((int)index, (int)element.Count).Select(static item => (uint)item)],
                                   dynamicOffsetIndex++);
             }
             else
@@ -37,7 +37,7 @@ internal class DXResourceLayout : ResourceLayout
                 bindings[i] = new(element.Stages,
                                   element.Type,
                                   element.Range,
-                                  [.. Enumerable.Range((int)index, (int)element.Count).Select(x => (uint)x)],
+                                  [.. Enumerable.Range((int)index, (int)element.Count).Select(static item => (uint)item)],
                                   -1);
             }
 
