@@ -60,13 +60,13 @@ public static class ResourceFactoryExtensions
     {
         return stage switch
         {
-            ShaderStages.Vertex => "vs_6_8",
-            ShaderStages.Hull => "hs_6_8",
-            ShaderStages.Domain => "ds_6_8",
-            ShaderStages.Geometry => "gs_6_8",
-            ShaderStages.Pixel => "ps_6_8",
-            ShaderStages.Compute => "cs_6_8",
-            _ => "lib_6_8"
+            ShaderStages.Vertex => "vs_6_6",
+            ShaderStages.Hull => "hs_6_6",
+            ShaderStages.Domain => "ds_6_6",
+            ShaderStages.Geometry => "gs_6_6",
+            ShaderStages.Pixel => "ps_6_6",
+            ShaderStages.Compute => "cs_6_6",
+            _ => "lib_6_6"
         };
     }
 }
