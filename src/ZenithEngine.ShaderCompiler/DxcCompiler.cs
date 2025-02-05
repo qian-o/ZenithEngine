@@ -59,6 +59,15 @@ public static unsafe class DxcCompiler
 
         result.GetResult(rb.GetAddressOf());
 
+        Reflection(result);
+
         return [.. new ReadOnlySpan<byte>(rb.GetBufferPointer(), (int)rb.GetBufferSize())];
+    }
+
+    private static void Reflection(ComPtr<IDxcResult> result)
+    {
+        using ComPtr<IDxcBlob> reflection = default;
+
+        result.GetOutput(OutKind.Reflection, SilkMarshal.GuidPtrOf<IDxcBlob>(), (void**)reflection.GetAddressOf(), null);
     }
 }
