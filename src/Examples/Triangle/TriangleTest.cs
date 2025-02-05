@@ -26,9 +26,6 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
 
         string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
 
-        byte[] vs = DxcCompiler.Compile(ShaderStages.Vertex, hlsl, "VertexMain");
-        byte[] ps = DxcCompiler.Compile(ShaderStages.Pixel, hlsl, "PixelMain");
-
         BufferDesc vbDesc = BufferDesc.Default((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.VertexBuffer);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
@@ -47,11 +44,8 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
             Context.UpdateBuffer(indexBuffer, (nint)pIndices, (uint)(indices.Length * sizeof(uint)));
         }
 
-        ShaderDesc vsDesc = ShaderDesc.Default(ShaderStages.Vertex, vs, "VertexMain");
-        ShaderDesc psDesc = ShaderDesc.Default(ShaderStages.Pixel, ps, "PixelMain");
-
-        using Shader vsShader = Context.Factory.CreateShader(in vsDesc);
-        using Shader psShader = Context.Factory.CreateShader(in psDesc);
+        using Shader vsShader = Context.Factory.CompileShader(ShaderStages.Vertex, hlsl, "VertexMain");
+        using Shader psShader = Context.Factory.CompileShader(ShaderStages.Pixel, hlsl, "PixelMain");
 
         GraphicsPipelineDesc gpDesc = GraphicsPipelineDesc.Default
         (
