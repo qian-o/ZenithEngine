@@ -21,6 +21,7 @@ public abstract unsafe class VisualTest
 #else
         Context.CreateDevice();
 #endif
+
         List<double> avgFrameTimes = [];
 
         double fps = 0;

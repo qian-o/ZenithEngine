@@ -11,7 +11,8 @@ public static class ResourceFactoryExtensions
                                        ShaderStages stage,
                                        string source,
                                        string entryPoint,
-                                       Func<string, string>? includeHandler = null)
+                                       Func<string, string>? includeHandler = null,
+                                       bool optimize = false)
     {
         List<string> arguments = [];
 
@@ -22,7 +23,14 @@ public static class ResourceFactoryExtensions
             arguments.Add($"-E {entryPoint}");
         }
 
-        arguments.Add("-O3");
+        if (optimize)
+        {
+            arguments.Add("-O3");
+        }
+        else
+        {
+            arguments.Add("-Od");
+        }
 
         arguments.Add("-Zpr");
 
