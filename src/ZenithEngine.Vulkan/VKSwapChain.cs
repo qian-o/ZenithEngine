@@ -17,6 +17,7 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     public SurfaceKHR Surface;
     public SwapchainKHR Swapchain;
+    public uint ImageIndex;
 
     private readonly VKFence fence;
     private readonly VKSwapChainFrameBuffer swapChainFrameBuffer;
@@ -32,9 +33,7 @@ internal unsafe partial class VKSwapChain : SwapChain
         AcquireNextImage();
     }
 
-    public ref uint CurrentIndex => ref swapChainFrameBuffer.CurrentIndex;
-
-    public override FrameBuffer FrameBuffer => swapChainFrameBuffer.FrameBuffer;
+    public override FrameBuffer FrameBuffer => swapChainFrameBuffer[ImageIndex];
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
@@ -42,7 +41,7 @@ internal unsafe partial class VKSwapChain : SwapChain
     {
         fixed (SwapchainKHR* pSwapChain = &Swapchain)
         {
-            fixed (uint* pImageIndex = &CurrentIndex)
+            fixed (uint* pImageIndex = &ImageIndex)
             {
                 PresentInfoKHR presentInfo = new()
                 {
@@ -90,10 +89,11 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     protected override void Destroy()
     {
+        swapChainFrameBuffer.Dispose();
+        fence.Dispose();
+
         DestroySwapChain();
         DestroySurface();
-
-        fence.Dispose();
     }
 
     private void CreateSurface()
@@ -273,7 +273,7 @@ internal unsafe partial class VKSwapChain : SwapChain
                                                ulong.MaxValue,
                                                default,
                                                fence.Fence,
-                                               ref CurrentIndex).ThrowIfError();
+                                               ref ImageIndex).ThrowIfError();
 
         fence.Wait();
     }
@@ -294,8 +294,6 @@ internal unsafe partial class VKSwapChain : SwapChain
         {
             return;
         }
-
-        swapChainFrameBuffer.DestroyFrameBuffers();
 
         Context.KhrSwapchain!.DestroySwapchain(Context.Device, Swapchain, null);
     }

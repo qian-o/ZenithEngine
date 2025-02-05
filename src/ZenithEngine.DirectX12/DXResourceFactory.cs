@@ -10,7 +10,7 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override SwapChain CreateSwapChain(ref readonly SwapChainDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXSwapChain(Context, in desc);
     }
 
     public override Buffer CreateBuffer(ref readonly BufferDesc desc)
@@ -25,32 +25,32 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override Sampler CreateSampler(ref readonly SamplerDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXSampler(Context, in desc);
     }
 
     public override Shader CreateShader(ref readonly ShaderDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXShader(Context, in desc);
     }
 
     public override ResourceLayout CreateResourceLayout(ref readonly ResourceLayoutDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXResourceLayout(Context, in desc);
     }
 
     public override ResourceSet CreateResourceSet(ref readonly ResourceSetDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXResourceSet(Context, in desc);
     }
 
     public override FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXFrameBuffer(Context, in desc);
     }
 
     public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXGraphicsPipeline(Context, in desc);
     }
 
     public override ComputePipeline CreateComputePipeline(ref readonly ComputePipelineDesc desc)

@@ -82,7 +82,7 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
         commandBuffer.SetVertexBuffer(0, vertexBuffer);
         commandBuffer.SetIndexBuffer(indexBuffer, IndexFormat.UInt32);
 
-        commandBuffer.DrawIndexed(3);
+        commandBuffer.DrawIndexed(3, 1);
 
         commandBuffer.EndRendering();
 

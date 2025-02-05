@@ -1,12 +1,11 @@
 ﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
-using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
 
-internal class DXCommandProcessor : CommandProcessor
+internal unsafe class DXCommandProcessor : CommandProcessor
 {
     public ComPtr<ID3D12CommandQueue> Queue;
 
@@ -17,19 +16,13 @@ internal class DXCommandProcessor : CommandProcessor
     {
         CommandQueueDesc desc = new()
         {
-            Type = type switch
-            {
-                CommandProcessorType.Graphics => CommandListType.Direct,
-                CommandProcessorType.Compute => CommandListType.Compute,
-                CommandProcessorType.Copy => CommandListType.Copy,
-                _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
-            },
+            Type = DXFormats.GetCommandListType(type),
             Priority = 0,
             Flags = CommandQueueFlags.None,
             NodeMask = 0
         };
 
-        Context.Device.CreateCommandQueue(in desc, out Queue).ThrowIfError();
+        Context.Device.CreateCommandQueue(&desc, out Queue).ThrowIfError();
 
         fence = new(Context);
     }
@@ -43,12 +36,16 @@ internal class DXCommandProcessor : CommandProcessor
 
     protected override CommandBuffer CreateCommandBuffer()
     {
-        throw new NotImplementedException();
+        return new DXCommandBuffer(Context, this);
     }
 
     protected override void SubmitCommandBuffer(CommandBuffer commandBuffer)
     {
-        throw new NotImplementedException();
+        commandBuffer.DX().CommandList.QueryInterface(out ComPtr<ID3D12CommandList> commandList).ThrowIfError();
+
+        Queue.ExecuteCommandLists(1, commandList.GetAddressOf());
+
+        commandList.Dispose();
     }
 
     protected override void DebugName(string name)

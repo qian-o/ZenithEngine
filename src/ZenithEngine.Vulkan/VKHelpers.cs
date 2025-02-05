@@ -7,16 +7,19 @@ namespace ZenithEngine.Vulkan;
 
 internal static class VKHelpers
 {
+    public static uint GetInitialLayers(TextureType type)
+    {
+        return type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
+    }
+
     public static uint GetArrayLayers(TextureDesc desc)
     {
-        uint initialLayers = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
-
         if (desc.Type is TextureType.Texture1DArray or TextureType.Texture2DArray or TextureType.TextureCubeArray)
         {
-            return desc.ArrayLayers * initialLayers;
+            return desc.ArrayLayers * GetInitialLayers(desc.Type);
         }
 
-        return initialLayers;
+        return GetInitialLayers(desc.Type);
     }
 
     public static uint GetArrayLayerIndex(TextureDesc desc,
@@ -24,9 +27,9 @@ internal static class VKHelpers
                                           uint arrayLayer,
                                           CubeMapFace face)
     {
-        uint initialLayers = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
-
-        return (mipLevel * GetArrayLayers(desc)) + (arrayLayer * initialLayers) + (uint)face;
+        return (mipLevel * GetArrayLayers(desc))
+               + (arrayLayer * GetInitialLayers(desc.Type))
+               + (uint)face;
     }
 
     public static void MatchImageLayout(ref ImageMemoryBarrier barrier,

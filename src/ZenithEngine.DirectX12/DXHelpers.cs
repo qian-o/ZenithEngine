@@ -5,6 +5,20 @@ namespace ZenithEngine.DirectX12;
 
 internal static class DXHelpers
 {
+    public static ShaderStages[] GraphicsShaderStages { get; } =
+    [
+        ShaderStages.Vertex,
+        ShaderStages.Hull,
+        ShaderStages.Domain,
+        ShaderStages.Geometry,
+        ShaderStages.Pixel
+    ];
+
+    public static uint GetInitialLayers(TextureType type)
+    {
+        return type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
+    }
+
     public static ushort GetDepthOrArraySize(TextureDesc desc)
     {
         if (desc.Type is TextureType.Texture3D)
@@ -12,14 +26,12 @@ internal static class DXHelpers
             return (ushort)desc.Depth;
         }
 
-        uint initialLayers = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
-
         if (desc.Type is TextureType.Texture1DArray or TextureType.Texture2DArray or TextureType.TextureCubeArray)
         {
-            return (ushort)(desc.ArrayLayers * initialLayers);
+            return (ushort)(desc.ArrayLayers * GetInitialLayers(desc.Type));
         }
 
-        return (ushort)initialLayers;
+        return (ushort)GetInitialLayers(desc.Type);
     }
 
     public static uint GetDepthOrArrayIndex(TextureDesc desc,
@@ -27,8 +39,8 @@ internal static class DXHelpers
                                             uint arrayLayer,
                                             CubeMapFace face)
     {
-        uint initialLayers = desc.Type is TextureType.TextureCube or TextureType.TextureCubeArray ? 6u : 1u;
-
-        return (mipLevel * GetDepthOrArraySize(desc)) + (arrayLayer * initialLayers) + (uint)face;
+        return (mipLevel * GetDepthOrArraySize(desc))
+               + (arrayLayer * GetInitialLayers(desc.Type))
+               + (uint)face;
     }
 }

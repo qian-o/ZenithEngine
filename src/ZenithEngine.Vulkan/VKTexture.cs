@@ -73,11 +73,7 @@ internal unsafe class VKTexture : Texture
                                    DeviceMemory.DeviceMemory,
                                    0).ThrowIfError();
 
-        ImageView = CreateImageView(desc.Type,
-                                    0,
-                                    desc.MipLevels,
-                                    0,
-                                    VKHelpers.GetArrayLayers(desc));
+        ImageView = CreateImageView();
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
         Array.Fill(imageLayouts, ImageLayout.Undefined);
@@ -91,11 +87,7 @@ internal unsafe class VKTexture : Texture
     {
         Image = image;
 
-        ImageView = CreateImageView(desc.Type,
-                                    0,
-                                    desc.MipLevels,
-                                    0,
-                                    VKHelpers.GetArrayLayers(desc));
+        ImageView = CreateImageView();
 
         imageLayouts = new ImageLayout[desc.MipLevels * VKHelpers.GetArrayLayers(desc)];
         Array.Fill(imageLayouts, ImageLayout.Undefined);
@@ -116,46 +108,6 @@ internal unsafe class VKTexture : Texture
     public VKDeviceMemory? DeviceMemory { get; }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
-
-    public VkImageView CreateImageView(TextureType type,
-                                       uint baseMipLevel,
-                                       uint mipLevels,
-                                       uint baseArrayLayer,
-                                       uint arrayLayers)
-    {
-        ImageViewCreateInfo createInfo = new()
-        {
-            SType = StructureType.ImageViewCreateInfo,
-            Image = Image,
-            ViewType = VKFormats.GetImageViewType(type),
-            Format = VKFormats.GetPixelFormat(Desc.Format),
-            SubresourceRange = new()
-            {
-                AspectMask = VKFormats.GetImageAspectFlags(Desc.Usage),
-                BaseMipLevel = baseMipLevel,
-                LevelCount = mipLevels,
-                BaseArrayLayer = baseArrayLayer,
-                LayerCount = arrayLayers
-            }
-        };
-
-        VkImageView imageView;
-        Context.Vk.CreateImageView(Context.Device, &createInfo, null, &imageView).ThrowIfError();
-
-        return imageView;
-    }
-
-    public VkImageView CreateImageView(TextureType type,
-                                       uint mipLevel,
-                                       uint arrayLayer,
-                                       CubeMapFace face)
-    {
-        return CreateImageView(type,
-                               mipLevel,
-                               1,
-                               VKHelpers.GetArrayLayerIndex(Desc, mipLevel, arrayLayer, face),
-                               1);
-    }
 
     public void TransitionLayout(VkCommandBuffer commandBuffer,
                                  uint baseMipLevel,
@@ -232,7 +184,7 @@ internal unsafe class VKTexture : Texture
                          0,
                          Desc.ArrayLayers,
                          CubeMapFace.PositiveX,
-                         VKHelpers.GetArrayLayers(Desc),
+                         VKHelpers.GetInitialLayers(Desc.Type),
                          newLayout);
     }
 
@@ -257,5 +209,29 @@ internal unsafe class VKTexture : Texture
 
             Context.Vk.DestroyImage(Context.Device, Image, null);
         }
+    }
+
+    private VkImageView CreateImageView()
+    {
+        ImageViewCreateInfo createInfo = new()
+        {
+            SType = StructureType.ImageViewCreateInfo,
+            Image = Image,
+            ViewType = VKFormats.GetImageViewType(Desc.Type),
+            Format = VKFormats.GetPixelFormat(Desc.Format),
+            SubresourceRange = new()
+            {
+                AspectMask = VKFormats.GetImageAspectFlags(Desc.Usage),
+                BaseMipLevel = 0,
+                LevelCount = Desc.MipLevels,
+                BaseArrayLayer = 0,
+                LayerCount = VKHelpers.GetArrayLayers(Desc)
+            }
+        };
+
+        VkImageView imageView;
+        Context.Vk.CreateImageView(Context.Device, &createInfo, null, &imageView).ThrowIfError();
+
+        return imageView;
     }
 }

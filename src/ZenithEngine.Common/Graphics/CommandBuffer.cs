@@ -239,74 +239,69 @@ public abstract class CommandBuffer(GraphicsContext context,
 
     #region Drawing Operations
     /// <summary>
-    /// Draw the instanced primitives.
+    /// Draw primitives.
     /// </summary>
-    /// <param name="vertexCountPerInstance">Vertex count per instance.</param>
-    /// <param name="instanceCount">Instance count.</param>
-    /// <param name="startVertexLocation">Start vertex location.</param>
-    /// <param name="startInstanceLocation">Start instance location.</param>
-    public abstract void DrawInstanced(uint vertexCountPerInstance,
-                                       uint instanceCount,
-                                       uint startVertexLocation = 0,
-                                       uint startInstanceLocation = 0);
+    /// <param name="vertexCount">Number of vertices.</param>
+    /// <param name="instanceCount">Number of instances.</param>
+    /// <param name="firstVertex">First vertex index.</param>
+    /// <param name="firstInstance">First instance ID.</param>
+    public abstract void Draw(uint vertexCount,
+                              uint instanceCount,
+                              uint firstVertex = 0,
+                              uint firstInstance = 0);
 
     /// <summary>
-    /// Draw the indexed instanced primitives.
+    /// Draw primitives with indirect parameters.
     /// </summary>
-    /// <param name="argBuffer">Argument buffer.</param>
-    /// <param name="offset">Offset in the argument buffer.</param>
-    /// <param name="drawCount">Draw count.</param>
-    /// <param name="stride">Stride in the argument buffer.</param>
-    public abstract void DrawInstancedIndirect(Buffer argBuffer,
-                                               uint offset,
-                                               uint drawCount,
-                                               uint stride);
+    /// <param name="argBuffer">Buffer with draw parameters.</param>
+    /// <param name="offset">Byte offset in buffer.</param>
+    /// <param name="drawCount">Number of draws.</param>
+    public abstract void DrawIndirect(Buffer argBuffer,
+                                      uint offset,
+                                      uint drawCount);
 
     /// <summary>
-    /// Draw the indexed primitives.
+    /// Draw indexed primitives.
     /// </summary>
-    /// <param name="indexCount">Index count.</param>
-    /// <param name="startIndexLocation">Start index location.</param>
-    /// <param name="baseVertexLocation">Base vertex location.</param>
+    /// <param name="indexCount">Number of indices.</param>
+    /// <param name="instanceCount">Number of instances.</param>
+    /// <param name="firstIndex">First index.</param>
+    /// <param name="vertexOffset">Vertex offset.</param>
+    /// <param name="firstInstance">First instance ID.</param>
     public abstract void DrawIndexed(uint indexCount,
-                                     uint startIndexLocation = 0,
-                                     uint baseVertexLocation = 0);
+                                     uint instanceCount,
+                                     uint firstIndex = 0,
+                                     int vertexOffset = 0,
+                                     uint firstInstance = 0);
 
     /// <summary>
-    /// Draw the indexed instanced primitives.
+    /// Draw indexed primitives with indirect parameters.
     /// </summary>
-    /// <param name="indexCountPerInstance">Index count per instance.</param>
-    /// <param name="instanceCount">Instance count.</param>
-    /// <param name="startIndexLocation">Start index location.</param>
-    /// <param name="baseVertexLocation">Base vertex location.</param>
-    /// <param name="startInstanceLocation">Start instance location.</param>
-    public abstract void DrawIndexedInstanced(uint indexCountPerInstance,
-                                              uint instanceCount,
-                                              uint startIndexLocation = 0,
-                                              uint baseVertexLocation = 0,
-                                              uint startInstanceLocation = 0);
-
-    /// <summary>
-    /// Draw the indexed instanced indirect primitives.
-    /// </summary>
-    /// <param name="argBuffer">Argument buffer.</param>
-    /// <param name="offset">Offset in the argument buffer.</param>
-    /// <param name="drawCount">Draw count.</param>
-    /// <param name="stride">Stride in the argument buffer.</param>
-    public abstract void DrawIndexedInstancedIndirect(Buffer argBuffer,
-                                                      uint offset,
-                                                      uint drawCount,
-                                                      uint stride);
+    /// <param name="argBuffer">Buffer with draw parameters.</param>
+    /// <param name="offset">Byte offset in buffer.</param>
+    /// <param name="drawCount">Number of draws.</param>
+    public abstract void DrawIndexedIndirect(Buffer argBuffer,
+                                             uint offset,
+                                             uint drawCount);
     #endregion
 
     #region Compute Operations
     /// <summary>
-    /// Dispatch the compute shader.
+    /// Dispatch compute shader.
     /// </summary>
-    /// <param name="groupCountX">The number of groups dispatched in the x direction.</param>
-    /// <param name="groupCountY">The number of groups dispatched in the y direction.</param>
-    /// <param name="groupCountZ">The number of groups dispatched in the z direction.</param>
-    public abstract void Dispatch(uint groupCountX, uint groupCountY, uint groupCountZ);
+    /// <param name="groupCountX">Groups in X direction.</param>
+    /// <param name="groupCountY">Groups in Y direction.</param>
+    /// <param name="groupCountZ">Groups in Z direction.</param>
+    public abstract void Dispatch(uint groupCountX,
+                                  uint groupCountY,
+                                  uint groupCountZ);
+
+    /// <summary>
+    /// Dispatch compute shader with indirect parameters.
+    /// </summary>
+    /// <param name="argBuffer">Buffer with dispatch parameters.</param>
+    /// <param name="offset">Byte offset in buffer.</param>
+    public abstract void DispatchIndirect(Buffer argBuffer, uint offset);
     #endregion
 
     #region Ray Tracing Operations

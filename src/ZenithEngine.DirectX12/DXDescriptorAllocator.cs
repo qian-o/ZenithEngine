@@ -5,7 +5,7 @@ using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
 
-internal class DXDescriptorAllocator : GraphicsResource
+internal unsafe class DXDescriptorAllocator : GraphicsResource
 {
     public ComPtr<ID3D12DescriptorHeap> Heap;
 
@@ -27,7 +27,7 @@ internal class DXDescriptorAllocator : GraphicsResource
             NodeMask = 0
         };
 
-        Context.Device.CreateDescriptorHeap(in desc, out Heap).ThrowIfError();
+        Context.Device.CreateDescriptorHeap(&desc, out Heap).ThrowIfError();
 
         descriptorSize = Context.Device.GetDescriptorHandleIncrementSize(heapType);
         descriptorUsed = new bool[count];

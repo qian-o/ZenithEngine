@@ -1,12 +1,13 @@
-﻿using Silk.NET.Vulkan;
+﻿using Silk.NET.Direct3D12;
+using Silk.NET.DXGI;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
-namespace ZenithEngine.Vulkan;
+namespace ZenithEngine.DirectX12;
 
-internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
-                                             VKSwapChain swapChain) : GraphicsResource(context)
+internal class DXSwapChainFrameBuffer(GraphicsContext context,
+                                      DXSwapChain swapChain) : GraphicsResource(context)
 {
     private Texture? depthStencilTarget;
     private Texture[] colorTargets = [];
@@ -14,23 +15,11 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
 
     public FrameBuffer this[uint index] => frameBuffers[index];
 
-    private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
+    private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
-    public void CreateFrameBuffers(uint width, uint height, Format imageFormat)
+    public void CreateFrameBuffers(uint width, uint height)
     {
         DestroyFrameBuffers();
-
-        uint imageCount;
-        Context.KhrSwapchain!.GetSwapchainImages(Context.Device,
-                                                 swapChain.Swapchain,
-                                                 &imageCount,
-                                                 null).ThrowIfError();
-
-        VkImage[] images = new VkImage[imageCount];
-        Context.KhrSwapchain.GetSwapchainImages(Context.Device,
-                                                swapChain.Swapchain,
-                                                &imageCount,
-                                                out images[0]).ThrowIfError();
 
         if (swapChain.Desc.DepthStencilTargetFormat is not null)
         {
@@ -42,16 +31,18 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
             depthStencilTarget = Context.Factory.CreateTexture(in desc);
         }
 
-        colorTargets = new Texture[imageCount];
-        frameBuffers = new FrameBuffer[imageCount];
-        for (uint i = 0; i < imageCount; i++)
+        colorTargets = new Texture[DXSwapChain.BufferCount];
+        frameBuffers = new FrameBuffer[DXSwapChain.BufferCount];
+        for (uint i = 0; i < DXSwapChain.BufferCount; i++)
         {
             TextureDesc desc = TextureDesc.Default(width,
                                                    height,
-                                                   format: VKFormats.GetPixelFormat(imageFormat),
+                                                   format: swapChain.Desc.ColorTargetFormat,
                                                    usage: TextureUsage.RenderTarget);
 
-            colorTargets[i] = new VKTexture(Context, in desc, images[i]);
+            colorTargets[i] = new DXTexture(Context,
+                                            in desc,
+                                            swapChain.SwapChain3.GetBuffer<ID3D12Resource>(i));
 
             FrameBufferDesc frameBufferDesc = FrameBufferDesc.Default(depthStencilTarget is not null ? FrameBufferAttachmentDesc.Default(depthStencilTarget) : null,
                                                                       FrameBufferAttachmentDesc.Default(colorTargets[i]));

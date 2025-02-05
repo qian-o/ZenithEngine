@@ -94,12 +94,6 @@ public static class Utils
             ElementFormat.Short1Normalized or
             ElementFormat.Half1 => 2,
 
-            ElementFormat.UByte3 or
-            ElementFormat.Byte3 or
-            ElementFormat.UByte3Normalized or
-            ElementFormat.Byte3Normalized or
-            ElementFormat.Half3 => 3,
-
             ElementFormat.UByte4 or
             ElementFormat.Byte4 or
             ElementFormat.UByte4Normalized or
@@ -112,11 +106,6 @@ public static class Utils
             ElementFormat.Float1 or
             ElementFormat.UInt1 or
             ElementFormat.Int1 => 4,
-
-            ElementFormat.UShort3 or
-            ElementFormat.Short3 or
-            ElementFormat.UShort3Normalized or
-            ElementFormat.Short3Normalized => 6,
 
             ElementFormat.UShort4 or
             ElementFormat.Short4 or

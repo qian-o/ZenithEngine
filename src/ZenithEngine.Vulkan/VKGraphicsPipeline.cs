@@ -96,13 +96,13 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
                 attachments[i] = new()
                 {
                     BlendEnable = renderTarget.BlendEnabled,
-                    SrcColorBlendFactor = VKFormats.GetBlendFactor(renderTargets[i].SourceBlendColor),
-                    DstColorBlendFactor = VKFormats.GetBlendFactor(renderTargets[i].DestinationBlendColor),
-                    ColorBlendOp = VKFormats.GetBlendOp(renderTargets[i].BlendOperationColor),
-                    SrcAlphaBlendFactor = VKFormats.GetBlendFactor(renderTargets[i].SourceBlendAlpha),
-                    DstAlphaBlendFactor = VKFormats.GetBlendFactor(renderTargets[i].DestinationBlendAlpha),
-                    AlphaBlendOp = VKFormats.GetBlendOp(renderTargets[i].BlendOperationAlpha),
-                    ColorWriteMask = VKFormats.GetColorComponentFlags(renderTargets[i].ColorWriteChannels)
+                    SrcColorBlendFactor = VKFormats.GetBlendFactor(renderTarget.SourceBlendColor),
+                    DstColorBlendFactor = VKFormats.GetBlendFactor(renderTarget.DestinationBlendColor),
+                    ColorBlendOp = VKFormats.GetBlendOp(renderTarget.BlendOperationColor),
+                    SrcAlphaBlendFactor = VKFormats.GetBlendFactor(renderTarget.SourceBlendAlpha),
+                    DstAlphaBlendFactor = VKFormats.GetBlendFactor(renderTarget.DestinationBlendAlpha),
+                    AlphaBlendOp = VKFormats.GetBlendOp(renderTarget.BlendOperationAlpha),
+                    ColorWriteMask = VKFormats.GetColorComponentFlags(renderTarget.ColorWriteChannels)
                 };
             }
 
@@ -251,12 +251,30 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
 
         // Outputs
         {
-            Format* colorAttachmentFormats = Allocator.Alloc([.. desc.Outputs.ColorAttachments.Select(static item => VKFormats.GetPixelFormat(item))]);
+            uint colorAttachmentCount = (uint)desc.Outputs.ColorAttachments.Length;
+            Format* colorAttachmentFormats = Allocator.Alloc([.. desc.Outputs.ColorAttachments.Select(VKFormats.GetPixelFormat)]);
+
+            PipelineViewportStateCreateInfo viewportState = new()
+            {
+                SType = StructureType.PipelineViewportStateCreateInfo,
+                ViewportCount = colorAttachmentCount,
+                ScissorCount = colorAttachmentCount
+            };
+
+            createInfo.PViewportState = &viewportState;
+
+            PipelineMultisampleStateCreateInfo multisampleState = new()
+            {
+                SType = StructureType.PipelineMultisampleStateCreateInfo,
+                RasterizationSamples = VKFormats.GetSampleCountFlags(desc.Outputs.SampleCount)
+            };
+
+            createInfo.PMultisampleState = &multisampleState;
 
             PipelineRenderingCreateInfo renderingCreateInfo = new()
             {
                 SType = StructureType.PipelineRenderingCreateInfo,
-                ColorAttachmentCount = (uint)desc.Outputs.ColorAttachments.Length,
+                ColorAttachmentCount = colorAttachmentCount,
                 PColorAttachmentFormats = colorAttachmentFormats
             };
 
@@ -269,14 +287,6 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             }
 
             createInfo.PNext = &renderingCreateInfo;
-
-            PipelineMultisampleStateCreateInfo multisampleState = new()
-            {
-                SType = StructureType.PipelineMultisampleStateCreateInfo,
-                RasterizationSamples = VKFormats.GetSampleCountFlags(desc.Outputs.SampleCount)
-            };
-
-            createInfo.PMultisampleState = &multisampleState;
         }
 
         // Other pipeline states
@@ -291,15 +301,6 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             };
 
             createInfo.PDynamicState = &dynamicState;
-
-            PipelineViewportStateCreateInfo viewportState = new()
-            {
-                SType = StructureType.PipelineViewportStateCreateInfo,
-                ViewportCount = 1,
-                ScissorCount = 1
-            };
-
-            createInfo.PViewportState = &viewportState;
         }
 
         Context.Vk.CreateGraphicsPipelines(Context.Device,

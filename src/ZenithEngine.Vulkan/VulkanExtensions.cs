@@ -111,24 +111,24 @@ internal static class VulkanExtensions
         return (VKTopLevelAS)topLevelAS;
     }
 
-    public static VKResourceLayout VK(this ResourceLayout resourceLayout)
+    public static VKResourceLayout VK(this ResourceLayout layout)
     {
-        if (resourceLayout is not VKResourceLayout)
+        if (layout is not VKResourceLayout)
         {
             throw new ZenithEngineException("ResourceLayout is not a Vulkan resource layout.");
         }
 
-        return (VKResourceLayout)resourceLayout;
+        return (VKResourceLayout)layout;
     }
 
-    public static VKResourceSet VK(this ResourceSet resourceSet)
+    public static VKResourceSet VK(this ResourceSet set)
     {
-        if (resourceSet is not VKResourceSet)
+        if (set is not VKResourceSet)
         {
             throw new ZenithEngineException("ResourceSet is not a Vulkan resource set.");
         }
 
-        return (VKResourceSet)resourceSet;
+        return (VKResourceSet)set;
     }
 
     public static VKFrameBuffer VK(this FrameBuffer frameBuffer)
@@ -181,13 +181,13 @@ internal static class VulkanExtensions
         return (VKCommandProcessor)processor;
     }
 
-    public static VKCommandBuffer VK(this CommandBuffer commandBuffer)
+    public static VKCommandBuffer VK(this CommandBuffer buffer)
     {
-        if (commandBuffer is not VKCommandBuffer)
+        if (buffer is not VKCommandBuffer)
         {
             throw new ZenithEngineException("CommandBuffer is not a Vulkan command buffer.");
         }
 
-        return (VKCommandBuffer)commandBuffer;
+        return (VKCommandBuffer)buffer;
     }
 }

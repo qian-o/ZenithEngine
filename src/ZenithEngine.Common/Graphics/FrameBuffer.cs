@@ -9,6 +9,10 @@ public abstract class FrameBuffer(GraphicsContext context,
 
     public ref FrameBufferDesc Desc => ref descInternal;
 
+    public abstract uint ColorAttachmentCount { get; }
+
+    public abstract bool HasDepthStencilAttachment { get; }
+
     public abstract uint Width { get; }
 
     public abstract uint Height { get; }
