@@ -21,8 +21,10 @@ public abstract unsafe class VisualTest
 #else
         Context.CreateDevice();
 #endif
+        List<double> avgFrameTimes = [];
 
-        List<double> avgFrameTimes = new(1000);
+        double fps = 0;
+        double lastTotalTime = 0;
 
         Window.Loaded += (a, b) =>
         {
@@ -55,6 +57,10 @@ public abstract unsafe class VisualTest
         {
             ImGuiHelpers.LeftTopOverlay("Overlay", () =>
             {
+                ImGui.Text($"Backend: {Context.Backend}");
+
+                ImGui.Separator();
+
                 ImGui.Text(Context.Capabilities.DeviceName);
 
                 ImGui.Separator();
@@ -63,7 +69,7 @@ public abstract unsafe class VisualTest
 
                 ImGui.Separator();
 
-                ImGui.Text($"FPS: {1.0 / b.DeltaTime:F2}");
+                ImGui.Text($"FPS: {fps:F0}");
             });
 
             OnRender(b.DeltaTime, b.TotalTime);
@@ -89,12 +95,18 @@ public abstract unsafe class VisualTest
 
             SwapChain.Present();
 
-            if (avgFrameTimes.Count is 1000)
+            if (avgFrameTimes.Count is 10000)
             {
-                avgFrameTimes.RemoveAt(0);
+                avgFrameTimes.RemoveRange(0, 1000);
             }
 
             avgFrameTimes.Add(b.DeltaTime);
+
+            if (b.TotalTime - lastTotalTime > 1)
+            {
+                fps = 1.0 / avgFrameTimes.Average();
+                lastTotalTime = b.TotalTime;
+            }
         };
 
         Window.SizeChanged += (a, b) =>
@@ -113,9 +125,11 @@ public abstract unsafe class VisualTest
             SwapChain.Dispose();
             Context.Dispose();
 
+            double avgFrameTime = avgFrameTimes.Average();
+
             Console.WriteLine($"Backend: {backend}");
-            Console.WriteLine($"Average Frame Time: {avgFrameTimes.Average() * 1000:F2}ms");
-            Console.WriteLine($"Average FPS: {1 / avgFrameTimes.Average():F2}");
+            Console.WriteLine($"Average Frame Time: {avgFrameTime * 1000:F2}ms");
+            Console.WriteLine($"Average FPS: {1.0 / avgFrameTime:F0}");
         };
     }
 
