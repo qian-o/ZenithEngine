@@ -38,6 +38,8 @@ public static class ResourceFactoryExtensions
         {
             arguments.Add("-spirv");
 
+            arguments.Add("-fspv-target-env=vulkan1.3");
+
             arguments.Add("-fvk-use-dx-layout");
 
             arguments.Add("-fvk-b-shift");

@@ -33,14 +33,6 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
 
-        byte[] rayGen = DxcCompiler.Compile(ShaderStages.RayGeneration, hlsl, "RayGenMain");
-        byte[] miss = DxcCompiler.Compile(ShaderStages.Miss, hlsl, "MissMain");
-        byte[] closestHit = DxcCompiler.Compile(ShaderStages.ClosestHit, hlsl, "ClosestHitMain");
-
-        ReflectResult reflectResult = SpvReflector.Reflect(rayGen);
-        reflectResult = ReflectResult.Merge(reflectResult, SpvReflector.Reflect(miss));
-        reflectResult = ReflectResult.Merge(reflectResult, SpvReflector.Reflect(closestHit));
-
         BufferDesc vbDesc = BufferDesc.Default((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
@@ -97,10 +89,13 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceLayoutDesc rlDesc = ResourceLayoutDesc.Default(reflectResult["Scene", ShaderStages.RayGeneration].Desc,
-                                                               reflectResult["VertexBuffer", ShaderStages.ClosestHit].Desc,
-                                                               reflectResult["IndexBuffer", ShaderStages.ClosestHit].Desc,
-                                                               reflectResult["Output", ShaderStages.RayGeneration].Desc);
+        ResourceLayoutDesc rlDesc = ResourceLayoutDesc.Default
+        (
+            LayoutElementDesc.Default(ShaderStages.RayGeneration, ResourceType.AccelerationStructure, 0),
+            LayoutElementDesc.Default(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 1),
+            LayoutElementDesc.Default(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 2),
+            LayoutElementDesc.Default(ShaderStages.RayGeneration, ResourceType.TextureReadWrite, 0)
+        );
 
         resourceLayout = Context.Factory.CreateResourceLayout(in rlDesc);
 
@@ -108,13 +103,9 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
 
-        ShaderDesc rgDesc = ShaderDesc.Default(ShaderStages.RayGeneration, rayGen, "RayGenMain");
-        ShaderDesc msDesc = ShaderDesc.Default(ShaderStages.Miss, miss, "MissMain");
-        ShaderDesc chDesc = ShaderDesc.Default(ShaderStages.ClosestHit, closestHit, "ClosestHitMain");
-
-        using Shader rgShader = Context.Factory.CreateShader(in rgDesc);
-        using Shader msShader = Context.Factory.CreateShader(in msDesc);
-        using Shader chShader = Context.Factory.CreateShader(in chDesc);
+        using Shader rgShader = Context.Factory.CompileShader(ShaderStages.RayGeneration, hlsl, "RayGenMain");
+        using Shader msShader = Context.Factory.CompileShader(ShaderStages.Miss, hlsl, "MissMain");
+        using Shader chShader = Context.Factory.CompileShader(ShaderStages.ClosestHit, hlsl, "ClosestHitMain");
 
         RayTracingPipelineDesc rtpDesc = RayTracingPipelineDesc.Default
         (
