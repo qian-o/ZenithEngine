@@ -29,9 +29,8 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 	- [ ] Add Compute and Ray Tracing support.
 
 - ZenithEngine.ShaderCompiler
-	- [ ] Add DXIL compilation support.
-	- [ ] Use DXC reflection instead of SPIRV.Reflect.
 	- [ ] Use Slang instead of HLSL.
+	- [ ] Add Shader Reflection feature.
 
 - ZenithEngine.ImGuiWrapper
 	- [ ] Add DPI scaling support.
