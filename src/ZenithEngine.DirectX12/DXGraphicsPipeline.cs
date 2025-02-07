@@ -278,7 +278,7 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
 
     protected override void DebugName(string name)
     {
-        PipelineState.SetName(name);
+        PipelineState.SetName(name).ThrowIfError();
     }
 
     protected override void Destroy()

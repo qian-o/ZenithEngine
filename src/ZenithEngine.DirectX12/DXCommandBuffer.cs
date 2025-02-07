@@ -67,7 +67,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
     public override void End()
     {
-        CommandList.Close();
+        CommandList.Close().ThrowIfError();
 
         activeFrameBuffer = null;
         activePipeline = null;
@@ -75,8 +75,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
     public override void Reset()
     {
-        CommandAllocator.Reset();
-        CommandList.Reset(CommandAllocator, (ID3D12PipelineState*)null);
+        CommandAllocator.Reset().ThrowIfError();
+        CommandList.Reset(CommandAllocator, (ID3D12PipelineState*)null).ThrowIfError();
 
         cbvSrvUavAllocator?.Reset();
         samplerAllocator?.Reset();
@@ -692,7 +692,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
     protected override void DebugName(string name)
     {
-        CommandList.SetName(name);
+        CommandList.SetName(name).ThrowIfError();
     }
 
     protected override void Destroy()

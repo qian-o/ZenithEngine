@@ -21,7 +21,7 @@ internal unsafe class DXDeviceCapabilities(DXGraphicsContext context) : DeviceCa
     public void Init()
     {
         AdapterDesc desc;
-        context.Adapter.GetDesc(&desc);
+        context.Adapter.GetDesc(&desc).ThrowIfError();
 
         deviceName = Utils.PtrToStringUni((nint)desc.Description);
 
