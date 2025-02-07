@@ -91,12 +91,12 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceLayoutDesc rlDesc = ResourceLayoutDesc.New
+        ResourceLayoutDesc rlDesc = new
         (
-            LayoutElementDesc.New(ShaderStages.RayGeneration, ResourceType.AccelerationStructure, 0),
-            LayoutElementDesc.New(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 1),
-            LayoutElementDesc.New(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 2),
-            LayoutElementDesc.New(ShaderStages.RayGeneration, ResourceType.TextureReadWrite, 0)
+            new(ShaderStages.RayGeneration, ResourceType.AccelerationStructure, 0),
+            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 1),
+            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 2),
+            new(ShaderStages.RayGeneration, ResourceType.TextureReadWrite, 0)
         );
 
         resourceLayout = Context.Factory.CreateResourceLayout(in rlDesc);

@@ -1,17 +1,8 @@
 ﻿namespace ZenithEngine.Common.Descriptions;
 
-public struct ResourceLayoutDesc
+public struct ResourceLayoutDesc(params LayoutElementDesc[] elements)
 {
-    public LayoutElementDesc[] Elements;
+    public LayoutElementDesc[] Elements = elements;
 
-    public uint DynamicConstantBufferCount;
-
-    public static ResourceLayoutDesc New(params LayoutElementDesc[] elements)
-    {
-        return new()
-        {
-            Elements = elements,
-            DynamicConstantBufferCount = (uint)elements.Count(static item => item.AllowDynamicOffset)
-        };
-    }
+    public uint DynamicConstantBufferCount = (uint)elements.Count(static item => item.AllowDynamicOffset);
 }

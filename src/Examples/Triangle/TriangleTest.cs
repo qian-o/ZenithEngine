@@ -70,10 +70,7 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
         using Shader vsShader = Context.Factory.CompileShader(ShaderStages.Vertex, hlsl, "VertexMain");
         using Shader psShader = Context.Factory.CompileShader(ShaderStages.Pixel, hlsl, "PixelMain");
 
-        ResourceLayoutDesc layoutDesc = ResourceLayoutDesc.New
-        (
-            LayoutElementDesc.New(ShaderStages.Vertex, ResourceType.ConstantBuffer, 0)
-        );
+        ResourceLayoutDesc layoutDesc = new([new(ShaderStages.Vertex, ResourceType.ConstantBuffer, 0)]);
 
         layout = Context.Factory.CreateResourceLayout(in layoutDesc);
 
