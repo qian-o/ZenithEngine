@@ -7,6 +7,10 @@ public struct TopLevelASDesc(AccelerationStructureInstance[] instances,
                              uint offsetInBytes = 0,
                              AccelerationStructureBuildOptions options = AccelerationStructureBuildOptions.PreferFastBuild)
 {
+    public TopLevelASDesc()
+    {
+    }
+
     public AccelerationStructureInstance[] Instances = instances;
 
     public uint OffsetInBytes = offsetInBytes;

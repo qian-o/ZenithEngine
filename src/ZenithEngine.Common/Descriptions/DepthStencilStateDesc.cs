@@ -11,6 +11,10 @@ public struct DepthStencilStateDesc(bool depthEnabled = true,
                                     DepthStencilOperationDesc? frontFace = null,
                                     DepthStencilOperationDesc? backFace = null)
 {
+    public DepthStencilStateDesc()
+    {
+    }
+
     /// <summary>
     /// Controls whether depth testing is enabled.
     /// </summary>

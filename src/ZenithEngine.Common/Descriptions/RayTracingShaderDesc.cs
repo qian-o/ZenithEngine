@@ -8,6 +8,10 @@ public struct RayTracingShaderDesc(Shader rayGen,
                                    Shader[]? anyHit = null,
                                    Shader[]? intersection = null)
 {
+    public RayTracingShaderDesc()
+    {
+    }
+
     public Shader RayGen = rayGen;
 
     public Shader[] Miss = miss;

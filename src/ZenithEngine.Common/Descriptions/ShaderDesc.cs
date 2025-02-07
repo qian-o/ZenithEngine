@@ -6,6 +6,10 @@ public struct ShaderDesc(ShaderStages stage,
                          byte[] shaderBytes,
                          string entryPoint)
 {
+    public ShaderDesc()
+    {
+    }
+
     /// <summary>
     /// The shader stage this instance describes.
     /// </summary>

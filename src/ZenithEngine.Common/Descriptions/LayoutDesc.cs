@@ -7,6 +7,10 @@ public struct LayoutDesc(VertexStepFunction stepFunction = VertexStepFunction.Pe
                          uint stride = 0,
                          params ElementDesc[] elements)
 {
+    public LayoutDesc()
+    {
+    }
+
     /// <summary>
     /// A array of individual vertex elements comprising a single vertex.
     /// </summary>

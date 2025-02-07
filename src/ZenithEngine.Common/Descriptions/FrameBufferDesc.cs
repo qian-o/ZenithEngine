@@ -3,6 +3,10 @@
 public struct FrameBufferDesc(FrameBufferAttachmentDesc? depthStencilTarget,
                               params FrameBufferAttachmentDesc[] colorTargets)
 {
+    public FrameBufferDesc()
+    {
+    }
+
     /// <summary>
     /// An array of color texture attachments.
     /// </summary>

@@ -5,6 +5,10 @@ namespace ZenithEngine.Common.Descriptions;
 public struct ComputePipelineDesc(Shader shader,
                                   params ResourceLayout[] resourceLayouts)
 {
+    public ComputePipelineDesc()
+    {
+    }
+
     /// <summary>
     /// The compute shader to be used.
     /// </summary>

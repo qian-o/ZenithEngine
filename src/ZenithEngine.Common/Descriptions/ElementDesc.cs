@@ -9,6 +9,10 @@ public struct ElementDesc(ElementFormat format,
 {
     public const int AppendAligned = -1;
 
+    public ElementDesc()
+    {
+    }
+
     /// <summary>
     /// The format of the element.
     /// </summary>

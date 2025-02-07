@@ -8,6 +8,10 @@ public struct RenderStateDesc(RasterizerStateDesc? rasterizerState = null,
                               int stencilReference = 0,
                               Vector4D<float>? blendFactor = null)
 {
+    public RenderStateDesc()
+    {
+    }
+
     /// <summary>
     /// Gets or sets the Rasterizer State.
     /// </summary>

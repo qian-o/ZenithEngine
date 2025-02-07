@@ -11,6 +11,10 @@ public struct BlendStateRenderTargetDesc(bool blendEnabled = false,
                                          BlendOperation blendOperationAlpha = BlendOperation.Add,
                                          ColorWriteChannels colorWriteChannels = ColorWriteChannels.All)
 {
+    public BlendStateRenderTargetDesc()
+    {
+    }
+
     /// <summary>
     /// Controls whether blending is enabled for the color attachment.
     /// </summary>

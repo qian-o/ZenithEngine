@@ -7,6 +7,10 @@ public struct DepthStencilOperationDesc(StencilOperation stencilFailOperation = 
                                         StencilOperation stencilPassOperation = StencilOperation.Keep,
                                         ComparisonFunction stencilFunction = ComparisonFunction.Always)
 {
+    public DepthStencilOperationDesc()
+    {
+    }
+
     /// <summary>
     /// The stencil operation to perform when stencil testing fails.
     /// </summary>

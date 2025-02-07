@@ -12,6 +12,10 @@ public struct TextureDesc(uint width,
                           TextureUsage usage = TextureUsage.Sampled,
                           TextureSampleCount sampleCount = TextureSampleCount.Count1)
 {
+    public TextureDesc()
+    {
+    }
+
     /// <summary>
     /// The type of the texture.
     /// </summary>

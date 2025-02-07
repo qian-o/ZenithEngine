@@ -9,6 +9,10 @@ public struct LayoutElementDesc(ShaderStages stages,
                                 bool allowDynamicOffset = false,
                                 uint range = 0)
 {
+    public LayoutElementDesc()
+    {
+    }
+
     /// <summary>
     /// Use the resource of the shader stage.
     /// </summary>

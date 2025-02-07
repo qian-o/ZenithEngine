@@ -8,6 +8,10 @@ public struct SwapChainDesc(ISurface surface,
                             PixelFormat? depthStencilTargetFormat = PixelFormat.D24UNormS8UInt,
                             bool verticalSync = false)
 {
+    public SwapChainDesc()
+    {
+    }
+
     /// <summary>
     /// The surface to present to.
     /// </summary>

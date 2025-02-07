@@ -10,6 +10,10 @@ public struct GraphicsPipelineDesc(GraphicsShaderDesc shaders,
                                    RenderStateDesc? renderStates = null,
                                    PrimitiveTopology primitiveTopology = PrimitiveTopology.TriangleList)
 {
+    public GraphicsPipelineDesc()
+    {
+    }
+
     /// <summary>
     /// The render state description.
     /// </summary>

@@ -11,6 +11,10 @@ public struct BlendStateDesc(bool alphaToCoverageEnabled = false,
                              BlendStateRenderTargetDesc? renderTarget6 = null,
                              BlendStateRenderTargetDesc? renderTarget7 = null)
 {
+    public BlendStateDesc()
+    {
+    }
+
     /// <summary>
     /// Specifies whether to use alpha-to-coverage as a multisampling technique when
     /// setting a pixel to a render target.

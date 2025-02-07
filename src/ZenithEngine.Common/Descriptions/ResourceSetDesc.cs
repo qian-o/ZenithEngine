@@ -5,6 +5,10 @@ namespace ZenithEngine.Common.Descriptions;
 public struct ResourceSetDesc(ResourceLayout layout,
                               params GraphicsResource[] resources)
 {
+    public ResourceSetDesc()
+    {
+    }
+
     /// <summary>
     /// The layout of the resource set.
     /// </summary>

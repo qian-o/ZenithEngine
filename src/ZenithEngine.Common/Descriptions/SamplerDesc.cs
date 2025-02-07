@@ -13,6 +13,10 @@ public struct SamplerDesc(AddressMode addressModeU = AddressMode.Wrap,
                           int lodBias = 0,
                           SamplerBorderColor borderColor = SamplerBorderColor.TransparentBlack)
 {
+    public SamplerDesc()
+    {
+    }
+
     /// <summary>
     /// Mode to use for the U (or S) coordinate.
     /// </summary>

@@ -8,6 +8,10 @@ public struct GraphicsShaderDesc(Shader? vertex = null,
                                  Shader? geometry = null,
                                  Shader? pixel = null)
 {
+    public GraphicsShaderDesc()
+    {
+    }
+
     public Shader? Vertex = vertex;
 
     public Shader? Hull = hull;

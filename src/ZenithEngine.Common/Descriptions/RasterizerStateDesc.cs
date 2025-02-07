@@ -11,6 +11,10 @@ public struct RasterizerStateDesc(CullMode cullMode = CullMode.Back,
                                   bool depthClipEnabled = true,
                                   bool scissorEnabled = false)
 {
+    public RasterizerStateDesc()
+    {
+    }
+
     /// <summary>
     /// Controls which face will be culled.
     /// </summary>

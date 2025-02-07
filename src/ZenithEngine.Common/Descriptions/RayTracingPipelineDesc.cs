@@ -7,6 +7,10 @@ public struct RayTracingPipelineDesc(RayTracingShaderDesc shaders,
                                      ResourceLayout[] resourceLayouts,
                                      uint maxTraceRecursionDepth = 6)
 {
+    public RayTracingPipelineDesc()
+    {
+    }
+
     /// <summary>
     /// The ray tracing shader description.
     /// </summary>

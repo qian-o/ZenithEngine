@@ -7,6 +7,10 @@ public struct HitGroupDesc(HitGroupType type = HitGroupType.Triangles,
                            string? anyHit = null,
                            string? intersection = null)
 {
+    public HitGroupDesc()
+    {
+    }
+
     public HitGroupType Type = type;
 
     public string? ClosestHit = closestHit;

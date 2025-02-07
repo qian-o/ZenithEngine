@@ -8,6 +8,10 @@ public struct FrameBufferAttachmentDesc(Texture target,
                                         uint arrayLayer = 0,
                                         CubeMapFace face = CubeMapFace.PositiveX)
 {
+    public FrameBufferAttachmentDesc()
+    {
+    }
+
     /// <summary>
     /// The target texture to render into.
     /// </summary>
