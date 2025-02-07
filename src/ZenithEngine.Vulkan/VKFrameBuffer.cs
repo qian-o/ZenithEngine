@@ -226,7 +226,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
     protected override void DebugName(string name)
     {
-        for (int i = 0; i < ColorAttachmentCount; i++)
+        for (uint i = 0; i < ColorAttachmentCount; i++)
         {
             Context.SetDebugName(ObjectType.ImageView, colorViews[i].Handle, $"{name} Color Target[{i}]");
         }
@@ -239,7 +239,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
     protected override void Destroy()
     {
-        for (int i = 0; i < ColorAttachmentCount; i++)
+        for (uint i = 0; i < ColorAttachmentCount; i++)
         {
             Context.Vk.DestroyImageView(Context.Device, colorViews[i], null);
         }
