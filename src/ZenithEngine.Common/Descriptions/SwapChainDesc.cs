@@ -25,10 +25,10 @@ public struct SwapChainDesc
     /// </summary>
     public bool VerticalSync;
 
-    public static SwapChainDesc Default(ISurface surface,
-                                        PixelFormat colorTargetFormat = PixelFormat.R8G8B8A8UNorm,
-                                        PixelFormat? depthStencilTargetFormat = PixelFormat.D24UNormS8UInt,
-                                        bool verticalSync = false)
+    public static SwapChainDesc New(ISurface surface,
+                                    PixelFormat colorTargetFormat = PixelFormat.R8G8B8A8UNorm,
+                                    PixelFormat? depthStencilTargetFormat = PixelFormat.D24UNormS8UInt,
+                                    bool verticalSync = false)
     {
         return new()
         {

@@ -26,10 +26,10 @@ public struct RayTracingPipelineDesc
     /// </summary>
     public uint MaxTraceRecursionDepth;
 
-    public static RayTracingPipelineDesc Default(RayTracingShaderDesc shaders,
-                                                 HitGroupDesc[] hitGroups,
-                                                 ResourceLayout[] resourceLayouts,
-                                                 uint maxTraceRecursionDepth = 6)
+    public static RayTracingPipelineDesc New(RayTracingShaderDesc shaders,
+                                             HitGroupDesc[] hitGroups,
+                                             ResourceLayout[] resourceLayouts,
+                                             uint maxTraceRecursionDepth = 6)
     {
         return new()
         {

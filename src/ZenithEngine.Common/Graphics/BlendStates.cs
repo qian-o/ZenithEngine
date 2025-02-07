@@ -32,10 +32,10 @@ public static class BlendStates
 
     static BlendStates()
     {
-        Opaque = BlendStateDesc.Default();
+        Opaque = BlendStateDesc.New();
 
-        AlphaBlend = BlendStateDesc.Default();
-        AlphaBlend.RenderTarget0 = BlendStateRenderTargetDesc.Default
+        AlphaBlend = BlendStateDesc.New();
+        AlphaBlend.RenderTarget0 = BlendStateRenderTargetDesc.New
         (
             blendEnabled: true,
             sourceBlendColor: Blend.SourceAlpha,
@@ -44,16 +44,16 @@ public static class BlendStates
             destinationBlendAlpha: Blend.InverseSourceAlpha
         );
 
-        Additive = BlendStateDesc.Default();
-        Additive.RenderTarget0 = BlendStateRenderTargetDesc.Default
+        Additive = BlendStateDesc.New();
+        Additive.RenderTarget0 = BlendStateRenderTargetDesc.New
         (
             blendEnabled: true,
             destinationBlendColor: Blend.One,
             destinationBlendAlpha: Blend.One
         );
 
-        Multiplicative = BlendStateDesc.Default();
-        Multiplicative.RenderTarget0 = BlendStateRenderTargetDesc.Default
+        Multiplicative = BlendStateDesc.New();
+        Multiplicative.RenderTarget0 = BlendStateRenderTargetDesc.New
         (
             blendEnabled: true,
             sourceBlendColor: Blend.DestinationColor,
@@ -62,8 +62,8 @@ public static class BlendStates
             destinationBlendAlpha: Blend.One
         );
 
-        NonPremultiplied = BlendStateDesc.Default();
-        NonPremultiplied.RenderTarget0 = BlendStateRenderTargetDesc.Default
+        NonPremultiplied = BlendStateDesc.New();
+        NonPremultiplied.RenderTarget0 = BlendStateRenderTargetDesc.New
         (
             blendEnabled: true,
             sourceBlendColor: Blend.SourceAlpha,

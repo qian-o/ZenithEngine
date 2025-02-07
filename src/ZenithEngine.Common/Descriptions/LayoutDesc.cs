@@ -25,10 +25,10 @@ public struct LayoutDesc
     /// </summary>
     public uint Stride;
 
-    public static LayoutDesc Default(VertexStepFunction stepFunction = VertexStepFunction.PerVertexData,
-                                     uint stepRate = 0,
-                                     uint stride = 0,
-                                     params ElementDesc[] elements)
+    public static LayoutDesc New(VertexStepFunction stepFunction = VertexStepFunction.PerVertexData,
+                                 uint stepRate = 0,
+                                 uint stride = 0,
+                                 params ElementDesc[] elements)
     {
         return new()
         {

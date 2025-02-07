@@ -14,11 +14,11 @@ public struct RayTracingShaderDesc
 
     public Shader[] Intersection;
 
-    public static RayTracingShaderDesc Default(Shader rayGen,
-                                               Shader[] miss,
-                                               Shader[] closestHit,
-                                               Shader[]? anyHit = null,
-                                               Shader[]? intersection = null)
+    public static RayTracingShaderDesc New(Shader rayGen,
+                                           Shader[] miss,
+                                           Shader[] closestHit,
+                                           Shader[]? anyHit = null,
+                                           Shader[]? intersection = null)
     {
         anyHit ??= [];
         intersection ??= [];

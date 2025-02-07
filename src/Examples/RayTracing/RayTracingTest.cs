@@ -33,11 +33,11 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
 
-        BufferDesc vbDesc = BufferDesc.Default((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure);
+        BufferDesc vbDesc = BufferDesc.New((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
 
-        BufferDesc ibDesc = BufferDesc.Default((uint)(indices.Length * sizeof(uint)), BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure);
+        BufferDesc ibDesc = BufferDesc.New((uint)(indices.Length * sizeof(uint)), BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure);
 
         indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
 
@@ -55,7 +55,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         commandBuffer.Begin();
 
-        BottomLevelASDesc blasDesc = BottomLevelASDesc.Default(new AccelerationStructureTriangles(vertexBuffer)
+        BottomLevelASDesc blasDesc = BottomLevelASDesc.New(new AccelerationStructureTriangles(vertexBuffer)
         {
             VertexFormat = PixelFormat.R32G32B32Float,
             VertexStrideInBytes = (uint)sizeof(Vertex),
@@ -70,7 +70,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         bottomLevelAS = commandBuffer.BuildAccelerationStructure(in blasDesc);
 
-        TopLevelASDesc tlasDesc = TopLevelASDesc.Default([new(bottomLevelAS)
+        TopLevelASDesc tlasDesc = TopLevelASDesc.New([new(bottomLevelAS)
         {
             Transform = Matrix4X4<float>.Identity,
             InstanceID = 0,
@@ -85,21 +85,21 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         commandBuffer.Commit();
 
-        TextureDesc outputDesc = TextureDesc.Default(Width, Height, usage: TextureUsage.Sampled | TextureUsage.Storage);
+        TextureDesc outputDesc = TextureDesc.New(Width, Height, usage: TextureUsage.Sampled | TextureUsage.Storage);
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceLayoutDesc rlDesc = ResourceLayoutDesc.Default
+        ResourceLayoutDesc rlDesc = ResourceLayoutDesc.New
         (
-            LayoutElementDesc.Default(ShaderStages.RayGeneration, ResourceType.AccelerationStructure, 0),
-            LayoutElementDesc.Default(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 1),
-            LayoutElementDesc.Default(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 2),
-            LayoutElementDesc.Default(ShaderStages.RayGeneration, ResourceType.TextureReadWrite, 0)
+            LayoutElementDesc.New(ShaderStages.RayGeneration, ResourceType.AccelerationStructure, 0),
+            LayoutElementDesc.New(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 1),
+            LayoutElementDesc.New(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 2),
+            LayoutElementDesc.New(ShaderStages.RayGeneration, ResourceType.TextureReadWrite, 0)
         );
 
         resourceLayout = Context.Factory.CreateResourceLayout(in rlDesc);
 
-        ResourceSetDesc rsDesc = ResourceSetDesc.Default(resourceLayout, topLevelAS, vertexBuffer, indexBuffer, output);
+        ResourceSetDesc rsDesc = ResourceSetDesc.New(resourceLayout, topLevelAS, vertexBuffer, indexBuffer, output);
 
         resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
 
@@ -107,10 +107,10 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         using Shader msShader = Context.Factory.CompileShader(ShaderStages.Miss, hlsl, "MissMain");
         using Shader chShader = Context.Factory.CompileShader(ShaderStages.ClosestHit, hlsl, "ClosestHitMain");
 
-        RayTracingPipelineDesc rtpDesc = RayTracingPipelineDesc.Default
+        RayTracingPipelineDesc rtpDesc = RayTracingPipelineDesc.New
         (
-            shaders: RayTracingShaderDesc.Default(rgShader, [msShader], [chShader]),
-            hitGroups: [HitGroupDesc.Default(closestHit: "ClosestHitMain")],
+            shaders: RayTracingShaderDesc.New(rgShader, [msShader], [chShader]),
+            hitGroups: [HitGroupDesc.New(closestHit: "ClosestHitMain")],
             resourceLayouts: [resourceLayout]
         );
 
@@ -146,11 +146,11 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         ImGuiController.RemoveBinding(output);
 
-        TextureDesc outputDesc = TextureDesc.Default(width, height, usage: TextureUsage.Sampled | TextureUsage.Storage);
+        TextureDesc outputDesc = TextureDesc.New(width, height, usage: TextureUsage.Sampled | TextureUsage.Storage);
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceSetDesc rsDesc = ResourceSetDesc.Default(resourceLayout, topLevelAS, vertexBuffer, indexBuffer, output);
+        ResourceSetDesc rsDesc = ResourceSetDesc.New(resourceLayout, topLevelAS, vertexBuffer, indexBuffer, output);
 
         resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
     }

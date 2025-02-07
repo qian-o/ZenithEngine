@@ -29,15 +29,15 @@ public struct RenderStateDesc
     /// </summary>
     public Vector4D<float>? BlendFactor;
 
-    public static RenderStateDesc Default(RasterizerStateDesc? rasterizerState = null,
-                                          DepthStencilStateDesc? depthStencilState = null,
-                                          BlendStateDesc? blendState = null,
-                                          int stencilReference = 0,
-                                          Vector4D<float>? blendFactor = null)
+    public static RenderStateDesc New(RasterizerStateDesc? rasterizerState = null,
+                                      DepthStencilStateDesc? depthStencilState = null,
+                                      BlendStateDesc? blendState = null,
+                                      int stencilReference = 0,
+                                      Vector4D<float>? blendFactor = null)
     {
-        rasterizerState ??= RasterizerStateDesc.Default();
-        depthStencilState ??= DepthStencilStateDesc.Default();
-        blendState ??= BlendStateDesc.Default();
+        rasterizerState ??= RasterizerStateDesc.New();
+        depthStencilState ??= DepthStencilStateDesc.New();
+        blendState ??= BlendStateDesc.New();
 
         return new()
         {

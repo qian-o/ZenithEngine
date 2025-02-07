@@ -26,10 +26,10 @@ public struct ElementDesc
     /// </summary>
     public int Offset;
 
-    public static ElementDesc Default(ElementFormat format,
-                                      ElementSemanticType Semantic,
-                                      uint semanticIndex,
-                                      int offset = AppendAligned)
+    public static ElementDesc New(ElementFormat format,
+                                  ElementSemanticType Semantic,
+                                  uint semanticIndex,
+                                  int offset = AppendAligned)
     {
         return new()
         {

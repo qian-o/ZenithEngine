@@ -6,7 +6,7 @@ public struct ResourceLayoutDesc
 
     public uint DynamicConstantBufferCount;
 
-    public static ResourceLayoutDesc Default(params LayoutElementDesc[] elements)
+    public static ResourceLayoutDesc New(params LayoutElementDesc[] elements)
     {
         return new()
         {

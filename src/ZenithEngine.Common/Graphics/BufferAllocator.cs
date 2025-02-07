@@ -30,7 +30,7 @@ public class BufferAllocator(GraphicsContext context) : GraphicsResource(context
         {
             sizeInBytes = Math.Max(sizeInBytes, MinBufferSize);
 
-            BufferDesc desc = BufferDesc.Default(sizeInBytes);
+            BufferDesc desc = BufferDesc.New(sizeInBytes);
 
             buffer = Context.Factory.CreateBuffer(in desc);
         }

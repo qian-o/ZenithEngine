@@ -55,25 +55,25 @@ public struct BlendStateDesc
     /// </summary>
     public BlendStateRenderTargetDesc RenderTarget7;
 
-    public static BlendStateDesc Default(bool alphaToCoverageEnabled = false,
-                                         bool independentBlendEnabled = false,
-                                         BlendStateRenderTargetDesc? renderTarget0 = null,
-                                         BlendStateRenderTargetDesc? renderTarget1 = null,
-                                         BlendStateRenderTargetDesc? renderTarget2 = null,
-                                         BlendStateRenderTargetDesc? renderTarget3 = null,
-                                         BlendStateRenderTargetDesc? renderTarget4 = null,
-                                         BlendStateRenderTargetDesc? renderTarget5 = null,
-                                         BlendStateRenderTargetDesc? renderTarget6 = null,
-                                         BlendStateRenderTargetDesc? renderTarget7 = null)
+    public static BlendStateDesc New(bool alphaToCoverageEnabled = false,
+                                     bool independentBlendEnabled = false,
+                                     BlendStateRenderTargetDesc? renderTarget0 = null,
+                                     BlendStateRenderTargetDesc? renderTarget1 = null,
+                                     BlendStateRenderTargetDesc? renderTarget2 = null,
+                                     BlendStateRenderTargetDesc? renderTarget3 = null,
+                                     BlendStateRenderTargetDesc? renderTarget4 = null,
+                                     BlendStateRenderTargetDesc? renderTarget5 = null,
+                                     BlendStateRenderTargetDesc? renderTarget6 = null,
+                                     BlendStateRenderTargetDesc? renderTarget7 = null)
     {
-        renderTarget0 ??= BlendStateRenderTargetDesc.Default();
-        renderTarget1 ??= BlendStateRenderTargetDesc.Default();
-        renderTarget2 ??= BlendStateRenderTargetDesc.Default();
-        renderTarget3 ??= BlendStateRenderTargetDesc.Default();
-        renderTarget4 ??= BlendStateRenderTargetDesc.Default();
-        renderTarget5 ??= BlendStateRenderTargetDesc.Default();
-        renderTarget6 ??= BlendStateRenderTargetDesc.Default();
-        renderTarget7 ??= BlendStateRenderTargetDesc.Default();
+        renderTarget0 ??= BlendStateRenderTargetDesc.New();
+        renderTarget1 ??= BlendStateRenderTargetDesc.New();
+        renderTarget2 ??= BlendStateRenderTargetDesc.New();
+        renderTarget3 ??= BlendStateRenderTargetDesc.New();
+        renderTarget4 ??= BlendStateRenderTargetDesc.New();
+        renderTarget5 ??= BlendStateRenderTargetDesc.New();
+        renderTarget6 ??= BlendStateRenderTargetDesc.New();
+        renderTarget7 ??= BlendStateRenderTargetDesc.New();
 
         return new()
         {

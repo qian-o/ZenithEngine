@@ -19,9 +19,9 @@ public struct BufferDesc
     /// </summary>
     public uint StructureStrideInBytes;
 
-    public static BufferDesc Default(uint sizeInBytes,
-                                     BufferUsage usage = BufferUsage.Dynamic,
-                                     uint structureStrideInBytes = 0)
+    public static BufferDesc New(uint sizeInBytes,
+                                 BufferUsage usage = BufferUsage.Dynamic,
+                                 uint structureStrideInBytes = 0)
     {
         return new()
         {

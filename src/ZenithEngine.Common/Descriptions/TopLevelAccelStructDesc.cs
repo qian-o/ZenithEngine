@@ -11,9 +11,9 @@ public struct TopLevelASDesc
 
     public AccelerationStructureBuildOptions Options;
 
-    public static TopLevelASDesc Default(AccelerationStructureInstance[] instances,
-                                         uint offsetInBytes = 0,
-                                         AccelerationStructureBuildOptions options = AccelerationStructureBuildOptions.PreferFastBuild)
+    public static TopLevelASDesc New(AccelerationStructureInstance[] instances,
+                                     uint offsetInBytes = 0,
+                                     AccelerationStructureBuildOptions options = AccelerationStructureBuildOptions.PreferFastBuild)
     {
         return new()
         {

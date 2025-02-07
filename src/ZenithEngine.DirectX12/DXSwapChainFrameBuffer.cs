@@ -23,10 +23,10 @@ internal class DXSwapChainFrameBuffer(GraphicsContext context,
 
         if (swapChain.Desc.DepthStencilTargetFormat is not null)
         {
-            TextureDesc desc = TextureDesc.Default(width,
-                                                   height,
-                                                   format: swapChain.Desc.DepthStencilTargetFormat.Value,
-                                                   usage: TextureUsage.DepthStencil);
+            TextureDesc desc = TextureDesc.New(width,
+                                               height,
+                                               format: swapChain.Desc.DepthStencilTargetFormat.Value,
+                                               usage: TextureUsage.DepthStencil);
 
             depthStencilTarget = Context.Factory.CreateTexture(in desc);
         }
@@ -35,17 +35,17 @@ internal class DXSwapChainFrameBuffer(GraphicsContext context,
         frameBuffers = new FrameBuffer[DXSwapChain.BufferCount];
         for (uint i = 0; i < DXSwapChain.BufferCount; i++)
         {
-            TextureDesc desc = TextureDesc.Default(width,
-                                                   height,
-                                                   format: swapChain.Desc.ColorTargetFormat,
-                                                   usage: TextureUsage.RenderTarget);
+            TextureDesc desc = TextureDesc.New(width,
+                                               height,
+                                               format: swapChain.Desc.ColorTargetFormat,
+                                               usage: TextureUsage.RenderTarget);
 
             colorTargets[i] = new DXTexture(Context,
                                             in desc,
                                             swapChain.SwapChain3.GetBuffer<ID3D12Resource>(i));
 
-            FrameBufferDesc frameBufferDesc = FrameBufferDesc.Default(depthStencilTarget is not null ? FrameBufferAttachmentDesc.Default(depthStencilTarget) : null,
-                                                                      FrameBufferAttachmentDesc.Default(colorTargets[i]));
+            FrameBufferDesc frameBufferDesc = FrameBufferDesc.New(depthStencilTarget is not null ? FrameBufferAttachmentDesc.New(depthStencilTarget) : null,
+                                                                  FrameBufferAttachmentDesc.New(colorTargets[i]));
 
             frameBuffers[i] = Context.Factory.CreateFrameBuffer(in frameBufferDesc);
         }

@@ -19,9 +19,9 @@ public struct ShaderDesc
     /// </summary>
     public string EntryPoint;
 
-    public static ShaderDesc Default(ShaderStages stage,
-                                     byte[] shaderBytes,
-                                     string entryPoint)
+    public static ShaderDesc New(ShaderStages stage,
+                                 byte[] shaderBytes,
+                                 string entryPoint)
     {
         return new()
         {

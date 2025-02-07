@@ -19,9 +19,9 @@ public struct OutputDesc
     /// </summary>
     public TextureSampleCount SampleCount;
 
-    public static OutputDesc Default(TextureSampleCount sampleCount = TextureSampleCount.Count1,
-                                     PixelFormat? depthStencilAttachment = null,
-                                     params PixelFormat[] colorAttachments)
+    public static OutputDesc New(TextureSampleCount sampleCount = TextureSampleCount.Count1,
+                                 PixelFormat? depthStencilAttachment = null,
+                                 params PixelFormat[] colorAttachments)
     {
         return new()
         {

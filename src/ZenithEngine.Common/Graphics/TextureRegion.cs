@@ -10,12 +10,12 @@ public struct TextureRegion
 
     public uint Depth;
 
-    public static TextureRegion Default(uint width,
-                                        uint height,
-                                        uint depth,
-                                        TexturePosition? position = null)
+    public static TextureRegion New(uint width,
+                                    uint height,
+                                    uint depth,
+                                    TexturePosition? position = null)
     {
-        position ??= TexturePosition.Default();
+        position ??= TexturePosition.New();
 
         return new()
         {

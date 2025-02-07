@@ -14,8 +14,8 @@ public struct ResourceSetDesc
     /// </summary>
     public GraphicsResource[] Resources;
 
-    public static ResourceSetDesc Default(ResourceLayout layout,
-                                          params GraphicsResource[] resources)
+    public static ResourceSetDesc New(ResourceLayout layout,
+                                      params GraphicsResource[] resources)
     {
         return new()
         {

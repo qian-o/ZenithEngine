@@ -49,15 +49,15 @@ public struct TextureDesc
     /// </summary>
     public TextureSampleCount SampleCount;
 
-    public static TextureDesc Default(uint width,
-                                      uint height,
-                                      TextureType type = TextureType.Texture2D,
-                                      PixelFormat format = PixelFormat.R8G8B8A8UNorm,
-                                      uint depth = 1,
-                                      uint mipLevels = 1,
-                                      uint arrayLayers = 1,
-                                      TextureUsage usage = TextureUsage.Sampled,
-                                      TextureSampleCount sampleCount = TextureSampleCount.Count1)
+    public static TextureDesc New(uint width,
+                                  uint height,
+                                  TextureType type = TextureType.Texture2D,
+                                  PixelFormat format = PixelFormat.R8G8B8A8UNorm,
+                                  uint depth = 1,
+                                  uint mipLevels = 1,
+                                  uint arrayLayers = 1,
+                                  TextureUsage usage = TextureUsage.Sampled,
+                                  TextureSampleCount sampleCount = TextureSampleCount.Count1)
     {
         return new()
         {

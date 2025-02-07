@@ -52,7 +52,7 @@ public static class Samplers
 
     static Samplers()
     {
-        PointClamp = SamplerDesc.Default
+        PointClamp = SamplerDesc.New
         (
             addressModeU: AddressMode.Clamp,
             addressModeV: AddressMode.Clamp,
@@ -60,9 +60,9 @@ public static class Samplers
             filter: SamplerFilter.MinPointMagPointMipPoint
         );
 
-        PointWrap = SamplerDesc.Default(filter: SamplerFilter.MinPointMagPointMipPoint);
+        PointWrap = SamplerDesc.New(filter: SamplerFilter.MinPointMagPointMipPoint);
 
-        PointMirror = SamplerDesc.Default
+        PointMirror = SamplerDesc.New
         (
             addressModeU: AddressMode.Mirror,
             addressModeV: AddressMode.Mirror,
@@ -70,23 +70,23 @@ public static class Samplers
             filter: SamplerFilter.MinPointMagPointMipPoint
         );
 
-        LinearClamp = SamplerDesc.Default
+        LinearClamp = SamplerDesc.New
         (
             addressModeU: AddressMode.Clamp,
             addressModeV: AddressMode.Clamp,
             addressModeW: AddressMode.Clamp
         );
 
-        LinearWrap = SamplerDesc.Default();
+        LinearWrap = SamplerDesc.New();
 
-        LinearMirror = SamplerDesc.Default
+        LinearMirror = SamplerDesc.New
         (
             addressModeU: AddressMode.Mirror,
             addressModeV: AddressMode.Mirror,
             addressModeW: AddressMode.Mirror
         );
 
-        AnisotropicClamp = SamplerDesc.Default
+        AnisotropicClamp = SamplerDesc.New
         (
             addressModeU: AddressMode.Clamp,
             addressModeV: AddressMode.Clamp,
@@ -94,9 +94,9 @@ public static class Samplers
             filter: SamplerFilter.Anisotropic
         );
 
-        AnisotropicWrap = SamplerDesc.Default(filter: SamplerFilter.Anisotropic);
+        AnisotropicWrap = SamplerDesc.New(filter: SamplerFilter.Anisotropic);
 
-        AnisotropicMirror = SamplerDesc.Default
+        AnisotropicMirror = SamplerDesc.New
         (
             addressModeU: AddressMode.Mirror,
             addressModeV: AddressMode.Mirror,

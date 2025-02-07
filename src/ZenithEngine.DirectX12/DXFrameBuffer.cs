@@ -77,9 +77,9 @@ internal unsafe class DXFrameBuffer : FrameBuffer
 
         Width = width;
         Height = height;
-        Output = OutputDesc.Default(sampleCount,
-                                    HasDepthStencilAttachment ? desc.DepthStencilTarget!.Value.Target.Desc.Format : null,
-                                    [.. desc.ColorTargets.Select(static item => item.Target.Desc.Format)]);
+        Output = OutputDesc.New(sampleCount,
+                                HasDepthStencilAttachment ? desc.DepthStencilTarget!.Value.Target.Desc.Format : null,
+                                [.. desc.ColorTargets.Select(static item => item.Target.Desc.Format)]);
     }
 
     public override uint ColorAttachmentCount { get; }

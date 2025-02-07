@@ -46,17 +46,17 @@ public struct DepthStencilStateDesc
     /// </summary>
     public DepthStencilOperationDesc BackFace;
 
-    public static DepthStencilStateDesc Default(bool depthEnabled = true,
-                                                bool depthWriteEnabled = true,
-                                                ComparisonFunction depthFunction = ComparisonFunction.LessEqual,
-                                                bool stencilEnabled = false,
-                                                byte stencilReadMask = byte.MaxValue,
-                                                byte stencilWriteMask = byte.MaxValue,
-                                                DepthStencilOperationDesc? frontFace = null,
-                                                DepthStencilOperationDesc? backFace = null)
+    public static DepthStencilStateDesc New(bool depthEnabled = true,
+                                            bool depthWriteEnabled = true,
+                                            ComparisonFunction depthFunction = ComparisonFunction.LessEqual,
+                                            bool stencilEnabled = false,
+                                            byte stencilReadMask = byte.MaxValue,
+                                            byte stencilWriteMask = byte.MaxValue,
+                                            DepthStencilOperationDesc? frontFace = null,
+                                            DepthStencilOperationDesc? backFace = null)
     {
-        frontFace ??= DepthStencilOperationDesc.Default();
-        backFace ??= DepthStencilOperationDesc.Default();
+        frontFace ??= DepthStencilOperationDesc.New();
+        backFace ??= DepthStencilOperationDesc.New();
 
         return new()
         {

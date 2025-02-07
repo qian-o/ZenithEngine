@@ -24,10 +24,10 @@ public struct DepthStencilOperationDesc
     /// </summary>
     public ComparisonFunction StencilFunction;
 
-    public static DepthStencilOperationDesc Default(StencilOperation stencilFailOperation = StencilOperation.Keep,
-                                                    StencilOperation stencilDepthFailOperation = StencilOperation.Keep,
-                                                    StencilOperation stencilPassOperation = StencilOperation.Keep,
-                                                    ComparisonFunction stencilFunction = ComparisonFunction.Always)
+    public static DepthStencilOperationDesc New(StencilOperation stencilFailOperation = StencilOperation.Keep,
+                                                StencilOperation stencilDepthFailOperation = StencilOperation.Keep,
+                                                StencilOperation stencilPassOperation = StencilOperation.Keep,
+                                                ComparisonFunction stencilFunction = ComparisonFunction.Always)
     {
         return new()
         {

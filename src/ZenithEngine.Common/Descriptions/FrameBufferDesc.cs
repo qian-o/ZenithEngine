@@ -12,8 +12,8 @@ public struct FrameBufferDesc
     /// </summary>
     public FrameBufferAttachmentDesc? DepthStencilTarget;
 
-    public static FrameBufferDesc Default(FrameBufferAttachmentDesc? depthStencilTarget,
-                                          params FrameBufferAttachmentDesc[] colorTargets)
+    public static FrameBufferDesc New(FrameBufferAttachmentDesc? depthStencilTarget,
+                                      params FrameBufferAttachmentDesc[] colorTargets)
     {
         return new()
         {

@@ -43,15 +43,15 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
 
         string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
 
-        BufferDesc vbDesc = BufferDesc.Default((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.VertexBuffer);
+        BufferDesc vbDesc = BufferDesc.New((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.VertexBuffer);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
 
-        BufferDesc ibDesc = BufferDesc.Default((uint)(indices.Length * sizeof(uint)), BufferUsage.IndexBuffer);
+        BufferDesc ibDesc = BufferDesc.New((uint)(indices.Length * sizeof(uint)), BufferUsage.IndexBuffer);
 
         indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
 
-        BufferDesc cbDesc = BufferDesc.Default((uint)sizeof(Constants), BufferUsage.ConstantBuffer);
+        BufferDesc cbDesc = BufferDesc.New((uint)sizeof(Constants), BufferUsage.ConstantBuffer);
 
         constantsBuffer = Context.Factory.CreateBuffer(in cbDesc);
 
@@ -70,24 +70,24 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
         using Shader vsShader = Context.Factory.CompileShader(ShaderStages.Vertex, hlsl, "VertexMain");
         using Shader psShader = Context.Factory.CompileShader(ShaderStages.Pixel, hlsl, "PixelMain");
 
-        ResourceLayoutDesc layoutDesc = ResourceLayoutDesc.Default
+        ResourceLayoutDesc layoutDesc = ResourceLayoutDesc.New
         (
-            LayoutElementDesc.Default(ShaderStages.Vertex, ResourceType.ConstantBuffer, 0)
+            LayoutElementDesc.New(ShaderStages.Vertex, ResourceType.ConstantBuffer, 0)
         );
 
         layout = Context.Factory.CreateResourceLayout(in layoutDesc);
 
-        ResourceSetDesc setDesc = ResourceSetDesc.Default(layout, constantsBuffer);
+        ResourceSetDesc setDesc = ResourceSetDesc.New(layout, constantsBuffer);
 
         set = Context.Factory.CreateResourceSet(in setDesc);
 
-        GraphicsPipelineDesc gpDesc = GraphicsPipelineDesc.Default
+        GraphicsPipelineDesc gpDesc = GraphicsPipelineDesc.New
         (
-            shaders: GraphicsShaderDesc.Default(vertex: vsShader, pixel: psShader),
+            shaders: GraphicsShaderDesc.New(vertex: vsShader, pixel: psShader),
             inputLayouts: [Vertex.GetLayout()],
             resourceLayouts: [layout],
             outputs: SwapChain.FrameBuffer.Output,
-            renderStates: RenderStateDesc.Default(RasterizerStates.None, DepthStencilStates.None, BlendStates.Opaque)
+            renderStates: RenderStateDesc.New(RasterizerStates.None, DepthStencilStates.None, BlendStates.Opaque)
         );
 
         pipeline = Context.Factory.CreateGraphicsPipeline(in gpDesc);

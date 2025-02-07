@@ -6,7 +6,7 @@ public struct BottomLevelASDesc
 {
     public AccelerationStructureGeometry[] Geometries;
 
-    public static BottomLevelASDesc Default(params AccelerationStructureGeometry[] geometries)
+    public static BottomLevelASDesc New(params AccelerationStructureGeometry[] geometries)
     {
         return new()
         {

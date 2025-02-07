@@ -25,10 +25,10 @@ public struct FrameBufferAttachmentDesc
     /// </summary>
     public CubeMapFace Face;
 
-    public static FrameBufferAttachmentDesc Default(Texture target,
-                                                    uint mipLevel = 0,
-                                                    uint arrayLayer = 0,
-                                                    CubeMapFace face = CubeMapFace.PositiveX)
+    public static FrameBufferAttachmentDesc New(Texture target,
+                                                uint mipLevel = 0,
+                                                uint arrayLayer = 0,
+                                                CubeMapFace face = CubeMapFace.PositiveX)
     {
         return new()
         {

@@ -54,16 +54,16 @@ public struct SamplerDesc
     /// </summary>
     public SamplerBorderColor BorderColor;
 
-    public static SamplerDesc Default(AddressMode addressModeU = AddressMode.Wrap,
-                                      AddressMode addressModeV = AddressMode.Wrap,
-                                      AddressMode addressModeW = AddressMode.Wrap,
-                                      SamplerFilter filter = SamplerFilter.MinLinearMagLinearMipLinear,
-                                      ComparisonFunction comparisonFunction = ComparisonFunction.Never,
-                                      uint maximumAnisotropy = 0,
-                                      uint minimumLod = 0,
-                                      uint maximumLod = uint.MaxValue,
-                                      int lodBias = 0,
-                                      SamplerBorderColor borderColor = SamplerBorderColor.TransparentBlack)
+    public static SamplerDesc New(AddressMode addressModeU = AddressMode.Wrap,
+                                  AddressMode addressModeV = AddressMode.Wrap,
+                                  AddressMode addressModeW = AddressMode.Wrap,
+                                  SamplerFilter filter = SamplerFilter.MinLinearMagLinearMipLinear,
+                                  ComparisonFunction comparisonFunction = ComparisonFunction.Never,
+                                  uint maximumAnisotropy = 0,
+                                  uint minimumLod = 0,
+                                  uint maximumLod = uint.MaxValue,
+                                  int lodBias = 0,
+                                  SamplerBorderColor borderColor = SamplerBorderColor.TransparentBlack)
     {
         return new()
         {

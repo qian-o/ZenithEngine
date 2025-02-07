@@ -35,12 +35,12 @@ public struct LayoutElementDesc
     /// </summary>
     public uint Range;
 
-    public static LayoutElementDesc Default(ShaderStages stages,
-                                            ResourceType type,
-                                            uint slot,
-                                            uint count = 1,
-                                            bool allowDynamicOffset = false,
-                                            uint range = 0)
+    public static LayoutElementDesc New(ShaderStages stages,
+                                        ResourceType type,
+                                        uint slot,
+                                        uint count = 1,
+                                        bool allowDynamicOffset = false,
+                                        uint range = 0)
     {
         return new()
         {

@@ -53,14 +53,14 @@ public struct BlendStateRenderTargetDesc
     /// </summary>
     public ColorWriteChannels ColorWriteChannels;
 
-    public static BlendStateRenderTargetDesc Default(bool blendEnabled = false,
-                                                     Blend sourceBlendColor = Blend.One,
-                                                     Blend destinationBlendColor = Blend.Zero,
-                                                     BlendOperation blendOperationColor = BlendOperation.Add,
-                                                     Blend sourceBlendAlpha = Blend.One,
-                                                     Blend destinationBlendAlpha = Blend.Zero,
-                                                     BlendOperation blendOperationAlpha = BlendOperation.Add,
-                                                     ColorWriteChannels colorWriteChannels = ColorWriteChannels.All)
+    public static BlendStateRenderTargetDesc New(bool blendEnabled = false,
+                                                 Blend sourceBlendColor = Blend.One,
+                                                 Blend destinationBlendColor = Blend.Zero,
+                                                 BlendOperation blendOperationColor = BlendOperation.Add,
+                                                 Blend sourceBlendAlpha = Blend.One,
+                                                 Blend destinationBlendAlpha = Blend.Zero,
+                                                 BlendOperation blendOperationAlpha = BlendOperation.Add,
+                                                 ColorWriteChannels colorWriteChannels = ColorWriteChannels.All)
     {
         return new()
         {

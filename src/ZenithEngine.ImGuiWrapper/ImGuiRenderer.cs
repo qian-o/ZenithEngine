@@ -55,14 +55,14 @@ internal unsafe class ImGuiRenderer : DisposableObject
         int height;
         ImGui.GetIO().Fonts.GetTexDataAsRGBA32(&pixels, &width, &height);
 
-        TextureDesc fontTextureDesc = TextureDesc.Default((uint)width, (uint)height);
+        TextureDesc fontTextureDesc = TextureDesc.New((uint)width, (uint)height);
 
         fontTexture = Context.Factory.CreateTexture(in fontTextureDesc);
 
         Context.UpdateTexture(fontTexture,
                               (nint)pixels,
                               (uint)(width * height * 4),
-                              TextureRegion.Default((uint)width, (uint)height, 1));
+                              TextureRegion.New((uint)width, (uint)height, 1));
 
         GetBinding(fontTexture);
     }
@@ -84,8 +84,8 @@ internal unsafe class ImGuiRenderer : DisposableObject
         {
             vertexBuffer.Dispose();
 
-            BufferDesc vbDesc = BufferDesc.Default(totalVertexSize * 2,
-                                                   BufferUsage.VertexBuffer | BufferUsage.Dynamic);
+            BufferDesc vbDesc = BufferDesc.New(totalVertexSize * 2,
+                                               BufferUsage.VertexBuffer | BufferUsage.Dynamic);
 
             vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
         }
@@ -95,8 +95,8 @@ internal unsafe class ImGuiRenderer : DisposableObject
         {
             indexBuffer.Dispose();
 
-            BufferDesc ibDesc = BufferDesc.Default(totalIndexSize * 2,
-                                                   BufferUsage.IndexBuffer | BufferUsage.Dynamic);
+            BufferDesc ibDesc = BufferDesc.New(totalIndexSize * 2,
+                                               BufferUsage.IndexBuffer | BufferUsage.Dynamic);
 
             indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
         }
@@ -198,7 +198,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
             id++;
         }
 
-        ResourceSetDesc desc = ResourceSetDesc.Default(layout1, texture);
+        ResourceSetDesc desc = ResourceSetDesc.New(layout1, texture);
 
         bindings[id] = new(texture, Context.Factory.CreateResourceSet(in desc));
 
@@ -241,57 +241,57 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
     private void CreateGraphicsResources(OutputDesc outputDesc, ColorSpaceHandling colorSpaceHandling)
     {
-        BufferDesc vbDesc = BufferDesc.Default((uint)(5000 * sizeof(ImDrawVert)),
-                                               BufferUsage.VertexBuffer | BufferUsage.Dynamic);
+        BufferDesc vbDesc = BufferDesc.New((uint)(5000 * sizeof(ImDrawVert)),
+                                           BufferUsage.VertexBuffer | BufferUsage.Dynamic);
 
-        BufferDesc ibDesc = BufferDesc.Default(10000 * sizeof(ushort),
-                                               BufferUsage.IndexBuffer | BufferUsage.Dynamic);
+        BufferDesc ibDesc = BufferDesc.New(10000 * sizeof(ushort),
+                                           BufferUsage.IndexBuffer | BufferUsage.Dynamic);
 
-        BufferDesc cbDesc = BufferDesc.Default((uint)sizeof(Constants),
-                                               BufferUsage.ConstantBuffer | BufferUsage.Dynamic);
+        BufferDesc cbDesc = BufferDesc.New((uint)sizeof(Constants),
+                                           BufferUsage.ConstantBuffer | BufferUsage.Dynamic);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
         indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
         constantsBuffer = Context.Factory.CreateBuffer(in cbDesc);
         sampler = Context.Factory.CreateSampler(in Samplers.PointClamp);
 
-        ResourceLayoutDesc layout0Desc = ResourceLayoutDesc.Default(
+        ResourceLayoutDesc layout0Desc = ResourceLayoutDesc.New(
         [
-            LayoutElementDesc.Default(ShaderStages.Vertex, ResourceType.ConstantBuffer, 0),
-            LayoutElementDesc.Default(ShaderStages.Pixel, ResourceType.Sampler, 0)
+            LayoutElementDesc.New(ShaderStages.Vertex, ResourceType.ConstantBuffer, 0),
+            LayoutElementDesc.New(ShaderStages.Pixel, ResourceType.Sampler, 0)
         ]);
 
-        ResourceLayoutDesc layout1Desc = ResourceLayoutDesc.Default(
+        ResourceLayoutDesc layout1Desc = ResourceLayoutDesc.New(
         [
-            LayoutElementDesc.Default(ShaderStages.Pixel, ResourceType.Texture, 0)
+            LayoutElementDesc.New(ShaderStages.Pixel, ResourceType.Texture, 0)
         ]);
 
         layout0 = Context.Factory.CreateResourceLayout(in layout0Desc);
         layout1 = Context.Factory.CreateResourceLayout(in layout1Desc);
 
-        ResourceSetDesc set0Desc = ResourceSetDesc.Default(layout0, constantsBuffer, sampler);
+        ResourceSetDesc set0Desc = ResourceSetDesc.New(layout0, constantsBuffer, sampler);
 
         set0 = Context.Factory.CreateResourceSet(in set0Desc);
 
         Shaders.Get(Context.Backend, colorSpaceHandling, out byte[] vs, out byte[] ps);
-        ShaderDesc vsShaderDesc = ShaderDesc.Default(ShaderStages.Vertex, vs, Shaders.VSMain);
-        ShaderDesc psShaderDesc = ShaderDesc.Default(ShaderStages.Pixel, ps, Shaders.PSMain);
+        ShaderDesc vsShaderDesc = ShaderDesc.New(ShaderStages.Vertex, vs, Shaders.VSMain);
+        ShaderDesc psShaderDesc = ShaderDesc.New(ShaderStages.Pixel, ps, Shaders.PSMain);
 
         using Shader vsShader = Context.Factory.CreateShader(in vsShaderDesc);
         using Shader psShader = Context.Factory.CreateShader(in psShaderDesc);
 
-        LayoutDesc layoutDesc = LayoutDesc.Default();
-        layoutDesc.Add(ElementDesc.Default(ElementFormat.Float2, ElementSemanticType.Position, 0));
-        layoutDesc.Add(ElementDesc.Default(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
-        layoutDesc.Add(ElementDesc.Default(ElementFormat.UByte4Normalized, ElementSemanticType.Color, 0));
+        LayoutDesc layoutDesc = LayoutDesc.New();
+        layoutDesc.Add(ElementDesc.New(ElementFormat.Float2, ElementSemanticType.Position, 0));
+        layoutDesc.Add(ElementDesc.New(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
+        layoutDesc.Add(ElementDesc.New(ElementFormat.UByte4Normalized, ElementSemanticType.Color, 0));
 
-        GraphicsPipelineDesc pipelineDesc = GraphicsPipelineDesc.Default
+        GraphicsPipelineDesc pipelineDesc = GraphicsPipelineDesc.New
         (
-            shaders: GraphicsShaderDesc.Default(vertex: vsShader, pixel: psShader),
+            shaders: GraphicsShaderDesc.New(vertex: vsShader, pixel: psShader),
             inputLayouts: [layoutDesc],
             resourceLayouts: [layout0, layout1],
             outputs: outputDesc,
-            renderStates: RenderStateDesc.Default(RasterizerStates.None, DepthStencilStates.None, BlendStates.AlphaBlend)
+            renderStates: RenderStateDesc.New(RasterizerStates.None, DepthStencilStates.None, BlendStates.AlphaBlend)
         );
 
         pipeline = Context.Factory.CreateGraphicsPipeline(in pipelineDesc);

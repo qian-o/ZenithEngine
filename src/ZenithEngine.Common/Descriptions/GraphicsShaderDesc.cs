@@ -14,11 +14,11 @@ public struct GraphicsShaderDesc
 
     public Shader? Pixel;
 
-    public static GraphicsShaderDesc Default(Shader? vertex = null,
-                                             Shader? hull = null,
-                                             Shader? domain = null,
-                                             Shader? geometry = null,
-                                             Shader? pixel = null)
+    public static GraphicsShaderDesc New(Shader? vertex = null,
+                                         Shader? hull = null,
+                                         Shader? domain = null,
+                                         Shader? geometry = null,
+                                         Shader? pixel = null)
     {
         return new()
         {

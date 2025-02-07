@@ -44,14 +44,14 @@ public struct RasterizerStateDesc
     /// </summary>
     public bool ScissorEnabled;
 
-    public static RasterizerStateDesc Default(CullMode cullMode = CullMode.Back,
-                                              FillMode fillMode = FillMode.Solid,
-                                              FrontFace frontFace = FrontFace.CounterClockwise,
-                                              int depthBias = 0,
-                                              float depthBiasClamp = 0,
-                                              float slopeScaledDepthBias = 0,
-                                              bool depthClipEnabled = true,
-                                              bool scissorEnabled = false)
+    public static RasterizerStateDesc New(CullMode cullMode = CullMode.Back,
+                                          FillMode fillMode = FillMode.Solid,
+                                          FrontFace frontFace = FrontFace.CounterClockwise,
+                                          int depthBias = 0,
+                                          float depthBiasClamp = 0,
+                                          float slopeScaledDepthBias = 0,
+                                          bool depthClipEnabled = true,
+                                          bool scissorEnabled = false)
     {
         return new()
         {

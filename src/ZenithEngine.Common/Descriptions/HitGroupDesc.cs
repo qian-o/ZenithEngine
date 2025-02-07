@@ -12,10 +12,10 @@ public struct HitGroupDesc
 
     public string? Intersection;
 
-    public static HitGroupDesc Default(HitGroupType type = HitGroupType.Triangles,
-                                       string? closestHit = null,
-                                       string? anyHit = null,
-                                       string? intersection = null)
+    public static HitGroupDesc New(HitGroupType type = HitGroupType.Triangles,
+                                   string? closestHit = null,
+                                   string? anyHit = null,
+                                   string? intersection = null)
     {
         return new()
         {

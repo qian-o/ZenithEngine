@@ -16,12 +16,12 @@ public struct TexturePosition
 
     public CubeMapFace Face;
 
-    public static TexturePosition Default(uint x = 0,
-                                          uint y = 0,
-                                          uint z = 0,
-                                          uint mipLevel = 0,
-                                          uint arrayLayer = 0,
-                                          CubeMapFace face = CubeMapFace.PositiveX)
+    public static TexturePosition New(uint x = 0,
+                                      uint y = 0,
+                                      uint z = 0,
+                                      uint mipLevel = 0,
+                                      uint arrayLayer = 0,
+                                      CubeMapFace face = CubeMapFace.PositiveX)
     {
         return new()
         {

@@ -14,8 +14,8 @@ public struct ComputePipelineDesc
     /// </summary>
     public ResourceLayout[] ResourceLayouts;
 
-    public static ComputePipelineDesc Default(Shader shader,
-                                              params ResourceLayout[] resourceLayouts)
+    public static ComputePipelineDesc New(Shader shader,
+                                          params ResourceLayout[] resourceLayouts)
     {
         return new()
         {
