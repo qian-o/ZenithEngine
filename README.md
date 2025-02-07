@@ -60,4 +60,3 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - `,+[\s]+[^\S\r\n]+};` Search for the comma after the last property when simplifying property assignments.
 
 ## Draft
-- All structs that involve the static method `Default` should be changed to `Create` or `New`.
