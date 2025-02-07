@@ -6,7 +6,7 @@ public struct ShaderDesc(ShaderStages stage,
                          byte[] shaderBytes,
                          string entryPoint)
 {
-    public ShaderDesc()
+    public ShaderDesc() : this(ShaderStages.None, [], string.Empty)
     {
     }
 

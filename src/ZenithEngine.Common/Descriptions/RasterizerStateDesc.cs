@@ -11,7 +11,14 @@ public struct RasterizerStateDesc(CullMode cullMode = CullMode.Back,
                                   bool depthClipEnabled = true,
                                   bool scissorEnabled = false)
 {
-    public RasterizerStateDesc()
+    public RasterizerStateDesc() : this(CullMode.Back,
+                                        FillMode.Solid,
+                                        FrontFace.CounterClockwise,
+                                        0,
+                                        0,
+                                        0,
+                                        true,
+                                        false)
     {
     }
 

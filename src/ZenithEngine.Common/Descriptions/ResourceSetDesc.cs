@@ -5,7 +5,7 @@ namespace ZenithEngine.Common.Descriptions;
 public struct ResourceSetDesc(ResourceLayout layout,
                               params GraphicsResource[] resources)
 {
-    public ResourceSetDesc()
+    public ResourceSetDesc() : this(null!, [])
     {
     }
 

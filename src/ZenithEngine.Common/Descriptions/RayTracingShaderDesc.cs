@@ -8,7 +8,7 @@ public struct RayTracingShaderDesc(Shader rayGen,
                                    Shader[]? anyHit = null,
                                    Shader[]? intersection = null)
 {
-    public RayTracingShaderDesc()
+    public RayTracingShaderDesc() : this(null!, [], [], null, null)
     {
     }
 

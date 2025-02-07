@@ -6,7 +6,7 @@ public struct BufferDesc(uint sizeInBytes,
                          BufferUsage usage = BufferUsage.Dynamic,
                          uint structureStrideInBytes = 0)
 {
-    public BufferDesc()
+    public BufferDesc() : this(0, BufferUsage.Dynamic, 0)
     {
     }
 

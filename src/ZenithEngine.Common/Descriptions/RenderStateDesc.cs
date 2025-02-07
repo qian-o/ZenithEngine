@@ -8,7 +8,7 @@ public struct RenderStateDesc(RasterizerStateDesc? rasterizerState = null,
                               int stencilReference = 0,
                               Vector4D<float>? blendFactor = null)
 {
-    public RenderStateDesc()
+    public RenderStateDesc() : this(null, null, null, 0, null)
     {
     }
 

@@ -11,7 +11,14 @@ public struct DepthStencilStateDesc(bool depthEnabled = true,
                                     DepthStencilOperationDesc? frontFace = null,
                                     DepthStencilOperationDesc? backFace = null)
 {
-    public DepthStencilStateDesc()
+    public DepthStencilStateDesc() : this(true,
+                                          true,
+                                          ComparisonFunction.LessEqual,
+                                          false,
+                                          byte.MaxValue,
+                                          byte.MaxValue,
+                                          null,
+                                          null)
     {
     }
 

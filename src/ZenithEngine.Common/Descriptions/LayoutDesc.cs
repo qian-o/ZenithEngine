@@ -7,7 +7,7 @@ public struct LayoutDesc(VertexStepFunction stepFunction = VertexStepFunction.Pe
                          uint stride = 0,
                          params ElementDesc[] elements)
 {
-    public LayoutDesc()
+    public LayoutDesc() : this(VertexStepFunction.PerVertexData, 0, 0, [])
     {
     }
 

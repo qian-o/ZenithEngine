@@ -2,7 +2,7 @@
 
 public struct ResourceLayoutDesc(params LayoutElementDesc[] elements)
 {
-    public ResourceLayoutDesc()
+    public ResourceLayoutDesc() : this([])
     {
     }
 

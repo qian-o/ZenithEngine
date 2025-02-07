@@ -10,7 +10,7 @@ public struct GraphicsPipelineDesc(GraphicsShaderDesc shaders,
                                    RenderStateDesc? renderStates = null,
                                    PrimitiveTopology primitiveTopology = PrimitiveTopology.TriangleList)
 {
-    public GraphicsPipelineDesc()
+    public GraphicsPipelineDesc() : this(new(), [], [], new(), null, PrimitiveTopology.TriangleList)
     {
     }
 

@@ -9,7 +9,10 @@ public struct ElementDesc(ElementFormat format,
 {
     public const int AppendAligned = -1;
 
-    public ElementDesc()
+    public ElementDesc() : this(ElementFormat.UByte1,
+                                ElementSemanticType.Position,
+                                0,
+                                AppendAligned)
     {
     }
 

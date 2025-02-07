@@ -8,7 +8,7 @@ public struct FrameBufferAttachmentDesc(Texture target,
                                         uint arrayLayer = 0,
                                         CubeMapFace face = CubeMapFace.PositiveX)
 {
-    public FrameBufferAttachmentDesc()
+    public FrameBufferAttachmentDesc() : this(null!, 0, 0, CubeMapFace.PositiveX)
     {
     }
 

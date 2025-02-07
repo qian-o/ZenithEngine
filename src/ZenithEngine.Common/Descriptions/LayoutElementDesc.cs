@@ -9,7 +9,7 @@ public struct LayoutElementDesc(ShaderStages stages,
                                 bool allowDynamicOffset = false,
                                 uint range = 0)
 {
-    public LayoutElementDesc()
+    public LayoutElementDesc() : this(ShaderStages.None, ResourceType.ConstantBuffer, 0, 1, false, 0)
     {
     }
 

@@ -12,7 +12,15 @@ public struct TextureDesc(uint width,
                           TextureUsage usage = TextureUsage.Sampled,
                           TextureSampleCount sampleCount = TextureSampleCount.Count1)
 {
-    public TextureDesc()
+    public TextureDesc() : this(0,
+                                0,
+                                TextureType.Texture2D,
+                                PixelFormat.R8G8B8A8UNorm,
+                                1,
+                                1,
+                                1,
+                                TextureUsage.Sampled,
+                                TextureSampleCount.Count1)
     {
     }
 

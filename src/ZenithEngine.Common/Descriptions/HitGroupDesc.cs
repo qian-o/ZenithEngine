@@ -7,7 +7,7 @@ public struct HitGroupDesc(HitGroupType type = HitGroupType.Triangles,
                            string? anyHit = null,
                            string? intersection = null)
 {
-    public HitGroupDesc()
+    public HitGroupDesc() : this(HitGroupType.Triangles, null, null, null)
     {
     }
 

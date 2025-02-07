@@ -8,7 +8,7 @@ public struct GraphicsShaderDesc(Shader? vertex = null,
                                  Shader? geometry = null,
                                  Shader? pixel = null)
 {
-    public GraphicsShaderDesc()
+    public GraphicsShaderDesc() : this(null, null, null, null, null)
     {
     }
 

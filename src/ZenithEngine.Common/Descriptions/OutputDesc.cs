@@ -6,7 +6,7 @@ public struct OutputDesc(TextureSampleCount sampleCount = TextureSampleCount.Cou
                          PixelFormat? depthStencilAttachment = null,
                          params PixelFormat[] colorAttachments)
 {
-    public OutputDesc()
+    public OutputDesc() : this(TextureSampleCount.Count1, null, [])
     {
     }
 

@@ -11,7 +11,14 @@ public struct BlendStateRenderTargetDesc(bool blendEnabled = false,
                                          BlendOperation blendOperationAlpha = BlendOperation.Add,
                                          ColorWriteChannels colorWriteChannels = ColorWriteChannels.All)
 {
-    public BlendStateRenderTargetDesc()
+    public BlendStateRenderTargetDesc() : this(false,
+                                               Blend.One,
+                                               Blend.Zero,
+                                               BlendOperation.Add,
+                                               Blend.One,
+                                               Blend.Zero,
+                                               BlendOperation.Add,
+                                               ColorWriteChannels.All)
     {
     }
 

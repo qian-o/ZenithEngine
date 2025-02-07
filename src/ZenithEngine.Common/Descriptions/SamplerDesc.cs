@@ -13,7 +13,16 @@ public struct SamplerDesc(AddressMode addressModeU = AddressMode.Wrap,
                           int lodBias = 0,
                           SamplerBorderColor borderColor = SamplerBorderColor.TransparentBlack)
 {
-    public SamplerDesc()
+    public SamplerDesc() : this(AddressMode.Wrap,
+                                AddressMode.Wrap,
+                                AddressMode.Wrap,
+                                SamplerFilter.MinLinearMagLinearMipLinear,
+                                ComparisonFunction.Never,
+                                0,
+                                0,
+                                uint.MaxValue,
+                                0,
+                                SamplerBorderColor.TransparentBlack)
     {
     }
 

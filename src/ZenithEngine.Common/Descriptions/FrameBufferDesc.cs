@@ -3,7 +3,7 @@
 public struct FrameBufferDesc(FrameBufferAttachmentDesc? depthStencilTarget,
                               params FrameBufferAttachmentDesc[] colorTargets)
 {
-    public FrameBufferDesc()
+    public FrameBufferDesc() : this(null, [])
     {
     }
 

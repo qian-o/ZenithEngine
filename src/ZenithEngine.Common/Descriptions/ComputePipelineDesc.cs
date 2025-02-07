@@ -5,7 +5,7 @@ namespace ZenithEngine.Common.Descriptions;
 public struct ComputePipelineDesc(Shader shader,
                                   params ResourceLayout[] resourceLayouts)
 {
-    public ComputePipelineDesc()
+    public ComputePipelineDesc() : this(null!, [])
     {
     }
 

@@ -11,7 +11,7 @@ public struct BlendStateDesc(bool alphaToCoverageEnabled = false,
                              BlendStateRenderTargetDesc? renderTarget6 = null,
                              BlendStateRenderTargetDesc? renderTarget7 = null)
 {
-    public BlendStateDesc()
+    public BlendStateDesc() : this(false, false, null, null, null, null, null, null, null)
     {
     }
 

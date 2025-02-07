@@ -7,7 +7,10 @@ public struct DepthStencilOperationDesc(StencilOperation stencilFailOperation = 
                                         StencilOperation stencilPassOperation = StencilOperation.Keep,
                                         ComparisonFunction stencilFunction = ComparisonFunction.Always)
 {
-    public DepthStencilOperationDesc()
+    public DepthStencilOperationDesc() : this(StencilOperation.Keep,
+                                              StencilOperation.Keep,
+                                              StencilOperation.Keep,
+                                              ComparisonFunction.Always)
     {
     }
 
