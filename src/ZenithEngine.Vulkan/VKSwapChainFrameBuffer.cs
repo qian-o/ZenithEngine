@@ -20,6 +20,8 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
     {
         DestroyFrameBuffers();
 
+        bool hasDepthStencilAttachment = swapChain.Desc.DepthStencilTargetFormat is not null;
+
         uint imageCount;
         Context.KhrSwapchain!.GetSwapchainImages(Context.Device,
                                                  swapChain.Swapchain,
@@ -32,11 +34,11 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
                                                 &imageCount,
                                                 out images[0]).ThrowIfError();
 
-        if (swapChain.Desc.DepthStencilTargetFormat is not null)
+        if (hasDepthStencilAttachment)
         {
             TextureDesc desc = new(width,
                                    height,
-                                   format: swapChain.Desc.DepthStencilTargetFormat.Value,
+                                   format: swapChain.Desc.DepthStencilTargetFormat!.Value,
                                    usage: TextureUsage.DepthStencil);
 
             depthStencilTarget = Context.Factory.CreateTexture(in desc);
@@ -53,8 +55,8 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
 
             colorTargets[i] = new VKTexture(Context, in desc, images[i]);
 
-            FrameBufferDesc frameBufferDesc = FrameBufferDesc.New(depthStencilTarget is not null ? FrameBufferAttachmentDesc.New(depthStencilTarget) : null,
-                                                                  FrameBufferAttachmentDesc.New(colorTargets[i]));
+            FrameBufferDesc frameBufferDesc = FrameBufferDesc.New(hasDepthStencilAttachment ? new(depthStencilTarget!) : null,
+                                                                  [new(colorTargets[i])]);
 
             frameBuffers[i] = Context.Factory.CreateFrameBuffer(in frameBufferDesc);
         }

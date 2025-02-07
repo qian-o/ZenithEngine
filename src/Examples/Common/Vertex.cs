@@ -16,9 +16,9 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
     {
         LayoutDesc layout = LayoutDesc.New();
 
-        layout.Add(ElementDesc.New(ElementFormat.Float3, ElementSemanticType.Position, 0));
-        layout.Add(ElementDesc.New(ElementFormat.Float3, ElementSemanticType.Normal, 0));
-        layout.Add(ElementDesc.New(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
+        layout.Add(new(ElementFormat.Float3, ElementSemanticType.Position, 0));
+        layout.Add(new(ElementFormat.Float3, ElementSemanticType.Normal, 0));
+        layout.Add(new(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
 
         return layout;
     }
