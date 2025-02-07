@@ -2,42 +2,31 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct LayoutDesc
+public struct LayoutDesc(VertexStepFunction stepFunction = VertexStepFunction.PerVertexData,
+                         uint stepRate = 0,
+                         uint stride = 0,
+                         params ElementDesc[] elements)
 {
     /// <summary>
     /// A array of individual vertex elements comprising a single vertex.
     /// </summary>
-    public ElementDesc[] Elements;
+    public ElementDesc[] Elements = elements;
 
     /// <summary>
     /// The frequency with which the vertex function fetches attribute data.
     /// </summary>
-    public VertexStepFunction StepFunction;
+    public VertexStepFunction StepFunction = stepFunction;
 
     /// <summary>
     /// A value controlling how often data for instances is updated for this layout.
     /// For per-vertex elements, this value should be 0.
     /// </summary>
-    public uint StepRate;
+    public uint StepRate = stepRate;
 
     /// <summary>
     /// The total size of an individual vertex in bytes.
     /// </summary>
-    public uint Stride;
-
-    public static LayoutDesc New(VertexStepFunction stepFunction = VertexStepFunction.PerVertexData,
-                                 uint stepRate = 0,
-                                 uint stride = 0,
-                                 params ElementDesc[] elements)
-    {
-        return new()
-        {
-            Elements = elements,
-            StepFunction = stepFunction,
-            StepRate = stepRate,
-            Stride = stride
-        };
-    }
+    public uint Stride = stride;
 
     public LayoutDesc Add(ElementDesc element)
     {

@@ -81,9 +81,9 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
 
         set = Context.Factory.CreateResourceSet(in setDesc);
 
-        GraphicsPipelineDesc gpDesc = GraphicsPipelineDesc.New
+        GraphicsPipelineDesc gpDesc = new
         (
-            shaders: GraphicsShaderDesc.New(vertex: vsShader, pixel: psShader),
+            shaders: new(vertex: vsShader, pixel: psShader),
             inputLayouts: [Vertex.GetLayout()],
             resourceLayouts: [layout],
             outputs: SwapChain.FrameBuffer.Output,

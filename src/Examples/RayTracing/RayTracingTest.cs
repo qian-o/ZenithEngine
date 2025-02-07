@@ -112,7 +112,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         RayTracingPipelineDesc rtpDesc = RayTracingPipelineDesc.New
         (
             shaders: RayTracingShaderDesc.New(rgShader, [msShader], [chShader]),
-            hitGroups: [HitGroupDesc.New(closestHit: "ClosestHitMain")],
+            hitGroups: [new(closestHit: "ClosestHitMain")],
             resourceLayouts: [resourceLayout]
         );
 

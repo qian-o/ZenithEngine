@@ -14,7 +14,7 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
 
     public static LayoutDesc GetLayout()
     {
-        LayoutDesc layout = LayoutDesc.New();
+        LayoutDesc layout = new();
 
         layout.Add(new(ElementFormat.Float3, ElementSemanticType.Position, 0));
         layout.Add(new(ElementFormat.Float3, ElementSemanticType.Normal, 0));

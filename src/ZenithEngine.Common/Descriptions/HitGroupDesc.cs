@@ -2,27 +2,16 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct HitGroupDesc
+public struct HitGroupDesc(HitGroupType type = HitGroupType.Triangles,
+                           string? closestHit = null,
+                           string? anyHit = null,
+                           string? intersection = null)
 {
-    public HitGroupType Type;
+    public HitGroupType Type = type;
 
-    public string? ClosestHit;
+    public string? ClosestHit = closestHit;
 
-    public string? AnyHit;
+    public string? AnyHit = anyHit;
 
-    public string? Intersection;
-
-    public static HitGroupDesc New(HitGroupType type = HitGroupType.Triangles,
-                                   string? closestHit = null,
-                                   string? anyHit = null,
-                                   string? intersection = null)
-    {
-        return new()
-        {
-            Type = type,
-            ClosestHit = closestHit,
-            AnyHit = anyHit,
-            Intersection = intersection
-        };
-    }
+    public string? Intersection = intersection;
 }

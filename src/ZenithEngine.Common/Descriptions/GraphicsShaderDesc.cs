@@ -2,31 +2,19 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct GraphicsShaderDesc
+public struct GraphicsShaderDesc(Shader? vertex = null,
+                                 Shader? hull = null,
+                                 Shader? domain = null,
+                                 Shader? geometry = null,
+                                 Shader? pixel = null)
 {
-    public Shader? Vertex;
+    public Shader? Vertex = vertex;
 
-    public Shader? Hull;
+    public Shader? Hull = hull;
 
-    public Shader? Domain;
+    public Shader? Domain = domain;
 
-    public Shader? Geometry;
+    public Shader? Geometry = geometry;
 
-    public Shader? Pixel;
-
-    public static GraphicsShaderDesc New(Shader? vertex = null,
-                                         Shader? hull = null,
-                                         Shader? domain = null,
-                                         Shader? geometry = null,
-                                         Shader? pixel = null)
-    {
-        return new()
-        {
-            Vertex = vertex,
-            Hull = hull,
-            Domain = domain,
-            Geometry = geometry,
-            Pixel = pixel
-        };
-    }
+    public Shader? Pixel = pixel;
 }

@@ -280,14 +280,14 @@ internal unsafe class ImGuiRenderer : DisposableObject
         using Shader vsShader = Context.Factory.CreateShader(in vsShaderDesc);
         using Shader psShader = Context.Factory.CreateShader(in psShaderDesc);
 
-        LayoutDesc layoutDesc = LayoutDesc.New();
+        LayoutDesc layoutDesc = new();
         layoutDesc.Add(new(ElementFormat.Float2, ElementSemanticType.Position, 0));
         layoutDesc.Add(new(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
         layoutDesc.Add(new(ElementFormat.UByte4Normalized, ElementSemanticType.Color, 0));
 
-        GraphicsPipelineDesc pipelineDesc = GraphicsPipelineDesc.New
+        GraphicsPipelineDesc pipelineDesc = new
         (
-            shaders: GraphicsShaderDesc.New(vertex: vsShader, pixel: psShader),
+            shaders: new(vertex: vsShader, pixel: psShader),
             inputLayouts: [layoutDesc],
             resourceLayouts: [layout0, layout1],
             outputs: outputDesc,
