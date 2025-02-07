@@ -55,7 +55,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
         int height;
         ImGui.GetIO().Fonts.GetTexDataAsRGBA32(&pixels, &width, &height);
 
-        TextureDesc fontTextureDesc = TextureDesc.New((uint)width, (uint)height);
+        TextureDesc fontTextureDesc = new((uint)width, (uint)height);
 
         fontTexture = Context.Factory.CreateTexture(in fontTextureDesc);
 

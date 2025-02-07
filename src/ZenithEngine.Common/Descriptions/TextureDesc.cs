@@ -2,74 +2,58 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct TextureDesc
+public struct TextureDesc(uint width,
+                          uint height,
+                          TextureType type = TextureType.Texture2D,
+                          PixelFormat format = PixelFormat.R8G8B8A8UNorm,
+                          uint depth = 1,
+                          uint mipLevels = 1,
+                          uint arrayLayers = 1,
+                          TextureUsage usage = TextureUsage.Sampled,
+                          TextureSampleCount sampleCount = TextureSampleCount.Count1)
 {
     /// <summary>
     /// The type of the texture.
     /// </summary>
-    public TextureType Type;
+    public TextureType Type = type;
 
     /// <summary>
     /// The format of individual texture elements.
     /// </summary>
-    public PixelFormat Format;
+    public PixelFormat Format = format;
 
     /// <summary>
     /// The total width, in texels.
     /// </summary>
-    public uint Width;
+    public uint Width = width;
 
     /// <summary>
     /// The total height, in texels.
     /// </summary>
-    public uint Height;
+    public uint Height = height;
 
     /// <summary>
     /// The total depth, in texels.
     /// </summary>
-    public uint Depth;
+    public uint Depth = depth;
 
     /// <summary>
     /// The number of mipmap levels.
     /// </summary>
-    public uint MipLevels;
+    public uint MipLevels = mipLevels;
 
     /// <summary>
     /// The number of array layers.
     /// </summary>
-    public uint ArrayLayers;
+    public uint ArrayLayers = arrayLayers;
 
     /// <summary>
     /// Controls how the Texture is permitted to be used. If the Texture will be sampled from a shader.
     /// </summary>
-    public TextureUsage Usage;
+    public TextureUsage Usage = usage;
 
     /// <summary>
     /// The number of samples.
     /// </summary>
-    public TextureSampleCount SampleCount;
-
-    public static TextureDesc New(uint width,
-                                  uint height,
-                                  TextureType type = TextureType.Texture2D,
-                                  PixelFormat format = PixelFormat.R8G8B8A8UNorm,
-                                  uint depth = 1,
-                                  uint mipLevels = 1,
-                                  uint arrayLayers = 1,
-                                  TextureUsage usage = TextureUsage.Sampled,
-                                  TextureSampleCount sampleCount = TextureSampleCount.Count1)
-    {
-        return new()
-        {
-            Type = type,
-            Format = format,
-            Width = width,
-            Height = height,
-            Depth = depth,
-            MipLevels = mipLevels,
-            ArrayLayers = arrayLayers,
-            Usage = usage,
-            SampleCount = sampleCount
-        };
-    }
+    public TextureSampleCount SampleCount = sampleCount;
 }

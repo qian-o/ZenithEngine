@@ -23,10 +23,10 @@ internal class DXSwapChainFrameBuffer(GraphicsContext context,
 
         if (swapChain.Desc.DepthStencilTargetFormat is not null)
         {
-            TextureDesc desc = TextureDesc.New(width,
-                                               height,
-                                               format: swapChain.Desc.DepthStencilTargetFormat.Value,
-                                               usage: TextureUsage.DepthStencil);
+            TextureDesc desc = new(width,
+                                   height,
+                                   format: swapChain.Desc.DepthStencilTargetFormat.Value,
+                                   usage: TextureUsage.DepthStencil);
 
             depthStencilTarget = Context.Factory.CreateTexture(in desc);
         }
@@ -35,10 +35,10 @@ internal class DXSwapChainFrameBuffer(GraphicsContext context,
         frameBuffers = new FrameBuffer[DXSwapChain.BufferCount];
         for (uint i = 0; i < DXSwapChain.BufferCount; i++)
         {
-            TextureDesc desc = TextureDesc.New(width,
-                                               height,
-                                               format: swapChain.Desc.ColorTargetFormat,
-                                               usage: TextureUsage.RenderTarget);
+            TextureDesc desc = new(width,
+                                   height,
+                                   format: swapChain.Desc.ColorTargetFormat,
+                                   usage: TextureUsage.RenderTarget);
 
             colorTargets[i] = new DXTexture(Context,
                                             in desc,
