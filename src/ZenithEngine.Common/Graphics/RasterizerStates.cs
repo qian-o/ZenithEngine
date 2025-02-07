@@ -38,16 +38,16 @@ public static class RasterizerStates
 
     static RasterizerStates()
     {
-        CullFront = RasterizerStateDesc.New(cullMode: CullMode.Front);
+        CullFront = new(cullMode: CullMode.Front);
 
-        CullBack = RasterizerStateDesc.New();
+        CullBack = new();
 
-        None = RasterizerStateDesc.New(cullMode: CullMode.None);
+        None = new(cullMode: CullMode.None);
 
-        WireframeCullFront = RasterizerStateDesc.New(cullMode: CullMode.Front, fillMode: FillMode.Wireframe);
+        WireframeCullFront = new(cullMode: CullMode.Front, fillMode: FillMode.Wireframe);
 
-        WireframeCullBack = RasterizerStateDesc.New(fillMode: FillMode.Wireframe);
+        WireframeCullBack = new(fillMode: FillMode.Wireframe);
 
-        WireframeCullNone = RasterizerStateDesc.New(cullMode: CullMode.None, fillMode: FillMode.Wireframe);
+        WireframeCullNone = new(cullMode: CullMode.None, fillMode: FillMode.Wireframe);
     }
 }

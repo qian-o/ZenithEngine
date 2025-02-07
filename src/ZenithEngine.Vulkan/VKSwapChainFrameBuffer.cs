@@ -55,8 +55,7 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
 
             colorTargets[i] = new VKTexture(Context, in desc, images[i]);
 
-            FrameBufferDesc frameBufferDesc = FrameBufferDesc.New(hasDepthStencilAttachment ? new(depthStencilTarget!) : null,
-                                                                  [new(colorTargets[i])]);
+            FrameBufferDesc frameBufferDesc = new(hasDepthStencilAttachment ? new(depthStencilTarget!) : null, [new(colorTargets[i])]);
 
             frameBuffers[i] = Context.Factory.CreateFrameBuffer(in frameBufferDesc);
         }

@@ -46,8 +46,7 @@ internal class DXSwapChainFrameBuffer(GraphicsContext context,
                                             in desc,
                                             swapChain.SwapChain3.GetBuffer<ID3D12Resource>(i));
 
-            FrameBufferDesc frameBufferDesc = FrameBufferDesc.New(hasDepthStencilAttachment ? new(depthStencilTarget!) : null,
-                                                                  [new(colorTargets[i])]);
+            FrameBufferDesc frameBufferDesc = new(hasDepthStencilAttachment ? new(depthStencilTarget!) : null, [new(colorTargets[i])]);
 
             frameBuffers[i] = Context.Factory.CreateFrameBuffer(in frameBufferDesc);
         }

@@ -87,7 +87,7 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
             inputLayouts: [Vertex.GetLayout()],
             resourceLayouts: [layout],
             outputs: SwapChain.FrameBuffer.Output,
-            renderStates: RenderStateDesc.New(RasterizerStates.None, DepthStencilStates.None, BlendStates.Opaque)
+            renderStates: new(RasterizerStates.None, DepthStencilStates.None, BlendStates.Opaque)
         );
 
         pipeline = Context.Factory.CreateGraphicsPipeline(in gpDesc);

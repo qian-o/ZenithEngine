@@ -291,7 +291,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
             inputLayouts: [layoutDesc],
             resourceLayouts: [layout0, layout1],
             outputs: outputDesc,
-            renderStates: RenderStateDesc.New(RasterizerStates.None, DepthStencilStates.None, BlendStates.AlphaBlend)
+            renderStates: new(RasterizerStates.None, DepthStencilStates.None, BlendStates.AlphaBlend)
         );
 
         pipeline = Context.Factory.CreateGraphicsPipeline(in pipelineDesc);

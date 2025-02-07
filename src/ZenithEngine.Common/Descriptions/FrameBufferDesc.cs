@@ -1,24 +1,15 @@
 ﻿namespace ZenithEngine.Common.Descriptions;
 
-public struct FrameBufferDesc
+public struct FrameBufferDesc(FrameBufferAttachmentDesc? depthStencilTarget,
+                              params FrameBufferAttachmentDesc[] colorTargets)
 {
     /// <summary>
     /// An array of color texture attachments.
     /// </summary>
-    public FrameBufferAttachmentDesc[] ColorTargets;
+    public FrameBufferAttachmentDesc[] ColorTargets = colorTargets;
 
     /// <summary>
     /// The depth/stencil texture attachment.
     /// </summary>
-    public FrameBufferAttachmentDesc? DepthStencilTarget;
-
-    public static FrameBufferDesc New(FrameBufferAttachmentDesc? depthStencilTarget,
-                                      params FrameBufferAttachmentDesc[] colorTargets)
-    {
-        return new()
-        {
-            ColorTargets = colorTargets,
-            DepthStencilTarget = depthStencilTarget
-        };
-    }
+    public FrameBufferAttachmentDesc? DepthStencilTarget = depthStencilTarget;
 }

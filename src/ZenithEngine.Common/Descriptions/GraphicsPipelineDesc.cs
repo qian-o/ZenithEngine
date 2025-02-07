@@ -42,7 +42,7 @@ public struct GraphicsPipelineDesc
                                            RenderStateDesc? renderStates = null,
                                            PrimitiveTopology primitiveTopology = PrimitiveTopology.TriangleList)
     {
-        renderStates ??= RenderStateDesc.New();
+        renderStates ??= new();
 
         return new()
         {
