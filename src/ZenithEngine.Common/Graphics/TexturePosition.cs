@@ -2,35 +2,22 @@
 
 namespace ZenithEngine.Common.Graphics;
 
-public struct TexturePosition
+public struct TexturePosition(uint x = 0,
+                              uint y = 0,
+                              uint z = 0,
+                              uint mipLevel = 0,
+                              uint arrayLayer = 0,
+                              CubeMapFace face = CubeMapFace.PositiveX)
 {
-    public uint X;
+    public uint X = x;
 
-    public uint Y;
+    public uint Y = y;
 
-    public uint Z;
+    public uint Z = z;
 
-    public uint MipLevel;
+    public uint MipLevel = mipLevel;
 
-    public uint ArrayLayer;
+    public uint ArrayLayer = arrayLayer;
 
-    public CubeMapFace Face;
-
-    public static TexturePosition New(uint x = 0,
-                                      uint y = 0,
-                                      uint z = 0,
-                                      uint mipLevel = 0,
-                                      uint arrayLayer = 0,
-                                      CubeMapFace face = CubeMapFace.PositiveX)
-    {
-        return new()
-        {
-            X = x,
-            Y = y,
-            Z = z,
-            MipLevel = mipLevel,
-            ArrayLayer = arrayLayer,
-            Face = face
-        };
-    }
+    public CubeMapFace Face = face;
 }

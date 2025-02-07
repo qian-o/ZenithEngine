@@ -1,28 +1,15 @@
 ﻿namespace ZenithEngine.Common.Graphics;
 
-public struct TextureRegion
+public struct TextureRegion(uint width,
+                            uint height,
+                            uint depth,
+                            TexturePosition? position = null)
 {
-    public TexturePosition Position;
+    public TexturePosition Position = position ?? new();
 
-    public uint Width;
+    public uint Width = width;
 
-    public uint Height;
+    public uint Height = height;
 
-    public uint Depth;
-
-    public static TextureRegion New(uint width,
-                                    uint height,
-                                    uint depth,
-                                    TexturePosition? position = null)
-    {
-        position ??= TexturePosition.New();
-
-        return new()
-        {
-            Position = position.Value,
-            Width = width,
-            Height = height,
-            Depth = depth
-        };
-    }
+    public uint Depth = depth;
 }
