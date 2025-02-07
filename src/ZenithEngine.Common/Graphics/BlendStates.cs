@@ -32,42 +32,50 @@ public static class BlendStates
 
     static BlendStates()
     {
-        Opaque = BlendStateDesc.New();
+        Opaque = new();
 
-        AlphaBlend = BlendStateDesc.New();
-        AlphaBlend.RenderTarget0 = BlendStateRenderTargetDesc.New
-        (
-            blendEnabled: true,
-            sourceBlendColor: Blend.SourceAlpha,
-            destinationBlendColor: Blend.InverseSourceAlpha,
-            sourceBlendAlpha: Blend.SourceAlpha,
-            destinationBlendAlpha: Blend.InverseSourceAlpha
-        );
+        AlphaBlend = new()
+        {
+            RenderTarget0 = new()
+            {
+                BlendEnabled = true,
+                SourceBlendColor = Blend.SourceAlpha,
+                DestinationBlendColor = Blend.InverseSourceAlpha,
+                SourceBlendAlpha = Blend.SourceAlpha,
+                DestinationBlendAlpha = Blend.InverseSourceAlpha
+            }
+        };
 
-        Additive = BlendStateDesc.New();
-        Additive.RenderTarget0 = BlendStateRenderTargetDesc.New
-        (
-            blendEnabled: true,
-            destinationBlendColor: Blend.One,
-            destinationBlendAlpha: Blend.One
-        );
+        Additive = new()
+        {
+            RenderTarget0 = new()
+            {
+                BlendEnabled = true,
+                DestinationBlendColor = Blend.One,
+                DestinationBlendAlpha = Blend.One
+            }
+        };
 
-        Multiplicative = BlendStateDesc.New();
-        Multiplicative.RenderTarget0 = BlendStateRenderTargetDesc.New
-        (
-            blendEnabled: true,
-            sourceBlendColor: Blend.DestinationColor,
-            destinationBlendColor: Blend.InverseSourceAlpha,
-            sourceBlendAlpha: Blend.One,
-            destinationBlendAlpha: Blend.One
-        );
+        Multiplicative = new()
+        {
+            RenderTarget0 = new()
+            {
+                BlendEnabled = true,
+                SourceBlendColor = Blend.DestinationColor,
+                DestinationBlendColor = Blend.InverseSourceAlpha,
+                SourceBlendAlpha = Blend.One,
+                DestinationBlendAlpha = Blend.One
+            }
+        };
 
-        NonPremultiplied = BlendStateDesc.New();
-        NonPremultiplied.RenderTarget0 = BlendStateRenderTargetDesc.New
-        (
-            blendEnabled: true,
-            sourceBlendColor: Blend.SourceAlpha,
-            destinationBlendColor: Blend.InverseSourceAlpha
-        );
+        NonPremultiplied = new()
+        {
+            RenderTarget0 = new()
+            {
+                BlendEnabled = true,
+                SourceBlendColor = Blend.SourceAlpha,
+                DestinationBlendColor = Blend.InverseSourceAlpha
+            }
+        };
     }
 }

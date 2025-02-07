@@ -37,7 +37,7 @@ public struct RenderStateDesc
     {
         rasterizerState ??= RasterizerStateDesc.New();
         depthStencilState ??= DepthStencilStateDesc.New();
-        blendState ??= BlendStateDesc.New();
+        blendState ??= new();
 
         return new()
         {

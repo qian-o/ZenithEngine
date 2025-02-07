@@ -2,31 +2,38 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct BlendStateRenderTargetDesc
+public struct BlendStateRenderTargetDesc(bool blendEnabled = false,
+                                         Blend sourceBlendColor = Blend.One,
+                                         Blend destinationBlendColor = Blend.Zero,
+                                         BlendOperation blendOperationColor = BlendOperation.Add,
+                                         Blend sourceBlendAlpha = Blend.One,
+                                         Blend destinationBlendAlpha = Blend.Zero,
+                                         BlendOperation blendOperationAlpha = BlendOperation.Add,
+                                         ColorWriteChannels colorWriteChannels = ColorWriteChannels.All)
 {
     /// <summary>
     /// Controls whether blending is enabled for the color attachment.
     /// </summary>
-    public bool BlendEnabled;
+    public bool BlendEnabled = blendEnabled;
 
     /// <summary>
     /// This blend option specifies the operation to perform on the RGB value that the
     /// pixel shader outputs. The BlendOp member defines how to combine the SrcBlend
     /// and DestBlend operations.
     /// </summary>
-    public Blend SourceBlendColor;
+    public Blend SourceBlendColor = sourceBlendColor;
 
     /// <summary>
     /// This blend option specifies the operation to perform on the current RGB value
     /// in the render target. The BlendOp member defines how to combine the SrcBlend
     /// and DestBlend operations.
     /// </summary>
-    public Blend DestinationBlendColor;
+    public Blend DestinationBlendColor = destinationBlendColor;
 
     /// <summary>
     /// This blend operation defines how to combine the SrcBlend and DestBlend operations.
     /// </summary>
-    public BlendOperation BlendOperationColor;
+    public BlendOperation BlendOperationColor = blendOperationColor;
 
     /// <summary>
     /// This blend option specifies the operation to perform on the alpha value that
@@ -34,44 +41,22 @@ public struct BlendStateRenderTargetDesc
     /// BlendOpAlpha member defines how to combine the SrcBlendAlpha and DestBlendAlpha
     /// operations.
     /// </summary>
-    public Blend SourceBlendAlpha;
+    public Blend SourceBlendAlpha = sourceBlendAlpha;
 
     /// <summary>
     /// This blend option specifies the operation to perform on the current alpha value
     /// in the render target. Blend options that end in _COLOR are not allowed. The BlendOpAlpha
     /// member defines how to combine the SrcBlendAlpha and DestBlendAlpha operations.
     /// </summary>
-    public Blend DestinationBlendAlpha;
+    public Blend DestinationBlendAlpha = destinationBlendAlpha;
 
     /// <summary>
     /// This blend operation defines how to combine the SrcBlendAlpha and DestBlendAlpha operations.
     /// </summary>
-    public BlendOperation BlendOperationAlpha;
+    public BlendOperation BlendOperationAlpha = blendOperationAlpha;
 
     /// <summary>
     /// A write mask.
     /// </summary>
-    public ColorWriteChannels ColorWriteChannels;
-
-    public static BlendStateRenderTargetDesc New(bool blendEnabled = false,
-                                                 Blend sourceBlendColor = Blend.One,
-                                                 Blend destinationBlendColor = Blend.Zero,
-                                                 BlendOperation blendOperationColor = BlendOperation.Add,
-                                                 Blend sourceBlendAlpha = Blend.One,
-                                                 Blend destinationBlendAlpha = Blend.Zero,
-                                                 BlendOperation blendOperationAlpha = BlendOperation.Add,
-                                                 ColorWriteChannels colorWriteChannels = ColorWriteChannels.All)
-    {
-        return new()
-        {
-            BlendEnabled = blendEnabled,
-            SourceBlendColor = sourceBlendColor,
-            DestinationBlendColor = destinationBlendColor,
-            BlendOperationColor = blendOperationColor,
-            SourceBlendAlpha = sourceBlendAlpha,
-            DestinationBlendAlpha = destinationBlendAlpha,
-            BlendOperationAlpha = blendOperationAlpha,
-            ColorWriteChannels = colorWriteChannels
-        };
-    }
+    public ColorWriteChannels ColorWriteChannels = colorWriteChannels;
 }
