@@ -2,25 +2,16 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct ResourceSetDesc
+public struct ResourceSetDesc(ResourceLayout layout,
+                              params GraphicsResource[] resources)
 {
     /// <summary>
     /// The layout of the resource set.
     /// </summary>
-    public ResourceLayout Layout;
+    public ResourceLayout Layout = layout;
 
     /// <summary>
     /// An array of resources that are bound to the resource set.
     /// </summary>
-    public GraphicsResource[] Resources;
-
-    public static ResourceSetDesc New(ResourceLayout layout,
-                                      params GraphicsResource[] resources)
-    {
-        return new()
-        {
-            Layout = layout,
-            Resources = resources
-        };
-    }
+    public GraphicsResource[] Resources = resources;
 }

@@ -74,7 +74,7 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
 
         layout = Context.Factory.CreateResourceLayout(in layoutDesc);
 
-        ResourceSetDesc setDesc = ResourceSetDesc.New(layout, constantsBuffer);
+        ResourceSetDesc setDesc = new(layout, constantsBuffer);
 
         set = Context.Factory.CreateResourceSet(in setDesc);
 

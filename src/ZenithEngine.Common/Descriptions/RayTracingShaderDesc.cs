@@ -2,34 +2,19 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct RayTracingShaderDesc
+public struct RayTracingShaderDesc(Shader rayGen,
+                                   Shader[] miss,
+                                   Shader[] closestHit,
+                                   Shader[]? anyHit = null,
+                                   Shader[]? intersection = null)
 {
-    public Shader RayGen;
+    public Shader RayGen = rayGen;
 
-    public Shader[] Miss;
+    public Shader[] Miss = miss;
 
-    public Shader[] ClosestHit;
+    public Shader[] ClosestHit = closestHit;
 
-    public Shader[] AnyHit;
+    public Shader[] AnyHit = anyHit ?? [];
 
-    public Shader[] Intersection;
-
-    public static RayTracingShaderDesc New(Shader rayGen,
-                                           Shader[] miss,
-                                           Shader[] closestHit,
-                                           Shader[]? anyHit = null,
-                                           Shader[]? intersection = null)
-    {
-        anyHit ??= [];
-        intersection ??= [];
-
-        return new()
-        {
-            RayGen = rayGen,
-            Miss = miss,
-            ClosestHit = closestHit,
-            AnyHit = anyHit,
-            Intersection = intersection
-        };
-    }
+    public Shader[] Intersection = intersection ?? [];
 }

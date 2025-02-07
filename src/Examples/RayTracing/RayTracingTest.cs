@@ -101,7 +101,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         resourceLayout = Context.Factory.CreateResourceLayout(in rlDesc);
 
-        ResourceSetDesc rsDesc = ResourceSetDesc.New(resourceLayout, topLevelAS, vertexBuffer, indexBuffer, output);
+        ResourceSetDesc rsDesc = new(resourceLayout, topLevelAS, vertexBuffer, indexBuffer, output);
 
         resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
 
@@ -109,9 +109,9 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         using Shader msShader = Context.Factory.CompileShader(ShaderStages.Miss, hlsl, "MissMain");
         using Shader chShader = Context.Factory.CompileShader(ShaderStages.ClosestHit, hlsl, "ClosestHitMain");
 
-        RayTracingPipelineDesc rtpDesc = RayTracingPipelineDesc.New
+        RayTracingPipelineDesc rtpDesc = new
         (
-            shaders: RayTracingShaderDesc.New(rgShader, [msShader], [chShader]),
+            shaders: new(rgShader, [msShader], [chShader]),
             hitGroups: [new(closestHit: "ClosestHitMain")],
             resourceLayouts: [resourceLayout]
         );
@@ -152,7 +152,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceSetDesc rsDesc = ResourceSetDesc.New(resourceLayout, topLevelAS, vertexBuffer, indexBuffer, output);
+        ResourceSetDesc rsDesc = new(resourceLayout, topLevelAS, vertexBuffer, indexBuffer, output);
 
         resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
     }

@@ -198,7 +198,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
             id++;
         }
 
-        ResourceSetDesc desc = ResourceSetDesc.New(layout1, texture);
+        ResourceSetDesc desc = new(layout1, texture);
 
         bindings[id] = new(texture, Context.Factory.CreateResourceSet(in desc));
 
@@ -266,7 +266,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
         layout0 = Context.Factory.CreateResourceLayout(in layout0Desc);
         layout1 = Context.Factory.CreateResourceLayout(in layout1Desc);
 
-        ResourceSetDesc set0Desc = ResourceSetDesc.New(layout0, constantsBuffer, sampler);
+        ResourceSetDesc set0Desc = new(layout0, constantsBuffer, sampler);
 
         set0 = Context.Factory.CreateResourceSet(in set0Desc);
 

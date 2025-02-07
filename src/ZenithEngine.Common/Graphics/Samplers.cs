@@ -52,7 +52,7 @@ public static class Samplers
 
     static Samplers()
     {
-        PointClamp = SamplerDesc.New
+        PointClamp = new
         (
             addressModeU: AddressMode.Clamp,
             addressModeV: AddressMode.Clamp,
@@ -60,9 +60,9 @@ public static class Samplers
             filter: SamplerFilter.MinPointMagPointMipPoint
         );
 
-        PointWrap = SamplerDesc.New(filter: SamplerFilter.MinPointMagPointMipPoint);
+        PointWrap = new(filter: SamplerFilter.MinPointMagPointMipPoint);
 
-        PointMirror = SamplerDesc.New
+        PointMirror = new
         (
             addressModeU: AddressMode.Mirror,
             addressModeV: AddressMode.Mirror,
@@ -70,23 +70,23 @@ public static class Samplers
             filter: SamplerFilter.MinPointMagPointMipPoint
         );
 
-        LinearClamp = SamplerDesc.New
+        LinearClamp = new
         (
             addressModeU: AddressMode.Clamp,
             addressModeV: AddressMode.Clamp,
             addressModeW: AddressMode.Clamp
         );
 
-        LinearWrap = SamplerDesc.New();
+        LinearWrap = new();
 
-        LinearMirror = SamplerDesc.New
+        LinearMirror = new
         (
             addressModeU: AddressMode.Mirror,
             addressModeV: AddressMode.Mirror,
             addressModeW: AddressMode.Mirror
         );
 
-        AnisotropicClamp = SamplerDesc.New
+        AnisotropicClamp = new
         (
             addressModeU: AddressMode.Clamp,
             addressModeV: AddressMode.Clamp,
@@ -94,9 +94,9 @@ public static class Samplers
             filter: SamplerFilter.Anisotropic
         );
 
-        AnisotropicWrap = SamplerDesc.New(filter: SamplerFilter.Anisotropic);
+        AnisotropicWrap = new(filter: SamplerFilter.Anisotropic);
 
-        AnisotropicMirror = SamplerDesc.New
+        AnisotropicMirror = new
         (
             addressModeU: AddressMode.Mirror,
             addressModeV: AddressMode.Mirror,
