@@ -90,7 +90,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
         }
     }
 
-    public static void GetDxil(ColorSpaceHandling colorSpaceHandling, out byte[] vs, out byte[] ps)
+    private static void GetDxil(ColorSpaceHandling colorSpaceHandling, out byte[] vs, out byte[] ps)
     {
         vs = colorSpaceHandling switch
         {
@@ -102,7 +102,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
         ps = Convert.FromHexString(PSHexDxil);
     }
 
-    public static void GetSpirv(ColorSpaceHandling colorSpaceHandling, out byte[] vs, out byte[] ps)
+    private static void GetSpirv(ColorSpaceHandling colorSpaceHandling, out byte[] vs, out byte[] ps)
     {
         vs = colorSpaceHandling switch
         {

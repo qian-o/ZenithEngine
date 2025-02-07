@@ -103,7 +103,7 @@ public abstract unsafe class VisualTest
 
             avgFrameTimes.Add(b.DeltaTime);
 
-            if (b.TotalTime - lastTotalTime > 1)
+            if (b.TotalTime - lastTotalTime > 1.0)
             {
                 fps = 1.0 / avgFrameTimes.Average();
                 lastTotalTime = b.TotalTime;
@@ -129,7 +129,7 @@ public abstract unsafe class VisualTest
             double avgFrameTime = avgFrameTimes.Average();
 
             Console.WriteLine($"Backend: {backend}");
-            Console.WriteLine($"Average Frame Time: {avgFrameTime * 1000:F2}ms");
+            Console.WriteLine($"Average Frame Time: {avgFrameTime * 1000.0:F2}ms");
             Console.WriteLine($"Average FPS: {1.0 / avgFrameTime:F0}");
         };
     }
