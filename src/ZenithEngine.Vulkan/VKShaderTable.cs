@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Silk.NET.Vulkan;
 using ZenithEngine.Common;
+using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
@@ -41,9 +42,13 @@ internal unsafe class VKShaderTable : GraphicsResource
                                                                        dataSize,
                                                                        data).ThrowIfError();
 
-        RayGenBuffer = new(Context, rayGenSizeAligned, BufferUsageFlags.ShaderBindingTableBitKhr, true);
-        MissBuffer = new(Context, missSizeAligned, BufferUsageFlags.ShaderBindingTableBitKhr, true);
-        HitGroupBuffer = new(Context, hitGroupSizeAligned, BufferUsageFlags.ShaderBindingTableBitKhr, true);
+        BufferDesc rayGenDesc = new(rayGenSizeAligned);
+        BufferDesc missDesc = new(missSizeAligned);
+        BufferDesc hitGroupDesc = new(hitGroupSizeAligned);
+
+        RayGenBuffer = new(Context, in rayGenDesc, BufferUsageFlags.ShaderBindingTableBitKhr);
+        MissBuffer = new(Context, in missDesc, BufferUsageFlags.ShaderBindingTableBitKhr);
+        HitGroupBuffer = new(Context, in hitGroupDesc, BufferUsageFlags.ShaderBindingTableBitKhr);
 
         CopyHandles(RayGenBuffer, rayGenCount);
         CopyHandles(MissBuffer, missCount);

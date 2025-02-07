@@ -84,8 +84,8 @@ internal unsafe class ImGuiRenderer : DisposableObject
         {
             vertexBuffer.Dispose();
 
-            BufferDesc vbDesc = BufferDesc.New(totalVertexSize * 2,
-                                               BufferUsage.VertexBuffer | BufferUsage.Dynamic);
+            BufferDesc vbDesc = new(totalVertexSize * 2,
+                                    BufferUsage.VertexBuffer | BufferUsage.Dynamic);
 
             vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
         }
@@ -95,8 +95,8 @@ internal unsafe class ImGuiRenderer : DisposableObject
         {
             indexBuffer.Dispose();
 
-            BufferDesc ibDesc = BufferDesc.New(totalIndexSize * 2,
-                                               BufferUsage.IndexBuffer | BufferUsage.Dynamic);
+            BufferDesc ibDesc = new(totalIndexSize * 2,
+                                    BufferUsage.IndexBuffer | BufferUsage.Dynamic);
 
             indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
         }
@@ -241,14 +241,14 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
     private void CreateGraphicsResources(OutputDesc outputDesc, ColorSpaceHandling colorSpaceHandling)
     {
-        BufferDesc vbDesc = BufferDesc.New((uint)(5000 * sizeof(ImDrawVert)),
-                                           BufferUsage.VertexBuffer | BufferUsage.Dynamic);
+        BufferDesc vbDesc = new((uint)(5000 * sizeof(ImDrawVert)),
+                                BufferUsage.VertexBuffer | BufferUsage.Dynamic);
 
-        BufferDesc ibDesc = BufferDesc.New(10000 * sizeof(ushort),
-                                           BufferUsage.IndexBuffer | BufferUsage.Dynamic);
+        BufferDesc ibDesc = new(10000 * sizeof(ushort),
+                                BufferUsage.IndexBuffer | BufferUsage.Dynamic);
 
-        BufferDesc cbDesc = BufferDesc.New((uint)sizeof(Constants),
-                                           BufferUsage.ConstantBuffer | BufferUsage.Dynamic);
+        BufferDesc cbDesc = new((uint)sizeof(Constants),
+                                BufferUsage.ConstantBuffer | BufferUsage.Dynamic);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
         indexBuffer = Context.Factory.CreateBuffer(in ibDesc);

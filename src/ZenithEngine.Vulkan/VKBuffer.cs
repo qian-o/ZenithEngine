@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Silk.NET.Vulkan;
+﻿using Silk.NET.Vulkan;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -68,14 +67,13 @@ internal unsafe class VKBuffer : Buffer
     }
 
     public VKBuffer(GraphicsContext context,
-                    uint sizeInBytes,
-                    BufferUsageFlags usageFlags,
-                    bool isDynamic) : base(context, in Unsafe.Unbox<BufferDesc>(BufferDesc.New(sizeInBytes, BufferUsage.None)))
+                    ref readonly BufferDesc desc,
+                    BufferUsageFlags usageFlags) : base(context, in desc)
     {
         BufferCreateInfo createInfo = new()
         {
             SType = StructureType.BufferCreateInfo,
-            Size = sizeInBytes,
+            Size = desc.SizeInBytes,
             Usage = usageFlags | BufferUsageFlags.ShaderDeviceAddressBit,
             SharingMode = Context.SharingEnabled ? SharingMode.Concurrent : SharingMode.Exclusive
         };
@@ -88,7 +86,7 @@ internal unsafe class VKBuffer : Buffer
 
         Context.Vk.CreateBuffer(Context.Device, &createInfo, null, out Buffer).ThrowIfError();
 
-        DeviceMemory = CreateDeviceMemory(isDynamic, out Address);
+        DeviceMemory = CreateDeviceMemory(desc.Usage.HasFlag(BufferUsage.Dynamic), out Address);
 
         Allocator.Release();
     }

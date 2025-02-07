@@ -33,11 +33,13 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
 
-        BufferDesc vbDesc = BufferDesc.New((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure);
+        BufferDesc vbDesc = new((uint)(vertices.Length * sizeof(Vertex)),
+                                BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
 
-        BufferDesc ibDesc = BufferDesc.New((uint)(indices.Length * sizeof(uint)), BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure);
+        BufferDesc ibDesc = new((uint)(indices.Length * sizeof(uint)),
+                                BufferUsage.StorageBuffer | BufferUsage.AccelerationStructure);
 
         indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
 

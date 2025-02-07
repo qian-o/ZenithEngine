@@ -2,32 +2,22 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct BufferDesc
+public struct BufferDesc(uint sizeInBytes,
+                         BufferUsage usage = BufferUsage.Dynamic,
+                         uint structureStrideInBytes = 0)
 {
     /// <summary>
     /// The desired capacity, in bytes.
     /// </summary>
-    public uint SizeInBytes;
+    public uint SizeInBytes = sizeInBytes;
 
     /// <summary>
     /// Indicates the intended use of the buffer.
     /// </summary>
-    public BufferUsage Usage;
+    public BufferUsage Usage = usage;
 
     /// <summary>
     /// The byte stride of the structure.
     /// </summary>
-    public uint StructureStrideInBytes;
-
-    public static BufferDesc New(uint sizeInBytes,
-                                 BufferUsage usage = BufferUsage.Dynamic,
-                                 uint structureStrideInBytes = 0)
-    {
-        return new()
-        {
-            SizeInBytes = sizeInBytes,
-            Usage = usage,
-            StructureStrideInBytes = structureStrideInBytes
-        };
-    }
+    public uint StructureStrideInBytes = structureStrideInBytes;
 }

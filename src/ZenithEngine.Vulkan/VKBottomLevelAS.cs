@@ -18,10 +18,11 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
     {
         uint geometryCount = (uint)desc.Geometries.Length;
 
+        BufferDesc transformBufferDesc = new((uint)(geometryCount * sizeof(TransformMatrixKHR)));
+
         TransformBuffer = new(Context,
-                              (uint)(geometryCount * sizeof(TransformMatrixKHR)),
-                              BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr,
-                              true);
+                              in transformBufferDesc,
+                              BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr);
 
         MappedResource mapped = Context.MapMemory(TransformBuffer, MapMode.Write);
 
@@ -129,10 +130,11 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
                                                                              &maxPrimitiveCount,
                                                                              &buildSizesInfo);
 
+        BufferDesc accelerationStructureBufferDesc = new((uint)buildSizesInfo.AccelerationStructureSize, BufferUsage.None);
+
         AccelerationStructureBuffer = new(Context,
-                                          (uint)buildSizesInfo.AccelerationStructureSize,
-                                          BufferUsageFlags.AccelerationStructureStorageBitKhr,
-                                          false);
+                                          in accelerationStructureBufferDesc,
+                                          BufferUsageFlags.AccelerationStructureStorageBitKhr);
 
         AccelerationStructureCreateInfoKHR createInfo = new()
         {
@@ -155,7 +157,11 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
 
         Address = Context.KhrAccelerationStructure.GetAccelerationStructureDeviceAddress(Context.Device, &deviceAddressInfo);
 
-        ScratchBuffer = new(Context, (uint)buildSizesInfo.BuildScratchSize, BufferUsageFlags.StorageBufferBit, false);
+        BufferDesc scratchBufferDesc = new((uint)buildSizesInfo.BuildScratchSize, BufferUsage.None);
+
+        ScratchBuffer = new(Context,
+                            in scratchBufferDesc,
+                            BufferUsageFlags.StorageBufferBit);
 
         buildGeometryInfo.DstAccelerationStructure = AccelerationStructure;
         buildGeometryInfo.ScratchData = new()

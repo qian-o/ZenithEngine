@@ -43,15 +43,15 @@ internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test"
 
         string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
 
-        BufferDesc vbDesc = BufferDesc.New((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.VertexBuffer);
+        BufferDesc vbDesc = new((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.VertexBuffer);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
 
-        BufferDesc ibDesc = BufferDesc.New((uint)(indices.Length * sizeof(uint)), BufferUsage.IndexBuffer);
+        BufferDesc ibDesc = new((uint)(indices.Length * sizeof(uint)), BufferUsage.IndexBuffer);
 
         indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
 
-        BufferDesc cbDesc = BufferDesc.New((uint)sizeof(Constants), BufferUsage.ConstantBuffer);
+        BufferDesc cbDesc = new((uint)sizeof(Constants), BufferUsage.ConstantBuffer);
 
         constantsBuffer = Context.Factory.CreateBuffer(in cbDesc);
 
