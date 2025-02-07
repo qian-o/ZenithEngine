@@ -36,7 +36,7 @@ public struct RenderStateDesc
                                       Vector4D<float>? blendFactor = null)
     {
         rasterizerState ??= RasterizerStateDesc.New();
-        depthStencilState ??= DepthStencilStateDesc.New();
+        depthStencilState ??= new();
         blendState ??= new();
 
         return new()

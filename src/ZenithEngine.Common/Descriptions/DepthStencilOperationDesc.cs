@@ -2,39 +2,28 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct DepthStencilOperationDesc
+public struct DepthStencilOperationDesc(StencilOperation stencilFailOperation = StencilOperation.Keep,
+                                        StencilOperation stencilDepthFailOperation = StencilOperation.Keep,
+                                        StencilOperation stencilPassOperation = StencilOperation.Keep,
+                                        ComparisonFunction stencilFunction = ComparisonFunction.Always)
 {
     /// <summary>
     /// The stencil operation to perform when stencil testing fails.
     /// </summary>
-    public StencilOperation StencilFailOperation;
+    public StencilOperation StencilFailOperation = stencilFailOperation;
 
     /// <summary>
     /// The stencil operation to perform when stencil testing passes and depth testing fails.
     /// </summary>
-    public StencilOperation StencilDepthFailOperation;
+    public StencilOperation StencilDepthFailOperation = stencilDepthFailOperation;
 
     /// <summary>
     /// The stencil operation to perform when stencil testing and depth testing both pass.
     /// </summary>
-    public StencilOperation StencilPassOperation;
+    public StencilOperation StencilPassOperation = stencilPassOperation;
 
     /// <summary>
     /// The comparison operator used in the stencil test.
     /// </summary>
-    public ComparisonFunction StencilFunction;
-
-    public static DepthStencilOperationDesc New(StencilOperation stencilFailOperation = StencilOperation.Keep,
-                                                StencilOperation stencilDepthFailOperation = StencilOperation.Keep,
-                                                StencilOperation stencilPassOperation = StencilOperation.Keep,
-                                                ComparisonFunction stencilFunction = ComparisonFunction.Always)
-    {
-        return new()
-        {
-            StencilFailOperation = stencilFailOperation,
-            StencilDepthFailOperation = stencilDepthFailOperation,
-            StencilPassOperation = stencilPassOperation,
-            StencilFunction = stencilFunction
-        };
-    }
+    public ComparisonFunction StencilFunction = stencilFunction;
 }
