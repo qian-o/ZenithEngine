@@ -45,8 +45,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
             descriptorHeaps =
             [
-                cbvSrvUavAllocator.CpuHeap,
-                samplerAllocator.CpuHeap
+                cbvSrvUavAllocator.GpuHeap,
+                samplerAllocator.GpuHeap
             ];
         }
     }
@@ -95,11 +95,21 @@ internal unsafe class DXCommandBuffer : CommandBuffer
         DXBuffer src = source.DX();
         DXBuffer dst = destination.DX();
 
+        bool isDynamicSrc = src.Desc.Usage.HasFlag(BufferUsage.Dynamic);
+        bool isDynamicDst = dst.Desc.Usage.HasFlag(BufferUsage.Dynamic);
+
         ResourceStates srcOldState = src.State;
         ResourceStates dstOldState = dst.State;
 
-        src.TransitionState(CommandList, ResourceStates.CopySource);
-        dst.TransitionState(CommandList, ResourceStates.CopyDest);
+        if (!isDynamicSrc)
+        {
+            src.TransitionState(CommandList, ResourceStates.CopySource);
+        }
+
+        if (!isDynamicDst)
+        {
+            dst.TransitionState(CommandList, ResourceStates.CopyDest);
+        }
 
         CommandList.CopyBufferRegion(dst.Resource,
                                      destinationOffsetInBytes,
@@ -107,8 +117,15 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                      sourceOffsetInBytes,
                                      sizeInBytes);
 
-        src.TransitionState(CommandList, srcOldState);
-        dst.TransitionState(CommandList, dstOldState);
+        if (!isDynamicSrc)
+        {
+            src.TransitionState(CommandList, srcOldState);
+        }
+
+        if (!isDynamicDst)
+        {
+            dst.TransitionState(CommandList, dstOldState);
+        }
     }
     #endregion
 
