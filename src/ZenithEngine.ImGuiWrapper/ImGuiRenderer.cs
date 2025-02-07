@@ -62,7 +62,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
         Context.UpdateTexture(fontTexture,
                               (nint)pixels,
                               (uint)(width * height * 4),
-                              new((uint)width, (uint)height, 1));
+                              new(width: (uint)width, height: (uint)height, depth: 1));
 
         GetBinding(fontTexture);
     }
