@@ -271,8 +271,8 @@ internal unsafe class ImGuiRenderer : DisposableObject
         set0 = Context.Factory.CreateResourceSet(in set0Desc);
 
         Shaders.Get(Context.Backend, colorSpaceHandling, out byte[] vs, out byte[] ps);
-        ShaderDesc vsShaderDesc = ShaderDesc.New(ShaderStages.Vertex, vs, Shaders.VSMain);
-        ShaderDesc psShaderDesc = ShaderDesc.New(ShaderStages.Pixel, ps, Shaders.PSMain);
+        ShaderDesc vsShaderDesc = new(ShaderStages.Vertex, vs, Shaders.VSMain);
+        ShaderDesc psShaderDesc = new(ShaderStages.Pixel, ps, Shaders.PSMain);
 
         using Shader vsShader = Context.Factory.CreateShader(in vsShaderDesc);
         using Shader psShader = Context.Factory.CreateShader(in psShaderDesc);

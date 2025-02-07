@@ -2,32 +2,22 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct ShaderDesc
+public struct ShaderDesc(ShaderStages stage,
+                         byte[] shaderBytes,
+                         string entryPoint)
 {
     /// <summary>
     /// The shader stage this instance describes.
     /// </summary>
-    public ShaderStages Stage;
+    public ShaderStages Stage = stage;
 
     /// <summary>
     /// An array containing the raw shader bytes.
     /// </summary>
-    public byte[] ShaderBytes;
+    public byte[] ShaderBytes = shaderBytes;
 
     /// <summary>
     /// The name of the entry point function in the shader module to be used in this stage.
     /// </summary>
-    public string EntryPoint;
-
-    public static ShaderDesc New(ShaderStages stage,
-                                 byte[] shaderBytes,
-                                 string entryPoint)
-    {
-        return new()
-        {
-            Stage = stage,
-            ShaderBytes = shaderBytes,
-            EntryPoint = entryPoint
-        };
-    }
+    public string EntryPoint = entryPoint;
 }

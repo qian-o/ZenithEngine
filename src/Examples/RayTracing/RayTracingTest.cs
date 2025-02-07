@@ -72,7 +72,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         bottomLevelAS = commandBuffer.BuildAccelerationStructure(in blasDesc);
 
-        TopLevelASDesc tlasDesc = TopLevelASDesc.New([new(bottomLevelAS)
+        TopLevelASDesc tlasDesc = new([new(bottomLevelAS)
         {
             Transform = Matrix4X4<float>.Identity,
             InstanceID = 0,
