@@ -2,15 +2,7 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct BottomLevelASDesc
+public struct BottomLevelASDesc(params AccelerationStructureGeometry[] geometries)
 {
-    public AccelerationStructureGeometry[] Geometries;
-
-    public static BottomLevelASDesc New(params AccelerationStructureGeometry[] geometries)
-    {
-        return new()
-        {
-            Geometries = geometries
-        };
-    }
+    public AccelerationStructureGeometry[] Geometries = geometries;
 }

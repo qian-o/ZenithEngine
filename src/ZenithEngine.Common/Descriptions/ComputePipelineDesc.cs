@@ -2,25 +2,16 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct ComputePipelineDesc
+public struct ComputePipelineDesc(Shader shader,
+                                  params ResourceLayout[] resourceLayouts)
 {
     /// <summary>
     /// The compute shader to be used.
     /// </summary>
-    public Shader Shader;
+    public Shader Shader = shader;
 
     /// <summary>
     /// Describes the resource layouts input array.
     /// </summary>
-    public ResourceLayout[] ResourceLayouts;
-
-    public static ComputePipelineDesc New(Shader shader,
-                                          params ResourceLayout[] resourceLayouts)
-    {
-        return new()
-        {
-            Shader = shader,
-            ResourceLayouts = resourceLayouts
-        };
-    }
+    public ResourceLayout[] ResourceLayouts = resourceLayouts;
 }

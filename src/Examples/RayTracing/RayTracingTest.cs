@@ -57,7 +57,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         commandBuffer.Begin();
 
-        BottomLevelASDesc blasDesc = BottomLevelASDesc.New(new AccelerationStructureTriangles(vertexBuffer)
+        BottomLevelASDesc blasDesc = new(new AccelerationStructureTriangles(vertexBuffer)
         {
             VertexFormat = PixelFormat.R32G32B32Float,
             VertexStrideInBytes = (uint)sizeof(Vertex),
