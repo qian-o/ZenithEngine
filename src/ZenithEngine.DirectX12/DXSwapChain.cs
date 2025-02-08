@@ -112,6 +112,8 @@ internal unsafe class DXSwapChain : SwapChain
             return;
         }
 
+        swapChainFrameBuffer.DestroyFrameBuffers();
+
         SwapChain3.Dispose();
     }
 }

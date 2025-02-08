@@ -19,8 +19,6 @@ internal class DXSwapChainFrameBuffer(GraphicsContext context,
 
     public void CreateFrameBuffers(uint width, uint height)
     {
-        DestroyFrameBuffers();
-
         bool hasDepthStencilAttachment = swapChain.Desc.DepthStencilTargetFormat is not null;
 
         if (hasDepthStencilAttachment)
