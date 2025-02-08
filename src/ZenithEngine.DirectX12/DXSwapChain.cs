@@ -40,6 +40,8 @@ internal unsafe class DXSwapChain : SwapChain
     {
         Context.DefaultGraphicsCommandProcessor!.WaitIdle();
 
+        swapChainFrameBuffer.DestroyFrameBuffers();
+
         Vector2D<uint> size = Desc.Surface.GetSize();
 
         SwapChain3.ResizeBuffers(BufferCount,
