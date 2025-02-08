@@ -18,8 +18,6 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
 
     public void CreateFrameBuffers(uint width, uint height, Format imageFormat)
     {
-        DestroyFrameBuffers();
-
         bool hasDepthStencilAttachment = swapChain.Desc.DepthStencilTargetFormat is not null;
 
         uint imageCount;
@@ -61,16 +59,7 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
         }
     }
 
-    protected override void DebugName(string name)
-    {
-    }
-
-    protected override void Destroy()
-    {
-        DestroyFrameBuffers();
-    }
-
-    private void DestroyFrameBuffers()
+    public void DestroyFrameBuffers()
     {
         foreach (FrameBuffer frameBuffer in frameBuffers)
         {
@@ -87,5 +76,14 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
         depthStencilTarget = null;
         colorTargets = [];
         frameBuffers = [];
+    }
+
+    protected override void DebugName(string name)
+    {
+    }
+
+    protected override void Destroy()
+    {
+        DestroyFrameBuffers();
     }
 }
