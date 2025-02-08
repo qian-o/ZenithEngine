@@ -1,14 +1,31 @@
-﻿using Common;
+﻿using System.Runtime.InteropServices;
+using Common;
 using Hexa.NET.ImGui;
+using Silk.NET.Maths;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 using ZenithEngine.ShaderCompiler;
+using Buffer = ZenithEngine.Common.Graphics.Buffer;
 
 namespace ComputeShader;
 
-internal class ComputeShaderTest(Backend backend) : VisualTest("Compute Shader Test", backend)
+internal unsafe class ComputeShaderTest(Backend backend) : VisualTest("Compute Shader Test", backend)
 {
+    [StructLayout(LayoutKind.Explicit)]
+    private struct Constants
+    {
+        [FieldOffset(0)]
+        public Vector2D<uint> Resolution;
+
+        [FieldOffset(8)]
+        public float DeltaTime;
+
+        [FieldOffset(12)]
+        public float TotalTime;
+    }
+
+    private Buffer constantsBuffer = null!;
     private Texture output = null!;
     private ResourceLayout resourceLayout = null!;
     private ResourceSet resourceSet = null!;
@@ -18,15 +35,23 @@ internal class ComputeShaderTest(Backend backend) : VisualTest("Compute Shader T
     {
         string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
 
+        BufferDesc cbDesc = new((uint)sizeof(Constants), BufferUsage.ConstantBuffer | BufferUsage.Dynamic);
+
+        constantsBuffer = Context.Factory.CreateBuffer(in cbDesc);
+
         TextureDesc outputDesc = new(Width, Height, usage: TextureUsage.ShaderResource | TextureUsage.UnorderedAccess);
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceLayoutDesc rlDesc = new([new(ShaderStages.Compute, ResourceType.TextureReadWrite, 0)]);
+        ResourceLayoutDesc rlDesc = new
+        (
+            new(ShaderStages.Compute, ResourceType.ConstantBuffer, 0),
+            new(ShaderStages.Compute, ResourceType.TextureReadWrite, 0)
+        );
 
         resourceLayout = Context.Factory.CreateResourceLayout(in rlDesc);
 
-        ResourceSetDesc rsDesc = new(resourceLayout, output);
+        ResourceSetDesc rsDesc = new(resourceLayout, constantsBuffer, output);
 
         resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
 
@@ -39,6 +64,15 @@ internal class ComputeShaderTest(Backend backend) : VisualTest("Compute Shader T
 
     protected override void OnUpdate(double deltaTime, double totalTime)
     {
+        Constants constants = new()
+        {
+            Resolution = new(Width, Height),
+            DeltaTime = (float)deltaTime,
+            TotalTime = (float)totalTime
+        };
+
+        Context.UpdateBuffer(constantsBuffer, (nint)(&constants), (uint)sizeof(Constants));
+
         ImGui.GetBackgroundDrawList().AddImage(ImGuiController.GetBinding(output), new(0, 0), new(Width, Height));
     }
 
@@ -70,7 +104,7 @@ internal class ComputeShaderTest(Backend backend) : VisualTest("Compute Shader T
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceSetDesc rsDesc = new(resourceLayout, output);
+        ResourceSetDesc rsDesc = new(resourceLayout, constantsBuffer, output);
 
         resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
     }
@@ -81,5 +115,6 @@ internal class ComputeShaderTest(Backend backend) : VisualTest("Compute Shader T
         resourceSet.Dispose();
         resourceLayout.Dispose();
         output.Dispose();
+        constantsBuffer.Dispose();
     }
 }
