@@ -29,9 +29,9 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     }
     else
     {
-        float2 xy = float2(id.xy);
-
         const float halfAA = float(NUM_AA) * 0.5;
+
+        float2 xy = float2(id.xy);
 
         float3 color = 0;
         for (uint i = 0; i < NUM_AA; i++)
