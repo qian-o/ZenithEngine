@@ -1,12 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-		<PackageReference Include="SharpGLTF.Core" />
-		<PackageReference Include="SharpGLTF.Toolkit" />
-		<PackageReference Include="SixLabors.ImageSharp" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\..\ZenithEngine.Common\ZenithEngine.Common.csproj" />
 		<ProjectReference Include="..\..\ZenithEngine.DirectX12\ZenithEngine.DirectX12.csproj" />
 		<ProjectReference Include="..\..\ZenithEngine.ImGuiWrapper\ZenithEngine.ImGuiWrapper.csproj" />
