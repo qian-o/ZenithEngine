@@ -49,14 +49,14 @@ internal unsafe class VKBuffer : Buffer
             createInfo.Usage |= BufferUsageFlags.StorageBufferBit;
         }
 
-        if (desc.Usage.HasFlag(BufferUsage.IndirectBuffer))
-        {
-            createInfo.Usage |= BufferUsageFlags.IndirectBufferBit;
-        }
-
         if (desc.Usage.HasFlag(BufferUsage.AccelerationStructure))
         {
             createInfo.Usage |= BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr;
+        }
+
+        if (desc.Usage.HasFlag(BufferUsage.IndirectBuffer))
+        {
+            createInfo.Usage |= BufferUsageFlags.IndirectBufferBit;
         }
 
         Context.Vk.CreateBuffer(Context.Device, &createInfo, null, out Buffer).ThrowIfError();

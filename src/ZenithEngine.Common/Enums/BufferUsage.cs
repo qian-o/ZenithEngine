@@ -31,14 +31,14 @@ public enum BufferUsage
     UnorderedAccess = 1 << 4,
 
     /// <summary>
-    /// Indirect buffer.
-    /// </summary>
-    IndirectBuffer = 1 << 5,
-
-    /// <summary>
     /// Binds a buffer as an acceleration structure to a shader stage.
     /// </summary>
-    AccelerationStructure = 1 << 6,
+    AccelerationStructure = 1 << 5,
+
+    /// <summary>
+    /// Indirect buffer.
+    /// </summary>
+    IndirectBuffer = 1 << 6,
 
     /// <summary>
     /// Creates a buffer that can be updated by the CPU.
