@@ -23,12 +23,12 @@ public enum BufferUsage
     /// <summary>
     /// Indicates can be used as a read-only storage Buffer.
     /// </summary>
-    StorageBuffer = 1 << 3,
+    StructuredBuffer = 1 << 3,
 
     /// <summary>
     /// Indicates can be used as a read-write storage Buffer.
     /// </summary>
-    StorageBufferReadWrite = 1 << 4,
+    StructuredBufferReadWrite = 1 << 4,
 
     /// <summary>
     /// Indicates can be used as the source of indirect drawing information.

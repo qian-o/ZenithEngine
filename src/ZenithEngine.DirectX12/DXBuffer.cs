@@ -38,7 +38,7 @@ internal unsafe class DXBuffer : Buffer
         HeapProperties heapProperties = new(HeapType.Default);
         ResourceStates initialResourceState = ResourceStates.Common;
 
-        if (desc.Usage.HasFlag(BufferUsage.StorageBufferReadWrite))
+        if (desc.Usage.HasFlag(BufferUsage.StructuredBufferReadWrite))
         {
             resourceDesc.Flags |= ResourceFlags.AllowUnorderedAccess;
         }
