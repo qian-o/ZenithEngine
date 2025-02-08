@@ -325,7 +325,7 @@ internal static class DXFormats
             ShaderStages.Domain => ShaderVisibility.Domain,
             ShaderStages.Geometry => ShaderVisibility.Geometry,
             ShaderStages.Pixel => ShaderVisibility.Pixel,
-            _ => ShaderVisibility.All
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(stage))
         };
     }
 
