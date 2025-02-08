@@ -66,7 +66,7 @@ public abstract unsafe class VisualTest
 
                 ImGui.Separator();
 
-                ImGui.Text($"Frame Time: {b.DeltaTime * 1000.0:F2}ms");
+                ImGui.Text($"Frame Time: {b.DeltaTime * 1000:F2}ms");
 
                 ImGui.Separator();
 
@@ -103,9 +103,9 @@ public abstract unsafe class VisualTest
 
             avgFrameTimes.Add(b.DeltaTime);
 
-            if (b.TotalTime - lastTotalTime > 1.0)
+            if (b.TotalTime - lastTotalTime > 1)
             {
-                fps = 1.0 / avgFrameTimes.Average();
+                fps = 1 / avgFrameTimes.Average();
                 lastTotalTime = b.TotalTime;
             }
         };
@@ -129,8 +129,8 @@ public abstract unsafe class VisualTest
             double avgFrameTime = avgFrameTimes.Average();
 
             Console.WriteLine($"Backend: {backend}");
-            Console.WriteLine($"Average Frame Time: {avgFrameTime * 1000.0:F2}ms");
-            Console.WriteLine($"Average FPS: {1.0 / avgFrameTime:F0}");
+            Console.WriteLine($"Average Frame Time: {avgFrameTime * 1000:F2}ms");
+            Console.WriteLine($"Average FPS: {1 / avgFrameTime:F0}");
         };
     }
 

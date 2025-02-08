@@ -62,7 +62,7 @@ internal unsafe class DXTexture : Texture
 
             clearValue = Allocator.Alloc<DxClearValue>();
             clearValue->Format = DXFormats.GetFormat(desc.Format);
-            clearValue->DepthStencil = new(1.0f, 0);
+            clearValue->DepthStencil = new(1, 0);
         }
 
         Context.Device.CreateCommittedResource(&heapProperties,
