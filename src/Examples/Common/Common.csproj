@@ -3,6 +3,7 @@
 	<ItemGroup>
 		<PackageReference Include="SharpGLTF.Core" />
 		<PackageReference Include="SharpGLTF.Toolkit" />
+		<PackageReference Include="SixLabors.ImageSharp" />
 	</ItemGroup>
 
 	<ItemGroup>

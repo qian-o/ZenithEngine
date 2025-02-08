@@ -2,7 +2,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Silk.NET.Maths" />
-		<PackageReference Include="SixLabors.ImageSharp" />
 		<PackageReference Include="System.Text.Json" />
 	</ItemGroup>
 

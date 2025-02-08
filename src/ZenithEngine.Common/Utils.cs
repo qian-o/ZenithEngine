@@ -1,10 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Common;
@@ -50,29 +46,6 @@ public static class Utils
         mipWidth = Math.Max(1, width >> (int)mipLevel);
         mipHeight = Math.Max(1, height >> (int)mipLevel);
         mipDepth = Math.Max(1, depth >> (int)mipLevel);
-    }
-
-    public static Image<T>[] GenerateMipmaps<T>(Image<T> image,
-                                                IResampler? resampler = null) where T : unmanaged, IPixel<T>
-    {
-        resampler ??= KnownResamplers.MitchellNetravali;
-
-        Image<T>[] mipmaps = new Image<T>[GetMipLevels((uint)image.Width, (uint)image.Height)];
-
-        mipmaps[0] = image;
-
-        for (int i = 1; i < mipmaps.Length; i++)
-        {
-            GetMipDimensions((uint)image.Width,
-                             (uint)image.Height,
-                             (uint)i,
-                             out uint mipWidth,
-                             out uint mipHeight);
-
-            mipmaps[i] = mipmaps[i - 1].Clone(context => context.Resize((int)mipWidth, (int)mipHeight, resampler));
-        }
-
-        return mipmaps;
     }
 
     public static uint GetFormatSizeInBytes(ElementFormat format)
