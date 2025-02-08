@@ -11,7 +11,7 @@ internal unsafe class DXDebug : GraphicsResource
 {
     private static readonly PfnMessageFunc pfnMessage;
 
-    private readonly uint callbackCookie;
+    public ComPtr<ID3D12InfoQueue1> InfoQueue1;
 
     static DXDebug()
     {
@@ -20,14 +20,13 @@ internal unsafe class DXDebug : GraphicsResource
 
     public DXDebug(GraphicsContext context) : base(context)
     {
-        Context.Device.QueryInterface(out ComPtr<ID3D12InfoQueue1> infoQueue).ThrowIfError();
+        Context.Device.QueryInterface(out InfoQueue1).ThrowIfError();
 
-        infoQueue.RegisterMessageCallback(pfnMessage,
-                                          MessageCallbackFlags.FlagNone,
-                                          null,
-                                          ref callbackCookie).ThrowIfError();
-
-        infoQueue.Dispose();
+        uint callbackCookie;
+        InfoQueue1.RegisterMessageCallback(pfnMessage,
+                                           MessageCallbackFlags.FlagNone,
+                                           null,
+                                           &callbackCookie).ThrowIfError();
     }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
@@ -38,11 +37,7 @@ internal unsafe class DXDebug : GraphicsResource
 
     protected override void Destroy()
     {
-        Context.Device.QueryInterface(out ComPtr<ID3D12InfoQueue1> infoQueue).ThrowIfError();
-
-        infoQueue.UnregisterMessageCallback(callbackCookie).ThrowIfError();
-
-        infoQueue.Dispose();
+        InfoQueue1.Dispose();
     }
 
     private static void MessageCallback(MessageCategory category,
