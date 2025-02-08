@@ -16,7 +16,7 @@ internal unsafe class ComputeShaderTest(Backend backend) : VisualTest("Compute S
     private struct Constants
     {
         [FieldOffset(0)]
-        public Vector2D<uint> Resolution;
+        public Vector2D<float> Resolution;
 
         [FieldOffset(8)]
         public float DeltaTime;

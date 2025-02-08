@@ -1,8 +1,10 @@
 ﻿#define NUM_AA 8
+#define NUM_MIN 0.1
+#define NUM_MAX 100
 
 struct Constants
 {
-    uint2 Resolution;
+    float2 Resolution;
 
     float DeltaTime;
 
@@ -14,7 +16,7 @@ RWTexture2D<float4> Output : register(u0, space0);
 
 float3 RayMarching(float2 xy)
 {
-    float2 uv = xy / float2(constants.Resolution);
+    float2 uv = xy / constants.Resolution;
     uv = uv * 2.0 - 1.0;
 
     return float3(uv, 0);
