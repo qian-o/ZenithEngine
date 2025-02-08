@@ -6,42 +6,42 @@ public enum BufferUsage
     None = 0,
 
     /// <summary>
-    /// Indicates can be used as the source of vertex data for drawing commands.
+    /// Binds a buffer as a vertex buffer to the input-assembler stage.
     /// </summary>
     VertexBuffer = 1 << 0,
 
     /// <summary>
-    /// Indicates can be used as the source of index data for drawing commands.
+    /// Binds a buffer as an index buffer to the input-assembler stage.
     /// </summary>
     IndexBuffer = 1 << 1,
 
     /// <summary>
-    /// Indicates can be used as a constant Buffer.
+    /// Binds a buffer as a constant buffer to a shader stage.
     /// </summary>
     ConstantBuffer = 1 << 2,
 
     /// <summary>
-    /// Indicates can be used as a shader resource.
+    /// Binds a buffer as a shader resource to a shader stage.
     /// </summary>
     ShaderResource = 1 << 3,
 
     /// <summary>
-    /// Indicates can be used as an unordered access view.
+    /// Binds a buffer as an unordered-access resource to a shader stage.
     /// </summary>
     UnorderedAccess = 1 << 4,
 
     /// <summary>
-    /// Indicates can be used as the source of indirect drawing information.
+    /// Indirect buffer.
     /// </summary>
     IndirectBuffer = 1 << 5,
 
     /// <summary>
-    /// Indicates will be used in a RayTracing acceleration structure.
+    /// Binds a buffer as an acceleration structure to a shader stage.
     /// </summary>
     AccelerationStructure = 1 << 6,
 
     /// <summary>
-    /// Indicates will be updated with new data very frequently.
+    /// Creates a buffer that can be updated by the CPU.
     /// </summary>
     Dynamic = 1 << 7
 }
