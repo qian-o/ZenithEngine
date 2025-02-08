@@ -65,5 +65,5 @@ void CSMain(uint3 id : SV_DispatchThreadID)
         angle = 2.0 * PI - angle;
     }
 
-    Output[id.xy] = float4(HSVToRGB(float3(angle / (2.0 * PI), len, 1)), 1);
+    Output[id.xy] = float4(HSVToRGB(float3(angle / (2.0 * PI), len, 1.0)), 1.0);
 }
