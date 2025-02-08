@@ -104,6 +104,11 @@ internal unsafe class DXComputePipeline : ComputePipeline
         commandList.SetComputeRootSignature(RootSignature);
     }
 
+    public uint GetRootParameterOffset(uint slot)
+    {
+        return (uint)Desc.ResourceLayouts.Take((int)slot).Sum(static item => item.DX().GraphicsRootParameterCount);
+    }
+
     protected override void DebugName(string name)
     {
         PipelineState.SetName(name).ThrowIfError();
