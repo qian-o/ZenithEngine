@@ -98,6 +98,12 @@ internal unsafe class DXComputePipeline : ComputePipeline
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
+    public void Apply(ComPtr<ID3D12GraphicsCommandList> commandList)
+    {
+        commandList.SetPipelineState(PipelineState);
+        commandList.SetComputeRootSignature(RootSignature);
+    }
+
     protected override void DebugName(string name)
     {
         PipelineState.SetName(name).ThrowIfError();
