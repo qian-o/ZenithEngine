@@ -104,6 +104,16 @@ internal static class DirectX12Extensions
         return (DXGraphicsPipeline)pipeline;
     }
 
+    public static DXComputePipeline DX(this ComputePipeline pipeline)
+    {
+        if (pipeline is not DXComputePipeline)
+        {
+            throw new ZenithEngineException("ComputePipeline is not a DirectX12 compute pipeline.");
+        }
+
+        return (DXComputePipeline)pipeline;
+    }
+
     public static DXCommandProcessor DX(this CommandProcessor processor)
     {
         if (processor is not DXCommandProcessor)
