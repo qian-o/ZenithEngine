@@ -19,9 +19,6 @@ internal unsafe class ComputeShaderTest(Backend backend) : VisualTest("Compute S
         public Vector2D<float> Resolution;
 
         [FieldOffset(8)]
-        public float DeltaTime;
-
-        [FieldOffset(12)]
         public float TotalTime;
     }
 
@@ -67,7 +64,6 @@ internal unsafe class ComputeShaderTest(Backend backend) : VisualTest("Compute S
         Constants constants = new()
         {
             Resolution = new(Width, Height),
-            DeltaTime = (float)deltaTime,
             TotalTime = (float)totalTime
         };
 
