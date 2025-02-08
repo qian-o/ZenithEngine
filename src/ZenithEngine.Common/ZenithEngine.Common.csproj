@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
+		<PackageReference Include="SharpGLTF.Core" />
+		<PackageReference Include="SharpGLTF.Toolkit" />
 		<PackageReference Include="Silk.NET.Maths" />
 		<PackageReference Include="SixLabors.ImageSharp" />
 		<PackageReference Include="System.Text.Json" />

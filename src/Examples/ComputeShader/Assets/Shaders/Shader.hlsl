@@ -1,4 +1,13 @@
-﻿struct Constants
+﻿struct Vertex
+{
+    float3 Position;
+    
+    float3 Normal;
+    
+    float2 TexCoord;
+};
+
+struct Constants
 {
     uint2 Resolution;
 
@@ -7,6 +16,9 @@
     float TotalTime;
 };
 
+RaytracingAccelerationStructure Scene : register(t0, space0);
+StructuredBuffer<Vertex> VertexBuffer : register(t1, space0);
+StructuredBuffer<uint> IndexBuffer : register(t2, space0);
 ConstantBuffer<Constants> constants : register(b0, space0);
 RWTexture2D<float4> Output : register(u0, space0);
 
