@@ -37,7 +37,7 @@ internal unsafe class DXTexture : Texture
         ResourceStates initialResourceState = ResourceStates.Common;
         DxClearValue* clearValue = null;
 
-        if (desc.Usage.HasFlag(TextureUsage.Storage))
+        if (desc.Usage.HasFlag(TextureUsage.UnorderedAccess))
         {
             resourceDesc.Flags |= ResourceFlags.AllowUnorderedAccess;
 

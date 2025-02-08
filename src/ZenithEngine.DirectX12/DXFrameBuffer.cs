@@ -130,11 +130,11 @@ internal unsafe class DXFrameBuffer : FrameBuffer
             DXTexture texture = desc.Target.DX();
 
             ResourceStates state;
-            if (texture.Desc.Usage.HasFlag(TextureUsage.Sampled))
+            if (texture.Desc.Usage.HasFlag(TextureUsage.ShaderResource))
             {
                 state = ResourceStates.Common;
             }
-            else if (texture.Desc.Usage.HasFlag(TextureUsage.Storage))
+            else if (texture.Desc.Usage.HasFlag(TextureUsage.UnorderedAccess))
             {
                 state = ResourceStates.UnorderedAccess;
             }
@@ -163,7 +163,7 @@ internal unsafe class DXFrameBuffer : FrameBuffer
 
             DXTexture texture = desc.Target.DX();
 
-            if (texture.Desc.Usage.HasFlag(TextureUsage.Sampled))
+            if (texture.Desc.Usage.HasFlag(TextureUsage.ShaderResource))
             {
                 texture.TransitionState(commandList,
                                         desc.MipLevel,

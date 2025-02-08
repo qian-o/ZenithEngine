@@ -177,11 +177,11 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             VKTexture texture = desc.Target.VK();
 
             ImageLayout layout;
-            if (texture.Desc.Usage.HasFlag(TextureUsage.Sampled))
+            if (texture.Desc.Usage.HasFlag(TextureUsage.ShaderResource))
             {
                 layout = ImageLayout.ShaderReadOnlyOptimal;
             }
-            else if (texture.Desc.Usage.HasFlag(TextureUsage.Storage))
+            else if (texture.Desc.Usage.HasFlag(TextureUsage.UnorderedAccess))
             {
                 layout = ImageLayout.General;
             }
@@ -210,7 +210,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
             VKTexture texture = desc.Target.VK();
 
-            if (texture.Desc.Usage.HasFlag(TextureUsage.Sampled))
+            if (texture.Desc.Usage.HasFlag(TextureUsage.ShaderResource))
             {
                 texture.TransitionLayout(commandBuffer,
                                          desc.MipLevel,

@@ -115,12 +115,12 @@ internal static unsafe class VKFormats
     {
         ImageUsageFlags flags = ImageUsageFlags.TransferDstBit | ImageUsageFlags.TransferSrcBit;
 
-        if (usage.HasFlag(TextureUsage.Sampled))
+        if (usage.HasFlag(TextureUsage.ShaderResource))
         {
             flags |= ImageUsageFlags.SampledBit;
         }
 
-        if (usage.HasFlag(TextureUsage.Storage))
+        if (usage.HasFlag(TextureUsage.UnorderedAccess))
         {
             flags |= ImageUsageFlags.StorageBit;
         }

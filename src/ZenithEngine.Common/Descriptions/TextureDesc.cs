@@ -9,7 +9,7 @@ public struct TextureDesc(uint width,
                           uint depth = 1,
                           uint mipLevels = 1,
                           uint arrayLayers = 1,
-                          TextureUsage usage = TextureUsage.Sampled,
+                          TextureUsage usage = TextureUsage.ShaderResource,
                           TextureSampleCount sampleCount = TextureSampleCount.Count1)
 {
     public TextureDesc() : this(0,
@@ -19,7 +19,7 @@ public struct TextureDesc(uint width,
                                 1,
                                 1,
                                 1,
-                                TextureUsage.Sampled,
+                                TextureUsage.ShaderResource,
                                 TextureSampleCount.Count1)
     {
     }

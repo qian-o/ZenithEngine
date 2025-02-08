@@ -44,7 +44,7 @@ internal unsafe class VKBuffer : Buffer
             createInfo.Usage |= BufferUsageFlags.UniformBufferBit;
         }
 
-        if (desc.Usage.HasFlag(BufferUsage.StructuredBuffer) || desc.Usage.HasFlag(BufferUsage.StructuredBufferReadWrite))
+        if (desc.Usage.HasFlag(BufferUsage.ShaderResource) || desc.Usage.HasFlag(BufferUsage.UnorderedAccess))
         {
             createInfo.Usage |= BufferUsageFlags.StorageBufferBit;
         }

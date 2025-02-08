@@ -34,12 +34,12 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
 
         BufferDesc vbDesc = new((uint)(vertices.Length * sizeof(Vertex)),
-                                BufferUsage.StructuredBuffer | BufferUsage.AccelerationStructure);
+                                BufferUsage.ShaderResource | BufferUsage.AccelerationStructure);
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
 
         BufferDesc ibDesc = new((uint)(indices.Length * sizeof(uint)),
-                                BufferUsage.StructuredBuffer | BufferUsage.AccelerationStructure);
+                                BufferUsage.ShaderResource | BufferUsage.AccelerationStructure);
 
         indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
 
@@ -87,7 +87,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         commandBuffer.Commit();
 
-        TextureDesc outputDesc = new(Width, Height, usage: TextureUsage.Sampled | TextureUsage.Storage);
+        TextureDesc outputDesc = new(Width, Height, usage: TextureUsage.ShaderResource | TextureUsage.UnorderedAccess);
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
@@ -148,7 +148,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         ImGuiController.RemoveBinding(output);
 
-        TextureDesc outputDesc = new(width, height, usage: TextureUsage.Sampled | TextureUsage.Storage);
+        TextureDesc outputDesc = new(width, height, usage: TextureUsage.ShaderResource | TextureUsage.UnorderedAccess);
 
         output = Context.Factory.CreateTexture(in outputDesc);
 

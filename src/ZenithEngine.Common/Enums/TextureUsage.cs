@@ -6,14 +6,14 @@ public enum TextureUsage
     None = 0,
 
     /// <summary>
-    /// The Texture can be used as the target of a read-only, and can be accessed from a shader.
+    /// The Texture can be used as a shader resource.
     /// </summary>
-    Sampled = 1 << 0,
+    ShaderResource = 1 << 0,
 
     /// <summary>
-    /// The Texture can be used as the target of a read-write, and can be accessed from a shader.
+    /// The Texture can be used as an unordered access view.
     /// </summary>
-    Storage = 1 << 1,
+    UnorderedAccess = 1 << 1,
 
     /// <summary>
     /// The Texture can be used as the color targe.

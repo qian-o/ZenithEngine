@@ -21,14 +21,14 @@ public enum BufferUsage
     ConstantBuffer = 1 << 2,
 
     /// <summary>
-    /// Indicates can be used as a read-only storage Buffer.
+    /// Indicates can be used as a shader resource.
     /// </summary>
-    StructuredBuffer = 1 << 3,
+    ShaderResource = 1 << 3,
 
     /// <summary>
-    /// Indicates can be used as a read-write storage Buffer.
+    /// Indicates can be used as an unordered access view.
     /// </summary>
-    StructuredBufferReadWrite = 1 << 4,
+    UnorderedAccess = 1 << 4,
 
     /// <summary>
     /// Indicates can be used as the source of indirect drawing information.
