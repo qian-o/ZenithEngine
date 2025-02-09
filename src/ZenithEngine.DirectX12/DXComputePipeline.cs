@@ -106,7 +106,7 @@ internal unsafe class DXComputePipeline : ComputePipeline
 
     public uint GetRootParameterOffset(uint slot)
     {
-        return (uint)Desc.ResourceLayouts.Take((int)slot).Sum(static item => item.DX().GraphicsRootParameterCount);
+        return (uint)Desc.ResourceLayouts.Take((int)slot).Sum(static item => item.DX().AllStagesRootParameterCount);
     }
 
     protected override void DebugName(string name)
