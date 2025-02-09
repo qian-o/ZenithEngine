@@ -29,26 +29,26 @@ internal unsafe class DXSampler : Sampler
         {
             case SamplerBorderColor.TransparentBlack:
                 {
-                    samplerDesc.BorderColor[0] = 0.0f;
-                    samplerDesc.BorderColor[1] = 0.0f;
-                    samplerDesc.BorderColor[2] = 0.0f;
-                    samplerDesc.BorderColor[3] = 0.0f;
+                    samplerDesc.BorderColor[0] = 0;
+                    samplerDesc.BorderColor[1] = 0;
+                    samplerDesc.BorderColor[2] = 0;
+                    samplerDesc.BorderColor[3] = 0;
                 }
                 break;
             case SamplerBorderColor.OpaqueBlack:
                 {
-                    samplerDesc.BorderColor[0] = 0.0f;
-                    samplerDesc.BorderColor[1] = 0.0f;
-                    samplerDesc.BorderColor[2] = 0.0f;
-                    samplerDesc.BorderColor[3] = 1.0f;
+                    samplerDesc.BorderColor[0] = 0;
+                    samplerDesc.BorderColor[1] = 0;
+                    samplerDesc.BorderColor[2] = 0;
+                    samplerDesc.BorderColor[3] = 1;
                 }
                 break;
             case SamplerBorderColor.OpaqueWhite:
                 {
-                    samplerDesc.BorderColor[0] = 1.0f;
-                    samplerDesc.BorderColor[1] = 1.0f;
-                    samplerDesc.BorderColor[2] = 1.0f;
-                    samplerDesc.BorderColor[3] = 1.0f;
+                    samplerDesc.BorderColor[0] = 1;
+                    samplerDesc.BorderColor[1] = 1;
+                    samplerDesc.BorderColor[2] = 1;
+                    samplerDesc.BorderColor[3] = 1;
                 }
                 break;
             default:

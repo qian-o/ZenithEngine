@@ -181,6 +181,7 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
                             pRootParameters[offset++] = new()
                             {
                                 ParameterType = RootParameterType.TypeDescriptorTable,
+                                ShaderVisibility = DXFormats.GetShaderVisibility(stage),
                                 DescriptorTable = new()
                                 {
                                     NumDescriptorRanges = (uint)cbvSrvUavRanges.Length,

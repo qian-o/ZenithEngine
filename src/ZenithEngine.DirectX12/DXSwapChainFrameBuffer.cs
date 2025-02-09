@@ -19,8 +19,6 @@ internal class DXSwapChainFrameBuffer(GraphicsContext context,
 
     public void CreateFrameBuffers(uint width, uint height)
     {
-        DestroyFrameBuffers();
-
         bool hasDepthStencilAttachment = swapChain.Desc.DepthStencilTargetFormat is not null;
 
         if (hasDepthStencilAttachment)
@@ -52,16 +50,7 @@ internal class DXSwapChainFrameBuffer(GraphicsContext context,
         }
     }
 
-    protected override void DebugName(string name)
-    {
-    }
-
-    protected override void Destroy()
-    {
-        DestroyFrameBuffers();
-    }
-
-    private void DestroyFrameBuffers()
+    public void DestroyFrameBuffers()
     {
         foreach (FrameBuffer frameBuffer in frameBuffers)
         {
@@ -78,5 +67,14 @@ internal class DXSwapChainFrameBuffer(GraphicsContext context,
         depthStencilTarget = null;
         colorTargets = [];
         frameBuffers = [];
+    }
+
+    protected override void DebugName(string name)
+    {
+    }
+
+    protected override void Destroy()
+    {
+        DestroyFrameBuffers();
     }
 }

@@ -295,6 +295,8 @@ internal unsafe partial class VKSwapChain : SwapChain
             return;
         }
 
+        swapChainFrameBuffer.DestroyFrameBuffers();
+
         Context.KhrSwapchain!.DestroySwapchain(Context.Device, Swapchain, null);
     }
 

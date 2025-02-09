@@ -103,8 +103,8 @@ internal unsafe class DXResourceSet : ResourceSet
         {
             if (cbvSrvUavBindings.Length > 0)
             {
-                commandList.SetGraphicsRootDescriptorTable(rootParameterOffset++,
-                                                           cbvSrvUavAllocator.GetCurrentTableHandle());
+                commandList.SetComputeRootDescriptorTable(rootParameterOffset++,
+                                                          cbvSrvUavAllocator.GetCurrentTableHandle());
 
                 UpdateDescriptorTable(cbvSrvUavAllocator,
                                       samplerAllocator,
@@ -114,8 +114,8 @@ internal unsafe class DXResourceSet : ResourceSet
 
             if (samplerBindings.Length > 0)
             {
-                commandList.SetGraphicsRootDescriptorTable(rootParameterOffset++,
-                                                           samplerAllocator.GetCurrentTableHandle());
+                commandList.SetComputeRootDescriptorTable(rootParameterOffset++,
+                                                          samplerAllocator.GetCurrentTableHandle());
 
                 UpdateDescriptorTable(cbvSrvUavAllocator,
                                       samplerAllocator,

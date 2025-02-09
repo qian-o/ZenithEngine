@@ -485,6 +485,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     public override void SetComputePipeline(ComputePipeline pipeline)
     {
         activePipeline = pipeline;
+
+        pipeline.DX().Apply(CommandList);
     }
 
     public override void SetRayTracingPipeline(RayTracingPipeline pipeline)
@@ -573,6 +575,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
         (bool isGraphics, uint rootParameterOffset) = activePipeline switch
         {
             DXGraphicsPipeline graphicsPipeline => (true, graphicsPipeline.GetRootParameterOffset(slot)),
+            DXComputePipeline computePipeline => (false, computePipeline.GetRootParameterOffset(slot)),
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(activePipeline))
         };
 
@@ -660,6 +663,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                   uint groupCountY,
                                   uint groupCountZ)
     {
+        ValidatePipeline<DXComputePipeline>(out _);
+
         cbvSrvUavAllocator?.Submit();
         samplerAllocator?.Submit();
 
@@ -670,6 +675,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
     public override void DispatchIndirect(Buffer argBuffer, uint offset)
     {
+        ValidatePipeline<DXComputePipeline>(out _);
+
         cbvSrvUavAllocator?.Submit();
         samplerAllocator?.Submit();
 

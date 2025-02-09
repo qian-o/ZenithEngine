@@ -128,8 +128,8 @@ internal unsafe class ImGuiRenderer : DisposableObject
                                                                drawDataPtr.DisplayPos.X + drawDataPtr.DisplaySize.X,
                                                                drawDataPtr.DisplayPos.Y + drawDataPtr.DisplaySize.Y,
                                                                drawDataPtr.DisplayPos.Y,
-                                                               0.0f,
-                                                               1.0f)
+                                                               0,
+                                                               1)
         };
 
         Context.UpdateBuffer(constantsBuffer, (nint)(&constants), (uint)sizeof(Constants));
