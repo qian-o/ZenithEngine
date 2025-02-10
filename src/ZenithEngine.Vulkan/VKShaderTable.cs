@@ -104,9 +104,6 @@ internal unsafe class VKShaderTable : GraphicsResource
 
     protected override void DebugName(string name)
     {
-        Context.SetDebugName(ObjectType.Buffer, RayGenBuffer.VK().Buffer.Handle, $"{name}_RayGenBuffer");
-        Context.SetDebugName(ObjectType.Buffer, MissBuffer.VK().Buffer.Handle, $"{name}_MissBuffer");
-        Context.SetDebugName(ObjectType.Buffer, HitGroupBuffer.VK().Buffer.Handle, $"{name}_HitGroupBuffer");
     }
 
     protected override void Destroy()
