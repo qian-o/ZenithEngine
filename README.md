@@ -60,3 +60,5 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - `,+[\s]+[^\S\r\n]+};` Search for the comma after the last property when simplifying property assignments.
 
 ## Draft
+- Delete the `Triangle` project and change it to the `Rasterizer` project.
+- `Rasterizer` and `RayTracing` use the Cornell Box model.
