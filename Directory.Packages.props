@@ -1,22 +1,22 @@
 ﻿<Project>
 
-  <PropertyGroup>
-	<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-  </PropertyGroup>
+	<PropertyGroup>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
 
-  <ItemGroup>
-	<PackageVersion Include="Hexa.NET.ImGui" Version="2.2.6" />
-	<PackageVersion Include="Roslynator.Analyzers" Version="4.13.0" />
-	<PackageVersion Include="Silk.NET.Direct3D.Compilers" Version="2.22.0" />
-	<PackageVersion Include="Silk.NET.Direct3D12" Version="2.22.0" />
-	<PackageVersion Include="Silk.NET.Maths" Version="2.22.0" />
-	<PackageVersion Include="Silk.NET.SDL" Version="2.22.0" />
-	<PackageVersion Include="Silk.NET.Vulkan" Version="2.22.0" />
-	<PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.22.0" />
-	<PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
-	<PackageVersion Include="Silk.NET.Vulkan.Extensions.MVK" Version="2.22.0" />
-	<PackageVersion Include="SixLabors.ImageSharp" Version="3.1.6" />
-	<PackageVersion Include="System.Text.Json" Version="9.0.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageVersion Include="Hexa.NET.ImGui" Version="2.2.6" />
+		<PackageVersion Include="Roslynator.Analyzers" Version="4.13.0" />
+		<PackageVersion Include="Silk.NET.Direct3D.Compilers" Version="2.22.0" />
+		<PackageVersion Include="Silk.NET.Direct3D12" Version="2.22.0" />
+		<PackageVersion Include="Silk.NET.Maths" Version="2.22.0" />
+		<PackageVersion Include="Silk.NET.SDL" Version="2.22.0" />
+		<PackageVersion Include="Silk.NET.Vulkan" Version="2.22.0" />
+		<PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.22.0" />
+		<PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
+		<PackageVersion Include="Silk.NET.Vulkan.Extensions.MVK" Version="2.22.0" />
+		<PackageVersion Include="SixLabors.ImageSharp" Version="3.1.6" />
+		<PackageVersion Include="System.Text.Json" Version="9.0.2" />
+	</ItemGroup>
 
 </Project>

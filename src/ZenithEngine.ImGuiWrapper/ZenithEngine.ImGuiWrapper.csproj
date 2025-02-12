@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-	<PackageReference Include="Hexa.NET.ImGui" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Hexa.NET.ImGui" />
+	</ItemGroup>
 
-  <ItemGroup>
-	<ProjectReference Include="..\ZenithEngine.Common\ZenithEngine.Common.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ZenithEngine.Common\ZenithEngine.Common.csproj" />
+	</ItemGroup>
 
 </Project>
