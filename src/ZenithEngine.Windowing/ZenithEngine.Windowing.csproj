@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<ItemGroup>
-		<PackageReference Include="Silk.NET.SDL" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Silk.NET.SDL" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\ZenithEngine.Common\ZenithEngine.Common.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\ZenithEngine.Common\ZenithEngine.Common.csproj" />
+    </ItemGroup>
 
 </Project>
