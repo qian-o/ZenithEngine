@@ -1,19 +1,27 @@
-﻿using Silk.NET.Core.Native;
+﻿using System.Runtime.CompilerServices;
+using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
+using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
 
 internal unsafe class DXShaderTable : GraphicsResource
 {
+    public GpuVirtualAddressRange RayGenRegion;
+    public GpuVirtualAddressRangeAndStride MissRegion;
+    public GpuVirtualAddressRangeAndStride HitGroupRegion;
+
     public DXShaderTable(GraphicsContext context,
                          ComPtr<ID3D12StateObject> stateObject,
                          string[] rayGenExports,
                          string[] missExports,
                          string[] hitGroupExports) : base(context)
     {
+        stateObject.QueryInterface(out ComPtr<ID3D12StateObjectProperties> stateObjectProperties).ThrowIfError();
+
         const uint handleSize = 32;
 
         uint handleSizeAligned = Utils.AlignedSize<uint>(handleSize, 64);
@@ -33,6 +41,48 @@ internal unsafe class DXShaderTable : GraphicsResource
         RayGenBuffer = new(Context, in rayGenDesc, ResourceFlags.None, ResourceStates.GenericRead);
         MissBuffer = new(Context, in missDesc, ResourceFlags.None, ResourceStates.GenericRead);
         HitGroupBuffer = new(Context, in hitGroupDesc, ResourceFlags.None, ResourceStates.GenericRead);
+
+        CopyHandles(RayGenBuffer, rayGenExports);
+        CopyHandles(MissBuffer, missExports);
+        CopyHandles(HitGroupBuffer, hitGroupExports);
+
+        RayGenRegion = new()
+        {
+            StartAddress = RayGenBuffer.Resource.GetGPUVirtualAddress(),
+            SizeInBytes = rayGenSizeAligned
+        };
+
+        MissRegion = new()
+        {
+            StartAddress = MissBuffer.Resource.GetGPUVirtualAddress(),
+            SizeInBytes = missSizeAligned,
+            StrideInBytes = handleSizeAligned
+        };
+
+        HitGroupRegion = new()
+        {
+            StartAddress = HitGroupBuffer.Resource.GetGPUVirtualAddress(),
+            SizeInBytes = hitGroupSizeAligned,
+            StrideInBytes = handleSizeAligned
+        };
+
+        Allocator.Release();
+
+        stateObjectProperties.Dispose();
+
+        void CopyHandles(DXBuffer buffer, string[] exports)
+        {
+            MappedResource mapped = Context.MapMemory(buffer, MapMode.Write);
+
+            for (int i = 0; i < exports.Length; i++)
+            {
+                Unsafe.CopyBlock((byte*)(mapped.Data + (i * handleSizeAligned)),
+                                 stateObjectProperties.GetShaderIdentifier((char*)Allocator.AllocUni(exports[i])),
+                                 handleSize);
+            }
+
+            Context.UnmapMemory(buffer);
+        }
     }
 
     public DXBuffer RayGenBuffer { get; }
@@ -49,5 +99,8 @@ internal unsafe class DXShaderTable : GraphicsResource
 
     protected override void Destroy()
     {
+        RayGenBuffer.Dispose();
+        MissBuffer.Dispose();
+        HitGroupBuffer.Dispose();
     }
 }

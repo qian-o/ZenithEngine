@@ -68,7 +68,7 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
 
                 groups[i] = new()
                 {
-                    HitGroupExport = (char*)Allocator.AllocUni($"HitGroup{i}"),
+                    HitGroupExport = (char*)Allocator.AllocUni(hitGroup.Name),
                     Type = DXFormats.GetHitGroupType(hitGroup.Type),
                     AnyHitShaderImport = anyHit,
                     ClosestHitShaderImport = closestHit,
@@ -190,10 +190,18 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
 
         device5.CreateStateObject(&stateObjectDesc, out StateObject).ThrowIfError();
 
+        ShaderTable = new(Context,
+                          StateObject,
+                          [desc.Shaders.RayGen.Desc.EntryPoint],
+                          [.. desc.Shaders.Miss.Select(item => item.Desc.EntryPoint)],
+                          [.. desc.HitGroups.Select(item => item.Name)]);
+
         Allocator.Release();
 
         device5.Dispose();
     }
+
+    public DXShaderTable ShaderTable { get; }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
@@ -219,6 +227,8 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
 
     protected override void Destroy()
     {
+        ShaderTable.Dispose();
+
         RootSignature.Dispose();
         StateObject.Dispose();
     }
