@@ -1,5 +1,6 @@
 ﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
+using Silk.NET.DXGI;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
@@ -35,7 +36,7 @@ internal unsafe class DXTexture : Texture
 
         HeapProperties heapProperties = new(HeapType.Default);
         ResourceStates initialResourceState = ResourceStates.Common;
-        DxClearValue* clearValue = null;
+        DxClearValue clearValue = new(Format.FormatUnknown);
 
         if (desc.Usage.HasFlag(TextureUsage.UnorderedAccess))
         {
@@ -50,8 +51,7 @@ internal unsafe class DXTexture : Texture
 
             initialResourceState = ResourceStates.RenderTarget;
 
-            clearValue = Allocator.Alloc<DxClearValue>();
-            clearValue->Format = DXFormats.GetFormat(desc.Format);
+            clearValue.Format = DXFormats.GetFormat(desc.Format);
         }
 
         if (desc.Usage.HasFlag(TextureUsage.DepthStencil))
@@ -60,22 +60,19 @@ internal unsafe class DXTexture : Texture
 
             initialResourceState = ResourceStates.DepthWrite;
 
-            clearValue = Allocator.Alloc<DxClearValue>();
-            clearValue->Format = DXFormats.GetFormat(desc.Format);
-            clearValue->DepthStencil = new(1, 0);
+            clearValue.Format = DXFormats.GetFormat(desc.Format);
+            clearValue.DepthStencil = new(1, 0);
         }
 
         Context.Device.CreateCommittedResource(&heapProperties,
                                                HeapFlags.None,
                                                &resourceDesc,
                                                initialResourceState,
-                                               clearValue,
+                                               clearValue.Format is not Format.FormatUnknown ? &clearValue : null,
                                                out Resource).ThrowIfError();
 
         states = new ResourceStates[desc.MipLevels * DXHelpers.GetDepthOrArraySize(desc)];
         Array.Fill(states, initialResourceState);
-
-        Allocator.Release();
     }
 
     public DXTexture(GraphicsContext context,

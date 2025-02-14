@@ -8,19 +8,62 @@ namespace ZenithEngine.DirectX12;
 internal unsafe class DXRayTracingPipeline : RayTracingPipeline
 {
     public ComPtr<ID3D12RootSignature> RootSignature;
-    public ComPtr<ID3D12PipelineState> PipelineState;
+    public ComPtr<ID3D12StateObject> StateObject;
 
     public DXRayTracingPipeline(GraphicsContext context,
                                 ref readonly RayTracingPipelineDesc desc) : base(context, in desc)
     {
+        Context.Device.QueryInterface(out ComPtr<ID3D12Device5> device5).ThrowIfError();
+
+        StateObjectDesc stateObjectDesc = new()
+        {
+            Type = StateObjectType.RaytracingPipeline
+        };
+
+        List<StateSubobject> objects = [];
+
+        // Shaders and Hit Groups
+        {
+            Shader[] shaders =
+            [
+                .. desc.Shaders.Miss,
+                .. desc.Shaders.ClosestHit,
+                .. desc.Shaders.AnyHit,
+                .. desc.Shaders.Intersection
+            ];
+
+            DxilLibraryDesc dxilLibraryDesc = new()
+            {
+                DXILLibrary = desc.Shaders.RayGen.DX().Shader,
+                NumExports = (uint)shaders.Length,
+                PExports = Allocator.Alloc([.. shaders.Select(item => new ExportDesc
+                {
+                    Name = (char*)Allocator.AllocUTF8(item.Desc.EntryPoint),
+                    ExportToRename = null,
+                    Flags = ExportFlags.None
+                })])
+            };
+
+            objects.Add(new()
+            {
+                Type = StateSubobjectType.DxilLibrary,
+                PDesc = &dxilLibraryDesc
+            });
+        }
+
+        device5.Dispose();
     }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
     public void Apply(ComPtr<ID3D12GraphicsCommandList> commandList)
     {
-        commandList.SetPipelineState(PipelineState);
-        commandList.SetComputeRootSignature(RootSignature);
+        commandList.QueryInterface(out ComPtr<ID3D12GraphicsCommandList4> commandList4).ThrowIfError();
+
+        commandList4.SetPipelineState1(StateObject);
+        commandList4.SetComputeRootSignature(RootSignature);
+
+        commandList4.Dispose();
     }
 
     public uint GetRootParameterOffset(uint slot)
@@ -30,12 +73,12 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
 
     protected override void DebugName(string name)
     {
-        PipelineState.SetName(name).ThrowIfError();
+        StateObject.SetName(name).ThrowIfError();
     }
 
     protected override void Destroy()
     {
         RootSignature.Dispose();
-        PipelineState.Dispose();
+        StateObject.Dispose();
     }
 }
