@@ -695,8 +695,27 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #region Ray Tracing Operations
     public override void DispatchRays(uint width, uint height, uint depth)
     {
+        ValidatePipeline(out DXRayTracingPipeline dxPipeline);
+
         cbvSrvUavAllocator?.Submit();
         samplerAllocator?.Submit();
+
+        DispatchRaysDesc dispatchRaysDesc = new()
+        {
+            RayGenerationShaderRecord = dxPipeline.ShaderTable.RayGenRange,
+            MissShaderTable = dxPipeline.ShaderTable.MissRange,
+            HitGroupTable = dxPipeline.ShaderTable.HitGroupRange,
+            CallableShaderTable = new(),
+            Width = width,
+            Height = height,
+            Depth = depth
+        };
+
+        CommandList.QueryInterface(out ComPtr<ID3D12GraphicsCommandList4> commandList4).ThrowIfError();
+
+        commandList4.DispatchRays(&dispatchRaysDesc);
+
+        commandList4.Dispose();
     }
     #endregion
 

@@ -10,9 +10,9 @@ namespace ZenithEngine.DirectX12;
 
 internal unsafe class DXShaderTable : GraphicsResource
 {
-    public GpuVirtualAddressRange RayGenRegion;
-    public GpuVirtualAddressRangeAndStride MissRegion;
-    public GpuVirtualAddressRangeAndStride HitGroupRegion;
+    public GpuVirtualAddressRange RayGenRange;
+    public GpuVirtualAddressRangeAndStride MissRange;
+    public GpuVirtualAddressRangeAndStride HitGroupRange;
 
     public DXShaderTable(GraphicsContext context,
                          ComPtr<ID3D12StateObject> stateObject,
@@ -46,20 +46,20 @@ internal unsafe class DXShaderTable : GraphicsResource
         CopyHandles(MissBuffer, missExports);
         CopyHandles(HitGroupBuffer, hitGroupExports);
 
-        RayGenRegion = new()
+        RayGenRange = new()
         {
             StartAddress = RayGenBuffer.Resource.GetGPUVirtualAddress(),
             SizeInBytes = rayGenSizeAligned
         };
 
-        MissRegion = new()
+        MissRange = new()
         {
             StartAddress = MissBuffer.Resource.GetGPUVirtualAddress(),
             SizeInBytes = missSizeAligned,
             StrideInBytes = handleSizeAligned
         };
 
-        HitGroupRegion = new()
+        HitGroupRange = new()
         {
             StartAddress = HitGroupBuffer.Resource.GetGPUVirtualAddress(),
             SizeInBytes = hitGroupSizeAligned,
