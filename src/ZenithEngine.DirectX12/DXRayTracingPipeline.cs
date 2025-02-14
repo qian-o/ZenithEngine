@@ -190,6 +190,8 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
 
         device5.CreateStateObject(&stateObjectDesc, out StateObject).ThrowIfError();
 
+        Allocator.Release();
+
         device5.Dispose();
     }
 
