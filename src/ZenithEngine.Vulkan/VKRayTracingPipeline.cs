@@ -67,18 +67,18 @@ internal unsafe class VKRayTracingPipeline : RayTracingPipeline
             {
                 HitGroupDesc hitGroup = desc.HitGroups[i];
 
-                uint closestHitIndex = hitGroup.ClosestHit is not null ? (uint)Array.IndexOf(entryPoints, hitGroup.ClosestHit) : Vk.ShaderUnusedKhr;
-                uint anyHitIndex = hitGroup.AnyHit is not null ? (uint)Array.IndexOf(entryPoints, hitGroup.AnyHit) : Vk.ShaderUnusedKhr;
-                uint intersectionIndex = hitGroup.Intersection is not null ? (uint)Array.IndexOf(entryPoints, hitGroup.Intersection) : Vk.ShaderUnusedKhr;
+                uint closestHit = hitGroup.ClosestHit is not null ? (uint)Array.IndexOf(entryPoints, hitGroup.ClosestHit) : Vk.ShaderUnusedKhr;
+                uint anyHit = hitGroup.AnyHit is not null ? (uint)Array.IndexOf(entryPoints, hitGroup.AnyHit) : Vk.ShaderUnusedKhr;
+                uint intersection = hitGroup.Intersection is not null ? (uint)Array.IndexOf(entryPoints, hitGroup.Intersection) : Vk.ShaderUnusedKhr;
 
                 groups[index++] = new()
                 {
                     SType = StructureType.RayTracingShaderGroupCreateInfoKhr,
                     Type = VKFormats.GetRayTracingShaderGroupType(hitGroup.Type),
                     GeneralShader = Vk.ShaderUnusedKhr,
-                    ClosestHitShader = closestHitIndex,
-                    AnyHitShader = anyHitIndex,
-                    IntersectionShader = intersectionIndex
+                    ClosestHitShader = closestHit,
+                    AnyHitShader = anyHit,
+                    IntersectionShader = intersection
                 };
             }
 

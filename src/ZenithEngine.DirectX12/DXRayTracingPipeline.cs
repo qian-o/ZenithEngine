@@ -15,17 +15,22 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
     {
         Context.Device.QueryInterface(out ComPtr<ID3D12Device5> device5).ThrowIfError();
 
+        uint index = 0;
+        uint numSubObjects = (uint)(1 + desc.HitGroups.Length + 1 + 2);
+        StateSubobject* pSubobjects = Allocator.Alloc<StateSubobject>(numSubObjects);
+
         StateObjectDesc stateObjectDesc = new()
         {
-            Type = StateObjectType.RaytracingPipeline
+            Type = StateObjectType.RaytracingPipeline,
+            NumSubobjects = numSubObjects,
+            PSubobjects = pSubobjects
         };
-
-        List<StateSubobject> objects = [];
 
         // Shaders and Hit Groups
         {
             Shader[] shaders =
             [
+                desc.Shaders.RayGen,
                 .. desc.Shaders.Miss,
                 .. desc.Shaders.ClosestHit,
                 .. desc.Shaders.AnyHit,
@@ -38,18 +43,152 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
                 NumExports = (uint)shaders.Length,
                 PExports = Allocator.Alloc([.. shaders.Select(item => new ExportDesc
                 {
-                    Name = (char*)Allocator.AllocUTF8(item.Desc.EntryPoint),
+                    Name = (char*)Allocator.AllocUni(item.Desc.EntryPoint),
                     ExportToRename = null,
                     Flags = ExportFlags.None
                 })])
             };
 
-            objects.Add(new()
+            pSubobjects[index++] = new()
             {
                 Type = StateSubobjectType.DxilLibrary,
                 PDesc = &dxilLibraryDesc
-            });
+            };
+
+            uint groupCount = (uint)desc.HitGroups.Length;
+            DxHitGroupDesc* groups = Allocator.Alloc<DxHitGroupDesc>(groupCount);
+
+            for (uint i = 0; i < groupCount; i++)
+            {
+                HitGroupDesc hitGroup = desc.HitGroups[i];
+
+                char* anyHit = hitGroup.AnyHit is not null ? (char*)Allocator.AllocUni(hitGroup.AnyHit) : null;
+                char* closestHit = hitGroup.ClosestHit is not null ? (char*)Allocator.AllocUni(hitGroup.ClosestHit) : null;
+                char* intersection = hitGroup.Intersection is not null ? (char*)Allocator.AllocUni(hitGroup.Intersection) : null;
+
+                groups[i] = new()
+                {
+                    HitGroupExport = (char*)Allocator.AllocUni($"HitGroup{i}"),
+                    Type = DXFormats.GetHitGroupType(hitGroup.Type),
+                    AnyHitShaderImport = anyHit,
+                    ClosestHitShaderImport = closestHit,
+                    IntersectionShaderImport = intersection
+                };
+
+                pSubobjects[index++] = new()
+                {
+                    Type = StateSubobjectType.HitGroup,
+                    PDesc = groups + i
+                };
+            }
         }
+
+        // Resource Layouts
+        {
+            uint numParameters = (uint)desc.ResourceLayouts.Sum(static item => item.DX().GlobalRootParameterCount);
+            RootParameter* pRootParameters = Allocator.Alloc<RootParameter>(numParameters);
+
+            uint offset = 0;
+            for (int i = 0; i < desc.ResourceLayouts.Length; i++)
+            {
+                DXResourceLayout resourceLayout = desc.ResourceLayouts[i].DX();
+
+                if (resourceLayout.CalculateDescriptorTableRanges((uint)i,
+                                                                  out DescriptorRange[] cbvSrvUavRanges,
+                                                                  out DescriptorRange[] samplerRanges))
+                {
+                    if (cbvSrvUavRanges.Length > 0)
+                    {
+                        pRootParameters[offset++] = new()
+                        {
+                            ParameterType = RootParameterType.TypeDescriptorTable,
+                            ShaderVisibility = ShaderVisibility.All,
+                            DescriptorTable = new()
+                            {
+                                NumDescriptorRanges = (uint)cbvSrvUavRanges.Length,
+                                PDescriptorRanges = Allocator.Alloc(cbvSrvUavRanges)
+                            }
+                        };
+                    }
+
+                    if (samplerRanges.Length > 0)
+                    {
+                        pRootParameters[offset++] = new()
+                        {
+                            ParameterType = RootParameterType.TypeDescriptorTable,
+                            ShaderVisibility = ShaderVisibility.All,
+                            DescriptorTable = new()
+                            {
+                                NumDescriptorRanges = (uint)samplerRanges.Length,
+                                PDescriptorRanges = Allocator.Alloc(samplerRanges)
+                            }
+                        };
+                    }
+                }
+            }
+
+            RootSignatureDesc rootSignatureDesc = new()
+            {
+                NumParameters = numParameters,
+                PParameters = pRootParameters,
+                Flags = RootSignatureFlags.AllowInputAssemblerInputLayout
+            };
+
+            ComPtr<ID3D10Blob> blob = null;
+            ComPtr<ID3D10Blob> error = null;
+
+            Context.D3D12.SerializeRootSignature(&rootSignatureDesc,
+                                                 D3DRootSignatureVersion.Version1,
+                                                 ref blob,
+                                                 ref error).ThrowIfError();
+
+            Context.Device.CreateRootSignature(0,
+                                               blob.GetBufferPointer(),
+                                               blob.GetBufferSize(),
+                                               out RootSignature).ThrowIfError();
+
+            blob.Dispose();
+            error.Dispose();
+
+            GlobalRootSignature globalRootSignature = new()
+            {
+                PGlobalRootSignature = RootSignature
+            };
+
+            pSubobjects[index++] = new()
+            {
+                Type = StateSubobjectType.LocalRootSignature,
+                PDesc = &globalRootSignature
+            };
+        }
+
+        // MaxTraceRecursionDepth, MaxPayloadSizeInBytes, MaxAttributeSizeInBytes
+        {
+            RaytracingPipelineConfig raytracingPipelineConfig = new()
+            {
+                MaxTraceRecursionDepth = desc.MaxTraceRecursionDepth
+            };
+
+            pSubobjects[index++] = new()
+            {
+                Type = StateSubobjectType.RaytracingPipelineConfig,
+                PDesc = &raytracingPipelineConfig
+            };
+
+            RaytracingShaderConfig raytracingShaderConfig = new()
+            {
+                MaxPayloadSizeInBytes = desc.MaxPayloadSizeInBytes,
+                MaxAttributeSizeInBytes = desc.MaxAttributeSizeInBytes
+            };
+
+            pSubobjects[index++] = new()
+            {
+                Type = StateSubobjectType.RaytracingShaderConfig,
+                PDesc = &raytracingShaderConfig
+            };
+        }
+
+        device5.CreateStateObject(&stateObjectDesc, out StateObject).ThrowIfError();
 
         device5.Dispose();
     }

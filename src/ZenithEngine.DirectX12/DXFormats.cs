@@ -389,5 +389,15 @@ internal static class DXFormats
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(format))
         };
     }
+
+    public static DxHitGroupType GetHitGroupType(HitGroupType type)
+    {
+        return type switch
+        {
+            HitGroupType.Triangles => DxHitGroupType.Triangles,
+            HitGroupType.Procedural => DxHitGroupType.ProceduralPrimitive,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
+        };
+    }
     #endregion
 }
