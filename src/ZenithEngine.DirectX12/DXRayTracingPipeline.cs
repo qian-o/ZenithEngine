@@ -131,7 +131,7 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
             {
                 NumParameters = numParameters,
                 PParameters = pRootParameters,
-                Flags = RootSignatureFlags.AllowInputAssemblerInputLayout
+                Flags = RootSignatureFlags.None
             };
 
             ComPtr<ID3D10Blob> blob = null;
@@ -157,7 +157,7 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
 
             pSubobjects[index++] = new()
             {
-                Type = StateSubobjectType.LocalRootSignature,
+                Type = StateSubobjectType.GlobalRootSignature,
                 PDesc = &globalRootSignature
             };
         }

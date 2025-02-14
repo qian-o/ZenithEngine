@@ -68,7 +68,7 @@ internal unsafe class DXComputePipeline : ComputePipeline
             {
                 NumParameters = numParameters,
                 PParameters = pRootParameters,
-                Flags = RootSignatureFlags.AllowInputAssemblerInputLayout
+                Flags = RootSignatureFlags.None
             };
 
             ComPtr<ID3D10Blob> blob = null;

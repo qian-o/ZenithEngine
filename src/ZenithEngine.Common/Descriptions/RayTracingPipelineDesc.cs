@@ -7,9 +7,9 @@ public struct RayTracingPipelineDesc(RayTracingShaderDesc shaders,
                                      ResourceLayout[] resourceLayouts,
                                      uint maxTraceRecursionDepth = 6,
                                      uint maxPayloadSizeInBytes = 256,
-                                     uint maxAttributeSizeInBytes = 256)
+                                     uint maxAttributeSizeInBytes = 32)
 {
-    public RayTracingPipelineDesc() : this(new(), [], [], 6, 256, 256)
+    public RayTracingPipelineDesc() : this(new(), [], [], 6, 256, 32)
     {
     }
 
