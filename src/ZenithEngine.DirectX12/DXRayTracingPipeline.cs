@@ -25,7 +25,7 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
 
     public uint GetRootParameterOffset(uint slot)
     {
-        return (uint)Desc.ResourceLayouts.Take((int)slot).Sum(static item => item.DX().AllStagesRootParameterCount);
+        return (uint)Desc.ResourceLayouts.Take((int)slot).Sum(static item => item.DX().GlobalRootParameterCount);
     }
 
     protected override void DebugName(string name)
