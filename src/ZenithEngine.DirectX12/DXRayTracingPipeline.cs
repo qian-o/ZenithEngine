@@ -13,8 +13,6 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
     public DXRayTracingPipeline(GraphicsContext context,
                                 ref readonly RayTracingPipelineDesc desc) : base(context, in desc)
     {
-        Context.Device.QueryInterface(out ComPtr<ID3D12Device5> device5).ThrowIfError();
-
         uint index = 0;
         uint numSubObjects = (uint)(1 + desc.HitGroups.Length + 1 + 2);
         StateSubobject* pSubobjects = Allocator.Alloc<StateSubobject>(numSubObjects);
@@ -188,7 +186,7 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
             };
         }
 
-        device5.CreateStateObject(&stateObjectDesc, out StateObject).ThrowIfError();
+        Context.Device5.CreateStateObject(&stateObjectDesc, out StateObject).ThrowIfError();
 
         ShaderTable = new(Context,
                           StateObject,
@@ -197,8 +195,6 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
                           [.. desc.HitGroups.Select(item => item.Name)]);
 
         Allocator.Release();
-
-        device5.Dispose();
     }
 
     public DXShaderTable ShaderTable { get; }
