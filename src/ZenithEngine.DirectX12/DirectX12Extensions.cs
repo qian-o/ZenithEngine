@@ -114,6 +114,16 @@ internal static class DirectX12Extensions
         return (DXComputePipeline)pipeline;
     }
 
+    public static DXRayTracingPipeline DX(this RayTracingPipeline pipeline)
+    {
+        if (pipeline is not DXRayTracingPipeline)
+        {
+            throw new ZenithEngineException("RayTracingPipeline is not a DirectX12 ray tracing pipeline.");
+        }
+
+        return (DXRayTracingPipeline)pipeline;
+    }
+
     public static DXCommandProcessor DX(this CommandProcessor processor)
     {
         if (processor is not DXCommandProcessor)

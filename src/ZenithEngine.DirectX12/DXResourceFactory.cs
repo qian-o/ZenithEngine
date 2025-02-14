@@ -60,7 +60,7 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override RayTracingPipeline CreateRayTracingPipeline(ref readonly RayTracingPipelineDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXRayTracingPipeline(Context, in desc);
     }
 
     public override CommandProcessor CreateCommandProcessor(CommandProcessorType type)

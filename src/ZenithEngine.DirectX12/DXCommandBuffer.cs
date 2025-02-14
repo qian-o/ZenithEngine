@@ -492,6 +492,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     public override void SetRayTracingPipeline(RayTracingPipeline pipeline)
     {
         activePipeline = pipeline;
+
+        pipeline.DX().Apply(CommandList);
     }
     #endregion
 
@@ -576,6 +578,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
         {
             DXGraphicsPipeline graphicsPipeline => (true, graphicsPipeline.GetRootParameterOffset(slot)),
             DXComputePipeline computePipeline => (false, computePipeline.GetRootParameterOffset(slot)),
+            DXRayTracingPipeline rayTracingPipeline => (false, rayTracingPipeline.GetRootParameterOffset(slot)),
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(activePipeline))
         };
 
