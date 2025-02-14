@@ -62,7 +62,6 @@ internal unsafe class DXBuffer : Buffer
     public DXBuffer(GraphicsContext context,
                     ref readonly BufferDesc desc,
                     ResourceFlags flags,
-                    HeapProperties heapProperties,
                     ResourceStates initialResourceState) : base(context, in desc)
     {
         SizeInBytes = Utils.AlignedSize(desc.SizeInBytes, 256u);
@@ -80,6 +79,13 @@ internal unsafe class DXBuffer : Buffer
             Layout = TextureLayout.LayoutRowMajor,
             Flags = flags
         };
+
+        HeapProperties heapProperties = new(HeapType.Default);
+
+        if (desc.Usage.HasFlag(BufferUsage.Dynamic))
+        {
+            heapProperties = new(HeapType.Upload);
+        }
 
         Context.Device.CreateCommittedResource(&heapProperties,
                                                HeapFlags.None,
