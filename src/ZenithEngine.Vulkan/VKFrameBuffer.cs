@@ -226,15 +226,6 @@ internal unsafe class VKFrameBuffer : FrameBuffer
 
     protected override void DebugName(string name)
     {
-        for (uint i = 0; i < ColorAttachmentCount; i++)
-        {
-            Context.SetDebugName(ObjectType.ImageView, colorViews[i].Handle, $"{name} Color Target[{i}]");
-        }
-
-        if (HasDepthStencilAttachment)
-        {
-            Context.SetDebugName(ObjectType.ImageView, depthStencilView.Handle, $"{name} Depth Stencil Target");
-        }
     }
 
     protected override void Destroy()

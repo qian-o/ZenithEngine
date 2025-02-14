@@ -38,7 +38,6 @@ internal unsafe class DXFence : GraphicsResource
 
     protected override void DebugName(string name)
     {
-        Fence.SetName(name).ThrowIfError();
     }
 
     protected override void Destroy()

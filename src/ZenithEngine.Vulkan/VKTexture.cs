@@ -191,12 +191,6 @@ internal unsafe class VKTexture : Texture
     protected override void DebugName(string name)
     {
         Context.SetDebugName(ObjectType.Image, Image.Handle, name);
-        Context.SetDebugName(ObjectType.ImageView, ImageView.Handle, name);
-
-        if (DeviceMemory is not null)
-        {
-            DeviceMemory.Name = $"{name} DeviceMemory";
-        }
     }
 
     protected override void Destroy()

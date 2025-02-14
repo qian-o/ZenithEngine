@@ -71,7 +71,6 @@ internal unsafe class DXDescriptorAllocator : GraphicsResource
 
     protected override void DebugName(string name)
     {
-        Heap.SetName(name).ThrowIfError();
     }
 
     protected override void Destroy()
