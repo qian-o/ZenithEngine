@@ -162,7 +162,7 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
             };
         }
 
-        // MaxTraceRecursionDepth, MaxPayloadSizeInBytes, MaxAttributeSizeInBytes
+        // Other Config
         {
             RaytracingPipelineConfig raytracingPipelineConfig = new()
             {
