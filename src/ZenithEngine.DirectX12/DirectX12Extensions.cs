@@ -6,9 +6,11 @@ namespace ZenithEngine.DirectX12;
 
 internal static class DirectX12Extensions
 {
-    public static void ThrowIfError(this int result)
+    private const int E_NOINTERFACE = unchecked((int)0x80004002);
+
+    public static void ThrowIfError(this int result, bool ignoreNoInterface = false)
     {
-        if (result is not 0)
+        if (result is not 0 && (!ignoreNoInterface || result is not E_NOINTERFACE))
         {
             throw new ZenithEngineException($"DirectX12 error code: {result}", Marshal.GetExceptionForHR(result));
         }
