@@ -47,7 +47,6 @@ internal unsafe class VKDeviceMemory : GraphicsResource
 
     protected override void DebugName(string name)
     {
-        Context.SetDebugName(ObjectType.DeviceMemory, DeviceMemory.Handle, name);
     }
 
     protected override void Destroy()

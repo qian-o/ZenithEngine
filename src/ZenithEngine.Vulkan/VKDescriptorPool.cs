@@ -122,7 +122,6 @@ internal unsafe class VKDescriptorPool : GraphicsResource
 
     protected override void DebugName(string name)
     {
-        Context.SetDebugName(ObjectType.DescriptorPool, Pool.Handle, name);
     }
 
     protected override void Destroy()

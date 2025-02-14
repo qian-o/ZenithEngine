@@ -98,8 +98,6 @@ internal unsafe class VKBuffer : Buffer
     protected override void DebugName(string name)
     {
         Context.SetDebugName(ObjectType.Buffer, Buffer.Handle, name);
-
-        DeviceMemory.Name = $"{name} DeviceMemory";
     }
 
     protected override void Destroy()

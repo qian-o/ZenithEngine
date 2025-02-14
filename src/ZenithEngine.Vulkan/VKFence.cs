@@ -42,7 +42,6 @@ internal unsafe class VKFence : GraphicsResource
 
     protected override void DebugName(string name)
     {
-        Context.SetDebugName(ObjectType.Fence, Fence.Handle, name);
     }
 
     protected override void Destroy()
