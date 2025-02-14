@@ -12,6 +12,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 {
     public ComPtr<ID3D12CommandAllocator> CommandAllocator;
     public ComPtr<ID3D12GraphicsCommandList> CommandList;
+    public ComPtr<ID3D12GraphicsCommandList4> CommandList4;
 
     private readonly DXDescriptorTableAllocator? cbvSrvUavAllocator;
     private readonly DXDescriptorTableAllocator? samplerAllocator;
@@ -32,6 +33,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                          CommandAllocator,
                                          (ComPtr<ID3D12PipelineState>)null,
                                          out CommandList).ThrowIfError();
+
+        CommandList.QueryInterface(out CommandList4).ThrowIfError();
 
         if (ProcessorType is not CommandProcessorType.Copy)
         {
@@ -493,7 +496,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     {
         activePipeline = pipeline;
 
-        pipeline.DX().Apply(CommandList);
+        pipeline.DX().Apply(CommandList4);
     }
     #endregion
 
@@ -711,11 +714,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
             Depth = depth
         };
 
-        CommandList.QueryInterface(out ComPtr<ID3D12GraphicsCommandList4> commandList4).ThrowIfError();
-
-        commandList4.DispatchRays(&dispatchRaysDesc);
-
-        commandList4.Dispose();
+        CommandList4.DispatchRays(&dispatchRaysDesc);
     }
     #endregion
 
@@ -729,6 +728,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
         samplerAllocator?.Dispose();
         cbvSrvUavAllocator?.Dispose();
 
+        CommandList4.Dispose();
         CommandList.Dispose();
         CommandAllocator.Dispose();
 

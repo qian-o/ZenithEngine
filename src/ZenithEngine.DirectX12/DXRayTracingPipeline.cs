@@ -205,14 +205,10 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
-    public void Apply(ComPtr<ID3D12GraphicsCommandList> commandList)
+    public void Apply(ComPtr<ID3D12GraphicsCommandList4> commandList4)
     {
-        commandList.QueryInterface(out ComPtr<ID3D12GraphicsCommandList4> commandList4).ThrowIfError();
-
         commandList4.SetPipelineState1(StateObject);
         commandList4.SetComputeRootSignature(RootSignature);
-
-        commandList4.Dispose();
     }
 
     public uint GetRootParameterOffset(uint slot)
