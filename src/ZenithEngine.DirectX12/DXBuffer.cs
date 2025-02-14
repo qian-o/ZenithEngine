@@ -59,6 +59,38 @@ internal unsafe class DXBuffer : Buffer
         State = initialResourceState;
     }
 
+    public DXBuffer(GraphicsContext context,
+                    ref readonly BufferDesc desc,
+                    ResourceFlags flags,
+                    HeapProperties heapProperties,
+                    ResourceStates initialResourceState) : base(context, in desc)
+    {
+        SizeInBytes = Utils.AlignedSize(desc.SizeInBytes, 256u);
+
+        ResourceDesc resourceDesc = new()
+        {
+            Dimension = ResourceDimension.Buffer,
+            Alignment = 0,
+            Width = SizeInBytes,
+            Height = 1,
+            DepthOrArraySize = 1,
+            MipLevels = 1,
+            Format = Format.FormatUnknown,
+            SampleDesc = new(1, 0),
+            Layout = TextureLayout.LayoutRowMajor,
+            Flags = flags
+        };
+
+        Context.Device.CreateCommittedResource(&heapProperties,
+                                               HeapFlags.None,
+                                               &resourceDesc,
+                                               initialResourceState,
+                                               null,
+                                               out Resource).ThrowIfError();
+
+        State = initialResourceState;
+    }
+
     public uint SizeInBytes { get; }
 
     public ResourceStates State { get; private set; }
