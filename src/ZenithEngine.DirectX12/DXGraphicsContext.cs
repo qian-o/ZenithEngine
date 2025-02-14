@@ -13,7 +13,6 @@ internal unsafe class DXGraphicsContext : GraphicsContext
     public ComPtr<IDXGIFactory6> Factory6;
     public ComPtr<IDXGIAdapter> Adapter;
     public ComPtr<ID3D12Device> Device;
-    public ComPtr<ID3D12Device5> Device5;
 
     public ComPtr<ID3D12CommandSignature> DrawSignature;
     public ComPtr<ID3D12CommandSignature> DrawIndexedSignature;
@@ -85,8 +84,6 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
         D3D12.CreateDevice(Adapter, D3DFeatureLevel.Level120, out Device).ThrowIfError();
 
-        Device.QueryInterface(out Device5);
-
         IndirectArgumentDesc indirectArgumentDesc = new()
         {
             Type = IndirectArgumentType.Draw
@@ -140,7 +137,6 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         DrawIndexedSignature.Dispose();
         DrawSignature.Dispose();
 
-        Device5.Dispose();
         Device.Dispose();
         Adapter.Dispose();
         Factory6.Dispose();

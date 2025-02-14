@@ -1,4 +1,5 @@
-﻿using Silk.NET.Direct3D12;
+﻿using Silk.NET.Core.Native;
+using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Graphics;
@@ -24,7 +25,7 @@ internal unsafe class DXDeviceCapabilities(DXGraphicsContext context) : DeviceCa
 
         deviceName = Utils.PtrToStringUni((nint)desc.Description);
 
-        if (context.Device5.Handle is not null)
+        if (context.Device.QueryInterface(out ComPtr<ID3D12Device5> device5) is 0)
         {
             isRayQuerySupported = true;
             isRayTracingSupported = true;
@@ -34,5 +35,7 @@ internal unsafe class DXDeviceCapabilities(DXGraphicsContext context) : DeviceCa
             isRayQuerySupported = false;
             isRayTracingSupported = false;
         }
+
+        device5.Dispose();
     }
 }
