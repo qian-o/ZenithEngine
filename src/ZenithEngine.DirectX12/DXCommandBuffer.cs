@@ -34,7 +34,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                          (ComPtr<ID3D12PipelineState>)null,
                                          out CommandList).ThrowIfError();
 
-        CommandList.QueryInterface(out CommandList4).ThrowIfError();
+        CommandList.QueryInterface(out CommandList4);
 
         if (ProcessorType is not CommandProcessorType.Copy)
         {

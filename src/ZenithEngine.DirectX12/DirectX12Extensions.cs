@@ -6,14 +6,9 @@ namespace ZenithEngine.DirectX12;
 
 internal static class DirectX12Extensions
 {
-    public static void ThrowIfError(this int result, params int[] successCodes)
+    public static void ThrowIfError(this int result)
     {
-        if (successCodes.Length is 0)
-        {
-            successCodes = [0];
-        }
-
-        if (!successCodes.Contains(result))
+        if (result is not 0)
         {
             throw new ZenithEngineException($"DirectX12 error code: {result}", Marshal.GetExceptionForHR(result));
         }
