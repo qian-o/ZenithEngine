@@ -124,7 +124,7 @@ internal unsafe class DXTopLevelAS : TopLevelAS
                 InstanceMask = instance.InstanceMask,
                 InstanceContributionToHitGroupIndex = instance.InstanceContributionToHitGroupIndex,
                 Flags = (uint)DXFormats.GetRaytracingInstanceFlags(instance.Options),
-                AccelerationStructure = instance.BottomLevel.DX().AccelerationStructureBuffer.Resource.GetGPUVirtualAddress(),
+                AccelerationStructure = instance.BottomLevel.DX().AccelerationStructureBuffer.Resource.GetGPUVirtualAddress()
             };
 
             fixed (float* transform = instances[(int)i].Transform)
