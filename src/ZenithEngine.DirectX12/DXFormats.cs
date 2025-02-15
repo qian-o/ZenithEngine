@@ -1,6 +1,7 @@
 ﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
+using Silk.NET.Maths;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
 
@@ -388,6 +389,28 @@ internal static class DXFormats
             IndexFormat.UInt32 => Format.FormatR32Uint,
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(format))
         };
+    }
+
+    public static Matrix3X4<float> GetMatrix3X4(Matrix4X4<float> matrix)
+    {
+        return new(matrix.Row1, matrix.Row2, matrix.Row3);
+    }
+
+    public static RaytracingGeometryFlags GetRaytracingGeometryFlags(AccelerationStructureGeometryOptions options)
+    {
+        RaytracingGeometryFlags flags = RaytracingGeometryFlags.None;
+
+        if (options.HasFlag(AccelerationStructureGeometryOptions.Opaque))
+        {
+            flags |= RaytracingGeometryFlags.Opaque;
+        }
+
+        if (options.HasFlag(AccelerationStructureGeometryOptions.NoDuplicateAnyHitInvocation))
+        {
+            flags |= RaytracingGeometryFlags.NoDuplicateAnyhitInvocation;
+        }
+
+        return flags;
     }
 
     public static DxHitGroupType GetHitGroupType(HitGroupType type)

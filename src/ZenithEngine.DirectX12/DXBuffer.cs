@@ -64,7 +64,7 @@ internal unsafe class DXBuffer : Buffer
                     ResourceFlags flags,
                     ResourceStates initialResourceState) : base(context, in desc)
     {
-        SizeInBytes = Utils.AlignedSize(desc.SizeInBytes, 256u);
+        SizeInBytes = desc.SizeInBytes;
 
         ResourceDesc resourceDesc = new()
         {
