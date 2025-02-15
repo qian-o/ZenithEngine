@@ -374,7 +374,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
     public override void UpdateAccelerationStructure(ref TopLevelAS tlas, ref readonly TopLevelASDesc newDesc)
     {
-        throw new NotImplementedException();
+        tlas.DX().UpdateAccelerationStructure(GraphicsCommandList4, in newDesc);
     }
     #endregion
 

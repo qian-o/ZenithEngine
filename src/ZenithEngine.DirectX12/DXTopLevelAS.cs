@@ -65,8 +65,6 @@ internal unsafe class DXTopLevelAS : TopLevelAS
         };
 
         commandList.ResourceBarrier(1, &barrier);
-
-        Allocator.Release();
     }
 
     public DXBuffer InstanceBuffer { get; }
@@ -89,6 +87,34 @@ internal unsafe class DXTopLevelAS : TopLevelAS
     }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
+
+    public void UpdateAccelerationStructure(ComPtr<ID3D12GraphicsCommandList4> commandList, ref readonly TopLevelASDesc newDesc)
+    {
+        Desc = newDesc;
+
+        FillInstanceBuffer(out BuildRaytracingAccelerationStructureInputs inputs);
+
+        BuildRaytracingAccelerationStructureDesc buildDesc = new()
+        {
+            DestAccelerationStructureData = AccelerationStructureBuffer.Resource.GetGPUVirtualAddress(),
+            Inputs = inputs,
+            SourceAccelerationStructureData = AccelerationStructureBuffer.Resource.GetGPUVirtualAddress(),
+            ScratchAccelerationStructureData = ScratchBuffer.Resource.GetGPUVirtualAddress()
+        };
+
+        commandList.BuildRaytracingAccelerationStructure(&buildDesc, 0, (RaytracingAccelerationStructurePostbuildInfoDesc*)null);
+
+        ResourceBarrier barrier = new()
+        {
+            Type = ResourceBarrierType.Uav,
+            UAV = new()
+            {
+                PResource = AccelerationStructureBuffer.Resource
+            }
+        };
+
+        commandList.ResourceBarrier(1, &barrier);
+    }
 
     protected override void DebugName(string name)
     {
