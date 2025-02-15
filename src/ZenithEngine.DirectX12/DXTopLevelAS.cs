@@ -1,6 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
+using Silk.NET.DXGI;
+using Silk.NET.Maths;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -9,6 +11,8 @@ namespace ZenithEngine.DirectX12;
 
 internal unsafe class DXTopLevelAS : TopLevelAS
 {
+    private CpuDescriptorHandle srv;
+
     public DXTopLevelAS(GraphicsContext context,
                         ComPtr<ID3D12GraphicsCommandList4> commandList,
                         ref readonly TopLevelASDesc desc) : base(context, in desc)
@@ -72,6 +76,19 @@ internal unsafe class DXTopLevelAS : TopLevelAS
 
     public DXBuffer ScratchBuffer { get; }
 
+    public ref readonly CpuDescriptorHandle Srv
+    {
+        get
+        {
+            if (srv.Ptr is 0)
+            {
+                InitSrv();
+            }
+
+            return ref srv;
+        }
+    }
+
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
     protected override void DebugName(string name)
@@ -80,6 +97,11 @@ internal unsafe class DXTopLevelAS : TopLevelAS
 
     protected override void Destroy()
     {
+        if (srv.Ptr is not 0)
+        {
+            Context.CbvSrvUavAllocator!.Free(srv);
+        }
+
         InstanceBuffer.Dispose();
         AccelerationStructureBuffer.Dispose();
         ScratchBuffer.Dispose();
@@ -104,6 +126,8 @@ internal unsafe class DXTopLevelAS : TopLevelAS
                 AccelerationStructure = item.BottomLevel.DX().AccelerationStructureBuffer.Resource.GetGPUVirtualAddress(),
             };
 
+            new Span<Matrix3X4<float>>(instance.Transform, 1)[0] = item.Transform;
+
             Unsafe.Copy((void*)(mapped.Data + (i * sizeof(RaytracingInstanceDesc))), in instance);
         }
 
@@ -117,5 +141,23 @@ internal unsafe class DXTopLevelAS : TopLevelAS
             DescsLayout = ElementsLayout.Array,
             InstanceDescs = InstanceBuffer.Resource.GetGPUVirtualAddress() + Desc.OffsetInBytes
         };
+    }
+
+    private void InitSrv()
+    {
+        ShaderResourceViewDesc desc = new()
+        {
+            Format = Format.FormatUnknown,
+            ViewDimension = SrvDimension.RaytracingAccelerationStructure,
+            Shader4ComponentMapping = DXGraphicsContext.DefaultShader4ComponentMapping,
+            RaytracingAccelerationStructure = new()
+            {
+                Location = AccelerationStructureBuffer.Resource.GetGPUVirtualAddress()
+            }
+        };
+
+        srv = Context.CbvSrvUavAllocator!.Alloc();
+
+        Context.Device.CreateShaderResourceView((ID3D12Resource*)null, &desc, srv);
     }
 }

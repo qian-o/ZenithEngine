@@ -543,22 +543,11 @@ internal static unsafe class VKFormats
         };
     }
 
-    public static TransformMatrixKHR GetTransformMatrix(Matrix4X4<float> matrix)
+    public static TransformMatrixKHR GetTransformMatrix(Matrix3X4<float> matrix)
     {
         TransformMatrixKHR transformMatrix = new();
 
-        transformMatrix.Matrix[0] = matrix.M11;
-        transformMatrix.Matrix[1] = matrix.M12;
-        transformMatrix.Matrix[2] = matrix.M13;
-        transformMatrix.Matrix[3] = matrix.M14;
-        transformMatrix.Matrix[4] = matrix.M21;
-        transformMatrix.Matrix[5] = matrix.M22;
-        transformMatrix.Matrix[6] = matrix.M23;
-        transformMatrix.Matrix[7] = matrix.M24;
-        transformMatrix.Matrix[8] = matrix.M31;
-        transformMatrix.Matrix[9] = matrix.M32;
-        transformMatrix.Matrix[10] = matrix.M33;
-        transformMatrix.Matrix[11] = matrix.M34;
+        new Span<Matrix3X4<float>>(&transformMatrix, 1)[0] = matrix;
 
         return transformMatrix;
     }

@@ -23,5 +23,5 @@ public class AccelerationStructureTriangles(Buffer vertexBuffer) : AccelerationS
 
     public uint IndexOffsetInBytes { get; set; }
 
-    public Matrix4X4<float> Transform { get; set; }
+    public Matrix3X4<float> Transform { get; set; }
 }

@@ -32,9 +32,9 @@ internal unsafe class DXBottomLevelAS : BottomLevelAS
         {
             if (desc.Geometries[i] is AccelerationStructureTriangles triangles)
             {
-                Matrix3X4<float> matrix3X4 = DXFormats.GetMatrix3X4(triangles.Transform);
+                Matrix3X4<float> transform = triangles.Transform;
 
-                Unsafe.Copy((void*)(mapped.Data + (i * sizeof(Matrix3X4<float>))), in matrix3X4);
+                Unsafe.Copy((void*)(mapped.Data + (i * sizeof(Matrix3X4<float>))), in transform);
             }
         }
 

@@ -69,14 +69,14 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
             IndexFormat = IndexFormat.UInt32,
             IndexCount = (uint)indices.Length,
             IndexOffsetInBytes = 0,
-            Transform = Matrix4X4<float>.Identity
+            Transform = Matrix3X4<float>.Identity
         });
 
         bottomLevelAS = commandBuffer.BuildAccelerationStructure(in blasDesc);
 
         TopLevelASDesc tlasDesc = new([new(bottomLevelAS)
         {
-            Transform = Matrix4X4<float>.Identity,
+            Transform = Matrix3X4<float>.Identity,
             InstanceID = 0,
             InstanceMask = 0xFF,
             InstanceContributionToHitGroupIndex = 0,
