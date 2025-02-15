@@ -87,6 +87,55 @@ internal unsafe class DXBottomLevelAS : BottomLevelAS
 
             geometries[i] = geometry;
         }
+
+        BuildRaytracingAccelerationStructureInputs inputs = new()
+        {
+            Type = RaytracingAccelerationStructureType.BottomLevel,
+            Flags = RaytracingAccelerationStructureBuildFlags.None,
+            NumDescs = geometryCount,
+            DescsLayout = ElementsLayout.Array,
+            PGeometryDescs = geometries
+        };
+
+        RaytracingAccelerationStructurePrebuildInfo buildInfo = new();
+
+        Context.Device5.GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &buildInfo);
+
+        BufferDesc accelerationStructureBufferDesc = new((uint)buildInfo.ResultDataMaxSizeInBytes, BufferUsage.None);
+
+        AccelerationStructureBuffer = new(Context,
+                                          in accelerationStructureBufferDesc,
+                                          ResourceFlags.AllowUnorderedAccess,
+                                          ResourceStates.RaytracingAccelerationStructure);
+
+        BufferDesc scratchBufferDesc = new((uint)buildInfo.ScratchDataSizeInBytes, BufferUsage.None);
+
+        ScratchBuffer = new(Context,
+                            in scratchBufferDesc,
+                            ResourceFlags.AllowUnorderedAccess,
+                            ResourceStates.UnorderedAccess);
+
+        BuildRaytracingAccelerationStructureDesc buildDesc = new()
+        {
+            DestAccelerationStructureData = AccelerationStructureBuffer.Resource.GetGPUVirtualAddress(),
+            Inputs = inputs,
+            ScratchAccelerationStructureData = ScratchBuffer.Resource.GetGPUVirtualAddress()
+        };
+
+        commandList.BuildRaytracingAccelerationStructure(&buildDesc, 0, (RaytracingAccelerationStructurePostbuildInfoDesc*)null);
+
+        ResourceBarrier barrier = new()
+        {
+            Type = ResourceBarrierType.Uav,
+            UAV = new()
+            {
+                PResource = AccelerationStructureBuffer.Resource
+            }
+        };
+
+        commandList.ResourceBarrier(1, &barrier);
+
+        Allocator.Release();
     }
 
     public DXBuffer TransformBuffer { get; }
