@@ -1,6 +1,8 @@
-﻿using Silk.NET.Core.Native;
+﻿using System.Runtime.CompilerServices;
+using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using ZenithEngine.Common.Descriptions;
+using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
@@ -13,7 +15,11 @@ internal unsafe class DXTopLevelAS : TopLevelAS
     {
         BufferDesc instanceBufferDesc = new((uint)(desc.Instances.Length * sizeof(RaytracingInstanceDesc)));
 
-        InstanceBuffer = new(Context, in instanceBufferDesc);
+        InstanceBuffer = new(Context,
+                             in instanceBufferDesc,
+                             HeapType.Upload,
+                             ResourceFlags.None,
+                             ResourceStates.GenericRead);
 
         FillInstanceBuffer(out BuildRaytracingAccelerationStructureInputs inputs);
 
@@ -36,6 +42,28 @@ internal unsafe class DXTopLevelAS : TopLevelAS
                             HeapType.Default,
                             ResourceFlags.AllowUnorderedAccess,
                             ResourceStates.Common);
+
+        BuildRaytracingAccelerationStructureDesc buildDesc = new()
+        {
+            DestAccelerationStructureData = AccelerationStructureBuffer.Resource.GetGPUVirtualAddress(),
+            Inputs = inputs,
+            ScratchAccelerationStructureData = ScratchBuffer.Resource.GetGPUVirtualAddress()
+        };
+
+        commandList.BuildRaytracingAccelerationStructure(&buildDesc, 0, (RaytracingAccelerationStructurePostbuildInfoDesc*)null);
+
+        ResourceBarrier barrier = new()
+        {
+            Type = ResourceBarrierType.Uav,
+            UAV = new()
+            {
+                PResource = AccelerationStructureBuffer.Resource
+            }
+        };
+
+        commandList.ResourceBarrier(1, &barrier);
+
+        Allocator.Release();
     }
 
     public DXBuffer InstanceBuffer { get; }
@@ -59,6 +87,35 @@ internal unsafe class DXTopLevelAS : TopLevelAS
 
     private void FillInstanceBuffer(out BuildRaytracingAccelerationStructureInputs inputs)
     {
-        throw new NotImplementedException();
+        uint instanceCount = (uint)Desc.Instances.Length;
+
+        MappedResource mapped = Context.MapMemory(InstanceBuffer, MapMode.Write);
+
+        for (uint i = 0; i < instanceCount; i++)
+        {
+            AccelerationStructureInstance item = Desc.Instances[i];
+
+            RaytracingInstanceDesc instance = new()
+            {
+                InstanceID = item.InstanceID,
+                InstanceMask = item.InstanceMask,
+                InstanceContributionToHitGroupIndex = item.InstanceContributionToHitGroupIndex,
+                Flags = (uint)DXFormats.GetRaytracingInstanceFlags(item.Options),
+                AccelerationStructure = item.BottomLevel.DX().AccelerationStructureBuffer.Resource.GetGPUVirtualAddress(),
+            };
+
+            Unsafe.Copy((void*)(mapped.Data + (i * sizeof(RaytracingInstanceDesc))), in instance);
+        }
+
+        Context.UnmapMemory(InstanceBuffer);
+
+        inputs = new()
+        {
+            Type = RaytracingAccelerationStructureType.TopLevel,
+            Flags = DXFormats.GetRaytracingAccelerationStructureBuildFlags(Desc.Options),
+            NumDescs = instanceCount,
+            DescsLayout = ElementsLayout.Array,
+            InstanceDescs = InstanceBuffer.Resource.GetGPUVirtualAddress() + Desc.OffsetInBytes
+        };
     }
 }
