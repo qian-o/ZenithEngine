@@ -32,16 +32,11 @@ internal unsafe class DXBuffer : Buffer
             Format = Format.FormatUnknown,
             SampleDesc = new(1, 0),
             Layout = TextureLayout.LayoutRowMajor,
-            Flags = ResourceFlags.None
+            Flags = desc.Usage.HasFlag(BufferUsage.UnorderedAccess) ? ResourceFlags.AllowUnorderedAccess : ResourceFlags.None
         };
 
         HeapProperties heapProperties = new(HeapType.Default);
         ResourceStates initialResourceState = ResourceStates.Common;
-
-        if (desc.Usage.HasFlag(BufferUsage.UnorderedAccess))
-        {
-            resourceDesc.Flags |= ResourceFlags.AllowUnorderedAccess;
-        }
 
         if (desc.Usage.HasFlag(BufferUsage.Dynamic))
         {
@@ -61,10 +56,9 @@ internal unsafe class DXBuffer : Buffer
 
     public DXBuffer(GraphicsContext context,
                     ref readonly BufferDesc desc,
-                    ResourceFlags flags,
                     ResourceStates initialResourceState) : base(context, in desc)
     {
-        SizeInBytes = desc.SizeInBytes;
+        SizeInBytes = Utils.AlignedSize(desc.SizeInBytes, 256u);
 
         ResourceDesc resourceDesc = new()
         {
@@ -77,15 +71,10 @@ internal unsafe class DXBuffer : Buffer
             Format = Format.FormatUnknown,
             SampleDesc = new(1, 0),
             Layout = TextureLayout.LayoutRowMajor,
-            Flags = flags
+            Flags = desc.Usage.HasFlag(BufferUsage.UnorderedAccess) ? ResourceFlags.AllowUnorderedAccess : ResourceFlags.None
         };
 
-        HeapProperties heapProperties = new(HeapType.Default);
-
-        if (desc.Usage.HasFlag(BufferUsage.Dynamic))
-        {
-            heapProperties = new(HeapType.Upload);
-        }
+        HeapProperties heapProperties = new(desc.Usage.HasFlag(BufferUsage.Dynamic) ? HeapType.Upload : HeapType.Default);
 
         Context.Device.CreateCommittedResource(&heapProperties,
                                                HeapFlags.None,

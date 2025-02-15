@@ -38,9 +38,9 @@ internal unsafe class DXShaderTable : GraphicsResource
         BufferDesc missDesc = new(missSizeAligned);
         BufferDesc hitGroupDesc = new(hitGroupSizeAligned);
 
-        RayGenBuffer = new(Context, in rayGenDesc, ResourceFlags.None, ResourceStates.GenericRead);
-        MissBuffer = new(Context, in missDesc, ResourceFlags.None, ResourceStates.GenericRead);
-        HitGroupBuffer = new(Context, in hitGroupDesc, ResourceFlags.None, ResourceStates.GenericRead);
+        RayGenBuffer = new(Context, in rayGenDesc);
+        MissBuffer = new(Context, in missDesc);
+        HitGroupBuffer = new(Context, in hitGroupDesc);
 
         CopyHandles(RayGenBuffer, rayGenExports);
         CopyHandles(MissBuffer, missExports);

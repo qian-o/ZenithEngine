@@ -66,6 +66,16 @@ internal static class DirectX12Extensions
         return (DXBottomLevelAS)bottomLevelAS;
     }
 
+    public static DXTopLevelAS DX(this TopLevelAS topLevelAS)
+    {
+        if (topLevelAS is not DXTopLevelAS)
+        {
+            throw new ZenithEngineException("TopLevelAS is not a DirectX12 top level acceleration structure.");
+        }
+
+        return (DXTopLevelAS)topLevelAS;
+    }
+
     public static DXShader DX(this Shader shader)
     {
         if (shader is not DXShader)

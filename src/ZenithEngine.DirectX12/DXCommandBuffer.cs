@@ -369,7 +369,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
     public override TopLevelAS BuildAccelerationStructure(ref readonly TopLevelASDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXTopLevelAS(Context, GraphicsCommandList4, in desc);
     }
 
     public override void UpdateAccelerationStructure(ref TopLevelAS tlas, ref readonly TopLevelASDesc newDesc)

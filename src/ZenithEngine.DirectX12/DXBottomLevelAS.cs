@@ -20,10 +20,7 @@ internal unsafe class DXBottomLevelAS : BottomLevelAS
 
         BufferDesc transformBufferDesc = new((uint)(geometryCount * sizeof(Matrix3X4<float>)));
 
-        TransformBuffer = new(Context,
-                              in transformBufferDesc,
-                              ResourceFlags.None,
-                              ResourceStates.NonPixelShaderResource);
+        TransformBuffer = new(Context, in transformBufferDesc);
 
         MappedResource mapped = Context.MapMemory(TransformBuffer, MapMode.Write);
 
@@ -101,19 +98,15 @@ internal unsafe class DXBottomLevelAS : BottomLevelAS
 
         Context.Device5.GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &buildInfo);
 
-        BufferDesc accelerationStructureBufferDesc = new((uint)buildInfo.ResultDataMaxSizeInBytes, BufferUsage.None);
+        BufferDesc accelerationStructureBufferDesc = new((uint)buildInfo.ResultDataMaxSizeInBytes, BufferUsage.UnorderedAccess);
 
         AccelerationStructureBuffer = new(Context,
                                           in accelerationStructureBufferDesc,
-                                          ResourceFlags.AllowUnorderedAccess,
                                           ResourceStates.RaytracingAccelerationStructure);
 
-        BufferDesc scratchBufferDesc = new((uint)buildInfo.ScratchDataSizeInBytes, BufferUsage.None);
+        BufferDesc scratchBufferDesc = new((uint)buildInfo.ScratchDataSizeInBytes, BufferUsage.UnorderedAccess);
 
-        ScratchBuffer = new(Context,
-                            in scratchBufferDesc,
-                            ResourceFlags.AllowUnorderedAccess,
-                            ResourceStates.Common);
+        ScratchBuffer = new(Context, in scratchBufferDesc, ResourceStates.Common);
 
         BuildRaytracingAccelerationStructureDesc buildDesc = new()
         {
