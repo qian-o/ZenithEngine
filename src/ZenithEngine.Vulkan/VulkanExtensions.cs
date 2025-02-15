@@ -81,16 +81,6 @@ internal static class VulkanExtensions
         return (VKSampler)sampler;
     }
 
-    public static VKShader VK(this Shader shader)
-    {
-        if (shader is not VKShader)
-        {
-            throw new ZenithEngineException("Shader is not a Vulkan shader.");
-        }
-
-        return (VKShader)shader;
-    }
-
     public static VKBottomLevelAS VK(this BottomLevelAS bottomLevelAS)
     {
         if (bottomLevelAS is not VKBottomLevelAS)
@@ -109,6 +99,16 @@ internal static class VulkanExtensions
         }
 
         return (VKTopLevelAS)topLevelAS;
+    }
+
+    public static VKShader VK(this Shader shader)
+    {
+        if (shader is not VKShader)
+        {
+            throw new ZenithEngineException("Shader is not a Vulkan shader.");
+        }
+
+        return (VKShader)shader;
     }
 
     public static VKResourceLayout VK(this ResourceLayout layout)

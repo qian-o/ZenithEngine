@@ -56,6 +56,16 @@ internal static class DirectX12Extensions
         return (DXSampler)sampler;
     }
 
+    public static DXBottomLevelAS DX(this BottomLevelAS bottomLevelAS)
+    {
+        if (bottomLevelAS is not DXBottomLevelAS)
+        {
+            throw new ZenithEngineException("BottomLevelAS is not a DirectX12 bottom level acceleration structure.");
+        }
+
+        return (DXBottomLevelAS)bottomLevelAS;
+    }
+
     public static DXShader DX(this Shader shader)
     {
         if (shader is not DXShader)

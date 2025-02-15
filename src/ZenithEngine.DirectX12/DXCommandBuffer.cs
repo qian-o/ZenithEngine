@@ -364,7 +364,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #region Acceleration Structure Operations
     public override BottomLevelAS BuildAccelerationStructure(ref readonly BottomLevelASDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXBottomLevelAS(Context, GraphicsCommandList4, in desc);
     }
 
     public override TopLevelAS BuildAccelerationStructure(ref readonly TopLevelASDesc desc)
