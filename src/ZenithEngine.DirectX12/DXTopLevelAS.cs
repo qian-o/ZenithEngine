@@ -1,7 +1,6 @@
 ﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using ZenithEngine.Common.Descriptions;
-using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
@@ -22,15 +21,21 @@ internal unsafe class DXTopLevelAS : TopLevelAS
 
         Context.Device5.GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &buildInfo);
 
-        BufferDesc accelerationStructureBufferDesc = new((uint)buildInfo.ResultDataMaxSizeInBytes, BufferUsage.UnorderedAccess);
+        BufferDesc accelerationStructureBufferDesc = new((uint)buildInfo.ResultDataMaxSizeInBytes);
 
         AccelerationStructureBuffer = new(Context,
                                           in accelerationStructureBufferDesc,
+                                          HeapType.Default,
+                                          ResourceFlags.AllowUnorderedAccess,
                                           ResourceStates.RaytracingAccelerationStructure);
 
-        BufferDesc scratchBufferDesc = new((uint)buildInfo.ScratchDataSizeInBytes, BufferUsage.UnorderedAccess);
+        BufferDesc scratchBufferDesc = new((uint)buildInfo.ScratchDataSizeInBytes);
 
-        ScratchBuffer = new(Context, in scratchBufferDesc, ResourceStates.Common);
+        ScratchBuffer = new(Context,
+                            in scratchBufferDesc,
+                            HeapType.Default,
+                            ResourceFlags.AllowUnorderedAccess,
+                            ResourceStates.Common);
     }
 
     public DXBuffer InstanceBuffer { get; }

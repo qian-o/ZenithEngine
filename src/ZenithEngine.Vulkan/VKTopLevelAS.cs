@@ -19,6 +19,7 @@ internal unsafe class VKTopLevelAS : TopLevelAS
 
         InstanceBuffer = new(Context,
                              in instanceBufferDesc,
+                             true,
                              BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr);
 
         FillInstanceBuffer(out AccelerationStructureGeometryKHR geometry, out AccelerationStructureBuildRangeInfoKHR buildRangeInfo);
@@ -44,10 +45,11 @@ internal unsafe class VKTopLevelAS : TopLevelAS
                                                                              &buildRangeInfo.PrimitiveCount,
                                                                              &buildSizesInfo);
 
-        BufferDesc accelerationStructureBufferDesc = new((uint)buildSizesInfo.AccelerationStructureSize, BufferUsage.None);
+        BufferDesc accelerationStructureBufferDesc = new((uint)buildSizesInfo.AccelerationStructureSize);
 
         AccelerationStructureBuffer = new(Context,
                                           in accelerationStructureBufferDesc,
+                                          false,
                                           BufferUsageFlags.AccelerationStructureStorageBitKhr);
 
         AccelerationStructureCreateInfoKHR createInfo = new()
@@ -71,10 +73,11 @@ internal unsafe class VKTopLevelAS : TopLevelAS
 
         Address = Context.KhrAccelerationStructure.GetAccelerationStructureDeviceAddress(Context.Device, &deviceAddressInfo);
 
-        BufferDesc scratchBufferDesc = new((uint)buildSizesInfo.BuildScratchSize, BufferUsage.None);
+        BufferDesc scratchBufferDesc = new((uint)buildSizesInfo.BuildScratchSize);
 
         ScratchBuffer = new(Context,
                             in scratchBufferDesc,
+                            false,
                             BufferUsageFlags.StorageBufferBit);
 
         buildGeometryInfo.DstAccelerationStructure = AccelerationStructure;
