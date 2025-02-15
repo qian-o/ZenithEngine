@@ -87,14 +87,8 @@ internal unsafe class DXTexture : Texture
 
     public ResourceStates this[uint mipLevel, uint arrayLayer, CubeMapFace face]
     {
-        get
-        {
-            return states[DXHelpers.GetDepthOrArrayIndex(Desc, mipLevel, arrayLayer, face)];
-        }
-        private set
-        {
-            states[DXHelpers.GetDepthOrArrayIndex(Desc, mipLevel, arrayLayer, face)] = value;
-        }
+        get => states[DXHelpers.GetDepthOrArrayIndex(Desc, mipLevel, arrayLayer, face)];
+        private set => states[DXHelpers.GetDepthOrArrayIndex(Desc, mipLevel, arrayLayer, face)] = value;
     }
 
     public ref readonly CpuDescriptorHandle Srv
