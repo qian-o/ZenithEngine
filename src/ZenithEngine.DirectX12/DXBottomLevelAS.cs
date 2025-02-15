@@ -113,7 +113,7 @@ internal unsafe class DXBottomLevelAS : BottomLevelAS
         ScratchBuffer = new(Context,
                             in scratchBufferDesc,
                             ResourceFlags.AllowUnorderedAccess,
-                            ResourceStates.UnorderedAccess);
+                            ResourceStates.Common);
 
         BuildRaytracingAccelerationStructureDesc buildDesc = new()
         {
