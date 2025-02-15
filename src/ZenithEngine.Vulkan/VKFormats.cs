@@ -1,5 +1,4 @@
-﻿using Silk.NET.Maths;
-using Silk.NET.Vulkan;
+﻿using Silk.NET.Vulkan;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
 
@@ -541,15 +540,6 @@ internal static unsafe class VKFormats
             IndexFormat.UInt32 => IndexType.Uint32,
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(format))
         };
-    }
-
-    public static TransformMatrixKHR GetTransformMatrix(Matrix3X4<float> matrix)
-    {
-        TransformMatrixKHR transformMatrix = new();
-
-        new Span<Matrix3X4<float>>(&transformMatrix, 1)[0] = matrix;
-
-        return transformMatrix;
     }
 
     public static GeometryFlagsKHR GetGeometryFlags(AccelerationStructureGeometryOptions options)

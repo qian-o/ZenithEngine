@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Silk.NET.Maths;
 using Silk.NET.Vulkan;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
@@ -27,13 +27,13 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
 
         MappedResource mapped = Context.MapMemory(TransformBuffer, MapMode.Write);
 
+        Span<Matrix3X4<float>> transforms = new((void*)mapped.Data, (int)geometryCount);
+
         for (uint i = 0; i < geometryCount; i++)
         {
             if (desc.Geometries[i] is AccelerationStructureTriangles triangles)
             {
-                TransformMatrixKHR transformMatrix = VKFormats.GetTransformMatrix(triangles.Transform);
-
-                Unsafe.Copy((void*)(mapped.Data + (i * sizeof(TransformMatrixKHR))), in transformMatrix);
+                transforms[(int)i] = triangles.Transform;
             }
         }
 

@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Silk.NET.Core.Native;
+﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
 using Silk.NET.Maths;
@@ -113,22 +112,25 @@ internal unsafe class DXTopLevelAS : TopLevelAS
 
         MappedResource mapped = Context.MapMemory(InstanceBuffer, MapMode.Write);
 
+        Span<RaytracingInstanceDesc> instances = new((void*)mapped.Data, (int)instanceCount);
+
         for (uint i = 0; i < instanceCount; i++)
         {
-            AccelerationStructureInstance item = Desc.Instances[i];
+            AccelerationStructureInstance instance = Desc.Instances[i];
 
-            RaytracingInstanceDesc instance = new()
+            instances[(int)i] = new()
             {
-                InstanceID = item.InstanceID,
-                InstanceMask = item.InstanceMask,
-                InstanceContributionToHitGroupIndex = item.InstanceContributionToHitGroupIndex,
-                Flags = (uint)DXFormats.GetRaytracingInstanceFlags(item.Options),
-                AccelerationStructure = item.BottomLevel.DX().AccelerationStructureBuffer.Resource.GetGPUVirtualAddress(),
+                InstanceID = instance.InstanceID,
+                InstanceMask = instance.InstanceMask,
+                InstanceContributionToHitGroupIndex = instance.InstanceContributionToHitGroupIndex,
+                Flags = (uint)DXFormats.GetRaytracingInstanceFlags(instance.Options),
+                AccelerationStructure = instance.BottomLevel.DX().AccelerationStructureBuffer.Resource.GetGPUVirtualAddress(),
             };
 
-            new Span<Matrix3X4<float>>(instance.Transform, 1)[0] = item.Transform;
-
-            Unsafe.Copy((void*)(mapped.Data + (i * sizeof(RaytracingInstanceDesc))), in instance);
+            fixed (float* transform = instances[(int)i].Transform)
+            {
+                new Span<Matrix3X4<float>>(transform, 1)[0] = instance.Transform;
+            }
         }
 
         Context.UnmapMemory(InstanceBuffer);

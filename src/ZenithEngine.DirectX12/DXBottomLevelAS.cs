@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Silk.NET.Core.Native;
+﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
 using Silk.NET.Maths;
@@ -28,13 +27,13 @@ internal unsafe class DXBottomLevelAS : BottomLevelAS
 
         MappedResource mapped = Context.MapMemory(TransformBuffer, MapMode.Write);
 
+        Span<Matrix3X4<float>> transforms = new((void*)mapped.Data, (int)geometryCount);
+
         for (uint i = 0; i < geometryCount; i++)
         {
             if (desc.Geometries[i] is AccelerationStructureTriangles triangles)
             {
-                Matrix3X4<float> transform = triangles.Transform;
-
-                Unsafe.Copy((void*)(mapped.Data + (i * sizeof(Matrix3X4<float>))), in transform);
+                transforms[(int)i] = triangles.Transform;
             }
         }
 
