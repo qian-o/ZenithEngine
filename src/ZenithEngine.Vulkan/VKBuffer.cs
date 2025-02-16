@@ -68,13 +68,14 @@ internal unsafe class VKBuffer : Buffer
 
     public VKBuffer(GraphicsContext context,
                     ref readonly BufferDesc desc,
-                    BufferUsageFlags usageFlags) : base(context, in desc)
+                    bool isDynamic,
+                    BufferUsageFlags usage) : base(context, in desc)
     {
         BufferCreateInfo createInfo = new()
         {
             SType = StructureType.BufferCreateInfo,
             Size = desc.SizeInBytes,
-            Usage = usageFlags | BufferUsageFlags.ShaderDeviceAddressBit,
+            Usage = usage | BufferUsageFlags.ShaderDeviceAddressBit,
             SharingMode = Context.SharingEnabled ? SharingMode.Concurrent : SharingMode.Exclusive
         };
 
@@ -86,7 +87,7 @@ internal unsafe class VKBuffer : Buffer
 
         Context.Vk.CreateBuffer(Context.Device, &createInfo, null, out Buffer).ThrowIfError();
 
-        DeviceMemory = CreateDeviceMemory(desc.Usage.HasFlag(BufferUsage.Dynamic), out Address);
+        DeviceMemory = CreateDeviceMemory(isDynamic, out Address);
 
         Allocator.Release();
     }

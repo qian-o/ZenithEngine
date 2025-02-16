@@ -2,14 +2,17 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct HitGroupDesc(HitGroupType type = HitGroupType.Triangles,
+public struct HitGroupDesc(string name,
+                           HitGroupType type = HitGroupType.Triangles,
                            string? closestHit = null,
                            string? anyHit = null,
                            string? intersection = null)
 {
-    public HitGroupDesc() : this(HitGroupType.Triangles, null, null, null)
+    public HitGroupDesc() : this(string.Empty, HitGroupType.Triangles, null, null, null)
     {
     }
+
+    public string Name = name;
 
     public HitGroupType Type = type;
 

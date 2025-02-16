@@ -41,11 +41,7 @@ internal unsafe class DXCommandProcessor : CommandProcessor
 
     protected override void SubmitCommandBuffer(CommandBuffer commandBuffer)
     {
-        commandBuffer.DX().CommandList.QueryInterface(out ComPtr<ID3D12CommandList> commandList).ThrowIfError();
-
-        Queue.ExecuteCommandLists(1, commandList.GetAddressOf());
-
-        commandList.Dispose();
+        Queue.ExecuteCommandLists(1, commandBuffer.DX().CommandList.GetAddressOf());
     }
 
     protected override void DebugName(string name)

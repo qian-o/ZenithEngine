@@ -22,7 +22,7 @@ internal unsafe class DXComputePipeline : ComputePipeline
 
         // Resource Layouts
         {
-            uint numParameters = (uint)desc.ResourceLayouts.Sum(static item => item.DX().AllStagesRootParameterCount);
+            uint numParameters = (uint)desc.ResourceLayouts.Sum(static item => item.DX().GlobalRootParameterCount);
             RootParameter* pRootParameters = Allocator.Alloc<RootParameter>(numParameters);
 
             uint offset = 0;
@@ -68,7 +68,7 @@ internal unsafe class DXComputePipeline : ComputePipeline
             {
                 NumParameters = numParameters,
                 PParameters = pRootParameters,
-                Flags = RootSignatureFlags.AllowInputAssemblerInputLayout
+                Flags = RootSignatureFlags.None
             };
 
             ComPtr<ID3D10Blob> blob = null;
@@ -106,7 +106,7 @@ internal unsafe class DXComputePipeline : ComputePipeline
 
     public uint GetRootParameterOffset(uint slot)
     {
-        return (uint)Desc.ResourceLayouts.Take((int)slot).Sum(static item => item.DX().AllStagesRootParameterCount);
+        return (uint)Desc.ResourceLayouts.Take((int)slot).Sum(static item => item.DX().GlobalRootParameterCount);
     }
 
     protected override void DebugName(string name)

@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Silk.NET.Maths;
 using Silk.NET.Vulkan;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
@@ -22,17 +22,18 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
 
         TransformBuffer = new(Context,
                               in transformBufferDesc,
+                              true,
                               BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr);
 
         MappedResource mapped = Context.MapMemory(TransformBuffer, MapMode.Write);
+
+        Span<Matrix3X4<float>> transforms = new((void*)mapped.Data, (int)geometryCount);
 
         for (uint i = 0; i < geometryCount; i++)
         {
             if (desc.Geometries[i] is AccelerationStructureTriangles triangles)
             {
-                TransformMatrixKHR transformMatrix = VKFormats.GetTransformMatrix(triangles.Transform);
-
-                Unsafe.Copy((void*)(mapped.Data + (i * sizeof(TransformMatrixKHR))), in transformMatrix);
+                transforms[(int)i] = triangles.Transform;
             }
         }
 
@@ -130,10 +131,11 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
                                                                              &maxPrimitiveCount,
                                                                              &buildSizesInfo);
 
-        BufferDesc accelerationStructureBufferDesc = new((uint)buildSizesInfo.AccelerationStructureSize, BufferUsage.None);
+        BufferDesc accelerationStructureBufferDesc = new((uint)buildSizesInfo.AccelerationStructureSize);
 
         AccelerationStructureBuffer = new(Context,
                                           in accelerationStructureBufferDesc,
+                                          false,
                                           BufferUsageFlags.AccelerationStructureStorageBitKhr);
 
         AccelerationStructureCreateInfoKHR createInfo = new()
@@ -157,10 +159,11 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
 
         Address = Context.KhrAccelerationStructure.GetAccelerationStructureDeviceAddress(Context.Device, &deviceAddressInfo);
 
-        BufferDesc scratchBufferDesc = new((uint)buildSizesInfo.BuildScratchSize, BufferUsage.None);
+        BufferDesc scratchBufferDesc = new((uint)buildSizesInfo.BuildScratchSize);
 
         ScratchBuffer = new(Context,
                             in scratchBufferDesc,
+                            false,
                             BufferUsageFlags.StorageBufferBit);
 
         buildGeometryInfo.DstAccelerationStructure = AccelerationStructure;

@@ -257,7 +257,7 @@ internal unsafe class DXResourceSet : ResourceSet
                         break;
                     case ResourceType.AccelerationStructure:
                         {
-                            // TODO: Implement acceleration structure.
+                            cbvSrvUavAllocator.UpdateDescriptor(((DXTopLevelAS)resource).Srv);
                         }
                         break;
                     default:

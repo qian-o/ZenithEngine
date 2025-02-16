@@ -34,12 +34,14 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
 
         BufferDesc vbDesc = new((uint)(vertices.Length * sizeof(Vertex)),
-                                BufferUsage.ShaderResource | BufferUsage.AccelerationStructure);
+                                BufferUsage.ShaderResource | BufferUsage.AccelerationStructure,
+                                (uint)sizeof(Vertex));
 
         vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
 
         BufferDesc ibDesc = new((uint)(indices.Length * sizeof(uint)),
-                                BufferUsage.ShaderResource | BufferUsage.AccelerationStructure);
+                                BufferUsage.ShaderResource | BufferUsage.AccelerationStructure,
+                                sizeof(uint));
 
         indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
 
@@ -67,14 +69,14 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
             IndexFormat = IndexFormat.UInt32,
             IndexCount = (uint)indices.Length,
             IndexOffsetInBytes = 0,
-            Transform = Matrix4X4<float>.Identity
+            Transform = Matrix3X4<float>.Identity
         });
 
         bottomLevelAS = commandBuffer.BuildAccelerationStructure(in blasDesc);
 
         TopLevelASDesc tlasDesc = new([new(bottomLevelAS)
         {
-            Transform = Matrix4X4<float>.Identity,
+            Transform = Matrix3X4<float>.Identity,
             InstanceID = 0,
             InstanceMask = 0xFF,
             InstanceContributionToHitGroupIndex = 0,
@@ -112,7 +114,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         RayTracingPipelineDesc rtpDesc = new
         (
             shaders: new(rgShader, [msShader], [chShader]),
-            hitGroups: [new(closestHit: "ClosestHitMain")],
+            hitGroups: [new("DefaultHitGroup", closestHit: "ClosestHitMain")],
             resourceLayouts: [resourceLayout]
         );
 

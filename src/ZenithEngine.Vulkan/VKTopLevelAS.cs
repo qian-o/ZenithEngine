@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Silk.NET.Maths;
 using Silk.NET.Vulkan;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
@@ -19,6 +19,7 @@ internal unsafe class VKTopLevelAS : TopLevelAS
 
         InstanceBuffer = new(Context,
                              in instanceBufferDesc,
+                             true,
                              BufferUsageFlags.AccelerationStructureBuildInputReadOnlyBitKhr);
 
         FillInstanceBuffer(out AccelerationStructureGeometryKHR geometry, out AccelerationStructureBuildRangeInfoKHR buildRangeInfo);
@@ -44,10 +45,11 @@ internal unsafe class VKTopLevelAS : TopLevelAS
                                                                              &buildRangeInfo.PrimitiveCount,
                                                                              &buildSizesInfo);
 
-        BufferDesc accelerationStructureBufferDesc = new((uint)buildSizesInfo.AccelerationStructureSize, BufferUsage.None);
+        BufferDesc accelerationStructureBufferDesc = new((uint)buildSizesInfo.AccelerationStructureSize);
 
         AccelerationStructureBuffer = new(Context,
                                           in accelerationStructureBufferDesc,
+                                          false,
                                           BufferUsageFlags.AccelerationStructureStorageBitKhr);
 
         AccelerationStructureCreateInfoKHR createInfo = new()
@@ -71,10 +73,11 @@ internal unsafe class VKTopLevelAS : TopLevelAS
 
         Address = Context.KhrAccelerationStructure.GetAccelerationStructureDeviceAddress(Context.Device, &deviceAddressInfo);
 
-        BufferDesc scratchBufferDesc = new((uint)buildSizesInfo.BuildScratchSize, BufferUsage.None);
+        BufferDesc scratchBufferDesc = new((uint)buildSizesInfo.BuildScratchSize);
 
         ScratchBuffer = new(Context,
                             in scratchBufferDesc,
+                            false,
                             BufferUsageFlags.StorageBufferBit);
 
         buildGeometryInfo.DstAccelerationStructure = AccelerationStructure;
@@ -161,21 +164,25 @@ internal unsafe class VKTopLevelAS : TopLevelAS
 
         MappedResource mapped = Context.MapMemory(InstanceBuffer, MapMode.Write);
 
+        Span<AccelerationStructureInstanceKHR> instances = new((void*)mapped.Data, (int)instanceCount);
+
         for (uint i = 0; i < instanceCount; i++)
         {
-            AccelerationStructureInstance item = Desc.Instances[i];
+            AccelerationStructureInstance instance = Desc.Instances[i];
 
-            AccelerationStructureInstanceKHR instance = new()
+            instances[(int)i] = new()
             {
-                Transform = VKFormats.GetTransformMatrix(item.Transform),
-                InstanceCustomIndex = item.InstanceID,
-                Mask = item.InstanceMask,
-                InstanceShaderBindingTableRecordOffset = item.InstanceContributionToHitGroupIndex,
-                AccelerationStructureReference = item.BottomLevel.VK().Address,
-                Flags = VKFormats.GetGeometryInstanceFlags(item.Options)
+                InstanceCustomIndex = instance.InstanceID,
+                Mask = instance.InstanceMask,
+                InstanceShaderBindingTableRecordOffset = instance.InstanceContributionToHitGroupIndex,
+                AccelerationStructureReference = instance.BottomLevel.VK().Address,
+                Flags = VKFormats.GetGeometryInstanceFlags(instance.Options)
             };
 
-            Unsafe.Copy((void*)(mapped.Data + (i * sizeof(AccelerationStructureInstanceKHR))), in instance);
+            fixed (float* transform = instances[(int)i].Transform.Matrix)
+            {
+                new Span<Matrix3X4<float>>(transform, 1)[0] = instance.Transform;
+            }
         }
 
         Context.UnmapMemory(InstanceBuffer);

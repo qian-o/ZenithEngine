@@ -7,7 +7,7 @@ public class AccelerationStructureInstance(BottomLevelAS bottomLevel)
 {
     public BottomLevelAS BottomLevel { get; } = bottomLevel;
 
-    public Matrix4X4<float> Transform { get; set; }
+    public Matrix3X4<float> Transform { get; set; }
 
     public uint InstanceID { get; set; }
 

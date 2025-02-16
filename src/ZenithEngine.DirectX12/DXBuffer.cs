@@ -32,22 +32,51 @@ internal unsafe class DXBuffer : Buffer
             Format = Format.FormatUnknown,
             SampleDesc = new(1, 0),
             Layout = TextureLayout.LayoutRowMajor,
-            Flags = ResourceFlags.None
+            Flags = desc.Usage.HasFlag(BufferUsage.UnorderedAccess) ? ResourceFlags.AllowUnorderedAccess : ResourceFlags.None
         };
 
         HeapProperties heapProperties = new(HeapType.Default);
         ResourceStates initialResourceState = ResourceStates.Common;
-
-        if (desc.Usage.HasFlag(BufferUsage.UnorderedAccess))
-        {
-            resourceDesc.Flags |= ResourceFlags.AllowUnorderedAccess;
-        }
 
         if (desc.Usage.HasFlag(BufferUsage.Dynamic))
         {
             heapProperties = new(HeapType.Upload);
             initialResourceState = ResourceStates.GenericRead;
         }
+
+        Context.Device.CreateCommittedResource(&heapProperties,
+                                               HeapFlags.None,
+                                               &resourceDesc,
+                                               initialResourceState,
+                                               null,
+                                               out Resource).ThrowIfError();
+
+        State = initialResourceState;
+    }
+
+    public DXBuffer(GraphicsContext context,
+                    ref readonly BufferDesc desc,
+                    HeapType heapType,
+                    ResourceFlags flags,
+                    ResourceStates initialResourceState) : base(context, in desc)
+    {
+        SizeInBytes = desc.SizeInBytes;
+
+        HeapProperties heapProperties = new(heapType);
+
+        ResourceDesc resourceDesc = new()
+        {
+            Dimension = ResourceDimension.Buffer,
+            Alignment = 0,
+            Width = SizeInBytes,
+            Height = 1,
+            DepthOrArraySize = 1,
+            MipLevels = 1,
+            Format = Format.FormatUnknown,
+            SampleDesc = new(1, 0),
+            Layout = TextureLayout.LayoutRowMajor,
+            Flags = flags
+        };
 
         Context.Device.CreateCommittedResource(&heapProperties,
                                                HeapFlags.None,

@@ -46,9 +46,20 @@ internal unsafe class VKShaderTable : GraphicsResource
         BufferDesc missDesc = new(missSizeAligned);
         BufferDesc hitGroupDesc = new(hitGroupSizeAligned);
 
-        RayGenBuffer = new(Context, in rayGenDesc, BufferUsageFlags.ShaderBindingTableBitKhr);
-        MissBuffer = new(Context, in missDesc, BufferUsageFlags.ShaderBindingTableBitKhr);
-        HitGroupBuffer = new(Context, in hitGroupDesc, BufferUsageFlags.ShaderBindingTableBitKhr);
+        RayGenBuffer = new(Context,
+                           in rayGenDesc,
+                           true,
+                           BufferUsageFlags.ShaderBindingTableBitKhr);
+
+        MissBuffer = new(Context,
+                         in missDesc,
+                         true,
+                         BufferUsageFlags.ShaderBindingTableBitKhr);
+
+        HitGroupBuffer = new(Context,
+                             in hitGroupDesc,
+                             true,
+                             BufferUsageFlags.ShaderBindingTableBitKhr);
 
         CopyHandles(RayGenBuffer, rayGenCount);
         CopyHandles(MissBuffer, missCount);

@@ -6,9 +6,11 @@ namespace ZenithEngine.DirectX12;
 
 internal static class DirectX12Extensions
 {
-    public static void ThrowIfError(this int result)
+    private const int E_NOINTERFACE = unchecked((int)0x80004002);
+
+    public static void ThrowIfError(this int result, bool ignoreNoInterface = false)
     {
-        if (result is not 0)
+        if (result is not 0 && (!ignoreNoInterface || result is not E_NOINTERFACE))
         {
             throw new ZenithEngineException($"DirectX12 error code: {result}", Marshal.GetExceptionForHR(result));
         }
@@ -52,6 +54,26 @@ internal static class DirectX12Extensions
         }
 
         return (DXSampler)sampler;
+    }
+
+    public static DXBottomLevelAS DX(this BottomLevelAS bottomLevelAS)
+    {
+        if (bottomLevelAS is not DXBottomLevelAS)
+        {
+            throw new ZenithEngineException("BottomLevelAS is not a DirectX12 bottom level acceleration structure.");
+        }
+
+        return (DXBottomLevelAS)bottomLevelAS;
+    }
+
+    public static DXTopLevelAS DX(this TopLevelAS topLevelAS)
+    {
+        if (topLevelAS is not DXTopLevelAS)
+        {
+            throw new ZenithEngineException("TopLevelAS is not a DirectX12 top level acceleration structure.");
+        }
+
+        return (DXTopLevelAS)topLevelAS;
     }
 
     public static DXShader DX(this Shader shader)
@@ -112,6 +134,16 @@ internal static class DirectX12Extensions
         }
 
         return (DXComputePipeline)pipeline;
+    }
+
+    public static DXRayTracingPipeline DX(this RayTracingPipeline pipeline)
+    {
+        if (pipeline is not DXRayTracingPipeline)
+        {
+            throw new ZenithEngineException("RayTracingPipeline is not a DirectX12 ray tracing pipeline.");
+        }
+
+        return (DXRayTracingPipeline)pipeline;
     }
 
     public static DXCommandProcessor DX(this CommandProcessor processor)

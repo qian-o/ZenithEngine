@@ -50,12 +50,12 @@ internal class DXResourceLayout : ResourceLayout
         {
             if (cbvSrvUavRanges.Length > 0)
             {
-                AllStagesRootParameterCount++;
+                GlobalRootParameterCount++;
             }
 
             if (samplerRanges.Length > 0)
             {
-                AllStagesRootParameterCount++;
+                GlobalRootParameterCount++;
             }
         }
 
@@ -76,7 +76,7 @@ internal class DXResourceLayout : ResourceLayout
         }
     }
 
-    public uint AllStagesRootParameterCount { get; }
+    public uint GlobalRootParameterCount { get; }
 
     public uint GraphicsRootParameterCount { get; }
 

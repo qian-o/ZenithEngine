@@ -95,14 +95,8 @@ internal unsafe class VKTexture : Texture
 
     public ImageLayout this[uint mipLevel, uint arrayLayer, CubeMapFace face]
     {
-        get
-        {
-            return imageLayouts[VKHelpers.GetArrayLayerIndex(Desc, mipLevel, arrayLayer, face)];
-        }
-        private set
-        {
-            imageLayouts[VKHelpers.GetArrayLayerIndex(Desc, mipLevel, arrayLayer, face)] = value;
-        }
+        get => imageLayouts[VKHelpers.GetArrayLayerIndex(Desc, mipLevel, arrayLayer, face)];
+        private set => imageLayouts[VKHelpers.GetArrayLayerIndex(Desc, mipLevel, arrayLayer, face)] = value;
     }
 
     public VKDeviceMemory? DeviceMemory { get; }

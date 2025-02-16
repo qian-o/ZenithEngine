@@ -389,5 +389,96 @@ internal static class DXFormats
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(format))
         };
     }
+
+    public static RaytracingGeometryFlags GetRaytracingGeometryFlags(AccelerationStructureGeometryOptions options)
+    {
+        RaytracingGeometryFlags flags = RaytracingGeometryFlags.None;
+
+        if (options.HasFlag(AccelerationStructureGeometryOptions.Opaque))
+        {
+            flags |= RaytracingGeometryFlags.Opaque;
+        }
+
+        if (options.HasFlag(AccelerationStructureGeometryOptions.NoDuplicateAnyHitInvocation))
+        {
+            flags |= RaytracingGeometryFlags.NoDuplicateAnyhitInvocation;
+        }
+
+        return flags;
+    }
+
+    public static RaytracingInstanceFlags GetRaytracingInstanceFlags(AccelerationStructureInstanceOptions options)
+    {
+        RaytracingInstanceFlags flags = RaytracingInstanceFlags.None;
+
+        if (options.HasFlag(AccelerationStructureInstanceOptions.TriangleCullDisable))
+        {
+            flags |= RaytracingInstanceFlags.TriangleCullDisable;
+        }
+
+        if (options.HasFlag(AccelerationStructureInstanceOptions.TriangleFrontCounterClockwise))
+        {
+            flags |= RaytracingInstanceFlags.TriangleFrontCounterclockwise;
+        }
+
+        if (options.HasFlag(AccelerationStructureInstanceOptions.ForceOpaque))
+        {
+            flags |= RaytracingInstanceFlags.ForceOpaque;
+        }
+
+        if (options.HasFlag(AccelerationStructureInstanceOptions.ForceNoOpaque))
+        {
+            flags |= RaytracingInstanceFlags.ForceNonOpaque;
+        }
+
+        return flags;
+    }
+
+    public static RaytracingAccelerationStructureBuildFlags GetRaytracingAccelerationStructureBuildFlags(AccelerationStructureBuildOptions options)
+    {
+        RaytracingAccelerationStructureBuildFlags flags = RaytracingAccelerationStructureBuildFlags.None;
+
+        if (options.HasFlag(AccelerationStructureBuildOptions.AllowUpdate))
+        {
+            flags |= RaytracingAccelerationStructureBuildFlags.AllowUpdate;
+        }
+
+        if (options.HasFlag(AccelerationStructureBuildOptions.AllowCompactation))
+        {
+            flags |= RaytracingAccelerationStructureBuildFlags.AllowCompaction;
+        }
+
+        if (options.HasFlag(AccelerationStructureBuildOptions.PreferFastTrace))
+        {
+            flags |= RaytracingAccelerationStructureBuildFlags.PreferFastTrace;
+        }
+
+        if (options.HasFlag(AccelerationStructureBuildOptions.PreferFastBuild))
+        {
+            flags |= RaytracingAccelerationStructureBuildFlags.PreferFastBuild;
+        }
+
+        if (options.HasFlag(AccelerationStructureBuildOptions.MinimizeMemory))
+        {
+            flags |= RaytracingAccelerationStructureBuildFlags.MinimizeMemory;
+        }
+
+        if (options.HasFlag(AccelerationStructureBuildOptions.PerformUpdate))
+        {
+            flags |= RaytracingAccelerationStructureBuildFlags.PerformUpdate;
+        }
+
+        return flags;
+    }
+
+    public static DxHitGroupType GetHitGroupType(HitGroupType type)
+    {
+        return type switch
+        {
+            HitGroupType.Triangles => DxHitGroupType.Triangles,
+            HitGroupType.Procedural => DxHitGroupType.ProceduralPrimitive,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
+        };
+    }
     #endregion
 }
