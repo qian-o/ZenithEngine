@@ -118,6 +118,7 @@ internal unsafe class DXTopLevelAS : TopLevelAS
 
     protected override void DebugName(string name)
     {
+        AccelerationStructureBuffer.Name = name;
     }
 
     protected override void Destroy()
