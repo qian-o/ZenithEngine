@@ -89,23 +89,6 @@ public unsafe class MemoryAllocator : DisposableObject
         return (byte**)ptr;
     }
 
-    public void Free(void* ptr)
-    {
-        blocks.Remove((nint)ptr);
-
-        NativeMemory.Free(ptr);
-    }
-
-    public void Free(byte** ptr, uint count)
-    {
-        for (uint i = 0; i < count; i++)
-        {
-            Free(ptr[i]);
-        }
-
-        Free(ptr);
-    }
-
     public void Release()
     {
         for (int i = 0; i < blocks.Count; i++)
