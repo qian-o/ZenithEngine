@@ -4,9 +4,9 @@ namespace ZenithEngine.Common.Descriptions;
 
 public struct BufferDesc(uint sizeInBytes,
                          BufferUsage usage = BufferUsage.Dynamic,
-                         uint structureStrideInBytes = 0)
+                         uint structureStrideInBytes = 1)
 {
-    public BufferDesc() : this(0, BufferUsage.Dynamic, 0)
+    public BufferDesc() : this(0, BufferUsage.Dynamic, 1)
     {
     }
 

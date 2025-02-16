@@ -57,7 +57,7 @@ internal unsafe class DXSampler : Sampler
 
         Handle = Context.SamplerAllocator!.Alloc();
 
-        Context.Device!.CreateSampler(&samplerDesc, Handle);
+        Context.Device.CreateSampler(&samplerDesc, Handle);
     }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
