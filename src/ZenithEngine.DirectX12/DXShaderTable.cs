@@ -80,9 +80,9 @@ internal unsafe class DXShaderTable : GraphicsResource
             StrideInBytes = handleSizeAligned
         };
 
-        Allocator.Release();
-
         stateObjectProperties.Dispose();
+
+        Allocator.Release();
 
         void CopyHandles(DXBuffer buffer, string[] exports)
         {
