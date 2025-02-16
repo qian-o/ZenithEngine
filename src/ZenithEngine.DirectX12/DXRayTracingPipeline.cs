@@ -191,8 +191,8 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
         ShaderTable = new(Context,
                           StateObject,
                           [desc.Shaders.RayGen.Desc.EntryPoint],
-                          [.. desc.Shaders.Miss.Select(item => item.Desc.EntryPoint)],
-                          [.. desc.HitGroups.Select(item => item.Name)]);
+                          [.. desc.Shaders.Miss.Select(static item => item.Desc.EntryPoint)],
+                          [.. desc.HitGroups.Select(static item => item.Name)]);
 
         Allocator.Release();
     }
