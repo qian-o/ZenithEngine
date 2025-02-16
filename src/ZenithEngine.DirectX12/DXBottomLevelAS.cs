@@ -150,7 +150,6 @@ internal unsafe class DXBottomLevelAS : BottomLevelAS
 
     protected override void DebugName(string name)
     {
-        AccelerationStructureBuffer.Name = name;
     }
 
     protected override void Destroy()
