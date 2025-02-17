@@ -28,7 +28,7 @@ internal unsafe class VKCommandProcessor : CommandProcessor
 
     protected override void SubmitCommandBuffers(CommandBuffer[] commandBuffers)
     {
-        VkCommandBuffer[] vkCommandBuffers = [.. commandBuffers.Select(cb => cb.VK().CommandBuffer)];
+        VkCommandBuffer[] vkCommandBuffers = [.. commandBuffers.Select(static item => item.VK().CommandBuffer)];
 
         fixed (VkCommandBuffer* pCommandBuffers = vkCommandBuffers)
         {

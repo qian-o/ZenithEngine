@@ -64,9 +64,9 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     {
         if (ProcessorType is not CommandProcessorType.Copy)
         {
-            fixed (ID3D12DescriptorHeap** heaps = descriptorHeaps![0])
+            fixed (ID3D12DescriptorHeap** pDescriptorHeaps = descriptorHeaps![0])
             {
-                GraphicsCommandList.SetDescriptorHeaps(2, heaps);
+                GraphicsCommandList.SetDescriptorHeaps((uint)descriptorHeaps.Length, pDescriptorHeaps);
             }
         }
     }

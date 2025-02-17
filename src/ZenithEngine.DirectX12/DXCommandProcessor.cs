@@ -41,18 +41,11 @@ internal unsafe class DXCommandProcessor : CommandProcessor
 
     protected override void SubmitCommandBuffers(CommandBuffer[] commandBuffers)
     {
-        uint count = (uint)commandBuffers.Length;
+        ComPtr<ID3D12CommandList>[] commandLists = [.. commandBuffers.Select(static item => item.DX().CommandList)];
 
-        ID3D12CommandList*[] pCommandLists = new ID3D12CommandList*[count];
-
-        for (uint i = 0; i < count; i++)
+        fixed (ID3D12CommandList** pCommandLists = commandLists[0])
         {
-            pCommandLists[i] = commandBuffers[i].DX().CommandList.Handle;
-        }
-
-        fixed (ID3D12CommandList** ppCommandLists = pCommandLists)
-        {
-            Queue.ExecuteCommandLists(count, ppCommandLists);
+            Queue.ExecuteCommandLists((uint)commandBuffers.Length, pCommandLists);
         }
     }
 
