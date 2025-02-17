@@ -179,9 +179,9 @@ internal unsafe class VKTopLevelAS : TopLevelAS
                 Flags = VKFormats.GetGeometryInstanceFlags(instance.Options)
             };
 
-            fixed (float* transform = instances[(int)i].Transform.Matrix)
+            fixed (float* pMatrix = instances[(int)i].Transform.Matrix)
             {
-                new Span<Matrix3X4<float>>(transform, 1)[0] = instance.Transform;
+                new Span<Matrix3X4<float>>(pMatrix, 1)[0] = instance.Transform;
             }
         }
 

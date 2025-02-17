@@ -153,9 +153,9 @@ internal unsafe class DXTopLevelAS : TopLevelAS
                 AccelerationStructure = instance.BottomLevel.DX().AccelerationStructureBuffer.Resource.GetGPUVirtualAddress()
             };
 
-            fixed (float* transform = instances[(int)i].Transform)
+            fixed (float* pTransform = instances[(int)i].Transform)
             {
-                new Span<Matrix3X4<float>>(transform, 1)[0] = instance.Transform;
+                new Span<Matrix3X4<float>>(pTransform, 1)[0] = instance.Transform;
             }
         }
 

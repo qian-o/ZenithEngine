@@ -19,14 +19,14 @@ internal unsafe class VKDescriptorSetAllocator(GraphicsContext context) : Graphi
             pools.Add(pool = new(Context));
         }
 
-        fixed (DescriptorSetLayout* descriptorSetLayout = &layout.DescriptorSetLayout)
+        fixed (DescriptorSetLayout* pSetLayouts = &layout.DescriptorSetLayout)
         {
             DescriptorSetAllocateInfo allocateInfo = new()
             {
                 SType = StructureType.DescriptorSetAllocateInfo,
                 DescriptorPool = pool.Pool,
                 DescriptorSetCount = 1,
-                PSetLayouts = descriptorSetLayout
+                PSetLayouts = pSetLayouts
             };
 
             VkDescriptorSet set;
