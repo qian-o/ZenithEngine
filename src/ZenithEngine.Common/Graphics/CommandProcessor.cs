@@ -6,14 +6,12 @@ public abstract class CommandProcessor(GraphicsContext context,
                                        CommandProcessorType type) : GraphicsResource(context)
 {
     private readonly Lock @lock = new();
-    private readonly Queue<CommandBuffer> available = new();
-
-    private CommandBuffer[] execution = new CommandBuffer[64];
-    private uint executionLength;
+    private readonly List<CommandBuffer> available = [];
+    private readonly List<CommandBuffer> execution = [];
 
     public CommandProcessorType Type { get; } = type;
 
-    public bool CanExecute => executionLength > 0;
+    public bool CanExecute => execution.Count > 0;
 
     /// <summary>
     /// Gets the next available command buffer.
@@ -27,8 +25,10 @@ public abstract class CommandProcessor(GraphicsContext context,
 
         if (available.Count > 0)
         {
-            commandBuffer = available.Dequeue();
+            commandBuffer = available[0];
             commandBuffer.Reset();
+
+            available.RemoveAt(0);
         }
         else
         {
@@ -51,17 +51,11 @@ public abstract class CommandProcessor(GraphicsContext context,
             Context.SyncCopyTasks();
         }
 
-        for (uint i = 0; i < executionLength; i++)
-        {
-            CommandBuffer commandBuffer = execution[i];
+        SubmitCommandBuffers([.. execution]);
 
-            SubmitCommandBuffer(commandBuffer);
+        available.AddRange(execution);
 
-            available.Enqueue(commandBuffer);
-        }
-
-        Array.Clear(execution, 0, (int)executionLength);
-        executionLength = 0;
+        execution.Clear();
     }
 
     /// <summary>
@@ -77,12 +71,7 @@ public abstract class CommandProcessor(GraphicsContext context,
     {
         using Lock.Scope _ = @lock.EnterScope();
 
-        if (execution.Length == executionLength)
-        {
-            Array.Resize(ref execution, execution.Length + 64);
-        }
-
-        execution[executionLength++] = commandBuffer;
+        execution.Add(commandBuffer);
     }
 
     /// <summary>
@@ -92,16 +81,24 @@ public abstract class CommandProcessor(GraphicsContext context,
     protected abstract CommandBuffer CreateCommandBuffer();
 
     /// <summary>
-    /// Submits the command buffer to be executed by the GPU.
+    /// Submits the command buffers to be executed by the GPU.
     /// </summary>
-    /// <param name="commandBuffer">The command buffer to submit.</param>
-    protected abstract void SubmitCommandBuffer(CommandBuffer commandBuffer);
+    /// <param name="commandBuffers"></param>
+    protected abstract void SubmitCommandBuffers(CommandBuffer[] commandBuffers);
 
     protected override void Destroy()
     {
-        while (available.Count > 0)
+        foreach (CommandBuffer commandBuffer in available)
         {
-            available.Dequeue().Dispose();
+            commandBuffer.Dispose();
         }
+
+        foreach (CommandBuffer commandBuffer in execution)
+        {
+            commandBuffer.Dispose();
+        }
+
+        available.Clear();
+        execution.Clear();
     }
 }

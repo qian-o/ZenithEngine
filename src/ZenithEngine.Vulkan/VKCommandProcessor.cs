@@ -26,15 +26,17 @@ internal unsafe class VKCommandProcessor : CommandProcessor
         return new VKCommandBuffer(Context, this);
     }
 
-    protected override void SubmitCommandBuffer(CommandBuffer commandBuffer)
+    protected override void SubmitCommandBuffers(CommandBuffer[] commandBuffers)
     {
-        fixed (VkCommandBuffer* pCommandBuffer = &commandBuffer.VK().CommandBuffer)
+        VkCommandBuffer[] vkCommandBuffers = [.. commandBuffers.Select(cb => cb.VK().CommandBuffer)];
+
+        fixed (VkCommandBuffer* pCommandBuffers = vkCommandBuffers)
         {
             SubmitInfo submitInfo = new()
             {
                 SType = StructureType.SubmitInfo,
-                CommandBufferCount = 1,
-                PCommandBuffers = pCommandBuffer
+                CommandBufferCount = (uint)commandBuffers.Length,
+                PCommandBuffers = pCommandBuffers
             };
 
             Context.Vk.QueueSubmit(queue, 1, &submitInfo, default).ThrowIfError();

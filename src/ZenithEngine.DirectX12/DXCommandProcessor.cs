@@ -39,9 +39,21 @@ internal unsafe class DXCommandProcessor : CommandProcessor
         return new DXCommandBuffer(Context, this);
     }
 
-    protected override void SubmitCommandBuffer(CommandBuffer commandBuffer)
+    protected override void SubmitCommandBuffers(CommandBuffer[] commandBuffers)
     {
-        Queue.ExecuteCommandLists(1, commandBuffer.DX().CommandList.GetAddressOf());
+        uint count = (uint)commandBuffers.Length;
+
+        ID3D12CommandList*[] pCommandLists = new ID3D12CommandList*[count];
+
+        for (uint i = 0; i < count; i++)
+        {
+            pCommandLists[i] = commandBuffers[i].DX().CommandList.Handle;
+        }
+
+        fixed (ID3D12CommandList** ppCommandLists = pCommandLists)
+        {
+            Queue.ExecuteCommandLists(count, ppCommandLists);
+        }
     }
 
     protected override void DebugName(string name)
