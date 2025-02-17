@@ -83,7 +83,7 @@ public abstract class CommandProcessor(GraphicsContext context,
     /// <summary>
     /// Submits the command buffers to be executed by the GPU.
     /// </summary>
-    /// <param name="commandBuffers"></param>
+    /// <param name="commandBuffers">The command buffers to submit.</param>
     protected abstract void SubmitCommandBuffers(CommandBuffer[] commandBuffers);
 
     protected override void Destroy()
