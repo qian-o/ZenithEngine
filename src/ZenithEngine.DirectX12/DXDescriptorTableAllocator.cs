@@ -13,8 +13,7 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
     private readonly GpuDescriptorHandle gpuStart;
     private readonly uint descriptorSize;
 
-    private uint offset;
-    private bool dirty;
+    private uint allocatedDescriptors;
 
     public DXDescriptorTableAllocator(GraphicsContext context,
                                       DescriptorHeapType heapType,
@@ -51,37 +50,35 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
     public void UpdateDescriptor(CpuDescriptorHandle handle)
     {
         Context.Device.CopyDescriptorsSimple(1,
-                                             new(cpuStart.Ptr + (offset * descriptorSize)),
+                                             new(cpuStart.Ptr + (allocatedDescriptors * descriptorSize)),
                                              handle,
                                              HeapType);
 
-        offset++;
-        dirty = true;
+        allocatedDescriptors++;
     }
 
     public CpuDescriptorHandle UpdateDescriptorHandle()
     {
-        CpuDescriptorHandle handle = new(cpuStart.Ptr + (offset * descriptorSize));
+        CpuDescriptorHandle handle = new(cpuStart.Ptr + (allocatedDescriptors * descriptorSize));
 
-        offset++;
-        dirty = true;
+        allocatedDescriptors++;
 
         return handle;
     }
 
     public GpuDescriptorHandle GetCurrentTableHandle()
     {
-        return new(gpuStart.Ptr + (offset * descriptorSize));
+        return new(gpuStart.Ptr + (allocatedDescriptors * descriptorSize));
     }
 
     public void Submit()
     {
-        if (!dirty)
+        if (allocatedDescriptors is 0)
         {
             return;
         }
 
-        Context.Device.CopyDescriptorsSimple(offset,
+        Context.Device.CopyDescriptorsSimple(allocatedDescriptors,
                                              GpuHeap.GetCPUDescriptorHandleForHeapStart(),
                                              CpuHeap.GetCPUDescriptorHandleForHeapStart(),
                                              HeapType);
@@ -89,8 +86,7 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
 
     public void Reset()
     {
-        offset = 0;
-        dirty = false;
+        allocatedDescriptors = 0;
     }
 
     protected override void DebugName(string name)
