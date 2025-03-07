@@ -41,9 +41,7 @@ public abstract class CommandProcessor(GraphicsContext context,
     /// <summary>
     /// Submit all command buffers ready for execution to the GPU.
     /// </summary>
-    /// <param name="isSyncCopyTasks">
-    /// Whether to call the SyncCopyTasks function in the Graphics Context.
-    /// </param>
+    /// <param name="isSyncCopyTasks">Whether to synchronize copy tasks.</param>
     public void Submit(bool isSyncCopyTasks = true)
     {
         if (isSyncCopyTasks)
