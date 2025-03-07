@@ -15,7 +15,7 @@
         <PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.22.0" />
         <PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
         <PackageVersion Include="Silk.NET.Vulkan.Extensions.MVK" Version="2.22.0" />
-        <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.6" />
+        <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.7" />
         <PackageVersion Include="System.Text.Json" Version="9.0.2" />
     </ItemGroup>
 
