@@ -39,7 +39,7 @@ public abstract class CommandProcessor(GraphicsContext context,
     }
 
     /// <summary>
-    /// Submits the command buffer to be executed by the GPU.
+    /// Submit all command buffers ready for execution to the GPU.
     /// </summary>
     /// <param name="isSyncCopyTasks">
     /// Whether to call the SyncCopyTasks function in the Graphics Context.
@@ -64,7 +64,7 @@ public abstract class CommandProcessor(GraphicsContext context,
     public abstract void WaitIdle();
 
     /// <summary>
-    /// Commits the command buffer to be executed by the GPU.
+    /// Commit the command buffer to the collection of command buffers ready for execution.
     /// </summary>
     /// <param name="commandBuffer">The command buffer to commit.</param>
     internal void CommitCommandBuffer(CommandBuffer commandBuffer)
