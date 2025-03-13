@@ -41,7 +41,7 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
 
         AccelerationStructureGeometryKHR* geometries = Allocator.Alloc<AccelerationStructureGeometryKHR>(geometryCount);
         AccelerationStructureBuildRangeInfoKHR* buildRangeInfos = Allocator.Alloc<AccelerationStructureBuildRangeInfoKHR>(geometryCount);
-        uint maxPrimitiveCount = 0;
+        uint* maxPrimitiveCounts = Allocator.Alloc<uint>(geometryCount);
 
         for (uint i = 0; i < geometryCount; i++)
         {
@@ -107,7 +107,7 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
 
             geometries[i] = geometry;
             buildRangeInfos[i] = buildRangeInfo;
-            maxPrimitiveCount = Math.Max(maxPrimitiveCount, buildRangeInfo.PrimitiveCount);
+            maxPrimitiveCounts[i] = buildRangeInfo.PrimitiveCount;
         }
 
         AccelerationStructureBuildGeometryInfoKHR buildGeometryInfo = new()
@@ -128,7 +128,7 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
         Context.KhrAccelerationStructure!.GetAccelerationStructureBuildSizes(Context.Device,
                                                                              AccelerationStructureBuildTypeKHR.DeviceKhr,
                                                                              &buildGeometryInfo,
-                                                                             &maxPrimitiveCount,
+                                                                             maxPrimitiveCounts,
                                                                              &buildSizesInfo);
 
         BufferDesc accelerationStructureBufferDesc = new((uint)buildSizesInfo.AccelerationStructureSize);
