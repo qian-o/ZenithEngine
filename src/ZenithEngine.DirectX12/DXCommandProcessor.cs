@@ -1,5 +1,6 @@
 ﻿using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
@@ -7,22 +8,19 @@ namespace ZenithEngine.DirectX12;
 
 internal unsafe class DXCommandProcessor : CommandProcessor
 {
-    public ComPtr<ID3D12CommandQueue> Queue;
-
+    private readonly ComPtr<ID3D12CommandQueue> queue;
     private readonly DXFence fence;
 
     public DXCommandProcessor(GraphicsContext context,
                               CommandProcessorType type) : base(context, type)
     {
-        CommandQueueDesc desc = new()
+        queue = type switch
         {
-            Type = DXFormats.GetCommandListType(type),
-            Priority = 0,
-            Flags = CommandQueueFlags.None,
-            NodeMask = 0
+            CommandProcessorType.Graphics => Context.GraphicsQueue,
+            CommandProcessorType.Compute => Context.ComputeQueue,
+            CommandProcessorType.Copy => Context.CopyQueue,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
         };
-
-        Context.Device.CreateCommandQueue(&desc, out Queue).ThrowIfError();
 
         fence = new(Context);
     }
@@ -31,7 +29,7 @@ internal unsafe class DXCommandProcessor : CommandProcessor
 
     public override void WaitIdle()
     {
-        fence.Wait(this);
+        fence.Wait(queue);
     }
 
     protected override CommandBuffer CreateCommandBuffer()
@@ -45,13 +43,13 @@ internal unsafe class DXCommandProcessor : CommandProcessor
 
         fixed (ID3D12CommandList** pCommandLists = commandLists[0])
         {
-            Queue.ExecuteCommandLists((uint)commandBuffers.Length, pCommandLists);
+            queue.ExecuteCommandLists((uint)commandBuffers.Length, pCommandLists);
         }
     }
 
     protected override void DebugName(string name)
     {
-        Queue.SetName(name).ThrowIfError();
+        queue.SetName(name).ThrowIfError();
     }
 
     protected override void Destroy()
@@ -59,7 +57,5 @@ internal unsafe class DXCommandProcessor : CommandProcessor
         base.Destroy();
 
         fence.Dispose();
-
-        Queue.Dispose();
     }
 }

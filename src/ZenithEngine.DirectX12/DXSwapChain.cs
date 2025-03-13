@@ -1,4 +1,5 @@
 ﻿using Silk.NET.Core.Native;
+using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
 using Silk.NET.Maths;
 using ZenithEngine.Common.Graphics;
@@ -13,11 +14,13 @@ internal unsafe class DXSwapChain : SwapChain
     public ComPtr<IDXGISwapChain3> SwapChain3;
     public uint BackBufferIndex;
 
+    private readonly DXFence fence;
     private readonly DXSwapChainFrameBuffer swapChainFrameBuffer;
 
     public DXSwapChain(GraphicsContext context,
                        ref readonly SwapChainDesc desc) : base(context, in desc)
     {
+        fence = new(Context);
         swapChainFrameBuffer = new(Context, this);
 
         CreateSwapChain();
@@ -31,14 +34,14 @@ internal unsafe class DXSwapChain : SwapChain
     {
         SwapChain3.Present(Desc.VerticalSync ? 1u : 0u, DXGI.PresentAllowTearing).ThrowIfError();
 
-        Context.DefaultGraphicsCommandProcessor!.WaitIdle();
+        fence.Wait(Context.GraphicsQueue);
 
         BackBufferIndex = SwapChain3.GetCurrentBackBufferIndex();
     }
 
     public override void Resize()
     {
-        Context.DefaultGraphicsCommandProcessor!.WaitIdle();
+        fence.Wait(Context.GraphicsQueue);
 
         swapChainFrameBuffer.DestroyFrameBuffers();
 
@@ -69,6 +72,7 @@ internal unsafe class DXSwapChain : SwapChain
     protected override void Destroy()
     {
         swapChainFrameBuffer.Dispose();
+        fence.Dispose();
 
         DestroySwapChain();
     }
@@ -93,7 +97,7 @@ internal unsafe class DXSwapChain : SwapChain
             Flags = (uint)SwapChainFlag.AllowTearing
         };
 
-        Context.Factory6.CreateSwapChainForHwnd(Context.DefaultGraphicsCommandProcessor!.Queue,
+        Context.Factory6.CreateSwapChainForHwnd(Context.GraphicsQueue,
                                                 Desc.Surface.Handles[0],
                                                 &desc,
                                                 null,
