@@ -15,7 +15,7 @@ namespace RayTracing;
 internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing Test", backend)
 {
     [StructLayout(LayoutKind.Explicit)]
-    struct Camera
+    private struct Camera
     {
         [FieldOffset(0)]
         public Vector3D<float> Position;
@@ -161,6 +161,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         CameraController.Transform(Matrix4X4.CreateTranslation(278.000f, 274.400f, -800.000f));
         CameraController.FarPlane = 2000.000f;
+        CameraController.Speed = 120.000f;
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)

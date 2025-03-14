@@ -36,6 +36,8 @@ public class CameraController
 
     public float Fov { get; set; } = 45.0f;
 
+    public float Speed { get; set; } = 2.5f;
+
     public void Transform(Matrix4X4<float> matrix)
     {
         Position = Vector3D.Transform(Position, matrix);
@@ -47,38 +49,36 @@ public class CameraController
 
     public void Update(double deltaSeconds, Vector2D<uint> size)
     {
-        const float speed = 2.5f;
-
         float deltaTime = (float)deltaSeconds;
 
         if (keyDowns.Contains(Key.W))
         {
-            Position += Forward * speed * deltaTime;
+            Position += Forward * Speed * deltaTime;
         }
 
         if (keyDowns.Contains(Key.S))
         {
-            Position -= Forward * speed * deltaTime;
+            Position -= Forward * Speed * deltaTime;
         }
 
         if (keyDowns.Contains(Key.A))
         {
-            Position -= Right * speed * deltaTime;
+            Position -= Right * Speed * deltaTime;
         }
 
         if (keyDowns.Contains(Key.D))
         {
-            Position += Right * speed * deltaTime;
+            Position += Right * Speed * deltaTime;
         }
 
         if (keyDowns.Contains(Key.Q))
         {
-            Position += Up * speed * deltaTime;
+            Position += Up * Speed * deltaTime;
         }
 
         if (keyDowns.Contains(Key.E))
         {
-            Position -= Up * speed * deltaTime;
+            Position -= Up * Speed * deltaTime;
         }
 
         AspectRatio = size.X / (float)size.Y;
