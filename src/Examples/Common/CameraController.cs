@@ -34,7 +34,7 @@ public class CameraController
 
     public float FarPlane { get; set; } = 1000.0f;
 
-    public float Fov { get; set; } = 45.0f;
+    public float Fov { get; set; } = 40.0f;
 
     public float Speed { get; set; } = 2.5f;
 
