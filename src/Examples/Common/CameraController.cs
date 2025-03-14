@@ -22,11 +22,11 @@ public class CameraController
 
     public Vector3D<float> Position { get; private set; } = Vector3D<float>.Zero;
 
-    public Vector3D<float> Front { get; private set; } = Vector3D<float>.UnitZ;
-
-    public Vector3D<float> Up { get; private set; } = Vector3D<float>.UnitY;
+    public Vector3D<float> Forward { get; private set; } = Vector3D<float>.UnitZ;
 
     public Vector3D<float> Right { get; private set; } = Vector3D<float>.UnitX;
+
+    public Vector3D<float> Up { get; private set; } = Vector3D<float>.UnitY;
 
     public float AspectRatio { get; private set; } = 1.0f;
 
@@ -39,10 +39,10 @@ public class CameraController
     public void Transform(Matrix4X4<float> matrix)
     {
         Position = Vector3D.Transform(Position, matrix);
-        Front = Vector3D.TransformNormal(Front, matrix);
+        Forward = Vector3D.TransformNormal(Forward, matrix);
 
-        Right = Vector3D.Normalize(Vector3D.Cross(Front, Vector3D<float>.UnitY));
-        Up = Vector3D.Normalize(Vector3D.Cross(Right, Front));
+        Right = Vector3D.Normalize(Vector3D.Cross(Forward, Vector3D<float>.UnitY));
+        Up = Vector3D.Normalize(Vector3D.Cross(Right, Forward));
     }
 
     public void Update(double deltaSeconds, Vector2D<uint> size)
@@ -53,12 +53,12 @@ public class CameraController
 
         if (keyDowns.Contains(Key.W))
         {
-            Position += Front * speed * deltaTime;
+            Position += Forward * speed * deltaTime;
         }
 
         if (keyDowns.Contains(Key.S))
         {
-            Position -= Front * speed * deltaTime;
+            Position -= Forward * speed * deltaTime;
         }
 
         if (keyDowns.Contains(Key.A))
@@ -113,7 +113,7 @@ public class CameraController
             float yaw = -delta.X * 0.01f;
             float pitch = -delta.Y * 0.01f;
 
-            float newPitch = MathF.Asin(Front.Y) + pitch;
+            float newPitch = MathF.Asin(Forward.Y) + pitch;
 
             if (newPitch > clipRadians)
             {
@@ -124,13 +124,13 @@ public class CameraController
                 newPitch = -clipRadians;
             }
 
-            pitch = newPitch - MathF.Asin(Front.Y);
+            pitch = newPitch - MathF.Asin(Forward.Y);
 
-            Front = Vector3D.TransformNormal(Front, Matrix4X4.CreateFromAxisAngle(Up, yaw));
-            Front = Vector3D.TransformNormal(Front, Matrix4X4.CreateFromAxisAngle(Right, pitch));
+            Forward = Vector3D.TransformNormal(Forward, Matrix4X4.CreateFromAxisAngle(Up, yaw));
+            Forward = Vector3D.TransformNormal(Forward, Matrix4X4.CreateFromAxisAngle(Right, pitch));
 
-            Right = Vector3D.Normalize(Vector3D.Cross(Front, Vector3D<float>.UnitY));
-            Up = Vector3D.Normalize(Vector3D.Cross(Right, Front));
+            Right = Vector3D.Normalize(Vector3D.Cross(Forward, Vector3D<float>.UnitY));
+            Up = Vector3D.Normalize(Vector3D.Cross(Right, Forward));
 
             lastMousePosition = e.Value;
         }

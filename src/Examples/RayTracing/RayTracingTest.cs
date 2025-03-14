@@ -1,4 +1,6 @@
-﻿using Common;
+﻿using System.Runtime.InteropServices;
+using Common;
+using Common.Helpers;
 using Hexa.NET.ImGui;
 using Silk.NET.Maths;
 using ZenithEngine.Common.Descriptions;
@@ -12,11 +14,37 @@ namespace RayTracing;
 
 internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing Test", backend)
 {
+    [StructLayout(LayoutKind.Explicit)]
+    struct Camera
+    {
+        [FieldOffset(0)]
+        public Vector3D<float> Position;
+
+        [FieldOffset(16)]
+        public Vector3D<float> Forward;
+
+        [FieldOffset(32)]
+        public Vector3D<float> Right;
+
+        [FieldOffset(48)]
+        public Vector3D<float> Up;
+
+        [FieldOffset(60)]
+        public float NearPlane;
+
+        [FieldOffset(64)]
+        public float FarPlane;
+
+        [FieldOffset(68)]
+        public float Fov;
+    };
+
     private readonly List<Buffer> vertexBuffers = [];
     private readonly List<Buffer> indexBuffers = [];
 
     private BottomLevelAS? blas;
     private TopLevelAS? tlas;
+    private Buffer? cameraBuffer;
     private Texture? output;
     private ResourceLayout? resLayout;
     private ResourceSet? resSet;
@@ -93,6 +121,10 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         commandBuffer.End();
         commandBuffer.Commit();
 
+        BufferDesc cameraBufferDesc = new((uint)sizeof(Camera), BufferUsage.Dynamic | BufferUsage.ConstantBuffer);
+
+        cameraBuffer = Context.Factory.CreateBuffer(in cameraBufferDesc);
+
         TextureDesc outputDesc = new(Width,
                                      Height,
                                      usage: TextureUsage.ShaderResource | TextureUsage.UnorderedAccess);
@@ -104,12 +136,13 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
             new(ShaderStages.RayGeneration, ResourceType.AccelerationStructure, 0),
             new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 1, 4),
             new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 5, 4),
+            new(ShaderStages.RayGeneration, ResourceType.ConstantBuffer, 0),
             new(ShaderStages.RayGeneration, ResourceType.TextureReadWrite, 0),
         ]);
 
         resLayout = Context.Factory.CreateResourceLayout(in resLayoutDesc);
 
-        ResourceSetDesc resSetDesc = new(resLayout, [tlas, .. vertexBuffers, .. indexBuffers, output]);
+        ResourceSetDesc resSetDesc = new(resLayout, [tlas, .. vertexBuffers, .. indexBuffers, cameraBuffer, output]);
 
         resSet = Context.Factory.CreateResourceSet(in resSetDesc);
 
@@ -125,10 +158,26 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         );
 
         rtPipeline = Context.Factory.CreateRayTracingPipeline(in rtpDesc);
+
+        CameraController.Transform(Matrix4X4.CreateTranslation(278.000f, 274.400f, -800.000f));
+        CameraController.FarPlane = 2000.000f;
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)
     {
+        Camera camera = new()
+        {
+            Position = CameraController.Position,
+            Forward = CameraController.Forward,
+            Right = CameraController.Right,
+            Up = CameraController.Up,
+            NearPlane = CameraController.NearPlane,
+            FarPlane = CameraController.FarPlane,
+            Fov = CameraController.Fov.ToRadians()
+        };
+
+        Context.UpdateBuffer(cameraBuffer!, (nint)(&camera), (uint)sizeof(Camera));
+
         if (output is null)
         {
             return;
@@ -175,7 +224,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceSetDesc resSetDesc = new(resLayout!, [tlas!, .. vertexBuffers, .. indexBuffers, output]);
+        ResourceSetDesc resSetDesc = new(resLayout!, [tlas!, .. vertexBuffers, .. indexBuffers, cameraBuffer!, output]);
 
         resSet = Context.Factory.CreateResourceSet(in resSetDesc);
     }
@@ -186,6 +235,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         resSet?.Dispose();
         resLayout?.Dispose();
         output?.Dispose();
+        cameraBuffer?.Dispose();
         tlas?.Dispose();
         blas?.Dispose();
 
