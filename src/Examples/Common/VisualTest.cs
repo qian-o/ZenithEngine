@@ -14,6 +14,8 @@ public abstract unsafe class VisualTest
     {
         Window = WindowController.CreateWindow(name, 1270, 720);
 
+        Camera = new(Window);
+
         Context = GraphicsContext.Create(backend);
 
 #if DEBUG
@@ -49,6 +51,8 @@ public abstract unsafe class VisualTest
 
         Window.Update += (a, b) =>
         {
+            Camera.Update(b.DeltaTime, Window.Size);
+
             ImGuiController.Update(b.DeltaTime, Window.Size);
 
             OnUpdate(b.DeltaTime, b.TotalTime);
@@ -139,6 +143,8 @@ public abstract unsafe class VisualTest
     public uint Width => Window.Size.X;
 
     public uint Height => Window.Size.Y;
+
+    public Camera Camera { get; }
 
     public GraphicsContext Context { get; }
 
