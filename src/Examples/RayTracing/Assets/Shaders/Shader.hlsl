@@ -1,4 +1,13 @@
-﻿struct Camera
+﻿struct Material
+{
+    bool IsLight;
+
+    float3 Albedo;
+
+    float3 Emission;
+};
+
+struct Camera
 {
     float3 Position;
     
@@ -31,11 +40,14 @@ struct [raypayload] Payload
     float3 Normal;
     
     float2 TexCoord;
+
+    float3 Color;
 };
 
 RaytracingAccelerationStructure Scene : register(t0, space0);
 StructuredBuffer<Vertex> VertexBuffers[4] : register(t1, space0);
 StructuredBuffer<uint> IndexBuffers[4] : register(t5, space0);
+StructuredBuffer<Material> Materials : register(t9, space0);
 ConstantBuffer<Camera> Camera : register(b0, space0);
 RWTexture2D<float4> Output : register(u0, space0);
 
@@ -93,7 +105,7 @@ void RayGenMain()
     Payload payload;
     TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
 
-    Output[LaunchID.xy] = payload.Hit ? float4(payload.TexCoord, 1.0, 1.0) : float4(0.0, 0.0, 0.0, 1.0);
+    Output[LaunchID.xy] = payload.Hit ? float4(payload.Color, 1.0) : float4(0.0, 0.0, 0.0, 1.0);
 }
 
 [shader("miss")]
@@ -112,8 +124,10 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
     float3 barycentrics = float3(1.0 - attrib.barycentrics.x - attrib.barycentrics.y, attrib.barycentrics.x, attrib.barycentrics.y);
     
     Vertex vertex = GetVertex(geometryIndex, primitiveIndex, barycentrics);
+    Material material = Materials[geometryIndex];
 
     payload.Hit = true;
     payload.Normal = normalize(vertex.Normal);
     payload.TexCoord = vertex.TexCoord;
+    payload.Color = material.Albedo;
 }

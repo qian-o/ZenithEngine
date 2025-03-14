@@ -26,15 +26,16 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
 
     public static void CornellBox(uint materialId,
                                   out Vertex[] vertices,
-                                  out uint[] indices)
+                                  out uint[] indices,
+                                  out Material material)
     {
-        List<Vertex> verticesList = [];
-        List<uint> indicesList = [];
-
         // 0 : Left wall (red)
         // 1 : Right wall (green)
         // 2 : White surfaces (ceiling, floor, back wall, short block, tall block)
         // 3 : Light (short block)
+        List<Vertex> verticesList = [];
+        List<uint> indicesList = [];
+
         switch (materialId)
         {
             case 0:
@@ -127,6 +128,34 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
 
         vertices = [.. verticesList];
         indices = [.. indicesList];
+        material = materialId switch
+        {
+            0 => new()
+            {
+                IsLight = false,
+                Albedo = new(0.65f, 0.05f, 0.05f),
+                Emission = new(0.0f, 0.0f, 0.0f)
+            },
+            1 => new()
+            {
+                IsLight = false,
+                Albedo = new(0.12f, 0.45f, 0.15f),
+                Emission = new(0.0f, 0.0f, 0.0f)
+            },
+            2 => new()
+            {
+                IsLight = false,
+                Albedo = new(0.73f, 0.73f, 0.73f),
+                Emission = new(0.0f, 0.0f, 0.0f)
+            },
+            3 => new()
+            {
+                IsLight = true,
+                Albedo = new(0.0f, 0.0f, 0.0f),
+                Emission = new(7.0f, 7.0f, 7.0f)
+            },
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(materialId))
+        };
 
         void AddQuad(Vector3D<float> v0,
                      Vector3D<float> v1,

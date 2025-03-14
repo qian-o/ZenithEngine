@@ -44,6 +44,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
     private BottomLevelAS? blas;
     private TopLevelAS? tlas;
+    private Buffer? materialsBuffer;
     private Buffer? cameraBuffer;
     private Texture? output;
     private ResourceLayout? resLayout;
@@ -60,9 +61,14 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         List<AccelerationStructureTriangles> triangles = [];
 
+        Material[] materials = new Material[4];
+
         for (uint i = 0; i < 4; i++)
         {
-            Vertex.CornellBox(i, out Vertex[] vertices, out uint[] indices);
+            Vertex.CornellBox(i,
+                              out Vertex[] vertices,
+                              out uint[] indices,
+                              out materials[i]);
 
             BufferDesc vertexBufferDesc = new((uint)(vertices.Length * sizeof(Vertex)),
                                               BufferUsage.ShaderResource | BufferUsage.AccelerationStructure,
@@ -120,6 +126,15 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         commandBuffer.End();
         commandBuffer.Commit();
 
+        BufferDesc materialsBufferDesc = new((uint)(materials.Length * sizeof(Material)), BufferUsage.ShaderResource);
+
+        materialsBuffer = Context.Factory.CreateBuffer(in materialsBufferDesc);
+
+        fixed (void* pMaterials = materials)
+        {
+            Context.UpdateBuffer(materialsBuffer, (nint)pMaterials, materialsBufferDesc.SizeInBytes);
+        }
+
         BufferDesc cameraBufferDesc = new((uint)sizeof(Camera), BufferUsage.Dynamic | BufferUsage.ConstantBuffer);
 
         cameraBuffer = Context.Factory.CreateBuffer(in cameraBufferDesc);
@@ -135,13 +150,14 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
             new(ShaderStages.RayGeneration, ResourceType.AccelerationStructure, 0),
             new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 1, 4),
             new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 5, 4),
+            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 9),
             new(ShaderStages.RayGeneration, ResourceType.ConstantBuffer, 0),
             new(ShaderStages.RayGeneration, ResourceType.TextureReadWrite, 0),
         ]);
 
         resLayout = Context.Factory.CreateResourceLayout(in resLayoutDesc);
 
-        ResourceSetDesc resSetDesc = new(resLayout, [tlas, .. vertexBuffers, .. indexBuffers, cameraBuffer, output]);
+        ResourceSetDesc resSetDesc = new(resLayout, [tlas, .. vertexBuffers, .. indexBuffers, materialsBuffer, cameraBuffer, output]);
 
         resSet = Context.Factory.CreateResourceSet(in resSetDesc);
 
@@ -224,7 +240,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceSetDesc resSetDesc = new(resLayout!, [tlas!, .. vertexBuffers, .. indexBuffers, cameraBuffer!, output]);
+        ResourceSetDesc resSetDesc = new(resLayout!, [tlas!, .. vertexBuffers, .. indexBuffers, materialsBuffer!, cameraBuffer!, output]);
 
         resSet = Context.Factory.CreateResourceSet(in resSetDesc);
     }
@@ -236,6 +252,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         resLayout?.Dispose();
         output?.Dispose();
         cameraBuffer?.Dispose();
+        materialsBuffer?.Dispose();
         tlas?.Dispose();
         blas?.Dispose();
 
