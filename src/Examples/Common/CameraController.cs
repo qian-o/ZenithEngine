@@ -5,13 +5,13 @@ using ZenithEngine.Windowing.Interfaces;
 
 namespace Common;
 
-public class Camera
+public class CameraController
 {
     private readonly HashSet<Key> keyDowns = [];
 
     private Vector2D<int>? lastMousePosition;
 
-    public Camera(IWindow window)
+    public CameraController(IWindow window)
     {
         window.KeyDown += Window_KeyDown;
         window.KeyUp += Window_KeyUp;
