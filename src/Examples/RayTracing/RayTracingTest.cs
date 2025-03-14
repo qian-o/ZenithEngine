@@ -112,8 +112,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
             Transform = Matrix3X4<float>.Identity,
             InstanceID = 0,
             InstanceMask = 0xFF,
-            InstanceContributionToHitGroupIndex = 0,
-            Options = AccelerationStructureInstanceOptions.None
+            InstanceContributionToHitGroupIndex = 0
         }]);
 
         tlas = commandBuffer.BuildAccelerationStructure(in tlasDesc);
@@ -159,8 +158,8 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         rtPipeline = Context.Factory.CreateRayTracingPipeline(in rtpDesc);
 
-        CameraController.Transform(Matrix4X4.CreateTranslation(278.000f, 274.400f, -800.000f));
-        CameraController.FarPlane = 2000.000f;
+        CameraController.Transform(Matrix4X4.CreateTranslation(278.000f, 278.000f, -400.000f));
+        CameraController.FarPlane = 1600.000f;
         CameraController.Speed = 120.000f;
     }
 

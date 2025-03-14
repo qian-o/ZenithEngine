@@ -73,12 +73,12 @@ public class CameraController
 
         if (keyDowns.Contains(Key.Q))
         {
-            Position += Up * Speed * deltaTime;
+            Position -= Up * Speed * deltaTime;
         }
 
         if (keyDowns.Contains(Key.E))
         {
-            Position -= Up * Speed * deltaTime;
+            Position += Up * Speed * deltaTime;
         }
 
         AspectRatio = size.X / (float)size.Y;

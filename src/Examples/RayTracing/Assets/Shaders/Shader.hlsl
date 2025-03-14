@@ -91,7 +91,7 @@ void RayGenMain()
     rayDesc.TMax = Camera.FarPlane;
 
     Payload payload;
-    TraceRay(Scene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, rayDesc, payload);
+    TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
 
     Output[LaunchID.xy] = payload.Hit ? float4(payload.TexCoord, 1.0, 1.0) : float4(0.0, 0.0, 0.0, 1.0);
 }
