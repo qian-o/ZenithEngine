@@ -11,7 +11,7 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 
 ## TODO
 - ZenithEngine
-	- [ ] Use `slnx` instead of `sln` for Visual Studio solution.
+	- [x] Use `slnx` instead of `sln` for Visual Studio solution.
 	- [x] Add `ZenithEngine.DirectX12` project.
 	- [x] Add `ZenithEngine.Vulkan` project.
 	- [x] Add `ZenithEngine.Windowing` project.
