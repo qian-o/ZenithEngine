@@ -73,39 +73,38 @@ Vertex GetVertex(uint geometryIndex, uint primitiveIndex, float3 barycentrics)
 [shader("raygeneration")]
 void RayGenMain()
 {
-    uint3 LaunchID = DispatchRaysIndex();
-    uint3 LaunchSize = DispatchRaysDimensions();
+    uint2 launchID = DispatchRaysIndex().xy;
+    float2 launchSize = float2(DispatchRaysDimensions().xy);
     
-    float x = float(LaunchID.x) / float(LaunchSize.x);
-    float y = float(LaunchID.y) / float(LaunchSize.y);
-    
-    x = x * 2.0 - 1.0;
-    y = 1.0 - y * 2.0;
+    float2 xy = launchID / launchSize;
+
+    xy = xy * 2.0 - 1.0;
+    xy.y = -xy.y;
     
     float scale = tan(Camera.Fov * 0.5);
-    float aspectRatio = LaunchSize.x / float(LaunchSize.y);
+    float aspectRatio = launchSize.x / launchSize.y;
 
     if (aspectRatio > 1.0)
     {
-        x *= aspectRatio * scale;
-        y *= scale;
+        xy.x *= aspectRatio * scale;
+        xy.y *= scale;
     }
     else
     {
-        x *= scale;
-        y *= scale / aspectRatio;
+        xy.x *= scale;
+        xy.y *= scale / aspectRatio;
     }
     
     RayDesc rayDesc;
     rayDesc.Origin = Camera.Position;
-    rayDesc.Direction = normalize(Camera.Forward + x * Camera.Right + y * Camera.Up);
+    rayDesc.Direction = normalize(Camera.Forward + xy.x * Camera.Right + xy.y * Camera.Up);
     rayDesc.TMin = Camera.NearPlane;
     rayDesc.TMax = Camera.FarPlane;
 
     Payload payload;
     TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
 
-    Output[LaunchID.xy] = payload.Hit ? float4(payload.Color, 1.0) : float4(0.0, 0.0, 0.0, 1.0);
+    Output[launchID] = payload.Hit ? float4(payload.TexCoord, 0.0, 1.0) : float4(0.0, 0.0, 0.0, 1.0);
 }
 
 [shader("miss")]

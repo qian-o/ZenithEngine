@@ -175,7 +175,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         rtPipeline = Context.Factory.CreateRayTracingPipeline(in rtpDesc);
 
         CameraController.Transform(Matrix4X4.CreateTranslation(278.000f, 273.000f, -800.000f));
-        CameraController.FarPlane = 1600.000f;
+        CameraController.FarPlane = 2400.000f;
         CameraController.Speed = 120.000f;
     }
 
