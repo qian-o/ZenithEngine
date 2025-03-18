@@ -81,8 +81,8 @@ void RayGenMain()
     xy = xy * 2.0 - 1.0;
     xy.y = -xy.y;
     
-    float scale = tan(Camera.Fov * 0.5);
     float aspectRatio = launchSize.x / launchSize.y;
+    float scale = tan(Camera.Fov * 0.5);
 
     if (aspectRatio > 1.0)
     {
