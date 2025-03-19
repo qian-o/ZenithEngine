@@ -1,4 +1,13 @@
-﻿struct Material
+﻿struct Vertex
+{
+    float3 Position;
+    
+    float3 Normal;
+    
+    float2 TexCoord;
+};
+
+struct Material
 {
     bool IsLight;
 
@@ -24,13 +33,19 @@ struct Camera
     float Fov;
 };
 
-struct Vertex
+struct AOParameters
 {
-    float3 Position;
+    float Radius;
     
-    float3 Normal;
+    int Samples;
     
-    float2 TexCoord;
+    float Power;
+    
+    bool DistanceBased;
+    
+    int FrameNumber;
+    
+    int MaxSamples;
 };
 
 struct [raypayload] Payload
@@ -44,11 +59,17 @@ struct [raypayload] Payload
     float3 Color;
 };
 
+struct [raypayload] AOPayload
+{
+    float AO;
+};
+
 RaytracingAccelerationStructure Scene : register(t0, space0);
 StructuredBuffer<Vertex> VertexBuffers[4] : register(t1, space0);
 StructuredBuffer<uint> IndexBuffers[4] : register(t5, space0);
 StructuredBuffer<Material> Materials : register(t9, space0);
 ConstantBuffer<Camera> Camera : register(b0, space0);
+ConstantBuffer<AOParameters> AOParameters : register(b1, space0);
 RWTexture2D<float4> Output : register(u0, space0);
 
 Vertex GetVertex(uint geometryIndex, uint primitiveIndex, float3 barycentrics)
@@ -68,6 +89,20 @@ Vertex GetVertex(uint geometryIndex, uint primitiveIndex, float3 barycentrics)
     result.TexCoord = barycentrics.x * v0.TexCoord + barycentrics.y * v1.TexCoord + barycentrics.z * v2.TexCoord;
 
     return result;
+}
+
+float GetAO(float3 origin, float3 direction)
+{
+    RayDesc rayDesc;
+    rayDesc.Origin = origin;
+    rayDesc.Direction = direction;
+    rayDesc.TMin = 0.001;
+    rayDesc.TMax = AOParameters.Radius;
+
+    AOPayload payload;
+    TraceRay(Scene, RAY_FLAG_NONE, 0xFF, 1, 0, 1, rayDesc, payload);
+
+    return payload.AO;
 }
 
 [shader("raygeneration")]
@@ -124,4 +159,23 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
     payload.Normal = normalize(vertex.Normal);
     payload.TexCoord = vertex.TexCoord;
     payload.Color = material.Albedo;
+}
+
+[shader("miss")]
+void MissAO(inout AOPayload payload)
+{
+    payload.AO = 1.0;
+}
+
+[shader("closesthit")]
+void ClosestHitAO(inout AOPayload payload, in BuiltInTriangleIntersectionAttributes attrib)
+{
+    if (AOParameters.DistanceBased)
+    {
+        payload.AO = 1.0;
+    }
+    else
+    {
+        payload.AO = 1.0 - RayTCurrent() / AOParameters.Radius;
+    }
 }

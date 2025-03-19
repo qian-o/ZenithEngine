@@ -1,8 +1,4 @@
-﻿const float C_Stack_Max = 3.402823466e+38;
-const float EPS = 0.05;
-const float M_PI = 3.141592653589;
-
-float3 OffsetRay(float3 p, float3 n)
+﻿float3 OffsetRay(float3 p, float3 n)
 {
     const float intScale = 256.0f;
     const float floatScale = 1.0f / 65536.0f;
@@ -10,13 +6,13 @@ float3 OffsetRay(float3 p, float3 n)
     
     int3 of_i = int3(intScale * n.x, intScale * n.y, intScale * n.z);
     
-    float3 p_i = float3(asfloat(asint(p.x) + ((p.x < 0) ? -of_i.x : of_i.x)),
-                        asfloat(asint(p.y) + ((p.y < 0) ? -of_i.y : of_i.y)),
-                        asfloat(asint(p.z) + ((p.z < 0) ? -of_i.z : of_i.z)));
+    float3 p_i = float3(asfloat(asint(p.x) + ((p.x < 0) ? - of_i.x : of_i.x)),
+    asfloat(asint(p.y) + ((p.y < 0) ? - of_i.y : of_i.y)),
+    asfloat(asint(p.z) + ((p.z < 0) ? - of_i.z : of_i.z)));
     
     return float3(abs(p.x) < origin ? p.x + floatScale * n.x : p_i.x,
-                  abs(p.y) < origin ? p.y + floatScale * n.y : p_i.y,
-                  abs(p.z) < origin ? p.z + floatScale * n.z : p_i.z);
+    abs(p.y) < origin ? p.y + floatScale * n.y : p_i.y,
+    abs(p.z) < origin ? p.z + floatScale * n.z : p_i.z);
 }
 
 void ComputeDefaultBasis(const float3 normal, out float3 x, out float3 y)
@@ -37,8 +33,8 @@ uint tea(uint val0, uint val1)
     for (uint n = 0; n < 16; n++)
     {
         s0 += 0x9e3779b9;
-        v0 += ((v1 << 4) + 0xa341316c) ^ (v1 + s0) ^ ((v1 >> 5) + 0xc8013ea4);
-        v1 += ((v0 << 4) + 0xad90777d) ^ (v0 + s0) ^ ((v0 >> 5) + 0x7e95761e);
+        v0 += ((v1 << 4) + 0xa341316c) ^(v1 + s0) ^((v1 >> 5) + 0xc8013ea4);
+        v1 += ((v0 << 4) + 0xad90777d) ^(v0 + s0) ^((v0 >> 5) + 0x7e95761e);
     }
 
     return v0;
@@ -51,12 +47,12 @@ uint2 pcg2d(uint2 v)
     v.x += v.y * 1664525u;
     v.y += v.x * 1664525u;
 
-    v = v ^ (v >> 16u);
+    v = v ^(v >> 16u);
 
     v.x += v.y * 1664525u;
     v.y += v.x * 1664525u;
 
-    v = v ^ (v >> 16u);
+    v = v ^(v >> 16u);
 
     return v;
 }
