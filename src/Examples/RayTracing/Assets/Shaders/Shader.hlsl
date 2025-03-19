@@ -76,23 +76,18 @@ void RayGenMain()
     uint2 launchID = DispatchRaysIndex().xy;
     float2 launchSize = float2(DispatchRaysDimensions().xy);
     
-    float2 xy = launchID / launchSize;
-
-    xy = xy * 2.0 - 1.0;
+    float2 xy = (launchID / launchSize * 2.0 - 1.0) * tan(Camera.Fov * 0.5);
     xy.y = -xy.y;
     
     float aspectRatio = launchSize.x / launchSize.y;
-    float scale = tan(Camera.Fov * 0.5);
 
     if (aspectRatio > 1.0)
     {
-        xy.x *= aspectRatio * scale;
-        xy.y *= scale;
+        xy.x *= aspectRatio;
     }
     else
     {
-        xy.x *= scale;
-        xy.y *= scale / aspectRatio;
+        xy.y /= aspectRatio;
     }
     
     RayDesc rayDesc;
