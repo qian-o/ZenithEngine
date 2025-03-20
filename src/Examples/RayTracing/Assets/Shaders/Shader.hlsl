@@ -197,8 +197,7 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
             ao += TraceRayAO(origin, direction);
         }
 
-        ao = 1.0 - (ao / AO.Samples);
-        ao = pow(ao, AO.Power);
+        ao = pow(1.0 - (ao / AO.Samples), AO.Power);
 
         payload.Color *= ao;
     }
