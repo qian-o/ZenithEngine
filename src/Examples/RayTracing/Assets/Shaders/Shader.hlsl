@@ -1,4 +1,6 @@
-﻿struct Vertex
+﻿﻿#include "Common.hlsl"
+
+struct Vertex
 {
     float3 Position;
     
@@ -31,9 +33,11 @@ struct Camera
     float FarPlane;
     
     float Fov;
+    
+    int FrameNumber;
 };
 
-struct AOParameters
+struct AO
 {
     float Radius;
     
@@ -42,26 +46,18 @@ struct AOParameters
     float Power;
     
     bool DistanceBased;
-    
-    int FrameNumber;
-    
-    int MaxSamples;
 };
 
 struct [raypayload] Payload
 {
     bool Hit;
-    
-    float3 Normal;
-    
-    float2 TexCoord;
 
     float3 Color;
 };
 
 struct [raypayload] AOPayload
 {
-    float AO;
+    float Value;
 };
 
 RaytracingAccelerationStructure Scene : register(t0, space0);
@@ -69,7 +65,7 @@ StructuredBuffer<Vertex> VertexBuffers[4] : register(t1, space0);
 StructuredBuffer<uint> IndexBuffers[4] : register(t5, space0);
 StructuredBuffer<Material> Materials : register(t9, space0);
 ConstantBuffer<Camera> Camera : register(b0, space0);
-ConstantBuffer<AOParameters> AOParameters : register(b1, space0);
+ConstantBuffer<AO> AO : register(b1, space0);
 RWTexture2D<float4> Output : register(u0, space0);
 
 Vertex GetVertex(uint geometryIndex, uint primitiveIndex, float3 barycentrics)
@@ -85,24 +81,24 @@ Vertex GetVertex(uint geometryIndex, uint primitiveIndex, float3 barycentrics)
 
     Vertex result;
     result.Position = barycentrics.x * v0.Position + barycentrics.y * v1.Position + barycentrics.z * v2.Position;
-    result.Normal = barycentrics.x * v0.Normal + barycentrics.y * v1.Normal + barycentrics.z * v2.Normal;
+    result.Normal = normalize(barycentrics.x * v0.Normal + barycentrics.y * v1.Normal + barycentrics.z * v2.Normal);
     result.TexCoord = barycentrics.x * v0.TexCoord + barycentrics.y * v1.TexCoord + barycentrics.z * v2.TexCoord;
 
     return result;
 }
 
-float GetAO(float3 origin, float3 direction)
+float TraceRayAO(float3 origin, float3 direction)
 {
     RayDesc rayDesc;
     rayDesc.Origin = origin;
     rayDesc.Direction = direction;
     rayDesc.TMin = 0.001;
-    rayDesc.TMax = AOParameters.Radius;
+    rayDesc.TMax = AO.Radius;
 
     AOPayload payload;
     TraceRay(Scene, RAY_FLAG_NONE, 0xFF, 1, 0, 1, rayDesc, payload);
 
-    return payload.AO;
+    return payload.Value;
 }
 
 [shader("raygeneration")]
@@ -134,48 +130,95 @@ void RayGenMain()
     Payload payload;
     TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
 
-    Output[launchID] = payload.Hit ? float4(payload.TexCoord, 0.0, 1.0) : float4(0.0, 0.0, 0.0, 1.0);
+    if (payload.Hit)
+    {
+        if (Camera.FrameNumber == 0)
+        {
+            Output[launchID] = float4(payload.Color, 1.0);
+        }
+        else
+        {
+            Output[launchID] = lerp(Output[launchID], float4(payload.Color, 1.0), 1.0 / (Camera.FrameNumber + 1));
+        }
+    }
+    else
+    {
+        Output[launchID] = float4(0.0, 0.0, 0.0, 1.0);
+    }
 }
 
 [shader("miss")]
 void MissMain(inout Payload payload)
 {
     payload.Hit = false;
-    payload.Normal = float3(0.0, 0.0, 0.0);
-    payload.TexCoord = float2(0.0, 0.0);
 }
 
 [shader("closesthit")]
 void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttributes attrib)
 {
+    uint2 launchID = DispatchRaysIndex().xy;
+    uint2 launchSize = DispatchRaysDimensions().xy;
+    
+    uint seed = tea(launchSize.x * launchID.y + launchID.x, Camera.FrameNumber);
+
     uint geometryIndex = GeometryIndex();
     uint primitiveIndex = PrimitiveIndex();
     float3 barycentrics = float3(1.0 - attrib.barycentrics.x - attrib.barycentrics.y, attrib.barycentrics.x, attrib.barycentrics.y);
     
     Vertex vertex = GetVertex(geometryIndex, primitiveIndex, barycentrics);
-    Material material = Materials[geometryIndex];
 
+    Material material = Materials[geometryIndex];
+    
     payload.Hit = true;
-    payload.Normal = normalize(vertex.Normal);
-    payload.TexCoord = vertex.TexCoord;
     payload.Color = material.Albedo;
+
+    float3 worldPosition = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
+    
+    // AO
+    {
+        float ao = 0.0;
+
+        float3 origin = OffsetRay(worldPosition, vertex.Normal);
+
+        float3 x, y;
+        ComputeDefaultBasis(vertex.Normal, x, y);
+
+        [unroll]
+        for (int i = 0; i < AO.Samples; i++)
+        {
+            float r1 = rnd(seed);
+            float r2 = rnd(seed);
+            float sq = sqrt(1.0 - r2);
+            float phi = 2.0 * 3.14159265359 * r1;
+            
+            float3 direction = float3(cos(phi) * sq, sin(phi) * sq, sqrt(r2));
+            direction = normalize(direction.x * x + direction.y * y + direction.z * vertex.Normal);
+
+            ao += TraceRayAO(origin, direction);
+        }
+
+        ao = 1.0 - (ao / AO.Samples);
+        ao = pow(ao, AO.Power);
+
+        payload.Color *= ao;
+    }
 }
 
 [shader("miss")]
 void MissAO(inout AOPayload payload)
 {
-    payload.AO = 1.0;
+    payload.Value = 0.0;
 }
 
 [shader("closesthit")]
 void ClosestHitAO(inout AOPayload payload, in BuiltInTriangleIntersectionAttributes attrib)
 {
-    if (AOParameters.DistanceBased)
+    if (AO.DistanceBased)
     {
-        payload.AO = 1.0;
+        payload.Value = 1.0 - RayTCurrent() / AO.Radius;
     }
     else
     {
-        payload.AO = 1.0 - RayTCurrent() / AOParameters.Radius;
+        payload.Value = 1.0;
     }
 }

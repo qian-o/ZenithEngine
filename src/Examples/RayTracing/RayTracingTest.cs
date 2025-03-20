@@ -37,7 +37,36 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         [FieldOffset(68)]
         public float Fov;
+
+        [FieldOffset(72)]
+        public int FrameNumber;
+
+        public override readonly int GetHashCode()
+        {
+            return HashCode.Combine(Position, Forward, Right, Up, NearPlane, FarPlane, Fov);
+        }
     };
+
+    [StructLayout(LayoutKind.Explicit)]
+    private struct AO
+    {
+        [FieldOffset(0)]
+        public float Radius;
+
+        [FieldOffset(4)]
+        public int Samples;
+
+        [FieldOffset(8)]
+        public float Power;
+
+        [FieldOffset(12)]
+        public bool DistanceBased;
+
+        public override readonly int GetHashCode()
+        {
+            return HashCode.Combine(Radius, Samples, Power, DistanceBased);
+        }
+    }
 
     private readonly List<Buffer> vertexBuffers = [];
     private readonly List<Buffer> indexBuffers = [];
@@ -46,10 +75,15 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
     private TopLevelAS? tlas;
     private Buffer? materialsBuffer;
     private Buffer? cameraBuffer;
+    private Buffer? aoBuffer;
     private Texture? output;
     private ResourceLayout? resLayout;
     private ResourceSet? resSet;
     private RayTracingPipeline rtPipeline = null!;
+
+    private int parameterHash;
+    private int frameNumber;
+    private AO ao;
 
     protected override void OnLoad()
     {
@@ -139,6 +173,10 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         cameraBuffer = Context.Factory.CreateBuffer(in cameraBufferDesc);
 
+        BufferDesc aoBufferDesc = new((uint)sizeof(AO), BufferUsage.Dynamic | BufferUsage.ConstantBuffer);
+
+        aoBuffer = Context.Factory.CreateBuffer(in aoBufferDesc);
+
         TextureDesc outputDesc = new(Width,
                                      Height,
                                      usage: TextureUsage.ShaderResource | TextureUsage.UnorderedAccess);
@@ -147,28 +185,44 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         ResourceLayoutDesc resLayoutDesc = new
         ([
-            new(ShaderStages.RayGeneration, ResourceType.AccelerationStructure, 0),
+            new(ShaderStages.RayGeneration | ShaderStages.ClosestHit, ResourceType.AccelerationStructure, 0),
             new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 1, 4),
             new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 5, 4),
             new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 9),
-            new(ShaderStages.RayGeneration, ResourceType.ConstantBuffer, 0),
+            new(ShaderStages.RayGeneration | ShaderStages.ClosestHit, ResourceType.ConstantBuffer, 0),
+            new(ShaderStages.ClosestHit, ResourceType.ConstantBuffer, 1),
             new(ShaderStages.RayGeneration, ResourceType.TextureReadWrite, 0),
         ]);
 
         resLayout = Context.Factory.CreateResourceLayout(in resLayoutDesc);
 
-        ResourceSetDesc resSetDesc = new(resLayout, [tlas, .. vertexBuffers, .. indexBuffers, materialsBuffer, cameraBuffer, output]);
+        ResourceSetDesc resSetDesc = new(resLayout,
+        [
+            tlas,
+            .. vertexBuffers,
+            .. indexBuffers,
+            materialsBuffer,
+            cameraBuffer,
+            aoBuffer,
+            output
+        ]);
 
         resSet = Context.Factory.CreateResourceSet(in resSetDesc);
 
-        using Shader rgShader = Context.Factory.CompileShader(ShaderStages.RayGeneration, hlsl, "RayGenMain");
-        using Shader msShader = Context.Factory.CompileShader(ShaderStages.Miss, hlsl, "MissMain");
-        using Shader chShader = Context.Factory.CompileShader(ShaderStages.ClosestHit, hlsl, "ClosestHitMain");
+        using Shader rgShader = Context.Factory.CompileShader(ShaderStages.RayGeneration, hlsl, "RayGenMain", IncludeHandler);
+        using Shader msShader = Context.Factory.CompileShader(ShaderStages.Miss, hlsl, "MissMain", IncludeHandler);
+        using Shader chShader = Context.Factory.CompileShader(ShaderStages.ClosestHit, hlsl, "ClosestHitMain", IncludeHandler);
+        using Shader msAoShader = Context.Factory.CompileShader(ShaderStages.Miss, hlsl, "MissAO", IncludeHandler);
+        using Shader chAoShader = Context.Factory.CompileShader(ShaderStages.ClosestHit, hlsl, "ClosestHitAO", IncludeHandler);
 
         RayTracingPipelineDesc rtpDesc = new
         (
-            shaders: new(rgShader, [msShader], [chShader]),
-            hitGroups: [new("DefaultHitGroup", closestHit: "ClosestHitMain")],
+            shaders: new(rgShader, [msShader, msAoShader], [chShader, chAoShader]),
+            hitGroups:
+            [
+                new("DefaultHitGroup", closestHit: "ClosestHitMain"),
+                new("AoHitGroup", closestHit: "ClosestHitAO")
+            ],
             resourceLayouts: [resLayout]
         );
 
@@ -177,10 +231,28 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         CameraController.Transform(Matrix4X4.CreateTranslation(278.000f, 273.000f, -800.000f));
         CameraController.FarPlane = 2400.000f;
         CameraController.Speed = 120.000f;
+
+        ao = new()
+        {
+            Radius = 8.0f,
+            Samples = 8,
+            Power = 3.0f,
+            DistanceBased = true
+        };
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)
     {
+        if (ImGui.Begin("AO Settings"))
+        {
+            ImGui.SliderFloat("Radius", ref ao.Radius, 0.0f, 32.0f);
+            ImGui.SliderInt("Samples", ref ao.Samples, 1, 64);
+            ImGui.SliderFloat("Power", ref ao.Power, 0.0f, 10.0f);
+            ImGui.Checkbox("Distance Based", ref ao.DistanceBased);
+
+            ImGui.End();
+        }
+
         Camera camera = new()
         {
             Position = CameraController.Position,
@@ -189,10 +261,25 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
             Up = CameraController.Up,
             NearPlane = CameraController.NearPlane,
             FarPlane = CameraController.FarPlane,
-            Fov = CameraController.Fov.ToRadians()
+            Fov = CameraController.Fov.ToRadians(),
+            FrameNumber = frameNumber++
         };
 
+        int newParameterHash = HashCode.Combine(camera, ao);
+
+        if (parameterHash != newParameterHash)
+        {
+            frameNumber = 0;
+
+            parameterHash = newParameterHash;
+        }
+
         Context.UpdateBuffer(cameraBuffer!, (nint)(&camera), (uint)sizeof(Camera));
+
+        fixed (void* pAO = &ao)
+        {
+            Context.UpdateBuffer(aoBuffer!, (nint)pAO, (uint)sizeof(AO));
+        }
 
         if (output is null)
         {
@@ -240,7 +327,16 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceSetDesc resSetDesc = new(resLayout!, [tlas!, .. vertexBuffers, .. indexBuffers, materialsBuffer!, cameraBuffer!, output]);
+        ResourceSetDesc resSetDesc = new(resLayout!,
+        [
+            tlas!,
+            .. vertexBuffers,
+            .. indexBuffers,
+            materialsBuffer!,
+            cameraBuffer!,
+            aoBuffer!,
+            output
+        ]);
 
         resSet = Context.Factory.CreateResourceSet(in resSetDesc);
     }
@@ -251,6 +347,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         resSet?.Dispose();
         resLayout?.Dispose();
         output?.Dispose();
+        aoBuffer?.Dispose();
         cameraBuffer?.Dispose();
         materialsBuffer?.Dispose();
         tlas?.Dispose();
@@ -265,5 +362,10 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         {
             indexBuffer.Dispose();
         }
+    }
+
+    private string IncludeHandler(string path)
+    {
+        return File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", path));
     }
 }
