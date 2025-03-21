@@ -117,10 +117,10 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
                 break;
             case 3:
                 // Light (short block)
-                AddQuad(new(343.0f, 548.8f, 227.0f),
-                        new(343.0f, 548.8f, 332.0f),
-                        new(213.0f, 548.8f, 332.0f),
-                        new(213.0f, 548.8f, 227.0f));
+                AddQuad(new(343.0f, 548.6f, 227.0f),
+                        new(343.0f, 548.6f, 332.0f),
+                        new(213.0f, 548.6f, 332.0f),
+                        new(213.0f, 548.6f, 227.0f));
                 break;
             default:
                 throw new ZenithEngineException(ExceptionHelpers.NotSupported(materialId));

@@ -172,9 +172,15 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
     payload.Hit = true;
     payload.Color = material.Albedo;
 
+    if (material.IsLight)
+    {
+        payload.Color += material.Emission;
+    }
+
     float3 worldPosition = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
     
     // AO
+
     {
         float ao = 0.0;
 
