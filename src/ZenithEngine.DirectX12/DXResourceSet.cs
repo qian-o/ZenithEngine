@@ -44,12 +44,9 @@ internal unsafe class DXResourceSet : ResourceSet
             resourceOffset += element.Count;
         }
 
-        DynamicConstantBufferCount = layoutDesc.DynamicConstantBufferCount;
         SrvTextures = [.. srvTextures];
         UavTextures = [.. uavTextures];
     }
-
-    public uint DynamicConstantBufferCount { get; }
 
     public DXTexture[] SrvTextures { get; }
 
@@ -62,7 +59,7 @@ internal unsafe class DXResourceSet : ResourceSet
                      DXDescriptorTableAllocator samplerAllocator,
                      bool isGraphics,
                      uint rootParameterOffset,
-                     uint[]? constantBufferOffsets)
+                     uint[]? bufferOffsets)
     {
         DXResourceLayout layout = Desc.Layout.DX();
 
@@ -82,7 +79,7 @@ internal unsafe class DXResourceSet : ResourceSet
                         UpdateDescriptorTable(cbvSrvUavAllocator,
                                               samplerAllocator,
                                               cbvSrvUavBindings,
-                                              constantBufferOffsets);
+                                              bufferOffsets);
                     }
 
                     if (samplerBindings.Length > 0)
@@ -93,7 +90,7 @@ internal unsafe class DXResourceSet : ResourceSet
                         UpdateDescriptorTable(cbvSrvUavAllocator,
                                               samplerAllocator,
                                               samplerBindings,
-                                              constantBufferOffsets);
+                                              bufferOffsets);
                     }
                 }
             }
@@ -109,7 +106,7 @@ internal unsafe class DXResourceSet : ResourceSet
                 UpdateDescriptorTable(cbvSrvUavAllocator,
                                       samplerAllocator,
                                       cbvSrvUavBindings,
-                                      constantBufferOffsets);
+                                      bufferOffsets);
             }
 
             if (samplerBindings.Length > 0)
@@ -120,7 +117,7 @@ internal unsafe class DXResourceSet : ResourceSet
                 UpdateDescriptorTable(cbvSrvUavAllocator,
                                       samplerAllocator,
                                       samplerBindings,
-                                      constantBufferOffsets);
+                                      bufferOffsets);
             }
         }
     }
@@ -138,7 +135,7 @@ internal unsafe class DXResourceSet : ResourceSet
     private void UpdateDescriptorTable(DXDescriptorTableAllocator cbvSrvUavAllocator,
                                        DXDescriptorTableAllocator samplerAllocator,
                                        DXResourceBinding[] bindings,
-                                       uint[]? constantBufferOffsets)
+                                       uint[]? bufferOffsets)
     {
         uint offset = 0;
         foreach (DXResourceBinding binding in bindings)
@@ -155,7 +152,7 @@ internal unsafe class DXResourceSet : ResourceSet
 
                             if (binding.DynamicOffsetIndex is not -1)
                             {
-                                uint offsetInBytes = constantBufferOffsets![binding.DynamicOffsetIndex];
+                                uint offsetInBytes = bufferOffsets![binding.DynamicOffsetIndex];
                                 uint sizeInBytes = binding.Range is not 0 ? Utils.AlignedSize(binding.Range, 256u) : buffer.SizeInBytes - offsetInBytes;
 
                                 ConstantBufferViewDesc desc = new()
@@ -179,7 +176,7 @@ internal unsafe class DXResourceSet : ResourceSet
 
                             if (binding.DynamicOffsetIndex is not -1)
                             {
-                                uint offsetInBytes = constantBufferOffsets![binding.DynamicOffsetIndex];
+                                uint offsetInBytes = bufferOffsets![binding.DynamicOffsetIndex];
                                 uint sizeInBytes = binding.Range is not 0 ? binding.Range : buffer.SizeInBytes - offsetInBytes;
 
                                 ShaderResourceViewDesc desc = new()
@@ -212,7 +209,7 @@ internal unsafe class DXResourceSet : ResourceSet
 
                             if (binding.DynamicOffsetIndex is not -1)
                             {
-                                uint offsetInBytes = constantBufferOffsets![binding.DynamicOffsetIndex];
+                                uint offsetInBytes = bufferOffsets![binding.DynamicOffsetIndex];
                                 uint sizeInBytes = binding.Range is not 0 ? binding.Range : buffer.SizeInBytes - offsetInBytes;
 
                                 UnorderedAccessViewDesc desc = new()
