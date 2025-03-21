@@ -140,14 +140,14 @@ internal unsafe class VKResourceSet : ResourceSet
                                         0,
                                         (CopyDescriptorSet*)null);
 
-        DynamicConstantBufferCount = layoutDesc.DynamicConstantBufferCount;
+        DynamicBufferCount = (uint)layoutDesc.Elements.Count(static item => item.IsDynamicBuffer);
         SrvTextures = [.. srvTextures];
         UavTextures = [.. uavTextures];
 
         Allocator.Release();
     }
 
-    public uint DynamicConstantBufferCount { get; }
+    public uint DynamicBufferCount { get; }
 
     public VKTexture[] SrvTextures { get; }
 

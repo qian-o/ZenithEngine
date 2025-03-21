@@ -578,7 +578,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
     public override void SetResourceSet(uint slot,
                                         ResourceSet resourceSet,
-                                        uint[]? constantBufferOffsets = null)
+                                        uint[]? bufferOffsets = null)
     {
         (bool isGraphics, uint rootParameterOffset) = activePipeline switch
         {
@@ -593,7 +593,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                               samplerAllocator!,
                               isGraphics,
                               rootParameterOffset,
-                              constantBufferOffsets);
+                              bufferOffsets);
     }
     #endregion
 
