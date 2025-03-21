@@ -160,7 +160,9 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         commandBuffer.End();
         commandBuffer.Commit();
 
-        BufferDesc materialsBufferDesc = new((uint)(materials.Length * sizeof(Material)), BufferUsage.ShaderResource);
+        BufferDesc materialsBufferDesc = new((uint)(materials.Length * sizeof(Material)),
+                                             BufferUsage.ShaderResource,
+                                             (uint)sizeof(Material));
 
         materialsBuffer = Context.Factory.CreateBuffer(in materialsBufferDesc);
 
