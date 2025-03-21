@@ -183,7 +183,6 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
         float3 x, y;
         ComputeDefaultBasis(vertex.Normal, x, y);
 
-        [unroll]
         for (int i = 0; i < AO.Samples; i++)
         {
             float r1 = rnd(seed);
