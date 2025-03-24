@@ -580,6 +580,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                         ResourceSet resourceSet,
                                         uint[]? bufferOffsets = null)
     {
+        bufferOffsets ??= [];
+
         (bool isGraphics, uint rootParameterOffset) = activePipeline switch
         {
             DXGraphicsPipeline graphicsPipeline => (true, graphicsPipeline.GetRootParameterOffset(slot)),
