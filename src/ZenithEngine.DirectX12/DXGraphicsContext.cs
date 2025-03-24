@@ -16,6 +16,10 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
     public ComPtr<ID3D12Device5> Device5;
 
+    public ComPtr<ID3D12CommandQueue> GraphicsQueue;
+    public ComPtr<ID3D12CommandQueue> ComputeQueue;
+    public ComPtr<ID3D12CommandQueue> CopyQueue;
+
     public ComPtr<ID3D12CommandSignature> DrawSignature;
     public ComPtr<ID3D12CommandSignature> DrawIndexedSignature;
     public ComPtr<ID3D12CommandSignature> DispatchSignature;
@@ -42,8 +46,6 @@ internal unsafe class DXGraphicsContext : GraphicsContext
     public DXDescriptorAllocator? CbvSrvUavAllocator { get; private set; }
 
     public DXDescriptorAllocator? SamplerAllocator { get; private set; }
-
-    public DXCommandProcessor? DefaultGraphicsCommandProcessor { get; private set; }
 
     public override Backend Backend { get; }
 
@@ -88,6 +90,24 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
         Device.QueryInterface(out Device5).ThrowIfError(true);
 
+        CommandQueueDesc commandQueueDesc = new()
+        {
+            Type = CommandListType.Direct,
+            Priority = 0,
+            Flags = CommandQueueFlags.None,
+            NodeMask = 0
+        };
+
+        Device.CreateCommandQueue(&commandQueueDesc, out GraphicsQueue).ThrowIfError();
+
+        commandQueueDesc.Type = CommandListType.Compute;
+
+        Device.CreateCommandQueue(&commandQueueDesc, out ComputeQueue).ThrowIfError();
+
+        commandQueueDesc.Type = CommandListType.Copy;
+
+        Device.CreateCommandQueue(&commandQueueDesc, out CopyQueue).ThrowIfError();
+
         IndirectArgumentDesc indirectArgumentDesc = new()
         {
             Type = IndirectArgumentType.Draw
@@ -123,14 +143,12 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         DsvAllocator = new(this, DescriptorHeapType.Dsv, 128);
         CbvSrvUavAllocator = new(this, DescriptorHeapType.CbvSrvUav, 4096);
         SamplerAllocator = new(this, DescriptorHeapType.Sampler, 128);
-        DefaultGraphicsCommandProcessor = new(this, CommandProcessorType.Graphics);
 
         Capabilities.Init();
     }
 
     protected override void DestroyInternal()
     {
-        DefaultGraphicsCommandProcessor?.Dispose();
         SamplerAllocator?.Dispose();
         CbvSrvUavAllocator?.Dispose();
         DsvAllocator?.Dispose();
@@ -140,6 +158,10 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         DispatchSignature.Dispose();
         DrawIndexedSignature.Dispose();
         DrawSignature.Dispose();
+
+        CopyQueue.Dispose();
+        ComputeQueue.Dispose();
+        GraphicsQueue.Dispose();
 
         Device5.Dispose();
 
@@ -155,6 +177,5 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         DsvAllocator = null;
         CbvSrvUavAllocator = null;
         SamplerAllocator = null;
-        DefaultGraphicsCommandProcessor = null;
     }
 }

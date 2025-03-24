@@ -21,11 +21,11 @@ internal unsafe class DXFence : GraphicsResource
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
-    public void Wait(DXCommandProcessor processor)
+    public void Wait(ComPtr<ID3D12CommandQueue> queue)
     {
         fenceValue++;
 
-        processor.Queue.Signal(Fence, fenceValue).ThrowIfError();
+        queue.Signal(Fence, fenceValue).ThrowIfError();
 
         if (Fence.GetCompletedValue() < fenceValue)
         {

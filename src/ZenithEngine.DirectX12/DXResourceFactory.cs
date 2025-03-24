@@ -65,11 +65,6 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override CommandProcessor CreateCommandProcessor(CommandProcessorType type)
     {
-        if (type is CommandProcessorType.Graphics)
-        {
-            return Context.DefaultGraphicsCommandProcessor!;
-        }
-
         return new DXCommandProcessor(Context, type);
     }
 }

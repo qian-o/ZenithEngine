@@ -1,7 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using ZenithEngine.Common;
-using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Vulkan;
 
@@ -24,17 +23,6 @@ internal unsafe partial class VKGraphicsContext
     public KhrDeferredHostOperations? KhrDeferredHostOperations { get; private set; }
 
     public VKDescriptorSetAllocator? DescriptorSetAllocator { get; private set; }
-
-    public VkQueue FindQueue(CommandProcessorType type)
-    {
-        return type switch
-        {
-            CommandProcessorType.Graphics => GraphicsQueue,
-            CommandProcessorType.Compute => ComputeQueue,
-            CommandProcessorType.Copy => CopyQueue,
-            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
-        };
-    }
 
     private void InitDevice()
     {

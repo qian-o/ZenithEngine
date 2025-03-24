@@ -1,4 +1,5 @@
 ﻿using Silk.NET.Vulkan;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
@@ -11,7 +12,13 @@ internal unsafe class VKCommandProcessor : CommandProcessor
     public VKCommandProcessor(GraphicsContext context,
                               CommandProcessorType type) : base(context, type)
     {
-        queue = Context.FindQueue(type);
+        queue = type switch
+        {
+            CommandProcessorType.Graphics => Context.GraphicsQueue,
+            CommandProcessorType.Compute => Context.ComputeQueue,
+            CommandProcessorType.Copy => Context.CopyQueue,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
+        };
     }
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;

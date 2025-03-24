@@ -1,4 +1,6 @@
-﻿using Common;
+﻿using System.Runtime.InteropServices;
+using Common;
+using Common.Helpers;
 using Hexa.NET.ImGui;
 using Silk.NET.Maths;
 using ZenithEngine.Common.Descriptions;
@@ -6,136 +8,313 @@ using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 using ZenithEngine.ShaderCompiler;
 using Buffer = ZenithEngine.Common.Graphics.Buffer;
+using ResourceSet = ZenithEngine.Common.Graphics.ResourceSet;
 
 namespace RayTracing;
 
 internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing Test", backend)
 {
-    private Buffer vertexBuffer = null!;
-    private Buffer indexBuffer = null!;
-    private BottomLevelAS bottomLevelAS = null!;
-    private TopLevelAS topLevelAS = null!;
-    private Texture output = null!;
-    private ResourceLayout resourceLayout = null!;
-    private ResourceSet resourceSet = null!;
-    private RayTracingPipeline rayTracingPipeline = null!;
+    [StructLayout(LayoutKind.Explicit)]
+    private struct Camera
+    {
+        [FieldOffset(0)]
+        public Vector3D<float> Position;
+
+        [FieldOffset(16)]
+        public Vector3D<float> Forward;
+
+        [FieldOffset(32)]
+        public Vector3D<float> Right;
+
+        [FieldOffset(48)]
+        public Vector3D<float> Up;
+
+        [FieldOffset(60)]
+        public float NearPlane;
+
+        [FieldOffset(64)]
+        public float FarPlane;
+
+        [FieldOffset(68)]
+        public float Fov;
+
+        public override readonly int GetHashCode()
+        {
+            return HashCode.Combine(Position, Forward, Right, Up, NearPlane, FarPlane, Fov);
+        }
+    };
+
+    [StructLayout(LayoutKind.Explicit)]
+    private struct AO
+    {
+        [FieldOffset(0)]
+        public float Radius;
+
+        [FieldOffset(4)]
+        public int Samples;
+
+        [FieldOffset(8)]
+        public float Power;
+
+        [FieldOffset(12)]
+        public bool DistanceBased;
+
+        public override readonly int GetHashCode()
+        {
+            return HashCode.Combine(Radius, Samples, Power, DistanceBased);
+        }
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    private struct Global
+    {
+        [FieldOffset(0)]
+        public Camera Camera;
+
+        [FieldOffset(80)]
+        public AO AO;
+
+        [FieldOffset(96)]
+        public int FrameNumber;
+
+        public override readonly int GetHashCode()
+        {
+            return HashCode.Combine(Camera, AO);
+        }
+    }
+
+    private readonly List<Buffer> vertexBuffers = [];
+    private readonly List<Buffer> indexBuffers = [];
+
+    private BottomLevelAS? blas;
+    private TopLevelAS? tlas;
+    private Buffer? materialsBuffer;
+    private Buffer? globalBuffer;
+    private Texture? output;
+    private ResourceLayout? resLayout;
+    private ResourceSet? resSet;
+    private RayTracingPipeline rtPipeline = null!;
+
+    private Global global;
+    private int globalHash;
 
     protected override void OnLoad()
     {
-        Vertex[] vertices =
-        [
-            new(new(0.0f, 0.5f, 0.0f), new(0.0f, 0.0f, 1.0f), new(0.5f, 1.0f)),
-            new(new(0.5f, -0.5f, 0.0f), new(0.0f, 0.0f, 1.0f), new(1.0f, 0.0f)),
-            new(new(-0.5f, -0.5f, 0.0f), new(0.0f, 0.0f, 1.0f), new(0.0f, 0.0f))
-        ];
-
-        uint[] indices = [0, 1, 2];
-
         string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
-
-        BufferDesc vbDesc = new((uint)(vertices.Length * sizeof(Vertex)),
-                                BufferUsage.ShaderResource | BufferUsage.AccelerationStructure,
-                                (uint)sizeof(Vertex));
-
-        vertexBuffer = Context.Factory.CreateBuffer(in vbDesc);
-
-        BufferDesc ibDesc = new((uint)(indices.Length * sizeof(uint)),
-                                BufferUsage.ShaderResource | BufferUsage.AccelerationStructure,
-                                sizeof(uint));
-
-        indexBuffer = Context.Factory.CreateBuffer(in ibDesc);
-
-        fixed (Vertex* pVertices = vertices)
-        {
-            Context.UpdateBuffer(vertexBuffer, (nint)pVertices, (uint)(vertices.Length * sizeof(Vertex)));
-        }
-
-        fixed (uint* pIndices = indices)
-        {
-            Context.UpdateBuffer(indexBuffer, (nint)pIndices, (uint)(indices.Length * sizeof(uint)));
-        }
 
         CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
 
         commandBuffer.Begin();
 
-        BottomLevelASDesc blasDesc = new(new AccelerationStructureTriangles(vertexBuffer)
+        List<AccelerationStructureTriangles> triangles = [];
+
+        Material[] materials = new Material[4];
+
+        for (uint i = 0; i < 4; i++)
         {
-            VertexFormat = PixelFormat.R32G32B32Float,
-            VertexStrideInBytes = (uint)sizeof(Vertex),
-            VertexCount = (uint)vertices.Length,
-            VertexOffsetInBytes = 0,
-            IndexBuffer = indexBuffer,
-            IndexFormat = IndexFormat.UInt32,
-            IndexCount = (uint)indices.Length,
-            IndexOffsetInBytes = 0,
-            Transform = Matrix3X4<float>.Identity
-        });
+            Vertex.CornellBox(i,
+                              out Vertex[] vertices,
+                              out uint[] indices,
+                              out materials[i]);
 
-        bottomLevelAS = commandBuffer.BuildAccelerationStructure(in blasDesc);
+            BufferDesc vertexBufferDesc = new((uint)(vertices.Length * sizeof(Vertex)),
+                                              BufferUsage.ShaderResource | BufferUsage.AccelerationStructure,
+                                              (uint)sizeof(Vertex));
 
-        TopLevelASDesc tlasDesc = new([new(bottomLevelAS)
+            Buffer vertexBuffer = Context.Factory.CreateBuffer(in vertexBufferDesc);
+
+            fixed (void* pVertices = vertices)
+            {
+                Context.UpdateBuffer(vertexBuffer, (nint)pVertices, vertexBufferDesc.SizeInBytes);
+            }
+
+            BufferDesc indexBufferDesc = new((uint)(indices.Length * sizeof(uint)),
+                                             BufferUsage.ShaderResource | BufferUsage.AccelerationStructure,
+                                             sizeof(uint));
+
+            Buffer indexBuffer = Context.Factory.CreateBuffer(in indexBufferDesc);
+
+            fixed (void* pIndices = indices)
+            {
+                Context.UpdateBuffer(indexBuffer, (nint)pIndices, indexBufferDesc.SizeInBytes);
+            }
+
+            vertexBuffers.Add(vertexBuffer);
+            indexBuffers.Add(indexBuffer);
+
+            triangles.Add(new(vertexBuffer)
+            {
+                VertexFormat = PixelFormat.R32G32B32Float,
+                VertexStrideInBytes = (uint)sizeof(Vertex),
+                VertexCount = (uint)vertices.Length,
+                VertexOffsetInBytes = 0,
+                IndexBuffer = indexBuffer,
+                IndexFormat = IndexFormat.UInt32,
+                IndexCount = (uint)indices.Length,
+                IndexOffsetInBytes = 0,
+                Transform = Matrix3X4<float>.Identity
+            });
+        }
+
+        BottomLevelASDesc blasDesc = new([.. triangles]);
+
+        blas = commandBuffer.BuildAccelerationStructure(in blasDesc);
+
+        TopLevelASDesc tlasDesc = new([new(blas)
         {
             Transform = Matrix3X4<float>.Identity,
             InstanceID = 0,
             InstanceMask = 0xFF,
-            InstanceContributionToHitGroupIndex = 0,
-            Options = AccelerationStructureInstanceOptions.None
+            InstanceContributionToHitGroupIndex = 0
         }]);
 
-        topLevelAS = commandBuffer.BuildAccelerationStructure(in tlasDesc);
+        tlas = commandBuffer.BuildAccelerationStructure(in tlasDesc);
 
         commandBuffer.End();
-
         commandBuffer.Commit();
 
-        TextureDesc outputDesc = new(Width, Height, usage: TextureUsage.ShaderResource | TextureUsage.UnorderedAccess);
+        BufferDesc materialsBufferDesc = new((uint)(materials.Length * sizeof(Material)),
+                                             BufferUsage.ShaderResource,
+                                             (uint)sizeof(Material));
+
+        materialsBuffer = Context.Factory.CreateBuffer(in materialsBufferDesc);
+
+        fixed (void* pMaterials = materials)
+        {
+            Context.UpdateBuffer(materialsBuffer, (nint)pMaterials, materialsBufferDesc.SizeInBytes);
+        }
+
+        BufferDesc globalBufferDesc = new((uint)sizeof(Global), BufferUsage.Dynamic | BufferUsage.ConstantBuffer);
+
+        globalBuffer = Context.Factory.CreateBuffer(in globalBufferDesc);
+
+        TextureDesc outputDesc = new(Width,
+                                     Height,
+                                     usage: TextureUsage.ShaderResource | TextureUsage.UnorderedAccess);
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceLayoutDesc rlDesc = new
-        (
-            new(ShaderStages.RayGeneration, ResourceType.AccelerationStructure, 0),
-            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 1),
-            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 2),
-            new(ShaderStages.RayGeneration, ResourceType.TextureReadWrite, 0)
-        );
+        ResourceLayoutDesc resLayoutDesc = new
+        ([
+            new(ShaderStages.RayGeneration | ShaderStages.ClosestHit, ResourceType.AccelerationStructure, 0),
+            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 1, 4),
+            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 5, 4),
+            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 9),
+            new(ShaderStages.RayGeneration | ShaderStages.ClosestHit, ResourceType.ConstantBuffer, 0),
+            new(ShaderStages.RayGeneration, ResourceType.TextureReadWrite, 0),
+        ]);
 
-        resourceLayout = Context.Factory.CreateResourceLayout(in rlDesc);
+        resLayout = Context.Factory.CreateResourceLayout(in resLayoutDesc);
 
-        ResourceSetDesc rsDesc = new(resourceLayout, topLevelAS, vertexBuffer, indexBuffer, output);
+        ResourceSetDesc resSetDesc = new(resLayout,
+        [
+            tlas,
+            .. vertexBuffers,
+            .. indexBuffers,
+            materialsBuffer,
+            globalBuffer,
+            output
+        ]);
 
-        resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
+        resSet = Context.Factory.CreateResourceSet(in resSetDesc);
 
-        using Shader rgShader = Context.Factory.CompileShader(ShaderStages.RayGeneration, hlsl, "RayGenMain");
-        using Shader msShader = Context.Factory.CompileShader(ShaderStages.Miss, hlsl, "MissMain");
-        using Shader chShader = Context.Factory.CompileShader(ShaderStages.ClosestHit, hlsl, "ClosestHitMain");
+        using Shader rgShader = Context.Factory.CompileShader(ShaderStages.RayGeneration, hlsl, "RayGenMain", IncludeHandler);
+        using Shader msShader = Context.Factory.CompileShader(ShaderStages.Miss, hlsl, "MissMain", IncludeHandler);
+        using Shader chShader = Context.Factory.CompileShader(ShaderStages.ClosestHit, hlsl, "ClosestHitMain", IncludeHandler);
+        using Shader msAoShader = Context.Factory.CompileShader(ShaderStages.Miss, hlsl, "MissAO", IncludeHandler);
+        using Shader chAoShader = Context.Factory.CompileShader(ShaderStages.ClosestHit, hlsl, "ClosestHitAO", IncludeHandler);
 
         RayTracingPipelineDesc rtpDesc = new
         (
-            shaders: new(rgShader, [msShader], [chShader]),
-            hitGroups: [new("DefaultHitGroup", closestHit: "ClosestHitMain")],
-            resourceLayouts: [resourceLayout]
+            shaders: new(rgShader, [msShader, msAoShader], [chShader, chAoShader]),
+            hitGroups:
+            [
+                new("DefaultHitGroup", closestHit: "ClosestHitMain"),
+                new("AoHitGroup", closestHit: "ClosestHitAO")
+            ],
+            resourceLayouts: [resLayout]
         );
 
-        rayTracingPipeline = Context.Factory.CreateRayTracingPipeline(in rtpDesc);
+        rtPipeline = Context.Factory.CreateRayTracingPipeline(in rtpDesc);
+
+        CameraController.Transform(Matrix4X4.CreateTranslation(278.000f, 273.000f, -800.000f));
+        CameraController.FarPlane = 2400.000f;
+        CameraController.Speed = 120.000f;
+
+        global = new()
+        {
+            AO = new()
+            {
+                Radius = 8.0f,
+                Samples = 8,
+                Power = 3.0f,
+                DistanceBased = true
+            }
+        };
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)
     {
+        global.Camera = new()
+        {
+            Position = CameraController.Position,
+            Forward = CameraController.Forward,
+            Right = CameraController.Right,
+            Up = CameraController.Up,
+            NearPlane = CameraController.NearPlane,
+            FarPlane = CameraController.FarPlane,
+            Fov = CameraController.Fov.ToRadians()
+        };
+
+        if (ImGui.Begin("AO Settings"))
+        {
+            ImGui.SliderFloat("Radius", ref global.AO.Radius, 0.0f, 32.0f);
+            ImGui.SliderInt("Samples", ref global.AO.Samples, 1, 64);
+            ImGui.SliderFloat("Power", ref global.AO.Power, 0.0f, 10.0f);
+            ImGui.Checkbox("Distance Based", ref global.AO.DistanceBased);
+
+            ImGui.End();
+        }
+
+        global.FrameNumber++;
+
+        int newGlobalHash = global.GetHashCode();
+
+        if (globalHash != newGlobalHash)
+        {
+            global.FrameNumber = 0;
+
+            globalHash = newGlobalHash;
+        }
+
+        fixed (void* globalPtr = &global)
+        {
+            Context.UpdateBuffer(globalBuffer!, (nint)globalPtr, (uint)sizeof(Global));
+        }
+
+        if (output is null)
+        {
+            return;
+        }
+
         ImGui.GetBackgroundDrawList().AddImage(ImGuiController.GetBinding(output), new(0, 0), new(Width, Height));
     }
 
     protected override void OnRender(double deltaTime, double totalTime)
     {
+        if (output is null)
+        {
+            return;
+        }
+
         CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
 
         commandBuffer.Begin();
 
-        commandBuffer.PrepareResources([resourceSet]);
+        commandBuffer.PrepareResources([resSet!]);
 
-        commandBuffer.SetRayTracingPipeline(rayTracingPipeline);
-        commandBuffer.SetResourceSet(0, resourceSet);
+        commandBuffer.SetRayTracingPipeline(rtPipeline);
+        commandBuffer.SetResourceSet(0, resSet!);
 
         commandBuffer.DispatchRays(Width, Height, 1);
 
@@ -145,29 +324,57 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
     protected override void OnSizeChanged(uint width, uint height)
     {
-        resourceSet.Dispose();
-        output.Dispose();
+        if (output is not null)
+        {
+            ImGuiController.RemoveBinding(output);
+        }
 
-        ImGuiController.RemoveBinding(output);
+        resSet?.Dispose();
+        output?.Dispose();
 
-        TextureDesc outputDesc = new(width, height, usage: TextureUsage.ShaderResource | TextureUsage.UnorderedAccess);
+        TextureDesc outputDesc = new(width,
+                                     height,
+                                     usage: TextureUsage.ShaderResource | TextureUsage.UnorderedAccess);
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceSetDesc rsDesc = new(resourceLayout, topLevelAS, vertexBuffer, indexBuffer, output);
+        ResourceSetDesc resSetDesc = new(resLayout!,
+        [
+            tlas!,
+            .. vertexBuffers,
+            .. indexBuffers,
+            materialsBuffer!,
+            globalBuffer!,
+            output
+        ]);
 
-        resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
+        resSet = Context.Factory.CreateResourceSet(in resSetDesc);
     }
 
     protected override void OnDestroy()
     {
-        rayTracingPipeline.Dispose();
-        resourceSet.Dispose();
-        resourceLayout.Dispose();
-        output.Dispose();
-        topLevelAS.Dispose();
-        bottomLevelAS.Dispose();
-        vertexBuffer.Dispose();
-        indexBuffer.Dispose();
+        rtPipeline.Dispose();
+        resSet?.Dispose();
+        resLayout?.Dispose();
+        output?.Dispose();
+        globalBuffer?.Dispose();
+        materialsBuffer?.Dispose();
+        tlas?.Dispose();
+        blas?.Dispose();
+
+        foreach (Buffer vertexBuffer in vertexBuffers)
+        {
+            vertexBuffer.Dispose();
+        }
+
+        foreach (Buffer indexBuffer in indexBuffers)
+        {
+            indexBuffer.Dispose();
+        }
+    }
+
+    private string IncludeHandler(string path)
+    {
+        return File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", path));
     }
 }
