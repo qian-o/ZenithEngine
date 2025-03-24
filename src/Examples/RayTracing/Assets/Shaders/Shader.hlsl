@@ -33,8 +33,6 @@ struct Camera
     float FarPlane;
     
     float Fov;
-    
-    int FrameNumber;
 };
 
 struct AO
@@ -46,6 +44,15 @@ struct AO
     float Power;
     
     bool DistanceBased;
+};
+
+struct Parameters
+{
+    Camera Camera;
+
+    AO AO;
+    
+    int FrameNumber;
 };
 
 struct [raypayload] Payload
@@ -64,8 +71,7 @@ RaytracingAccelerationStructure Scene : register(t0, space0);
 StructuredBuffer<Vertex> VertexBuffers[4] : register(t1, space0);
 StructuredBuffer<uint> IndexBuffers[4] : register(t5, space0);
 StructuredBuffer<Material> Materials : register(t9, space0);
-ConstantBuffer<Camera> Camera : register(b0, space0);
-ConstantBuffer<AO> AO : register(b1, space0);
+ConstantBuffer<Parameters> Parameters : register(b0, space0);
 RWTexture2D<float4> Output : register(u0, space0);
 
 Vertex GetVertex(uint geometryIndex, uint primitiveIndex, float3 barycentrics)
@@ -93,7 +99,7 @@ float TraceRayAO(float3 origin, float3 direction)
     rayDesc.Origin = origin;
     rayDesc.Direction = direction;
     rayDesc.TMin = 0.001;
-    rayDesc.TMax = AO.Radius;
+    rayDesc.TMax = Parameters.AO.Radius;
 
     AOPayload payload;
     TraceRay(Scene, RAY_FLAG_NONE, 0xFF, 1, 0, 1, rayDesc, payload);
@@ -108,7 +114,7 @@ void RayGenMain()
     float2 launchSize = float2(DispatchRaysDimensions().xy);
     float aspectRatio = launchSize.x / launchSize.y;
     
-    float2 xy = (launchID / launchSize * 2.0 - 1.0) * tan(Camera.Fov * 0.5);
+    float2 xy = (launchID / launchSize * 2.0 - 1.0) * tan(Parameters.Camera.Fov * 0.5);
 
     if (aspectRatio > 1.0)
     {
@@ -122,23 +128,23 @@ void RayGenMain()
     xy.y = -xy.y;
     
     RayDesc rayDesc;
-    rayDesc.Origin = Camera.Position;
-    rayDesc.Direction = normalize(Camera.Forward + xy.x * Camera.Right + xy.y * Camera.Up);
-    rayDesc.TMin = Camera.NearPlane;
-    rayDesc.TMax = Camera.FarPlane;
+    rayDesc.Origin = Parameters.Camera.Position;
+    rayDesc.Direction = normalize(Parameters.Camera.Forward + xy.x * Parameters.Camera.Right + xy.y * Parameters.Camera.Up);
+    rayDesc.TMin = Parameters.Camera.NearPlane;
+    rayDesc.TMax = Parameters.Camera.FarPlane;
 
     Payload payload;
     TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
 
     if (payload.Hit)
     {
-        if (Camera.FrameNumber == 0)
+        if (Parameters.FrameNumber == 0)
         {
             Output[launchID] = float4(payload.Color, 1.0);
         }
         else
         {
-            Output[launchID] = lerp(Output[launchID], float4(payload.Color, 1.0), 1.0 / (Camera.FrameNumber + 1));
+            Output[launchID] = lerp(Output[launchID], float4(payload.Color, 1.0), 1.0 / (Parameters.FrameNumber + 1));
         }
     }
     else
@@ -159,7 +165,7 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
     uint2 launchID = DispatchRaysIndex().xy;
     uint2 launchSize = DispatchRaysDimensions().xy;
     
-    uint seed = tea(launchSize.x * launchID.y + launchID.x, Camera.FrameNumber);
+    uint seed = tea(launchSize.x * launchID.y + launchID.x, Parameters.FrameNumber);
 
     uint geometryIndex = GeometryIndex();
     uint primitiveIndex = PrimitiveIndex();
@@ -189,7 +195,7 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
         float3 x, y;
         ComputeDefaultBasis(vertex.Normal, x, y);
 
-        for (int i = 0; i < AO.Samples; i++)
+        for (int i = 0; i < Parameters.AO.Samples; i++)
         {
             float r1 = rnd(seed);
             float r2 = rnd(seed);
@@ -202,7 +208,7 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
             ao += TraceRayAO(origin, direction);
         }
 
-        ao = pow(1.0 - (ao / AO.Samples), AO.Power);
+        ao = pow(1.0 - (ao / Parameters.AO.Samples), Parameters.AO.Power);
 
         payload.Color *= ao;
     }
@@ -217,9 +223,9 @@ void MissAO(inout AOPayload payload)
 [shader("closesthit")]
 void ClosestHitAO(inout AOPayload payload, in BuiltInTriangleIntersectionAttributes attrib)
 {
-    if (AO.DistanceBased)
+    if (Parameters.AO.DistanceBased)
     {
-        payload.Value = 1.0 - RayTCurrent() / AO.Radius;
+        payload.Value = 1.0 - RayTCurrent() / Parameters.AO.Radius;
     }
     else
     {
