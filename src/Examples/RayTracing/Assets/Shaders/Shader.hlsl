@@ -46,7 +46,7 @@ struct AO
     bool DistanceBased;
 };
 
-struct Parameters
+struct Global
 {
     Camera Camera;
 
@@ -71,7 +71,7 @@ RaytracingAccelerationStructure Scene : register(t0, space0);
 StructuredBuffer<Vertex> VertexBuffers[4] : register(t1, space0);
 StructuredBuffer<uint> IndexBuffers[4] : register(t5, space0);
 StructuredBuffer<Material> Materials : register(t9, space0);
-ConstantBuffer<Parameters> Parameters : register(b0, space0);
+ConstantBuffer<Global> Global : register(b0, space0);
 RWTexture2D<float4> Output : register(u0, space0);
 
 Vertex GetVertex(uint geometryIndex, uint primitiveIndex, float3 barycentrics)
@@ -99,7 +99,7 @@ float TraceRayAO(float3 origin, float3 direction)
     rayDesc.Origin = origin;
     rayDesc.Direction = direction;
     rayDesc.TMin = 0.001;
-    rayDesc.TMax = Parameters.AO.Radius;
+    rayDesc.TMax = Global.AO.Radius;
 
     AOPayload payload;
     TraceRay(Scene, RAY_FLAG_NONE, 0xFF, 1, 0, 1, rayDesc, payload);
@@ -114,7 +114,7 @@ void RayGenMain()
     float2 launchSize = float2(DispatchRaysDimensions().xy);
     float aspectRatio = launchSize.x / launchSize.y;
     
-    float2 xy = (launchID / launchSize * 2.0 - 1.0) * tan(Parameters.Camera.Fov * 0.5);
+    float2 xy = (launchID / launchSize * 2.0 - 1.0) * tan(Global.Camera.Fov * 0.5);
 
     if (aspectRatio > 1.0)
     {
@@ -128,23 +128,23 @@ void RayGenMain()
     xy.y = -xy.y;
     
     RayDesc rayDesc;
-    rayDesc.Origin = Parameters.Camera.Position;
-    rayDesc.Direction = normalize(Parameters.Camera.Forward + xy.x * Parameters.Camera.Right + xy.y * Parameters.Camera.Up);
-    rayDesc.TMin = Parameters.Camera.NearPlane;
-    rayDesc.TMax = Parameters.Camera.FarPlane;
+    rayDesc.Origin = Global.Camera.Position;
+    rayDesc.Direction = normalize(Global.Camera.Forward + xy.x * Global.Camera.Right + xy.y * Global.Camera.Up);
+    rayDesc.TMin = Global.Camera.NearPlane;
+    rayDesc.TMax = Global.Camera.FarPlane;
 
     Payload payload;
     TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
 
     if (payload.Hit)
     {
-        if (Parameters.FrameNumber == 0)
+        if (Global.FrameNumber == 0)
         {
             Output[launchID] = float4(payload.Color, 1.0);
         }
         else
         {
-            Output[launchID] = lerp(Output[launchID], float4(payload.Color, 1.0), 1.0 / (Parameters.FrameNumber + 1));
+            Output[launchID] = lerp(Output[launchID], float4(payload.Color, 1.0), 1.0 / (Global.FrameNumber + 1));
         }
     }
     else
@@ -165,7 +165,7 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
     uint2 launchID = DispatchRaysIndex().xy;
     uint2 launchSize = DispatchRaysDimensions().xy;
     
-    uint seed = tea(launchSize.x * launchID.y + launchID.x, Parameters.FrameNumber);
+    uint seed = tea(launchSize.x * launchID.y + launchID.x, Global.FrameNumber);
 
     uint geometryIndex = GeometryIndex();
     uint primitiveIndex = PrimitiveIndex();
@@ -195,7 +195,7 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
         float3 x, y;
         ComputeDefaultBasis(vertex.Normal, x, y);
 
-        for (int i = 0; i < Parameters.AO.Samples; i++)
+        for (int i = 0; i < Global.AO.Samples; i++)
         {
             float r1 = rnd(seed);
             float r2 = rnd(seed);
@@ -208,7 +208,7 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
             ao += TraceRayAO(origin, direction);
         }
 
-        ao = pow(1.0 - (ao / Parameters.AO.Samples), Parameters.AO.Power);
+        ao = pow(1.0 - (ao / Global.AO.Samples), Global.AO.Power);
 
         payload.Color *= ao;
     }
@@ -223,9 +223,9 @@ void MissAO(inout AOPayload payload)
 [shader("closesthit")]
 void ClosestHitAO(inout AOPayload payload, in BuiltInTriangleIntersectionAttributes attrib)
 {
-    if (Parameters.AO.DistanceBased)
+    if (Global.AO.DistanceBased)
     {
-        payload.Value = 1.0 - RayTCurrent() / Parameters.AO.Radius;
+        payload.Value = 1.0 - RayTCurrent() / Global.AO.Radius;
     }
     else
     {

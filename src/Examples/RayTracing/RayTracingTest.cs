@@ -66,7 +66,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    private struct Parameters
+    private struct Global
     {
         [FieldOffset(0)]
         public Camera Camera;
@@ -89,14 +89,14 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
     private BottomLevelAS? blas;
     private TopLevelAS? tlas;
     private Buffer? materialsBuffer;
-    private Buffer? parametersBuffer;
+    private Buffer? globalBuffer;
     private Texture? output;
     private ResourceLayout? resLayout;
     private ResourceSet? resSet;
     private RayTracingPipeline rtPipeline = null!;
 
-    private Parameters parameters;
-    private int parametersHash;
+    private Global global;
+    private int globalHash;
 
     protected override void OnLoad()
     {
@@ -184,9 +184,9 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
             Context.UpdateBuffer(materialsBuffer, (nint)pMaterials, materialsBufferDesc.SizeInBytes);
         }
 
-        BufferDesc parametersBufferDesc = new((uint)sizeof(Parameters), BufferUsage.Dynamic | BufferUsage.ConstantBuffer);
+        BufferDesc globalBufferDesc = new((uint)sizeof(Global), BufferUsage.Dynamic | BufferUsage.ConstantBuffer);
 
-        parametersBuffer = Context.Factory.CreateBuffer(in parametersBufferDesc);
+        globalBuffer = Context.Factory.CreateBuffer(in globalBufferDesc);
 
         TextureDesc outputDesc = new(Width,
                                      Height,
@@ -212,7 +212,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
             .. vertexBuffers,
             .. indexBuffers,
             materialsBuffer,
-            parametersBuffer,
+            globalBuffer,
             output
         ]);
 
@@ -241,7 +241,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         CameraController.FarPlane = 2400.000f;
         CameraController.Speed = 120.000f;
 
-        parameters = new()
+        global = new()
         {
             AO = new()
             {
@@ -255,7 +255,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
     protected override void OnUpdate(double deltaTime, double totalTime)
     {
-        parameters.Camera = new()
+        global.Camera = new()
         {
             Position = CameraController.Position,
             Forward = CameraController.Forward,
@@ -268,28 +268,28 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
 
         if (ImGui.Begin("AO Settings"))
         {
-            ImGui.SliderFloat("Radius", ref parameters.AO.Radius, 0.0f, 32.0f);
-            ImGui.SliderInt("Samples", ref parameters.AO.Samples, 1, 64);
-            ImGui.SliderFloat("Power", ref parameters.AO.Power, 0.0f, 10.0f);
-            ImGui.Checkbox("Distance Based", ref parameters.AO.DistanceBased);
+            ImGui.SliderFloat("Radius", ref global.AO.Radius, 0.0f, 32.0f);
+            ImGui.SliderInt("Samples", ref global.AO.Samples, 1, 64);
+            ImGui.SliderFloat("Power", ref global.AO.Power, 0.0f, 10.0f);
+            ImGui.Checkbox("Distance Based", ref global.AO.DistanceBased);
 
             ImGui.End();
         }
 
-        parameters.FrameNumber++;
+        global.FrameNumber++;
 
-        int newParametersHash = parameters.GetHashCode();
+        int newGlobalHash = global.GetHashCode();
 
-        if (parametersHash != newParametersHash)
+        if (globalHash != newGlobalHash)
         {
-            parameters.FrameNumber = 0;
+            global.FrameNumber = 0;
 
-            parametersHash = newParametersHash;
+            globalHash = newGlobalHash;
         }
 
-        fixed (void* parametersPtr = &parameters)
+        fixed (void* globalPtr = &global)
         {
-            Context.UpdateBuffer(parametersBuffer!, (nint)parametersPtr, (uint)sizeof(Parameters));
+            Context.UpdateBuffer(globalBuffer!, (nint)globalPtr, (uint)sizeof(Global));
         }
 
         if (output is null)
@@ -344,7 +344,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
             .. vertexBuffers,
             .. indexBuffers,
             materialsBuffer!,
-            parametersBuffer!,
+            globalBuffer!,
             output
         ]);
 
@@ -357,7 +357,7 @@ internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing T
         resSet?.Dispose();
         resLayout?.Dispose();
         output?.Dispose();
-        parametersBuffer?.Dispose();
+        globalBuffer?.Dispose();
         materialsBuffer?.Dispose();
         tlas?.Dispose();
         blas?.Dispose();
