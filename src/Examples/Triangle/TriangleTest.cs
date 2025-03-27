@@ -9,7 +9,7 @@ using Buffer = ZenithEngine.Common.Graphics.Buffer;
 
 namespace Triangle;
 
-internal unsafe class TriangleTest(Backend backend) : VisualTest("Triangle Test", backend)
+internal unsafe class TriangleTest() : VisualTest("Triangle Test")
 {
     [StructLayout(LayoutKind.Explicit)]
     private struct Constants

@@ -1,11 +1,3 @@
-﻿using ZenithEngine.Common.Enums;
+﻿using ComputeShader;
 
-namespace ComputeShader;
-
-internal static class Program
-{
-    private static void Main(string[] _)
-    {
-        new ComputeShaderTest(Backend.DirectX12).Run();
-    }
-}
+new ComputeShaderTest().Run();

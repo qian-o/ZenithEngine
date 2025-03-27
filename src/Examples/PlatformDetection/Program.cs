@@ -1,36 +1,28 @@
 ﻿using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
-namespace PlatformDetection;
-
-internal static class Program
+foreach (Backend backend in Enum.GetValues<Backend>())
 {
-    private static void Main(string[] _)
+    DetectPlatform(backend);
+}
+
+static void DetectPlatform(Backend backend)
+{
+    Console.WriteLine($"Backend: {backend}");
+
+    try
     {
-        foreach (Backend backend in Enum.GetValues<Backend>())
-        {
-            DetectPlatform(backend);
-        }
+        using GraphicsContext context = GraphicsContext.Create(backend);
+        context.CreateDevice();
+
+        Console.WriteLine($"    Device: {context.Capabilities.DeviceName}");
+        Console.WriteLine($"    Ray Query: {context.Capabilities.IsRayQuerySupported}");
+        Console.WriteLine($"    Ray Tracing: {context.Capabilities.IsRayTracingSupported}");
+        Console.WriteLine();
     }
-
-    private static void DetectPlatform(Backend backend)
+    catch (Exception)
     {
-        Console.WriteLine($"Backend: {backend}");
-
-        try
-        {
-            using GraphicsContext context = GraphicsContext.Create(backend);
-            context.CreateDevice();
-
-            Console.WriteLine($"    Device: {context.Capabilities.DeviceName}");
-            Console.WriteLine($"    Ray Query: {context.Capabilities.IsRayQuerySupported}");
-            Console.WriteLine($"    Ray Tracing: {context.Capabilities.IsRayTracingSupported}");
-            Console.WriteLine();
-        }
-        catch (Exception)
-        {
-            Console.WriteLine("    Failed to create device.");
-            Console.WriteLine();
-        }
+        Console.WriteLine("    Failed to create device.");
+        Console.WriteLine();
     }
 }

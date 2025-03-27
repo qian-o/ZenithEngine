@@ -1,11 +1,3 @@
-﻿using ZenithEngine.Common.Enums;
+﻿using RayTracing;
 
-namespace RayTracing;
-
-internal static class Program
-{
-    private static void Main(string[] _)
-    {
-        new RayTracingTest(Backend.Vulkan).Run();
-    }
-}
+new RayTracingTest().Run();

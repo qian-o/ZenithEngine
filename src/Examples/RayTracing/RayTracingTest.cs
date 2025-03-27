@@ -12,7 +12,7 @@ using ResourceSet = ZenithEngine.Common.Graphics.ResourceSet;
 
 namespace RayTracing;
 
-internal unsafe class RayTracingTest(Backend backend) : VisualTest("RayTracing Test", backend)
+internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 {
     [StructLayout(LayoutKind.Explicit)]
     private struct Camera

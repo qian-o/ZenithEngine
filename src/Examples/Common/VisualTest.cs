@@ -10,8 +10,10 @@ namespace Common;
 
 public abstract unsafe class VisualTest
 {
-    protected VisualTest(string name, Backend backend)
+    protected VisualTest(string name)
     {
+        const Backend backend = Backend.Vulkan;
+
         Window = WindowController.CreateWindow(name, 1270, 720);
 
         CameraController = new(Window);
