@@ -93,8 +93,7 @@ internal unsafe class VKDebug : GraphicsResource
                                   | DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
                 MessageType = DebugUtilsMessageTypeFlagsEXT.GeneralBitExt
                               | DebugUtilsMessageTypeFlagsEXT.ValidationBitExt
-                              | DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt
-                              | DebugUtilsMessageTypeFlagsEXT.DeviceAddressBindingBitExt,
+                              | DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt,
                 PfnUserCallback = pfnUtilsCallback
             };
 
