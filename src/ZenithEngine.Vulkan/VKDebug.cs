@@ -87,7 +87,9 @@ internal unsafe class VKDebug : GraphicsResource
             DebugUtilsMessengerCreateInfoEXT createInfo = new()
             {
                 SType = StructureType.DebugUtilsMessengerCreateInfoExt,
-                MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.WarningBitExt
+                MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt
+                                  | DebugUtilsMessageSeverityFlagsEXT.InfoBitExt
+                                  | DebugUtilsMessageSeverityFlagsEXT.WarningBitExt
                                   | DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
                 MessageType = DebugUtilsMessageTypeFlagsEXT.GeneralBitExt
                               | DebugUtilsMessageTypeFlagsEXT.ValidationBitExt
@@ -108,9 +110,11 @@ internal unsafe class VKDebug : GraphicsResource
             DebugReportCallbackCreateInfoEXT createInfo = new()
             {
                 SType = StructureType.DebugReportCallbackCreateInfoExt,
-                Flags = DebugReportFlagsEXT.WarningBitExt
+                Flags = DebugReportFlagsEXT.InformationBitExt
+                        | DebugReportFlagsEXT.WarningBitExt
                         | DebugReportFlagsEXT.PerformanceWarningBitExt
-                        | DebugReportFlagsEXT.ErrorBitExt,
+                        | DebugReportFlagsEXT.ErrorBitExt
+                        | DebugReportFlagsEXT.DebugBitExt,
                 PfnCallback = pfnReportCallback
             };
 
@@ -208,6 +212,8 @@ internal unsafe class VKDebug : GraphicsResource
 
         PrintMessage(stringBuilder.ToString(), messageSeverity switch
         {
+            DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt => ConsoleColor.DarkGray,
+            DebugUtilsMessageSeverityFlagsEXT.InfoBitExt => ConsoleColor.Blue,
             DebugUtilsMessageSeverityFlagsEXT.WarningBitExt => ConsoleColor.Yellow,
             DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt => ConsoleColor.Red,
             _ => Console.ForegroundColor
@@ -249,9 +255,11 @@ internal unsafe class VKDebug : GraphicsResource
 
         PrintMessage(stringBuilder.ToString(), (DebugReportFlagsEXT)flags switch
         {
-            DebugReportFlagsEXT.WarningBitExt or
-            DebugReportFlagsEXT.PerformanceWarningBitExt => ConsoleColor.Yellow,
+            DebugReportFlagsEXT.InformationBitExt => ConsoleColor.Blue,
+            DebugReportFlagsEXT.WarningBitExt => ConsoleColor.Yellow,
+            DebugReportFlagsEXT.PerformanceWarningBitExt => ConsoleColor.DarkYellow,
             DebugReportFlagsEXT.ErrorBitExt => ConsoleColor.Red,
+            DebugReportFlagsEXT.DebugBitExt => ConsoleColor.DarkGray,
             _ => Console.ForegroundColor
         });
 
