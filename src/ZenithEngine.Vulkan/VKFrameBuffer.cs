@@ -251,7 +251,7 @@ internal unsafe class VKFrameBuffer : FrameBuffer
             SType = StructureType.ImageViewCreateInfo,
             Image = texture.Image,
             ViewType = ImageViewType.Type2D,
-            Format = VKFormats.GetPixelFormat(texture.Desc.Format),
+            Format = VKFormats.GetFormat(texture.Desc.Format),
             SubresourceRange = new()
             {
                 AspectMask = VKFormats.GetImageAspectFlags(texture.Desc.Usage),

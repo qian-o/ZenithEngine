@@ -61,7 +61,7 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
                     Triangles = new()
                     {
                         SType = StructureType.AccelerationStructureGeometryTrianglesDataKhr,
-                        VertexFormat = VKFormats.GetPixelFormat(triangles.VertexFormat),
+                        VertexFormat = VKFormats.GetFormat(triangles.VertexFormat),
                         VertexData = new()
                         {
                             DeviceAddress = triangles.VertexBuffer.VK().Address + triangles.VertexOffsetInBytes

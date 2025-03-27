@@ -87,7 +87,7 @@ internal unsafe class DXSwapChain : SwapChain
         {
             Width = size.X,
             Height = size.Y,
-            Format = DXFormats.GetFormat(Desc.ColorTargetFormat),
+            Format = DXFormats.GetSwapChainFormat(Desc.ColorTargetFormat),
             SampleDesc = new(1, 0),
             BufferUsage = DXGI.UsageRenderTargetOutput,
             BufferCount = BufferCount,

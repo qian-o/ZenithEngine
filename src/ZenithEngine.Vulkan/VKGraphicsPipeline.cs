@@ -252,7 +252,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
         // Outputs
         {
             uint colorAttachmentCount = (uint)desc.Outputs.ColorAttachments.Length;
-            Format* colorAttachmentFormats = Allocator.Alloc([.. desc.Outputs.ColorAttachments.Select(VKFormats.GetPixelFormat)]);
+            Format* colorAttachmentFormats = Allocator.Alloc([.. desc.Outputs.ColorAttachments.Select(VKFormats.GetFormat)]);
 
             PipelineViewportStateCreateInfo viewportState = new()
             {
@@ -280,7 +280,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
 
             if (desc.Outputs.DepthStencilAttachment.HasValue)
             {
-                Format depthStencilAttachmentFormat = VKFormats.GetPixelFormat(desc.Outputs.DepthStencilAttachment.Value);
+                Format depthStencilAttachmentFormat = VKFormats.GetFormat(desc.Outputs.DepthStencilAttachment.Value);
 
                 renderingCreateInfo.DepthAttachmentFormat = depthStencilAttachmentFormat;
                 renderingCreateInfo.StencilAttachmentFormat = depthStencilAttachmentFormat;

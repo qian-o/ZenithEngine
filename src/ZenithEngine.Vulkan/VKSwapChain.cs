@@ -209,12 +209,6 @@ internal unsafe partial class VKSwapChain : SwapChain
                                                            &formatCount,
                                                            null).ThrowIfError();
 
-        SurfaceFormatKHR[] formats = new SurfaceFormatKHR[formatCount];
-        Context.KhrSurface.GetPhysicalDeviceSurfaceFormats(Context.PhysicalDevice,
-                                                           Surface,
-                                                           &formatCount,
-                                                           out formats[0]).ThrowIfError();
-
         uint modeCount;
         Context.KhrSurface.GetPhysicalDeviceSurfacePresentModes(Context.PhysicalDevice,
                                                                 Surface,
@@ -244,8 +238,8 @@ internal unsafe partial class VKSwapChain : SwapChain
             SType = StructureType.SwapchainCreateInfoKhr,
             Surface = Surface,
             MinImageCount = desiredImages,
-            ImageFormat = ChooseSwapSurfaceFormat(formats).Format,
-            ImageColorSpace = ChooseSwapSurfaceFormat(formats).ColorSpace,
+            ImageFormat = VKFormats.GetSwapChainFormat(Desc.ColorTargetFormat),
+            ImageColorSpace = ColorSpaceKHR.SpaceSrgbNonlinearKhr,
             ImageExtent = ChooseSwapExtent(capabilities),
             ImageArrayLayers = 1,
             ImageUsage = ImageUsageFlags.ColorAttachmentBit,
@@ -262,8 +256,7 @@ internal unsafe partial class VKSwapChain : SwapChain
                                               out Swapchain).ThrowIfError();
 
         swapChainFrameBuffer.CreateFrameBuffers(createInfo.ImageExtent.Width,
-                                                createInfo.ImageExtent.Height,
-                                                createInfo.ImageFormat);
+                                                createInfo.ImageExtent.Height);
     }
 
     private void AcquireNextImage()
@@ -298,21 +291,6 @@ internal unsafe partial class VKSwapChain : SwapChain
         swapChainFrameBuffer.DestroyFrameBuffers();
 
         Context.KhrSwapchain!.DestroySwapchain(Context.Device, Swapchain, null);
-    }
-
-    private SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] surfaceFormats)
-    {
-        Format desiredFormat = VKFormats.GetPixelFormat(Desc.ColorTargetFormat);
-
-        foreach (SurfaceFormatKHR availableFormat in surfaceFormats)
-        {
-            if (availableFormat.Format == desiredFormat && availableFormat.ColorSpace is ColorSpaceKHR.SpaceSrgbNonlinearKhr)
-            {
-                return availableFormat;
-            }
-        }
-
-        return surfaceFormats[0];
     }
 
     private PresentModeKHR ChooseSwapPresentMode(PresentModeKHR[] presentModes)
