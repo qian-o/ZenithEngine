@@ -30,19 +30,17 @@ internal unsafe class IncludeHandler(Func<string, string>? includeHandler) : Com
         {
             string shader = self.Handler.Invoke(Utils.PtrToStringUni(pFileName));
 
-            if (string.IsNullOrEmpty(shader))
+            if (!string.IsNullOrEmpty(shader))
             {
-                throw new ZenithEngineException($"Include file '{fileName}' contains no data.");
+                byte[] source = Encoding.UTF8.GetBytes(shader);
+
+                DxcCompiler.DxcUtils.CreateBlob(in source[0],
+                                                (uint)source.Length,
+                                                DXC.CPUtf8,
+                                                (IDxcBlobEncoding**)&blob);
+
+                self.IncludeCache.Add(fileName, blob);
             }
-
-            byte[] source = Encoding.UTF8.GetBytes(shader);
-
-            DxcCompiler.DxcUtils.CreateBlob(in source[0],
-                                            (uint)source.Length,
-                                            DXC.CPUtf8,
-                                            (IDxcBlobEncoding**)&blob);
-
-            self.IncludeCache.Add(fileName, blob);
         }
 
         *includeSourceBlob = blob.QueryInterface<IDxcBlob>();

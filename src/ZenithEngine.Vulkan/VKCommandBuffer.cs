@@ -806,11 +806,6 @@ internal unsafe class VKCommandBuffer : CommandBuffer
 
     private void ValidatePipeline<T>(out T pipeline) where T : Pipeline
     {
-        if (activePipeline is null)
-        {
-            throw new ZenithEngineException("The pipeline is not bound.");
-        }
-
         if (activePipeline is not T castedPipeline)
         {
             throw new ZenithEngineException(ExceptionHelpers.NotSupported(activePipeline));
