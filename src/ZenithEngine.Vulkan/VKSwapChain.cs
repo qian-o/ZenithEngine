@@ -303,14 +303,15 @@ internal unsafe partial class VKSwapChain : SwapChain
     {
         Format desiredFormat = VKFormats.GetSwapChainFormat(Desc.ColorTargetFormat);
 
-        formats = [.. formats.Where(item => item.Format == desiredFormat)];
+        formats = [.. formats.Where(item => item.Format == desiredFormat)
+                             .OrderBy(static item => item.ColorSpace)];
 
         if (formats.Length is 0)
         {
             throw new ZenithEngineException("Failed to find suitable surface format.");
         }
 
-        return formats.OrderBy(static item => item.ColorSpace).First();
+        return formats[0];
     }
 
     private PresentModeKHR ChooseSwapPresentMode(PresentModeKHR[] modes)
