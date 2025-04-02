@@ -1,5 +1,4 @@
-﻿using Silk.NET.Vulkan;
-using ZenithEngine.Common.Descriptions;
+﻿using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
@@ -16,7 +15,7 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    public void CreateFrameBuffers(uint width, uint height, Format imageFormat)
+    public void CreateFrameBuffers(uint width, uint height)
     {
         bool hasDepthStencilAttachment = swapChain.Desc.DepthStencilTargetFormat is not null;
 
@@ -48,7 +47,7 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
         {
             TextureDesc desc = new(width,
                                    height,
-                                   format: VKFormats.GetPixelFormat(imageFormat),
+                                   format: swapChain.Desc.ColorTargetFormat,
                                    usage: TextureUsage.RenderTarget);
 
             colorTargets[i] = new VKTexture(Context, in desc, images[i]);

@@ -21,7 +21,7 @@ internal unsafe class VKTexture : Texture
         {
             SType = StructureType.ImageCreateInfo,
             ImageType = VKFormats.GetImageType(desc.Type),
-            Format = VKFormats.GetPixelFormat(desc.Format),
+            Format = VKFormats.GetFormat(desc.Format),
             Extent = new()
             {
                 Width = desc.Width,
@@ -206,7 +206,7 @@ internal unsafe class VKTexture : Texture
             SType = StructureType.ImageViewCreateInfo,
             Image = Image,
             ViewType = VKFormats.GetImageViewType(Desc.Type),
-            Format = VKFormats.GetPixelFormat(Desc.Format),
+            Format = VKFormats.GetFormat(Desc.Format),
             SubresourceRange = new()
             {
                 AspectMask = VKFormats.GetImageAspectFlags(Desc.Usage),

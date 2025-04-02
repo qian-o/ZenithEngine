@@ -10,7 +10,7 @@ using Buffer = ZenithEngine.Common.Graphics.Buffer;
 
 namespace ComputeShader;
 
-internal unsafe class ComputeShaderTest(Backend backend) : VisualTest("Compute Shader Test", backend)
+internal unsafe class ComputeShaderTest() : VisualTest("Compute Shader Test")
 {
     [StructLayout(LayoutKind.Explicit)]
     private struct Constants

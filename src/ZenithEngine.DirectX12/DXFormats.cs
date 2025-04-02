@@ -104,6 +104,22 @@ internal static class DXFormats
         };
     }
 
+    public static Format GetSwapChainFormat(PixelFormat format)
+    {
+        return format switch
+        {
+            PixelFormat.R8G8B8A8UNorm or
+            PixelFormat.R8G8B8A8UNormSRgb => Format.FormatR8G8B8A8Unorm,
+
+            PixelFormat.R16G16B16A16Float => Format.FormatR16G16B16A16Float,
+
+            PixelFormat.B8G8R8A8UNorm or
+            PixelFormat.B8G8R8A8UNormSRgb => Format.FormatB8G8R8A8Unorm,
+
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(format))
+        };
+    }
+
     public static SampleDesc GetSampleDesc(TextureSampleCount count)
     {
         return count switch

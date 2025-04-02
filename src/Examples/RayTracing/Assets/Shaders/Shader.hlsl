@@ -72,6 +72,8 @@ StructuredBuffer<Vertex> VertexBuffers[4] : register(t1, space0);
 StructuredBuffer<uint> IndexBuffers[4] : register(t5, space0);
 StructuredBuffer<Material> Materials : register(t9, space0);
 ConstantBuffer<Global> Global : register(b0, space0);
+
+[[vk::image_format("rgba8")]]
 RWTexture2D<float4> Output : register(u0, space0);
 
 Vertex GetVertex(uint geometryIndex, uint primitiveIndex, float3 barycentrics)
