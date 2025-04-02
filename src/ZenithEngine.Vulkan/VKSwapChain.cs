@@ -203,6 +203,18 @@ internal unsafe partial class VKSwapChain : SwapChain
                                                                  Surface,
                                                                  &capabilities).ThrowIfError();
 
+        uint formatCount;
+        Context.KhrSurface.GetPhysicalDeviceSurfaceFormats(Context.PhysicalDevice,
+                                                           Surface,
+                                                           &formatCount,
+                                                           null).ThrowIfError();
+
+        SurfaceFormatKHR[] formats = new SurfaceFormatKHR[formatCount];
+        Context.KhrSurface.GetPhysicalDeviceSurfaceFormats(Context.PhysicalDevice,
+                                                           Surface,
+                                                           &formatCount,
+                                                           out formats[0]).ThrowIfError();
+
         uint modeCount;
         Context.KhrSurface.GetPhysicalDeviceSurfacePresentModes(Context.PhysicalDevice,
                                                                 Surface,
@@ -232,8 +244,8 @@ internal unsafe partial class VKSwapChain : SwapChain
             SType = StructureType.SwapchainCreateInfoKhr,
             Surface = Surface,
             MinImageCount = desiredImages,
-            ImageFormat = VKFormats.GetSwapChainFormat(Desc.ColorTargetFormat),
-            ImageColorSpace = ColorSpaceKHR.SpaceSrgbNonlinearKhr,
+            ImageFormat = ChooseSwapSurfaceFormat(formats).Format,
+            ImageColorSpace = ChooseSwapSurfaceFormat(formats).ColorSpace,
             ImageExtent = ChooseSwapExtent(capabilities),
             ImageArrayLayers = 1,
             ImageUsage = ImageUsageFlags.ColorAttachmentBit,
@@ -287,17 +299,32 @@ internal unsafe partial class VKSwapChain : SwapChain
         Context.KhrSwapchain!.DestroySwapchain(Context.Device, Swapchain, null);
     }
 
-    private PresentModeKHR ChooseSwapPresentMode(PresentModeKHR[] presentModes)
+    private SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] formats)
     {
-        if (Desc.VerticalSync && presentModes.Contains(PresentModeKHR.FifoRelaxedKhr))
+        Format desiredFormat = VKFormats.GetSwapChainFormat(Desc.ColorTargetFormat);
+
+        foreach (SurfaceFormatKHR format in formats)
+        {
+            if (format.Format == desiredFormat)
+            {
+                return format;
+            }
+        }
+
+        throw new ZenithEngineException("Failed to find suitable surface format.");
+    }
+
+    private PresentModeKHR ChooseSwapPresentMode(PresentModeKHR[] modes)
+    {
+        if (Desc.VerticalSync && modes.Contains(PresentModeKHR.FifoRelaxedKhr))
         {
             return PresentModeKHR.FifoRelaxedKhr;
         }
-        else if (presentModes.Contains(PresentModeKHR.MailboxKhr))
+        else if (modes.Contains(PresentModeKHR.MailboxKhr))
         {
             return PresentModeKHR.MailboxKhr;
         }
-        else if (presentModes.Contains(PresentModeKHR.ImmediateKhr))
+        else if (modes.Contains(PresentModeKHR.ImmediateKhr))
         {
             return PresentModeKHR.ImmediateKhr;
         }
