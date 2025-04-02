@@ -35,7 +35,7 @@ public abstract unsafe class VisualTest
         {
             Window.Center();
 
-            SwapChainDesc swapChainDesc = new(Window.Surface);
+            SwapChainDesc swapChainDesc = new(Window.Surface, PixelFormat.B8G8R8A8UNorm);
 
             SwapChain = Context.Factory.CreateSwapChain(in swapChainDesc);
 
