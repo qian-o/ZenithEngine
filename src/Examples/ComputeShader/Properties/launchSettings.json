@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ComputeShader": {
+      "commandName": "Project"
+    },
+    "WSL": {
+      "commandName": "WSL2"
+    }
+  }
+}

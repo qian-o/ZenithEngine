@@ -203,12 +203,6 @@ internal unsafe partial class VKSwapChain : SwapChain
                                                                  Surface,
                                                                  &capabilities).ThrowIfError();
 
-        uint formatCount;
-        Context.KhrSurface.GetPhysicalDeviceSurfaceFormats(Context.PhysicalDevice,
-                                                           Surface,
-                                                           &formatCount,
-                                                           null).ThrowIfError();
-
         uint modeCount;
         Context.KhrSurface.GetPhysicalDeviceSurfacePresentModes(Context.PhysicalDevice,
                                                                 Surface,
