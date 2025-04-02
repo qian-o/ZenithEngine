@@ -310,15 +310,7 @@ internal unsafe partial class VKSwapChain : SwapChain
             throw new ZenithEngineException("Failed to find suitable surface format.");
         }
 
-        foreach (SurfaceFormatKHR format in formats)
-        {
-            if (format.ColorSpace is ColorSpaceKHR.SpaceSrgbNonlinearKhr)
-            {
-                return format;
-            }
-        }
-
-        return formats[0];
+        return formats.OrderBy(static item => item.ColorSpace).First();
     }
 
     private PresentModeKHR ChooseSwapPresentMode(PresentModeKHR[] modes)
