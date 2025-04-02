@@ -301,10 +301,9 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     private SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] formats)
     {
-        Format desiredFormat = VKFormats.GetSwapChainFormat(Desc.ColorTargetFormat);
+        Format format = VKFormats.GetSwapChainFormat(Desc.ColorTargetFormat);
 
-        formats = [.. formats.Where(item => item.Format == desiredFormat)
-                             .OrderBy(static item => item.ColorSpace)];
+        formats = [.. formats.Where(item => item.Format == format).OrderBy(static item => item.ColorSpace)];
 
         if (formats.Length is 0)
         {
