@@ -10,7 +10,7 @@ namespace ZenithEngine.ShaderCompiler;
 [Guid("7f61fc7d-950d-467f-b3e3-3c02fb49187c")]
 internal unsafe class IncludeHandler(Func<string, string>? includeHandler) : ComObject(1)
 {
-    public Func<string, string> Handler { get; } = includeHandler ?? (static (_) => string.Empty);
+    public Func<string, string> Handler { get; } = includeHandler ?? (static _ => string.Empty);
 
     public Dictionary<string, ComPtr<IDxcBlobEncoding>> IncludeCache { get; } = [];
 
