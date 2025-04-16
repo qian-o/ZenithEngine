@@ -139,10 +139,10 @@ internal unsafe class DXGraphicsContext : GraphicsContext
                                       out DispatchSignature).ThrowIfError();
 
         Debug = useDebugLayer ? new(this) : null;
-        RtvAllocator = new(this, DescriptorHeapType.Rtv, 128);
-        DsvAllocator = new(this, DescriptorHeapType.Dsv, 128);
-        CbvSrvUavAllocator = new(this, DescriptorHeapType.CbvSrvUav, 4096);
-        SamplerAllocator = new(this, DescriptorHeapType.Sampler, 128);
+        RtvAllocator = new(this, DescriptorHeapType.Rtv, 3200);
+        DsvAllocator = new(this, DescriptorHeapType.Dsv, 3200);
+        CbvSrvUavAllocator = new(this, DescriptorHeapType.CbvSrvUav, 320000);
+        SamplerAllocator = new(this, DescriptorHeapType.Sampler, 3200);
 
         Capabilities.Init();
     }
