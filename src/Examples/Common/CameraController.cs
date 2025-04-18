@@ -104,13 +104,12 @@ public class CameraController
 
     private void Window_MouseMove(object? sender, ValueEventArgs<Vector2D<int>> e)
     {
-        const float ninetyRadians = MathF.PI / 2.0f;
         const float clipRadians = 89.0f * MathF.PI / 180.0f;
 
         if (lastMousePosition.HasValue)
         {
-            float pixelToRadianX = ninetyRadians / Size.X;
-            float pixelToRadianY = ninetyRadians / Size.Y;
+            float pixelToRadianX = MathF.PI / Size.X;
+            float pixelToRadianY = MathF.PI / Size.Y;
 
             Vector2D<int> delta = e.Value - lastMousePosition.Value;
 
