@@ -8,7 +8,6 @@ namespace Common;
 public class CameraController
 {
     private readonly HashSet<Key> keyDowns = [];
-    private readonly IWindow window;
 
     private Vector2D<int>? lastMousePosition;
 
@@ -19,9 +18,9 @@ public class CameraController
         window.MouseDown += Window_MouseDown;
         window.MouseMove += Window_MouseMove;
         window.MouseUp += Window_MouseUp;
-
-        this.window = window;
     }
+
+    public Vector2D<uint> Size { get; private set; } = Vector2D<uint>.One;
 
     public Vector3D<float> Position { get; private set; } = Vector3D<float>.Zero;
 
@@ -39,7 +38,7 @@ public class CameraController
 
     public float Speed { get; set; } = 2.5f;
 
-    public float AspectRatio => window.Size.X / (float)window.Size.Y;
+    public float AspectRatio => Size.X / (float)Size.Y;
 
     public void Transform(Matrix4X4<float> matrix)
     {
@@ -50,38 +49,38 @@ public class CameraController
         Up = Vector3D.Normalize(Vector3D.Cross(Right, Forward));
     }
 
-    public void Update(double deltaSeconds)
+    public void Update(double deltaSeconds, Vector2D<uint> size)
     {
-        float deltaTime = (float)deltaSeconds;
+        Size = size;
 
         if (keyDowns.Contains(Key.W))
         {
-            Position += Forward * Speed * deltaTime;
+            Position += Forward * Speed * (float)deltaSeconds;
         }
 
         if (keyDowns.Contains(Key.S))
         {
-            Position -= Forward * Speed * deltaTime;
+            Position -= Forward * Speed * (float)deltaSeconds;
         }
 
         if (keyDowns.Contains(Key.A))
         {
-            Position -= Right * Speed * deltaTime;
+            Position -= Right * Speed * (float)deltaSeconds;
         }
 
         if (keyDowns.Contains(Key.D))
         {
-            Position += Right * Speed * deltaTime;
+            Position += Right * Speed * (float)deltaSeconds;
         }
 
         if (keyDowns.Contains(Key.Q))
         {
-            Position -= Up * Speed * deltaTime;
+            Position -= Up * Speed * (float)deltaSeconds;
         }
 
         if (keyDowns.Contains(Key.E))
         {
-            Position += Up * Speed * deltaTime;
+            Position += Up * Speed * (float)deltaSeconds;
         }
     }
 
@@ -110,8 +109,8 @@ public class CameraController
 
         if (lastMousePosition.HasValue)
         {
-            float pixelToRadianX = ninetyRadians / window.Size.X;
-            float pixelToRadianY = ninetyRadians / window.Size.Y;
+            float pixelToRadianX = ninetyRadians / Size.X;
+            float pixelToRadianY = ninetyRadians / Size.Y;
 
             Vector2D<int> delta = e.Value - lastMousePosition.Value;
 

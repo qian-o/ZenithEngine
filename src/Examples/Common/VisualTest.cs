@@ -53,7 +53,7 @@ public abstract unsafe class VisualTest
 
         Window.Update += (a, b) =>
         {
-            CameraController.Update(b.DeltaTime);
+            CameraController.Update(b.DeltaTime, Window.Size);
 
             ImGuiController.Update(b.DeltaTime, Window.Size);
 
