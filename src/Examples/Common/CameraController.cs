@@ -8,6 +8,7 @@ namespace Common;
 public class CameraController
 {
     private readonly HashSet<Key> keyDowns = [];
+    private readonly IWindow window;
 
     private Vector2D<int>? lastMousePosition;
 
@@ -18,6 +19,8 @@ public class CameraController
         window.MouseDown += Window_MouseDown;
         window.MouseMove += Window_MouseMove;
         window.MouseUp += Window_MouseUp;
+
+        this.window = window;
     }
 
     public Vector3D<float> Position { get; private set; } = Vector3D<float>.Zero;
@@ -28,8 +31,6 @@ public class CameraController
 
     public Vector3D<float> Up { get; private set; } = Vector3D<float>.UnitY;
 
-    public float AspectRatio { get; private set; } = 1.0f;
-
     public float NearPlane { get; set; } = 0.1f;
 
     public float FarPlane { get; set; } = 1000.0f;
@@ -37,6 +38,8 @@ public class CameraController
     public float Fov { get; set; } = 40.0f;
 
     public float Speed { get; set; } = 2.5f;
+
+    public float AspectRatio => window.Size.X / (float)window.Size.Y;
 
     public void Transform(Matrix4X4<float> matrix)
     {
@@ -47,7 +50,7 @@ public class CameraController
         Up = Vector3D.Normalize(Vector3D.Cross(Right, Forward));
     }
 
-    public void Update(double deltaSeconds, Vector2D<uint> size)
+    public void Update(double deltaSeconds)
     {
         float deltaTime = (float)deltaSeconds;
 
@@ -80,8 +83,6 @@ public class CameraController
         {
             Position += Up * Speed * deltaTime;
         }
-
-        AspectRatio = size.X / (float)size.Y;
     }
 
     private void Window_KeyDown(object? sender, KeyEventArgs e)
@@ -104,14 +105,18 @@ public class CameraController
 
     private void Window_MouseMove(object? sender, ValueEventArgs<Vector2D<int>> e)
     {
-        const float clipRadians = 1.553343f;
+        const float ninetyRadians = MathF.PI / 2.0f;
+        const float clipRadians = 89.0f * MathF.PI / 180.0f;
 
         if (lastMousePosition.HasValue)
         {
+            float pixelToRadianX = ninetyRadians / window.Size.X;
+            float pixelToRadianY = ninetyRadians / window.Size.Y;
+
             Vector2D<int> delta = e.Value - lastMousePosition.Value;
 
-            float yaw = -delta.X * 0.01f;
-            float pitch = -delta.Y * 0.01f;
+            float yaw = -(delta.X * pixelToRadianX);
+            float pitch = -(delta.Y * pixelToRadianY);
 
             float newPitch = MathF.Asin(Forward.Y) + pitch;
 

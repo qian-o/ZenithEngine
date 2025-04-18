@@ -272,9 +272,8 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
             ImGui.SliderInt("Samples", ref global.AO.Samples, 1, 64);
             ImGui.SliderFloat("Power", ref global.AO.Power, 0.0f, 10.0f);
             ImGui.Checkbox("Distance Based", ref global.AO.DistanceBased);
-
-            ImGui.End();
         }
+        ImGui.End();
 
         global.FrameNumber++;
 
@@ -349,6 +348,8 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         ]);
 
         resSet = Context.Factory.CreateResourceSet(in resSetDesc);
+
+        global.FrameNumber = 0;
     }
 
     protected override void OnDestroy()
