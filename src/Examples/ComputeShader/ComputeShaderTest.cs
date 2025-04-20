@@ -83,7 +83,7 @@ internal unsafe class ComputeShaderTest() : VisualTest("Compute Shader Test")
         commandBuffer.SetComputePipeline(computePipeline);
         commandBuffer.SetResourceSet(0, resourceSet);
 
-        commandBuffer.Dispatch((uint)Math.Ceiling(Width / 8.0), (uint)Math.Ceiling(Height / 8.0), 1);
+        commandBuffer.Dispatch((uint)Math.Ceiling(Width / 32.0), (uint)Math.Ceiling(Height / 32.0), 1);
 
         commandBuffer.End();
         commandBuffer.Commit();
