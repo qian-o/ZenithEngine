@@ -102,9 +102,9 @@ public abstract unsafe class VisualTest
 
             SwapChain.Present();
 
-            if (avgFrameTimes.Count is 10000)
+            if (avgFrameTimes.Count is 100)
             {
-                avgFrameTimes.RemoveRange(0, 1000);
+                avgFrameTimes.Clear();
             }
 
             avgFrameTimes.Add(b.DeltaTime);
