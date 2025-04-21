@@ -724,7 +724,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #endregion
 
     #region Debugging
-    public override void BeginDebugEvent(string name)
+    public override void BeginDebugEvent(string label)
     {
         throw new NotImplementedException();
     }
@@ -734,7 +734,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
         throw new NotImplementedException();
     }
 
-    public override void InsertDebugMarker(string name)
+    public override void InsertDebugMarker(string label)
     {
         throw new NotImplementedException();
     }
