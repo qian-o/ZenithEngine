@@ -239,7 +239,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
         CameraController.Transform(Matrix4X4.CreateTranslation(278.000f, 273.000f, -800.000f));
         CameraController.FarPlane = 2400.000f;
-        CameraController.Speed = 120.000f;
+        CameraController.Speed = 240.000f;
 
         global = new()
         {
