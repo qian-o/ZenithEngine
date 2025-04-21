@@ -314,6 +314,25 @@ public abstract class CommandBuffer(GraphicsContext context,
     public abstract void DispatchRays(uint width, uint height, uint depth);
     #endregion
 
+    #region Debugging
+    /// <summary>
+    /// Open a command buffer debug label region.
+    /// </summary>
+    /// <param name="label">The label of the region.</param>
+    public abstract void BeginDebugEvent(string label);
+
+    /// <summary>
+    /// Close a command buffer label region.
+    /// </summary>
+    public abstract void EndDebugEvent();
+
+    /// <summary>
+    /// Insert a label into a command buffer.
+    /// </summary>
+    /// <param name="label">The label to insert.</param>
+    public abstract void InsertDebugMarker(string label);
+    #endregion
+
     protected override void Destroy()
     {
         BufferAllocator.Dispose();

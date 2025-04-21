@@ -723,6 +723,23 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     }
     #endregion
 
+    #region Debugging
+    public override void BeginDebugEvent(string name)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void EndDebugEvent()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void InsertDebugMarker(string name)
+    {
+        throw new NotImplementedException();
+    }
+    #endregion
+
     protected override void DebugName(string name)
     {
         CommandList.SetName(name).ThrowIfError();
