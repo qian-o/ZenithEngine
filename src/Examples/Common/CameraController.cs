@@ -20,6 +20,8 @@ public class CameraController
         window.MouseUp += Window_MouseUp;
     }
 
+    public Vector2D<uint> Size { get; private set; } = Vector2D<uint>.One;
+
     public Vector3D<float> Position { get; private set; } = Vector3D<float>.Zero;
 
     public Vector3D<float> Forward { get; private set; } = Vector3D<float>.UnitZ;
@@ -28,8 +30,6 @@ public class CameraController
 
     public Vector3D<float> Up { get; private set; } = Vector3D<float>.UnitY;
 
-    public float AspectRatio { get; private set; } = 1.0f;
-
     public float NearPlane { get; set; } = 0.1f;
 
     public float FarPlane { get; set; } = 1000.0f;
@@ -37,6 +37,8 @@ public class CameraController
     public float Fov { get; set; } = 40.0f;
 
     public float Speed { get; set; } = 2.5f;
+
+    public float AspectRatio => Size.X / (float)Size.Y;
 
     public void Transform(Matrix4X4<float> matrix)
     {
@@ -49,39 +51,37 @@ public class CameraController
 
     public void Update(double deltaSeconds, Vector2D<uint> size)
     {
-        float deltaTime = (float)deltaSeconds;
+        Size = size;
 
         if (keyDowns.Contains(Key.W))
         {
-            Position += Forward * Speed * deltaTime;
+            Position += Forward * Speed * (float)deltaSeconds;
         }
 
         if (keyDowns.Contains(Key.S))
         {
-            Position -= Forward * Speed * deltaTime;
+            Position -= Forward * Speed * (float)deltaSeconds;
         }
 
         if (keyDowns.Contains(Key.A))
         {
-            Position -= Right * Speed * deltaTime;
+            Position -= Right * Speed * (float)deltaSeconds;
         }
 
         if (keyDowns.Contains(Key.D))
         {
-            Position += Right * Speed * deltaTime;
+            Position += Right * Speed * (float)deltaSeconds;
         }
 
         if (keyDowns.Contains(Key.Q))
         {
-            Position -= Up * Speed * deltaTime;
+            Position -= Up * Speed * (float)deltaSeconds;
         }
 
         if (keyDowns.Contains(Key.E))
         {
-            Position += Up * Speed * deltaTime;
+            Position += Up * Speed * (float)deltaSeconds;
         }
-
-        AspectRatio = size.X / (float)size.Y;
     }
 
     private void Window_KeyDown(object? sender, KeyEventArgs e)
@@ -104,14 +104,17 @@ public class CameraController
 
     private void Window_MouseMove(object? sender, ValueEventArgs<Vector2D<int>> e)
     {
-        const float clipRadians = 1.553343f;
+        const float clipRadians = 89.0f * MathF.PI / 180.0f;
 
         if (lastMousePosition.HasValue)
         {
+            float pixelToRadianX = MathF.PI / Size.X;
+            float pixelToRadianY = MathF.PI / Size.Y;
+
             Vector2D<int> delta = e.Value - lastMousePosition.Value;
 
-            float yaw = -delta.X * 0.01f;
-            float pitch = -delta.Y * 0.01f;
+            float yaw = -(delta.X * pixelToRadianX);
+            float pitch = -(delta.Y * pixelToRadianY);
 
             float newPitch = MathF.Asin(Forward.Y) + pitch;
 

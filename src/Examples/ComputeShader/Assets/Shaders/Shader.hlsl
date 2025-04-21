@@ -17,7 +17,7 @@ float mod(float x, float y)
     return x - y * floor(x / y);
 }
 
-[numthreads(8, 8, 1)]
+[numthreads(32, 32, 1)]
 void CSMain(uint3 id : SV_DispatchThreadID)
 {
     float4 color = float4(0.0, 0.0, 0.0, 0.0);

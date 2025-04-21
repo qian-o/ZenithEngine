@@ -55,14 +55,14 @@ struct Global
     int FrameNumber;
 };
 
-struct [raypayload] Payload
+struct Payload
 {
     bool Hit;
 
     float3 Color;
 };
 
-struct [raypayload] AOPayload
+struct AOPayload
 {
     float Value;
 };
@@ -112,46 +112,53 @@ float TraceRayAO(float3 origin, float3 direction)
 [shader("raygeneration")]
 void RayGenMain()
 {
+    const uint spp = 8;
+
     uint2 launchID = DispatchRaysIndex().xy;
     float2 launchSize = float2(DispatchRaysDimensions().xy);
+
+    uint seed = tea(launchSize.x * launchID.y + launchID.x, Global.FrameNumber);
+
     float aspectRatio = launchSize.x / launchSize.y;
-    
-    float2 xy = (launchID / launchSize * 2.0 - 1.0) * tan(Global.Camera.Fov * 0.5);
 
-    if (aspectRatio > 1.0)
+    float3 color = float3(0.0, 0.0, 0.0);
+
+    for (uint i = 0; i < spp; i++)
     {
-        xy.x *= aspectRatio;
-    }
-    else
-    {
-        xy.y /= aspectRatio;
-    }
+        float2 xy = ((launchID + float2(rnd(seed), rnd(seed))) / launchSize * 2.0 - 1.0) * tan(Global.Camera.Fov * 0.5);
 
-    xy.y = -xy.y;
-    
-    RayDesc rayDesc;
-    rayDesc.Origin = Global.Camera.Position;
-    rayDesc.Direction = normalize(Global.Camera.Forward + xy.x * Global.Camera.Right + xy.y * Global.Camera.Up);
-    rayDesc.TMin = Global.Camera.NearPlane;
-    rayDesc.TMax = Global.Camera.FarPlane;
-
-    Payload payload;
-    TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
-
-    if (payload.Hit)
-    {
-        if (Global.FrameNumber == 0)
+        if (aspectRatio > 1.0)
         {
-            Output[launchID] = float4(payload.Color, 1.0);
+            xy.x *= aspectRatio;
         }
         else
         {
-            Output[launchID] = lerp(Output[launchID], float4(payload.Color, 1.0), 1.0 / (Global.FrameNumber + 1));
+            xy.y /= aspectRatio;
         }
+
+        xy.y = -xy.y;
+        
+        RayDesc rayDesc;
+        rayDesc.Origin = Global.Camera.Position;
+        rayDesc.Direction = normalize(Global.Camera.Forward + xy.x * Global.Camera.Right + xy.y * Global.Camera.Up);
+        rayDesc.TMin = Global.Camera.NearPlane;
+        rayDesc.TMax = Global.Camera.FarPlane;
+
+        Payload payload;
+        TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
+        
+        color += payload.Color;
+    }
+    
+    color /= spp;
+
+    if (Global.FrameNumber == 0)
+    {
+        Output[launchID] = float4(color, 1.0);
     }
     else
     {
-        Output[launchID] = float4(0.0, 0.0, 0.0, 1.0);
+        Output[launchID] = lerp(Output[launchID], float4(color, 1.0), 1.0 / (Global.FrameNumber + 1));
     }
 }
 
@@ -159,6 +166,7 @@ void RayGenMain()
 void MissMain(inout Payload payload)
 {
     payload.Hit = false;
+    payload.Color = float3(0.0, 0.0, 0.0);
 }
 
 [shader("closesthit")]

@@ -141,8 +141,8 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         Debug = useDebugLayer ? new(this) : null;
         RtvAllocator = new(this, DescriptorHeapType.Rtv, 128);
         DsvAllocator = new(this, DescriptorHeapType.Dsv, 128);
-        CbvSrvUavAllocator = new(this, DescriptorHeapType.CbvSrvUav, 4096);
-        SamplerAllocator = new(this, DescriptorHeapType.Sampler, 128);
+        CbvSrvUavAllocator = new(this, DescriptorHeapType.CbvSrvUav, 409600);
+        SamplerAllocator = new(this, DescriptorHeapType.Sampler, 32);
 
         Capabilities.Init();
     }

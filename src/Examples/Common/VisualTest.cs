@@ -12,7 +12,7 @@ public abstract unsafe class VisualTest
 {
     protected VisualTest(string name)
     {
-        const Backend backend = Backend.Vulkan;
+        const Backend backend = Backend.DirectX12;
 
         Window = WindowController.CreateWindow(name, 1270, 720);
 
@@ -102,9 +102,9 @@ public abstract unsafe class VisualTest
 
             SwapChain.Present();
 
-            if (avgFrameTimes.Count is 10000)
+            if (avgFrameTimes.Count is 100)
             {
-                avgFrameTimes.RemoveRange(0, 1000);
+                avgFrameTimes.Clear();
             }
 
             avgFrameTimes.Add(b.DeltaTime);
