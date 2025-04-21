@@ -26,10 +26,7 @@ public abstract unsafe class VisualTest
         Context.CreateDevice();
 #endif
 
-        List<double> avgFrameTimes = [];
-
-        double fps = 0;
-        double lastTotalTime = 0;
+        List<double> frameTimes = [];
 
         Window.Loaded += (a, b) =>
         {
@@ -76,7 +73,7 @@ public abstract unsafe class VisualTest
 
                 ImGui.Separator();
 
-                ImGui.Text($"FPS: {fps:F0}");
+                ImGui.Text($"FPS: {1 / b.DeltaTime:F0}");
             });
 
             OnRender(b.DeltaTime, b.TotalTime);
@@ -102,17 +99,11 @@ public abstract unsafe class VisualTest
 
             SwapChain.Present();
 
-            if (avgFrameTimes.Count is 100)
-            {
-                avgFrameTimes.Clear();
-            }
+            frameTimes.Add(b.DeltaTime);
 
-            avgFrameTimes.Add(b.DeltaTime);
-
-            if (b.TotalTime - lastTotalTime > 1)
+            if (frameTimes.Count is 100)
             {
-                fps = 1 / avgFrameTimes.Average();
-                lastTotalTime = b.TotalTime;
+                frameTimes.Clear();
             }
         };
 
@@ -132,7 +123,7 @@ public abstract unsafe class VisualTest
             SwapChain.Dispose();
             Context.Dispose();
 
-            double avgFrameTime = avgFrameTimes.Average();
+            double avgFrameTime = frameTimes.Average();
 
             Console.WriteLine($"Backend: {backend}");
             Console.WriteLine($"Average Frame Time: {avgFrameTime * 1000:F2}ms");
