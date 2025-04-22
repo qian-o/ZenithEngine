@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Text;
-using Silk.NET.Core.Native;
 using Silk.NET.Direct3D12;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Graphics;
@@ -9,18 +8,14 @@ namespace ZenithEngine.DirectX12;
 
 internal unsafe class DXDebugLayer : GraphicsResource
 {
-    public ComPtr<ID3D12InfoQueue1> InfoQueue1;
-
     private readonly uint callbackCookie;
 
     public DXDebugLayer(GraphicsContext context) : base(context)
     {
-        Context.Device.QueryInterface(out InfoQueue1).ThrowIfError();
-
-        InfoQueue1.RegisterMessageCallback(new(MessageCallback),
-                                           MessageCallbackFlags.FlagNone,
-                                           null,
-                                           ref callbackCookie).ThrowIfError();
+        Context.InfoQueue1.RegisterMessageCallback(new(MessageCallback),
+                                                   MessageCallbackFlags.FlagNone,
+                                                   null,
+                                                   ref callbackCookie).ThrowIfError();
     }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
@@ -31,9 +26,7 @@ internal unsafe class DXDebugLayer : GraphicsResource
 
     protected override void Destroy()
     {
-        InfoQueue1.UnregisterMessageCallback(callbackCookie).ThrowIfError();
-
-        InfoQueue1.Dispose();
+        Context.InfoQueue1.UnregisterMessageCallback(callbackCookie).ThrowIfError();
     }
 
     private static void MessageCallback(MessageCategory category,
