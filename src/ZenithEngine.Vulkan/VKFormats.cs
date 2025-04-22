@@ -4,7 +4,7 @@ using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Vulkan;
 
-internal static unsafe class VKFormats
+internal static class VKFormats
 {
     #region To Vulkan
     public static ImageType GetImageType(TextureType type)
