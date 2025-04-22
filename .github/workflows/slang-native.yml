@@ -33,15 +33,15 @@ jobs:
       - name: Copy Slang Native
         working-directory: ${{github.workspace}}
         run: |
+          release_name=${{steps.download-slang-native.outputs.release_name}}
+          release_name_no_v=${release_name#v}
+          
           rm -rf CodeSpace/src/ZenithEngine.ShaderCompiler/Native
           mkdir -p CodeSpace/src/ZenithEngine.ShaderCompiler/Native
           mv Native/* CodeSpace/src/ZenithEngine.ShaderCompiler/Native
           rm -rf Native
 
           cd CodeSpace/src/ZenithEngine.ShaderCompiler/Native
-
-          release_name=${{steps.download-slang-native.outputs.release_name}}
-          release_name_no_v=${release_name#v}
 
           mv slang-${release_name_no_v}-linux-aarch64.zip linux-arm64.zip
           unzip -o linux-arm64.zip -d linux-arm64
