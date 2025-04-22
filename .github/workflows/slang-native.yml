@@ -24,13 +24,13 @@ jobs:
         with:
           branch: slang-native-${{steps.download-slang-native.outputs.release_name}}
 
-      - name: Checkout
+      - name: Checkout Branch
         uses: actions/checkout@v4
         with:
           ref: slang-native-${{steps.download-slang-native.outputs.release_name}}
           path: ${{github.workspace}}/CodeSpace
           
-      - name: Copy Slang Native
+      - name: Copy Native
         working-directory: ${{github.workspace}}
         run: |
           release_name=${{steps.download-slang-native.outputs.release_name}}
