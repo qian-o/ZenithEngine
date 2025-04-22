@@ -43,7 +43,15 @@ internal unsafe class VKSampler : Sampler
 
     protected override void DebugName(string name)
     {
-        Context.SetDebugName(ObjectType.Sampler, Sampler.Handle, name);
+        DebugUtilsObjectNameInfoEXT nameInfo = new()
+        {
+            SType = StructureType.DebugUtilsObjectNameInfoExt,
+            ObjectType = ObjectType.Sampler,
+            ObjectHandle = Sampler.Handle,
+            PObjectName = Allocator.AllocUTF8(name)
+        };
+
+        Context.ExtDebugUtils!.SetDebugUtilsObjectName(Context.Device, &nameInfo).ThrowIfError();
     }
 
     protected override void Destroy()

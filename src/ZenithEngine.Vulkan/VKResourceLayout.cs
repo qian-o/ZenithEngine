@@ -85,7 +85,15 @@ internal unsafe class VKResourceLayout : ResourceLayout
 
     protected override void DebugName(string name)
     {
-        Context.SetDebugName(ObjectType.DescriptorSetLayout, DescriptorSetLayout.Handle, name);
+        DebugUtilsObjectNameInfoEXT nameInfo = new()
+        {
+            SType = StructureType.DebugUtilsObjectNameInfoExt,
+            ObjectType = ObjectType.DescriptorSetLayout,
+            ObjectHandle = DescriptorSetLayout.Handle,
+            PObjectName = Allocator.AllocUTF8(name)
+        };
+
+        Context.ExtDebugUtils!.SetDebugUtilsObjectName(Context.Device, &nameInfo).ThrowIfError();
     }
 
     protected override void Destroy()

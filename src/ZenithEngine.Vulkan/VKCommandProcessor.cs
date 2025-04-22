@@ -52,6 +52,14 @@ internal unsafe class VKCommandProcessor : CommandProcessor
 
     protected override void DebugName(string name)
     {
-        Context.SetDebugName(ObjectType.Queue, (ulong)queue.Handle, name);
+        DebugUtilsObjectNameInfoEXT nameInfo = new()
+        {
+            SType = StructureType.DebugUtilsObjectNameInfoExt,
+            ObjectType = ObjectType.Queue,
+            ObjectHandle = (ulong)queue.Handle,
+            PObjectName = Allocator.AllocUTF8(name)
+        };
+
+        Context.ExtDebugUtils!.SetDebugUtilsObjectName(Context.Device, &nameInfo).ThrowIfError();
     }
 }

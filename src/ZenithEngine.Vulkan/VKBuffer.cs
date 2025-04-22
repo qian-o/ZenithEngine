@@ -98,7 +98,15 @@ internal unsafe class VKBuffer : Buffer
 
     protected override void DebugName(string name)
     {
-        Context.SetDebugName(ObjectType.Buffer, Buffer.Handle, name);
+        DebugUtilsObjectNameInfoEXT nameInfo = new()
+        {
+            SType = StructureType.DebugUtilsObjectNameInfoExt,
+            ObjectType = ObjectType.Buffer,
+            ObjectHandle = Buffer.Handle,
+            PObjectName = Allocator.AllocUTF8(name)
+        };
+
+        Context.ExtDebugUtils!.SetDebugUtilsObjectName(Context.Device, &nameInfo).ThrowIfError();
     }
 
     protected override void Destroy()

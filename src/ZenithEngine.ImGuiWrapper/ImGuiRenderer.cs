@@ -134,6 +134,8 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
         Context.UpdateBuffer(constantsBuffer, (nint)(&constants), (uint)sizeof(Constants));
 
+        commandBuffer.BeginDebugEvent("ImGui");
+
         commandBuffer.SetGraphicsPipeline(pipeline);
         commandBuffer.SetVertexBuffer(0, vertexBuffer);
         commandBuffer.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
@@ -180,6 +182,8 @@ internal unsafe class ImGuiRenderer : DisposableObject
             vertexOffset += drawListPtr.VtxBuffer.Size;
             indexOffset += drawListPtr.IdxBuffer.Size;
         }
+
+        commandBuffer.EndDebugEvent();
     }
 
     public ulong GetBinding(Texture texture)

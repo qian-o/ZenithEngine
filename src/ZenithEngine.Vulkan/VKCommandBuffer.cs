@@ -792,9 +792,46 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     }
     #endregion
 
+    #region Debugging
+    public override void BeginDebugEvent(string label)
+    {
+        DebugUtilsLabelEXT labelInfo = new()
+        {
+            SType = StructureType.DebugUtilsLabelExt,
+            PLabelName = Allocator.AllocUTF8(label)
+        };
+
+        Context.ExtDebugUtils!.CmdBeginDebugUtilsLabel(CommandBuffer, &labelInfo);
+    }
+
+    public override void EndDebugEvent()
+    {
+        Context.ExtDebugUtils!.CmdEndDebugUtilsLabel(CommandBuffer);
+    }
+
+    public override void InsertDebugMarker(string label)
+    {
+        DebugUtilsLabelEXT labelInfo = new()
+        {
+            SType = StructureType.DebugUtilsLabelExt,
+            PLabelName = Allocator.AllocUTF8(label)
+        };
+
+        Context.ExtDebugUtils!.CmdInsertDebugUtilsLabel(CommandBuffer, &labelInfo);
+    }
+    #endregion
+
     protected override void DebugName(string name)
     {
-        Context.SetDebugName(ObjectType.CommandBuffer, (ulong)CommandBuffer.Handle, name);
+        DebugUtilsObjectNameInfoEXT nameInfo = new()
+        {
+            SType = StructureType.DebugUtilsObjectNameInfoExt,
+            ObjectType = ObjectType.CommandBuffer,
+            ObjectHandle = (ulong)CommandBuffer.Handle,
+            PObjectName = Allocator.AllocUTF8(name)
+        };
+
+        Context.ExtDebugUtils!.SetDebugUtilsObjectName(Context.Device, &nameInfo).ThrowIfError();
     }
 
     protected override void Destroy()
