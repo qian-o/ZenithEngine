@@ -726,17 +726,29 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #region Debugging
     public override void BeginDebugEvent(string label)
     {
-        throw new NotImplementedException();
+        uint bufferSize = PixHelpers.CalculateEventSize(label);
+
+        void* buffer = stackalloc byte[(int)bufferSize];
+
+        PixHelpers.FormatEventToBuffer(buffer, PixHelpers.Event, 0, label);
+
+        GraphicsCommandList.BeginEvent(PixHelpers.Version, buffer, bufferSize);
     }
 
     public override void EndDebugEvent()
     {
-        throw new NotImplementedException();
+        GraphicsCommandList.EndEvent();
     }
 
     public override void InsertDebugMarker(string label)
     {
-        throw new NotImplementedException();
+        uint bufferSize = PixHelpers.CalculateEventSize(label);
+
+        void* buffer = stackalloc byte[(int)bufferSize];
+
+        PixHelpers.FormatEventToBuffer(buffer, PixHelpers.Marker, 0, label);
+
+        GraphicsCommandList.SetMarker(PixHelpers.Version, buffer, bufferSize);
     }
     #endregion
 
