@@ -81,6 +81,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
     {
         DestroyDevice();
 
+        DebugLayer?.Dispose();
         MvkMacosSurface?.Dispose();
         MvkIosSurface?.Dispose();
         KhrAndroidSurface?.Dispose();
@@ -88,13 +89,11 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         KhrWaylandSurface?.Dispose();
         KhrWin32Surface?.Dispose();
         KhrSurface?.Dispose();
-        DebugLayer?.Dispose();
 
         Vk.DestroyInstance(Instance, null);
 
         Vk.Dispose();
 
-        DebugLayer = null;
         KhrSurface = null;
         KhrWin32Surface = null;
         KhrWaylandSurface = null;
@@ -102,6 +101,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         KhrAndroidSurface = null;
         MvkIosSurface = null;
         MvkMacosSurface = null;
+        DebugLayer = null;
     }
 
     private void InitInstance(bool useDebugLayer)

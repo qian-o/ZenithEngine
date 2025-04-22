@@ -7,26 +7,20 @@ using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
 
-internal unsafe class DXDebug : GraphicsResource
+internal unsafe class DXDebugLayer : GraphicsResource
 {
-    private static readonly PfnMessageFunc pfnMessage;
-
     public ComPtr<ID3D12InfoQueue1> InfoQueue1;
 
-    static DXDebug()
-    {
-        pfnMessage = new(MessageCallback);
-    }
+    private readonly uint callbackCookie;
 
-    public DXDebug(GraphicsContext context) : base(context)
+    public DXDebugLayer(GraphicsContext context) : base(context)
     {
         Context.Device.QueryInterface(out InfoQueue1).ThrowIfError();
 
-        uint callbackCookie;
-        InfoQueue1.RegisterMessageCallback(pfnMessage,
+        InfoQueue1.RegisterMessageCallback(new(MessageCallback),
                                            MessageCallbackFlags.FlagNone,
                                            null,
-                                           &callbackCookie).ThrowIfError();
+                                           ref callbackCookie).ThrowIfError();
     }
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
@@ -37,6 +31,8 @@ internal unsafe class DXDebug : GraphicsResource
 
     protected override void Destroy()
     {
+        InfoQueue1.UnregisterMessageCallback(callbackCookie).ThrowIfError();
+
         InfoQueue1.Dispose();
     }
 
@@ -60,30 +56,25 @@ internal unsafe class DXDebug : GraphicsResource
             stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{str}");
         }
 
-        PrintMessage(stringBuilder.ToString(), severity switch
-        {
-            MessageSeverity.Corruption => ConsoleColor.DarkRed,
-            MessageSeverity.Error => ConsoleColor.Red,
-            MessageSeverity.Warning => ConsoleColor.Yellow,
-            MessageSeverity.Info => ConsoleColor.Blue,
-            MessageSeverity.Message => ConsoleColor.DarkGray,
-            _ => Console.ForegroundColor
-        });
-    }
-
-    private static void PrintMessage(string message, ConsoleColor color)
-    {
         if (OperatingSystem.IsWindows())
         {
-            Console.ForegroundColor = color;
+            Console.ForegroundColor = severity switch
+            {
+                MessageSeverity.Corruption => ConsoleColor.DarkRed,
+                MessageSeverity.Error => ConsoleColor.Red,
+                MessageSeverity.Warning => ConsoleColor.Yellow,
+                MessageSeverity.Info => ConsoleColor.Blue,
+                MessageSeverity.Message => ConsoleColor.DarkGray,
+                _ => Console.ForegroundColor
+            };
 
-            Console.WriteLine(message);
+            Console.WriteLine(stringBuilder.ToString());
 
             Console.ResetColor();
         }
         else
         {
-            Console.WriteLine(message);
+            Console.WriteLine(stringBuilder.ToString());
         }
     }
 }

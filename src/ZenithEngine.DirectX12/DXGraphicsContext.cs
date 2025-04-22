@@ -37,8 +37,6 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
     public DXGI DXGI { get; }
 
-    public DXDebug? Debug { get; private set; }
-
     public DXDescriptorAllocator? RtvAllocator { get; private set; }
 
     public DXDescriptorAllocator? DsvAllocator { get; private set; }
@@ -46,6 +44,8 @@ internal unsafe class DXGraphicsContext : GraphicsContext
     public DXDescriptorAllocator? CbvSrvUavAllocator { get; private set; }
 
     public DXDescriptorAllocator? SamplerAllocator { get; private set; }
+
+    public DXDebugLayer? DebugLayer { get; private set; }
 
     public override Backend Backend { get; }
 
@@ -138,22 +138,22 @@ internal unsafe class DXGraphicsContext : GraphicsContext
                                       (ComPtr<ID3D12RootSignature>)null,
                                       out DispatchSignature).ThrowIfError();
 
-        Debug = useDebugLayer ? new(this) : null;
         RtvAllocator = new(this, DescriptorHeapType.Rtv, 512);
         DsvAllocator = new(this, DescriptorHeapType.Dsv, 512);
         CbvSrvUavAllocator = new(this, DescriptorHeapType.CbvSrvUav, 8192);
         SamplerAllocator = new(this, DescriptorHeapType.Sampler, 128);
+        DebugLayer = useDebugLayer ? new(this) : null;
 
         Capabilities.Init();
     }
 
     protected override void DestroyInternal()
     {
+        DebugLayer?.Dispose();
         SamplerAllocator?.Dispose();
         CbvSrvUavAllocator?.Dispose();
         DsvAllocator?.Dispose();
         RtvAllocator?.Dispose();
-        Debug?.Dispose();
 
         DispatchSignature.Dispose();
         DrawIndexedSignature.Dispose();
@@ -172,10 +172,10 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         DXGI.Dispose();
         D3D12.Dispose();
 
-        Debug = null;
         RtvAllocator = null;
         DsvAllocator = null;
         CbvSrvUavAllocator = null;
         SamplerAllocator = null;
+        DebugLayer = null;
     }
 }
