@@ -212,7 +212,7 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
         return (uint)Desc.ResourceLayouts.Take((int)slot).Sum(static item => item.DX().GlobalRootParameterCount);
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
         StateObject.SetName(name).ThrowIfError();
     }

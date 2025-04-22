@@ -62,7 +62,7 @@ internal unsafe class DXSampler : Sampler
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

@@ -752,7 +752,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     }
     #endregion
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
         CommandList.SetName(name).ThrowIfError();
     }

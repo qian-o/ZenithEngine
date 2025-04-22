@@ -120,7 +120,7 @@ internal unsafe class VKDescriptorPool : GraphicsResource
         return true;
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

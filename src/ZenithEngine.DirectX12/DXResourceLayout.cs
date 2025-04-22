@@ -196,7 +196,7 @@ internal class DXResourceLayout : ResourceLayout
         return cbvSrvUavBindings.Length > 0 || samplerBindings.Length > 0;
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

@@ -109,7 +109,7 @@ internal unsafe class DXComputePipeline : ComputePipeline
         return (uint)Desc.ResourceLayouts.Take((int)slot).Sum(static item => item.DX().GlobalRootParameterCount);
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
         PipelineState.SetName(name).ThrowIfError();
     }

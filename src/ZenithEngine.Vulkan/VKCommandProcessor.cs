@@ -50,7 +50,7 @@ internal unsafe class VKCommandProcessor : CommandProcessor
         }
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
         DebugUtilsObjectNameInfoEXT nameInfo = new()
         {

@@ -148,7 +148,7 @@ internal unsafe class DXBottomLevelAS : BottomLevelAS
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

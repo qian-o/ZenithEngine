@@ -144,7 +144,7 @@ internal unsafe class VKTopLevelAS : TopLevelAS
         Context.KhrAccelerationStructure!.CmdBuildAccelerationStructures(commandBuffer, 1, &buildGeometryInfo, &pBuildRangeInfo);
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
         DebugUtilsObjectNameInfoEXT nameInfo = new()
         {

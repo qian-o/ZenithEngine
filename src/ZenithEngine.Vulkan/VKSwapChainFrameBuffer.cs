@@ -77,7 +77,7 @@ internal unsafe class VKSwapChainFrameBuffer(GraphicsContext context,
         frameBuffers = [];
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

@@ -353,7 +353,7 @@ internal unsafe class DXTexture : Texture
         return (uint)rowPitch;
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
         Resource.SetName(name).ThrowIfError();
     }

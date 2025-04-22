@@ -177,7 +177,7 @@ internal unsafe class DXFrameBuffer : FrameBuffer
         }
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

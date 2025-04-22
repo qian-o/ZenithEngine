@@ -69,7 +69,7 @@ internal unsafe class DXDescriptorAllocator : GraphicsResource
         descriptorUsed[index] = false;
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

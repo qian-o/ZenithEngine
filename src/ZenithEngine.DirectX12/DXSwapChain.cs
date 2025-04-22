@@ -65,7 +65,7 @@ internal unsafe class DXSwapChain : SwapChain
         CreateSwapChain();
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

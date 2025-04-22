@@ -55,7 +55,7 @@ public class BufferAllocator(GraphicsContext context) : GraphicsResource(context
         available.AddRange(inUse);
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

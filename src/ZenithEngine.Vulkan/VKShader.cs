@@ -38,7 +38,7 @@ internal unsafe class VKShader : Shader
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
         DebugUtilsObjectNameInfoEXT nameInfo = new()
         {

@@ -96,7 +96,7 @@ internal unsafe class VKBuffer : Buffer
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
         DebugUtilsObjectNameInfoEXT nameInfo = new()
         {

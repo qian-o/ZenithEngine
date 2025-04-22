@@ -821,7 +821,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     }
     #endregion
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
         DebugUtilsObjectNameInfoEXT nameInfo = new()
         {

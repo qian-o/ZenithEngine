@@ -89,7 +89,7 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
         allocatedDescriptors = 0;
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

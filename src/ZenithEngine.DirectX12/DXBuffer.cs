@@ -158,7 +158,7 @@ internal unsafe class DXBuffer : Buffer
         State = newState;
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
         Resource.SetName(name).ThrowIfError();
     }

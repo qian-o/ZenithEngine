@@ -277,7 +277,7 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
         return (uint)Desc.ResourceLayouts.Take((int)slot).Sum(static item => item.DX().GraphicsRootParameterCount);
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
         PipelineState.SetName(name).ThrowIfError();
     }

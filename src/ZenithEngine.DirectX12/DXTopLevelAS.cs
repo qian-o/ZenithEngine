@@ -116,7 +116,7 @@ internal unsafe class DXTopLevelAS : TopLevelAS
         commandList.ResourceBarrier(1, &barrier);
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

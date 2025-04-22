@@ -17,7 +17,7 @@ internal unsafe class DXShader : Shader
         };
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

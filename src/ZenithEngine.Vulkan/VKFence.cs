@@ -40,7 +40,7 @@ internal unsafe class VKFence : GraphicsResource
                                in Fence).ThrowIfError();
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

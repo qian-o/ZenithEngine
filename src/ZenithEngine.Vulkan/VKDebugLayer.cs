@@ -33,7 +33,7 @@ internal unsafe class VKDebugLayer : GraphicsResource
 
     private new VKGraphicsContext Context => (VKGraphicsContext)base.Context;
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
     }
 

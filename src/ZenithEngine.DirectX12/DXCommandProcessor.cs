@@ -47,7 +47,7 @@ internal unsafe class DXCommandProcessor : CommandProcessor
         }
     }
 
-    protected override void DebugName(string name)
+    protected override void SetName(string name)
     {
         queue.SetName(name).ThrowIfError();
     }
