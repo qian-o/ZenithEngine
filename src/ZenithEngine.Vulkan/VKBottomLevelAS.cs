@@ -205,7 +205,15 @@ internal unsafe class VKBottomLevelAS : BottomLevelAS
 
     protected override void DebugName(string name)
     {
-        Context.SetDebugName(ObjectType.AccelerationStructureKhr, AccelerationStructure.Handle, name);
+        DebugUtilsObjectNameInfoEXT nameInfo = new()
+        {
+            SType = StructureType.DebugUtilsObjectNameInfoExt,
+            ObjectType = ObjectType.AccelerationStructureKhr,
+            ObjectHandle = AccelerationStructure.Handle,
+            PObjectName = Allocator.AllocUTF8(name)
+        };
+
+        Context.ExtDebugUtils!.SetDebugUtilsObjectName(Context.Device, &nameInfo).ThrowIfError();
     }
 
     protected override void Destroy()

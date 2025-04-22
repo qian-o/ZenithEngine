@@ -1,5 +1,6 @@
 ﻿using Silk.NET.Core;
 using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using Silk.NET.Vulkan.Extensions.MVK;
 using ZenithEngine.Common;
@@ -22,7 +23,9 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
     public Vk Vk { get; }
 
-    public VKDebug? Debug { get; private set; }
+    public VKDebugLayer? DebugLayer { get; private set; }
+
+    public ExtDebugUtils? ExtDebugUtils { get; private set; }
 
     public KhrSurface? KhrSurface { get; private set; }
 
@@ -62,11 +65,6 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         Vk.UnmapMemory(Device, buffer.VK().DeviceMemory.DeviceMemory);
     }
 
-    public void SetDebugName(ObjectType objectType, ulong handle, string name)
-    {
-        Debug?.SetObjectName(Device, objectType, handle, name);
-    }
-
     protected override void CreateDeviceInternal(bool useDebugLayer)
     {
         if (Instance.Handle is not 0)
@@ -90,13 +88,13 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         KhrWaylandSurface?.Dispose();
         KhrWin32Surface?.Dispose();
         KhrSurface?.Dispose();
-        Debug?.Dispose();
+        DebugLayer?.Dispose();
 
         Vk.DestroyInstance(Instance, null);
 
         Vk.Dispose();
 
-        Debug = null;
+        DebugLayer = null;
         KhrSurface = null;
         KhrWin32Surface = null;
         KhrWaylandSurface = null;
@@ -124,9 +122,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         {
             SType = StructureType.InstanceCreateInfo,
             PApplicationInfo = &appInfo,
-            PpEnabledExtensionNames = InstanceExtensions(allocator,
-                                                         useDebugLayer,
-                                                         out uint extensionCount),
+            PpEnabledExtensionNames = InstanceExtensions(allocator, out uint extensionCount),
             EnabledExtensionCount = extensionCount
         };
 
@@ -163,7 +159,8 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
         Vk.CreateInstance(&createInfo, null, out Instance).ThrowIfError();
 
-        Debug = useDebugLayer ? new(this) : null;
+        DebugLayer = useDebugLayer ? new(this) : null;
+        ExtDebugUtils = Vk.TryGetExtension<ExtDebugUtils>(Instance);
         KhrSurface = Vk.TryGetExtension<KhrSurface>(Instance);
         KhrWin32Surface = Vk.TryGetExtension<KhrWin32Surface>(Instance);
         KhrWaylandSurface = Vk.TryGetExtension<KhrWaylandSurface>(Instance);
@@ -173,16 +170,9 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         MvkMacosSurface = Vk.TryGetExtension<MvkMacosSurface>(Instance);
     }
 
-    private static byte** InstanceExtensions(MemoryAllocator allocator,
-                                             bool useDebugLayer,
-                                             out uint count)
+    private static byte** InstanceExtensions(MemoryAllocator allocator, out uint count)
     {
-        string[] extensions = [KhrSurface.ExtensionName];
-
-        if (useDebugLayer)
-        {
-            extensions = [.. extensions, .. VKDebug.ExtensionNames];
-        }
+        string[] extensions = [ExtDebugUtils.ExtensionName, KhrSurface.ExtensionName];
 
         if (OperatingSystem.IsWindows())
         {

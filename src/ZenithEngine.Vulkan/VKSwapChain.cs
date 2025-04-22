@@ -84,7 +84,15 @@ internal unsafe partial class VKSwapChain : SwapChain
 
     protected override void DebugName(string name)
     {
-        Context.SetDebugName(ObjectType.SwapchainKhr, Swapchain.Handle, name);
+        DebugUtilsObjectNameInfoEXT nameInfo = new()
+        {
+            SType = StructureType.DebugUtilsObjectNameInfoExt,
+            ObjectType = ObjectType.SwapchainKhr,
+            ObjectHandle = Swapchain.Handle,
+            PObjectName = Allocator.AllocUTF8(name)
+        };
+
+        Context.ExtDebugUtils!.SetDebugUtilsObjectName(Context.Device, &nameInfo).ThrowIfError();
     }
 
     protected override void Destroy()
