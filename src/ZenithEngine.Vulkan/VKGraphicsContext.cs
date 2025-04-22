@@ -23,8 +23,6 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
     public Vk Vk { get; }
 
-    public VKDebugLayer? DebugLayer { get; private set; }
-
     public ExtDebugUtils? ExtDebugUtils { get; private set; }
 
     public KhrSurface? KhrSurface { get; private set; }
@@ -40,6 +38,8 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
     public MvkIosSurface? MvkIosSurface { get; private set; }
 
     public MvkMacosSurface? MvkMacosSurface { get; private set; }
+
+    public VKDebugLayer? DebugLayer { get; private set; }
 
     public override Backend Backend { get; }
 
@@ -159,7 +159,6 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
         Vk.CreateInstance(&createInfo, null, out Instance).ThrowIfError();
 
-        DebugLayer = useDebugLayer ? new(this) : null;
         ExtDebugUtils = Vk.TryGetExtension<ExtDebugUtils>(Instance);
         KhrSurface = Vk.TryGetExtension<KhrSurface>(Instance);
         KhrWin32Surface = Vk.TryGetExtension<KhrWin32Surface>(Instance);
@@ -168,6 +167,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
         KhrAndroidSurface = Vk.TryGetExtension<KhrAndroidSurface>(Instance);
         MvkIosSurface = Vk.TryGetExtension<MvkIosSurface>(Instance);
         MvkMacosSurface = Vk.TryGetExtension<MvkMacosSurface>(Instance);
+        DebugLayer = useDebugLayer ? new(this) : null;
     }
 
     private static byte** InstanceExtensions(MemoryAllocator allocator, out uint count)

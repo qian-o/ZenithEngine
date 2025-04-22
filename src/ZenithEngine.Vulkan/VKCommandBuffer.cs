@@ -795,17 +795,29 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     #region Debugging
     public override void BeginDebugEvent(string label)
     {
-        throw new NotImplementedException();
+        DebugUtilsLabelEXT labelInfo = new()
+        {
+            SType = StructureType.DebugUtilsLabelExt,
+            PLabelName = Allocator.AllocUTF8(label)
+        };
+
+        Context.ExtDebugUtils!.CmdBeginDebugUtilsLabel(CommandBuffer, &labelInfo);
     }
 
     public override void EndDebugEvent()
     {
-        throw new NotImplementedException();
+        Context.ExtDebugUtils!.CmdEndDebugUtilsLabel(CommandBuffer);
     }
 
     public override void InsertDebugMarker(string label)
     {
-        throw new NotImplementedException();
+        DebugUtilsLabelEXT labelInfo = new()
+        {
+            SType = StructureType.DebugUtilsLabelExt,
+            PLabelName = Allocator.AllocUTF8(label)
+        };
+
+        Context.ExtDebugUtils!.CmdInsertDebugUtilsLabel(CommandBuffer, &labelInfo);
     }
     #endregion
 
