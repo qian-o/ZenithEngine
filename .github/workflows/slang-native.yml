@@ -101,3 +101,13 @@ jobs:
           git add -A
           git commit -m "Update Slang Native to ${{steps.download-slang-native.outputs.release_name}}"
           git push --set-upstream origin slang-native-${{steps.download-slang-native.outputs.release_name}}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4.2.0
+        with:
+          commit-message: 'Update Slang Native to ${{steps.download-slang-native.outputs.release_name}}'
+          branch: slang-native-${{steps.download-slang-native.outputs.release_name}}
+          title: 'Update Slang Native to ${{steps.download-slang-native.outputs.release_name}}'
+          body: 'This PR updates the Slang Native binaries.'
+          base: main
+          labels: 'update, slang-native'
