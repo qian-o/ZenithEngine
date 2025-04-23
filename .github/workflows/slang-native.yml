@@ -105,6 +105,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
+          path: ${{github.workspace}}/CodeSpace
           base: master
           branch: slang-native-${{steps.download-slang-native.outputs.release_name}}
           commit-message: 'Update Slang Native to ${{steps.download-slang-native.outputs.release_name}}'
