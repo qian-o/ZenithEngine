@@ -43,12 +43,4 @@ public struct LayoutElementDesc(ShaderStages stages,
     /// Only valid on Buffers.
     /// </summary>
     public uint Range = range;
-
-    /// <summary>
-    /// Whether the resource is a dynamic buffer.
-    /// </summary>
-    public readonly bool IsDynamicBuffer => Type is ResourceType.ConstantBuffer
-                                            or ResourceType.StructuredBuffer
-                                            or ResourceType.StructuredBufferReadWrite
-                                            && AllowDynamicOffset;
 }

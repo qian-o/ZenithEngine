@@ -13,8 +13,17 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
     public DXRayTracingPipeline(GraphicsContext context,
                                 ref readonly RayTracingPipelineDesc desc) : base(context, in desc)
     {
+        Shader[] shaders =
+        [
+            desc.Shaders.RayGen,
+            .. desc.Shaders.Miss,
+            .. desc.Shaders.ClosestHit,
+            .. desc.Shaders.AnyHit,
+            .. desc.Shaders.Intersection
+        ];
+
         uint index = 0;
-        uint numSubObjects = (uint)(1 + desc.HitGroups.Length + 1 + 2);
+        uint numSubObjects = (uint)(shaders.Length + desc.HitGroups.Length + 1 + 2);
         StateSubobject* pSubobjects = Allocator.Alloc<StateSubobject>(numSubObjects);
 
         StateObjectDesc stateObjectDesc = new()
@@ -26,32 +35,29 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
 
         // Shaders and Hit Groups
         {
-            Shader[] shaders =
-            [
-                desc.Shaders.RayGen,
-                .. desc.Shaders.Miss,
-                .. desc.Shaders.ClosestHit,
-                .. desc.Shaders.AnyHit,
-                .. desc.Shaders.Intersection
-            ];
+            uint shaderCount = (uint)shaders.Length;
+            DxilLibraryDesc* libraries = Allocator.Alloc<DxilLibraryDesc>(shaderCount);
 
-            DxilLibraryDesc dxilLibraryDesc = new()
+            for (int i = 0; i < shaderCount; i++)
             {
-                DXILLibrary = desc.Shaders.RayGen.DX().Shader,
-                NumExports = (uint)shaders.Length,
-                PExports = Allocator.Alloc([.. shaders.Select(item => new ExportDesc
+                Shader shader = shaders[i];
+
+                libraries[i] = new()
                 {
-                    Name = (char*)Allocator.AllocUni(item.Desc.EntryPoint),
-                    ExportToRename = null,
-                    Flags = ExportFlags.None
-                })])
-            };
+                    DXILLibrary = shader.DX().Shader,
+                    NumExports = 1,
+                    PExports = Allocator.Alloc([new ExportDesc
+                    {
+                        Name = (char*)Allocator.AllocUni(shaders[i].Desc.EntryPoint)
+                    }])
+                };
 
-            pSubobjects[index++] = new()
-            {
-                Type = StateSubobjectType.DxilLibrary,
-                PDesc = &dxilLibraryDesc
-            };
+                pSubobjects[index++] = new()
+                {
+                    Type = StateSubobjectType.DxilLibrary,
+                    PDesc = libraries + i
+                };
+            }
 
             uint groupCount = (uint)desc.HitGroups.Length;
             DxHitGroupDesc* groups = Allocator.Alloc<DxHitGroupDesc>(groupCount);

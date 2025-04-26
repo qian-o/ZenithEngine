@@ -21,7 +21,7 @@ internal class DXResourceLayout : ResourceLayout
         {
             LayoutElementDesc element = desc.Elements[i];
 
-            if (element.IsDynamicBuffer)
+            if (element.Type is ResourceType.ConstantBuffer or ResourceType.StructuredBuffer or ResourceType.StructuredBufferReadWrite && element.AllowDynamicOffset)
             {
                 bindings[i] = new(element.Stages,
                                   element.Type,
