@@ -38,17 +38,17 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
             uint shaderCount = (uint)shaders.Length;
             DxilLibraryDesc* libraries = Allocator.Alloc<DxilLibraryDesc>(shaderCount);
 
-            for (int i = 0; i < shaderCount; i++)
+            for (uint i = 0; i < shaderCount; i++)
             {
-                Shader shader = shaders[i];
+                DXShader shader = shaders[i].DX();
 
                 libraries[i] = new()
                 {
-                    DXILLibrary = shader.DX().Shader,
+                    DXILLibrary = shader.Shader,
                     NumExports = 1,
                     PExports = Allocator.Alloc([new ExportDesc
                     {
-                        Name = (char*)Allocator.AllocUni(shaders[i].Desc.EntryPoint)
+                        Name = (char*)Allocator.AllocUni(shader.Desc.EntryPoint)
                     }])
                 };
 
