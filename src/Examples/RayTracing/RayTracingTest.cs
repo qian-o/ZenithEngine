@@ -100,7 +100,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
     protected override void OnLoad()
     {
-        string shader = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl");
+        string shader = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.slang");
 
         CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
 

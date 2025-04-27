@@ -3,8 +3,8 @@
     const float intScale = 256.0f;
     const float floatScale = 1.0f / 65536.0f;
     const float origin = 1.0f / 32.0f;
-    
-    int3 of_i = int3(intScale * n.x, intScale * n.y, intScale * n.z);
+
+    int3 of_i = int3(float3(intScale * n.x, intScale * n.y, intScale * n.z));
     
     float3 p_i = float3(asfloat(asint(p.x) + ((p.x < 0) ? - of_i.x : of_i.x)),
     asfloat(asint(p.y) + ((p.y < 0) ? - of_i.y : of_i.y)),
