@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <PackageReference Include="Silk.NET.Direct3D.Compilers" />
+        <PackageReference Include="Slangc.NET" />
     </ItemGroup>
 
     <ItemGroup>

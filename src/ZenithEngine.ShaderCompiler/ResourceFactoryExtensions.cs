@@ -51,7 +51,7 @@ public static class ResourceFactoryExtensions
             arguments.Add("all");
         }
 
-        byte[] shaderBytes = DxcCompiler.Compile(source, [.. arguments], includeHandler);
+        byte[] shaderBytes = [];
 
         ShaderDesc shaderDesc = new(stage, shaderBytes, entryPoint);
 
