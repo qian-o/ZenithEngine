@@ -10,6 +10,7 @@
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
     <File Path="README.md" />
+    <File Path="slangdconfig.json" />
   </Folder>
   <Project Path="src/ZenithEngine.Common/ZenithEngine.Common.csproj" />
   <Project Path="src/ZenithEngine.DirectX12/ZenithEngine.DirectX12.csproj" />
