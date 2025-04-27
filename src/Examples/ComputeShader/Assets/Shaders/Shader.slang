@@ -8,8 +8,6 @@ struct Constants
 };
 
 ConstantBuffer<Constants> constants : register(b0, space0);
-
-[[vk::image_format("rgba8")]]
 RWTexture2D<float4> Output : register(u0, space0);
 
 float mod(float x, float y)
