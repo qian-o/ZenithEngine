@@ -16,7 +16,7 @@ float mod(float x, float y)
 }
 
 [numthreads(32, 32, 1)]
-void CSMain(uint3 id : SV_DispatchThreadID)
+void CSMain(uint3 id: SV_DispatchThreadID)
 {
     float4 color = float4(0.0, 0.0, 0.0, 0.0);
 
@@ -26,7 +26,8 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     for (float i = 0.2, l; i < 1.0; i += 0.05)
     {
         color += (cos(i * 5.0 + float4(0.0, 1.0, 2.0, 3.0)) + 1.0) * (1.0 + v.y / (l = length(v) + 0.003)) / l;
-        v = float2(mod(atan2(p.x, p.y) + i + i * constants.TotalTime, 6.28318530718) - 3.14159265359, 1.0) * length(p) - i;
+        v = float2(mod(atan2(p.x, p.y) + i + i * constants.TotalTime, 6.28318530718) - 3.14159265359, 1.0) * length(p) -
+            i;
         v.x -= clamp(v.x += i, -i, i);
     }
 

@@ -3,9 +3,9 @@
 struct Vertex
 {
     float3 Position;
-    
+
     float3 Normal;
-    
+
     float2 TexCoord;
 };
 
@@ -21,28 +21,28 @@ struct Material
 struct Camera
 {
     float3 Position;
-    
+
     float3 Forward;
-    
+
     float3 Right;
-    
+
     float3 Up;
-    
+
     float NearPlane;
-    
+
     float FarPlane;
-    
+
     float Fov;
 };
 
 struct AO
 {
     float Radius;
-    
+
     int Samples;
-    
+
     float Power;
-    
+
     bool DistanceBased;
 };
 
@@ -51,7 +51,7 @@ struct Global
     Camera Camera;
 
     AO AO;
-    
+
     int FrameNumber;
 };
 
@@ -72,16 +72,15 @@ StructuredBuffer<Vertex> vertexBuffers[4] : register(t1, space0);
 StructuredBuffer<uint> indexBuffers[4] : register(t5, space0);
 StructuredBuffer<Material> materials : register(t9, space0);
 ConstantBuffer<Global> global : register(b0, space0);
-
-[[vk::image_format("rgba8")]]
-RWTexture2D<float4> Output : register(u0, space0);
+RWTexture2D<float4> output : register(u0, space0);
 
 Vertex GetVertex(uint geometryIndex, uint primitiveIndex, float3 barycentrics)
 {
     StructuredBuffer<Vertex> vertexBuffer = vertexBuffers[geometryIndex];
     StructuredBuffer<uint> indexBuffer = indexBuffers[geometryIndex];
 
-    uint3 indices = uint3(indexBuffer[primitiveIndex * 3], indexBuffer[primitiveIndex * 3 + 1], indexBuffer[primitiveIndex * 3 + 2]);
+    uint3 indices = uint3(indexBuffer[primitiveIndex * 3], indexBuffer[primitiveIndex * 3 + 1],
+                          indexBuffer[primitiveIndex * 3 + 2]);
 
     Vertex v0 = vertexBuffer[indices.x];
     Vertex v1 = vertexBuffer[indices.y];
@@ -137,7 +136,7 @@ void RayGenMain()
         }
 
         xy.y = -xy.y;
-        
+
         RayDesc rayDesc;
         rayDesc.Origin = global.Camera.Position;
         rayDesc.Direction = normalize(global.Camera.Forward + xy.x * global.Camera.Right + xy.y * global.Camera.Up);
@@ -146,19 +145,19 @@ void RayGenMain()
 
         Payload payload;
         TraceRay(scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
-        
+
         color += payload.Color;
     }
-    
+
     color /= spp;
 
     if (global.FrameNumber == 0)
     {
-        Output[launchID] = float4(color, 1.0);
+        output[launchID] = float4(color, 1.0);
     }
     else
     {
-        Output[launchID] = lerp(Output[launchID], float4(color, 1.0), 1.0 / (global.FrameNumber + 1));
+        output[launchID] = lerp(output[launchID], float4(color, 1.0), 1.0 / (global.FrameNumber + 1));
     }
 }
 
@@ -174,17 +173,18 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
 {
     uint2 launchID = DispatchRaysIndex().xy;
     uint2 launchSize = DispatchRaysDimensions().xy;
-    
+
     uint seed = tea(launchSize.x * launchID.y + launchID.x, global.FrameNumber);
 
     uint geometryIndex = GeometryIndex();
     uint primitiveIndex = PrimitiveIndex();
-    float3 barycentrics = float3(1.0 - attrib.barycentrics.x - attrib.barycentrics.y, attrib.barycentrics.x, attrib.barycentrics.y);
-    
+    float3 barycentrics =
+        float3(1.0 - attrib.barycentrics.x - attrib.barycentrics.y, attrib.barycentrics.x, attrib.barycentrics.y);
+
     Vertex vertex = GetVertex(geometryIndex, primitiveIndex, barycentrics);
 
     Material material = materials[geometryIndex];
-    
+
     payload.Hit = true;
     payload.Color = material.Albedo;
 
@@ -194,7 +194,7 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
     }
 
     float3 worldPosition = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
-    
+
     // AO
 
     {
@@ -211,7 +211,7 @@ void ClosestHitMain(inout Payload payload, in BuiltInTriangleIntersectionAttribu
             float r2 = rnd(seed);
             float sq = sqrt(1.0 - r2);
             float phi = 2.0 * 3.14159265359 * r1;
-            
+
             float3 direction = float3(cos(phi) * sq, sin(phi) * sq, sqrt(r2));
             direction = normalize(direction.x * x + direction.y * y + direction.z * vertex.Normal);
 
