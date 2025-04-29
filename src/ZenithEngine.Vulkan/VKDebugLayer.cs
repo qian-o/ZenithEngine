@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Text;
 using Silk.NET.Vulkan;
-using ZenithEngine.Common;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Vulkan;
@@ -47,7 +47,7 @@ internal unsafe class VKDebugLayer : GraphicsResource
                                         DebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                         void* pUserData)
     {
-        string message = Utils.PtrToStringUTF8((nint)pCallbackData->PMessage);
+        string message = Marshal.PtrToStringUTF8((nint)pCallbackData->PMessage)!;
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();
@@ -56,7 +56,7 @@ internal unsafe class VKDebugLayer : GraphicsResource
                                  $"[{messageSeverity}] [{messageTypes}]");
 
         stringBuilder.AppendLine(CultureInfo.InvariantCulture,
-                                 $"Name: {Utils.PtrToStringUTF8((nint)pCallbackData->PMessageIdName)}");
+                                 $"Name: {Marshal.PtrToStringUTF8((nint)pCallbackData->PMessageIdName)}");
 
         stringBuilder.AppendLine(CultureInfo.InvariantCulture,
                                  $"Number: {pCallbackData->MessageIdNumber}");

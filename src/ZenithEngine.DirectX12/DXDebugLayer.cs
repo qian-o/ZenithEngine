@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Text;
 using Silk.NET.Direct3D12;
-using ZenithEngine.Common;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
@@ -35,7 +35,7 @@ internal unsafe class DXDebugLayer : GraphicsResource
                                         byte* pDescription,
                                         void* context)
     {
-        string message = Utils.PtrToStringUTF8((nint)pDescription);
+        string message = Marshal.PtrToStringUTF8((nint)pDescription)!;
         string[] strings = message.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         StringBuilder stringBuilder = new();

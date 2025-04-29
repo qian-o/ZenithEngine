@@ -153,7 +153,7 @@ internal unsafe class DXResourceSet : ResourceSet
                             if (binding.DynamicOffsetIndex is not -1)
                             {
                                 uint offsetInBytes = bufferOffsets[binding.DynamicOffsetIndex];
-                                uint sizeInBytes = binding.Range is not 0 ? Utils.AlignedSize(binding.Range, 256u) : buffer.SizeInBytes - offsetInBytes;
+                                uint sizeInBytes = binding.Range is not 0 ? Utils.Align(binding.Range, 256u) : buffer.SizeInBytes - offsetInBytes;
 
                                 ConstantBufferViewDesc desc = new()
                                 {

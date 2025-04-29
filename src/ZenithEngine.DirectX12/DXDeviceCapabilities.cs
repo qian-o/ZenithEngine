@@ -1,6 +1,6 @@
-﻿using Silk.NET.Direct3D12;
+﻿using System.Runtime.InteropServices;
+using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
-using ZenithEngine.Common;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.DirectX12;
@@ -22,7 +22,7 @@ internal unsafe class DXDeviceCapabilities(DXGraphicsContext context) : DeviceCa
         AdapterDesc desc;
         context.Adapter.GetDesc(&desc).ThrowIfError();
 
-        deviceName = Utils.PtrToStringUni((nint)desc.Description);
+        deviceName = Marshal.PtrToStringUni((nint)desc.Description)!;
 
         if (context.Device5.Handle is not null)
         {
