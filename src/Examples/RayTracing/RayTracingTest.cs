@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
 using Common;
-using Common.Helpers;
 using Hexa.NET.ImGui;
 using Silk.NET.Maths;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -263,7 +263,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
             Up = CameraController.Up,
             NearPlane = CameraController.NearPlane,
             FarPlane = CameraController.FarPlane,
-            Fov = CameraController.Fov.ToRadians()
+            Fov = Utils.DegreesToRadians(CameraController.Fov)
         };
 
         if (ImGui.Begin("AO Settings"))

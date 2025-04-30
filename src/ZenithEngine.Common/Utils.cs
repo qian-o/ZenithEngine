@@ -82,8 +82,18 @@ public static class Utils
         return start + ((end - start) * value);
     }
 
-    public static T Clamp<T>(T value, T min, T max) where T : INumberBase<T>, IComparisonOperators<T, T, bool>
+    public static T Clamp<T>(T value, T min, T max) where T : IComparisonOperators<T, T, bool>
     {
         return value < min ? min : value > max ? max : value;
+    }
+
+    public static T DegreesToRadians<T>(T degrees) where T : ITrigonometricFunctions<T>
+    {
+        return T.DegreesToRadians(degrees);
+    }
+
+    public static T RadiansToDegrees<T>(T radians) where T : ITrigonometricFunctions<T>
+    {
+        return T.RadiansToDegrees(radians);
     }
 }
