@@ -72,27 +72,27 @@ public static class Utils
         return mipmaps;
     }
 
-    public static T Align<T>(T size, T alignment) where T : INumberBase<T>, IBitwiseOperators<T, T, T>
-    {
-        return (size + alignment - T.One) & ~(alignment - T.One);
-    }
-
     public static T Lerp<T>(T start, T end, T value) where T : INumberBase<T>
     {
         return start + ((end - start) * value);
     }
 
-    public static T Clamp<T>(T value, T min, T max) where T : IComparisonOperators<T, T, bool>
+    public static T Align<T>(T size, T alignment) where T : INumberBase<T>, IBitwiseOperators<T, T, T>
+    {
+        return (size + alignment - T.One) & ~(alignment - T.One);
+    }
+
+    public static T Clamp<T>(T value, T min, T max) where T : INumberBase<T>, IComparisonOperators<T, T, bool>
     {
         return value < min ? min : value > max ? max : value;
     }
 
-    public static T DegreesToRadians<T>(T degrees) where T : ITrigonometricFunctions<T>
+    public static T DegreesToRadians<T>(T degrees) where T : INumberBase<T>, ITrigonometricFunctions<T>
     {
         return T.DegreesToRadians(degrees);
     }
 
-    public static T RadiansToDegrees<T>(T radians) where T : ITrigonometricFunctions<T>
+    public static T RadiansToDegrees<T>(T radians) where T : INumberBase<T>, ITrigonometricFunctions<T>
     {
         return T.RadiansToDegrees(radians);
     }
