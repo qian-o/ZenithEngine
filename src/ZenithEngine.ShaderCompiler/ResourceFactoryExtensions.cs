@@ -29,7 +29,7 @@ public static class ResourceFactoryExtensions
                 break;
             case Backend.Vulkan:
                 {
-                    arguments.AddRange(["-fvk-use-dx-layout", "-fvk-use-entrypoint-name"]);
+                    arguments.AddRange(["-fvk-use-entrypoint-name", "-fvk-use-dx-layout"]);
 
                     arguments.AddRange(["-fvk-b-shift", "0", "all"]);
                     arguments.AddRange(["-fvk-t-shift", $"{Utils.CbvCount}", "all"]);
