@@ -8,7 +8,10 @@ namespace ZenithEngine.ShaderCompiler;
 
 public static class ResourceFactoryExtensions
 {
-    public static Shader CompileShader(this ResourceFactory factory, string path, ShaderStages stage, string entryPoint)
+    public static Shader CompileShader(this ResourceFactory factory,
+                                       string path,
+                                       ShaderStages stage,
+                                       string entryPoint)
     {
         List<string> arguments =
         [

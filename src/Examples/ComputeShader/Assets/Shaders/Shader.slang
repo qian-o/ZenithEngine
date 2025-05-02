@@ -1,4 +1,5 @@
 ﻿// https://www.shadertoy.com/view/DlVczV
+// This is an example from Shadertoy, used here to demonstrate the use of Compute Shader.
 
 struct Constants
 {
@@ -16,7 +17,7 @@ float mod(float x, float y)
 }
 
 [numthreads(32, 32, 1)]
-void CSMain(uint3 id: SV_DispatchThreadID)
+void Main(uint3 id: SV_DispatchThreadID)
 {
     float4 color = float4(0.0, 0.0, 0.0, 0.0);
 

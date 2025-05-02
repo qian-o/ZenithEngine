@@ -52,7 +52,7 @@ internal unsafe class ComputeShaderTest() : VisualTest("Compute Shader Test")
 
         resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
 
-        using Shader csShader = Context.Factory.CompileShader(shader, ShaderStages.Compute, "CSMain");
+        using Shader csShader = Context.Factory.CompileShader(shader, ShaderStages.Compute, "Main");
 
         ComputePipelineDesc cpDesc = new(csShader, resourceLayout);
 
