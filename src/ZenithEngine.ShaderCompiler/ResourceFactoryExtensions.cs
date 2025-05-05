@@ -8,11 +8,6 @@ namespace ZenithEngine.ShaderCompiler;
 
 public static class ResourceFactoryExtensions
 {
-    static ResourceFactoryExtensions()
-    {
-        SlangCompiler.EnableDeserialization = true;
-    }
-
     public static Shader CompileShader(this ResourceFactory factory,
                                        string path,
                                        ShaderStages stage,
