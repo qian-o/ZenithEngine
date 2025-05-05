@@ -8,6 +8,11 @@ namespace ZenithEngine.ShaderCompiler;
 
 public static class ResourceFactoryExtensions
 {
+    static ResourceFactoryExtensions()
+    {
+        SlangCompiler.EnableDeserialization = true;
+    }
+
     public static Shader CompileShader(this ResourceFactory factory,
                                        string path,
                                        ShaderStages stage,
@@ -46,7 +51,7 @@ public static class ResourceFactoryExtensions
                 throw new ZenithEngineException(ExceptionHelpers.NotSupported(factory.Context.Backend));
         }
 
-        byte[] shaderBytes = SlangCompiler.Compile([.. arguments]);
+        byte[] shaderBytes = SlangCompiler.CompileWithReflection([.. arguments], out _);
 
         ShaderDesc shaderDesc = new(stage, shaderBytes, entryPoint);
 
