@@ -1,6 +1,6 @@
-﻿using Silk.NET.Vulkan;
+﻿using System.Runtime.InteropServices;
+using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
-using ZenithEngine.Common;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Vulkan;
@@ -22,7 +22,7 @@ internal unsafe class VKDeviceCapabilities(VKGraphicsContext context) : DeviceCa
         PhysicalDeviceProperties deviceProperties;
         context.Vk.GetPhysicalDeviceProperties(context.PhysicalDevice, &deviceProperties);
 
-        deviceName = Utils.PtrToStringUTF8((nint)deviceProperties.DeviceName);
+        deviceName = Marshal.PtrToStringUTF8((nint)deviceProperties.DeviceName)!;
 
         uint propertyCount;
         context.Vk.EnumerateDeviceExtensionProperties(context.PhysicalDevice,
@@ -45,7 +45,7 @@ internal unsafe class VKDeviceCapabilities(VKGraphicsContext context) : DeviceCa
     {
         foreach (ExtensionProperties extensionProperty in extensionProperties)
         {
-            if (extensionName == Utils.PtrToStringUTF8((nint)extensionProperty.ExtensionName))
+            if (extensionName == Marshal.PtrToStringUTF8((nint)extensionProperty.ExtensionName))
             {
                 return true;
             }

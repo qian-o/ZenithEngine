@@ -41,7 +41,7 @@ internal unsafe class TriangleTest() : VisualTest("Triangle Test")
             Model = Matrix4X4<float>.Identity
         };
 
-        string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
+        string shader = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.slang");
 
         BufferDesc vbDesc = new((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.VertexBuffer);
 
@@ -67,8 +67,8 @@ internal unsafe class TriangleTest() : VisualTest("Triangle Test")
 
         Context.UpdateBuffer(constantsBuffer, (nint)(&constants), (uint)sizeof(Constants));
 
-        using Shader vsShader = Context.Factory.CompileShader(ShaderStages.Vertex, hlsl, "VertexMain");
-        using Shader psShader = Context.Factory.CompileShader(ShaderStages.Pixel, hlsl, "PixelMain");
+        using Shader vsShader = Context.Factory.CompileShader(shader, ShaderStages.Vertex, "VertexMain");
+        using Shader psShader = Context.Factory.CompileShader(shader, ShaderStages.Pixel, "PixelMain");
 
         ResourceLayoutDesc layoutDesc = new([new(ShaderStages.Vertex, ResourceType.ConstantBuffer, 0)]);
 

@@ -22,9 +22,9 @@ internal unsafe class DXShaderTable : GraphicsResource
     {
         stateObject.QueryInterface(out ComPtr<ID3D12StateObjectProperties> stateObjectProperties).ThrowIfError();
 
-        const uint handleSize = 32;
+        const uint handleSize = 32u;
 
-        uint handleSizeAligned = Utils.AlignedSize<uint>(handleSize, 64);
+        uint handleSizeAligned = Utils.Align(handleSize, 64u);
 
         uint rayGenCount = (uint)rayGenExports.Length;
         uint missCount = (uint)missExports.Length;

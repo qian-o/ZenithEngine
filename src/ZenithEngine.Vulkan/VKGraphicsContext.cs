@@ -1,4 +1,5 @@
-﻿using Silk.NET.Core;
+﻿using System.Runtime.InteropServices;
+using Silk.NET.Core;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
@@ -140,7 +141,7 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
             foreach (LayerProperties layer in layers)
             {
-                if (ValidationLayerName == Utils.PtrToStringUTF8((nint)layer.LayerName))
+                if (ValidationLayerName == Marshal.PtrToStringUTF8((nint)layer.LayerName))
                 {
                     layerFound = true;
 

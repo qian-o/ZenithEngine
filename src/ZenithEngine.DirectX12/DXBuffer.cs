@@ -19,7 +19,7 @@ internal unsafe class DXBuffer : Buffer
     public DXBuffer(GraphicsContext context,
                     ref readonly BufferDesc desc) : base(context, in desc)
     {
-        SizeInBytes = Utils.AlignedSize(desc.SizeInBytes, 256u);
+        SizeInBytes = Utils.Align(desc.SizeInBytes, 256u);
 
         ResourceDesc resourceDesc = new()
         {

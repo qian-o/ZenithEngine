@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
 using Common;
-using Common.Helpers;
 using Hexa.NET.ImGui;
 using Silk.NET.Maths;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -100,7 +100,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
     protected override void OnLoad()
     {
-        string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
+        string shader = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.slang");
 
         CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
 
@@ -218,11 +218,11 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
         resSet = Context.Factory.CreateResourceSet(in resSetDesc);
 
-        using Shader rgShader = Context.Factory.CompileShader(ShaderStages.RayGeneration, hlsl, "RayGenMain", IncludeHandler);
-        using Shader msShader = Context.Factory.CompileShader(ShaderStages.Miss, hlsl, "MissMain", IncludeHandler);
-        using Shader chShader = Context.Factory.CompileShader(ShaderStages.ClosestHit, hlsl, "ClosestHitMain", IncludeHandler);
-        using Shader msAoShader = Context.Factory.CompileShader(ShaderStages.Miss, hlsl, "MissAO", IncludeHandler);
-        using Shader chAoShader = Context.Factory.CompileShader(ShaderStages.ClosestHit, hlsl, "ClosestHitAO", IncludeHandler);
+        using Shader rgShader = Context.Factory.CompileShader(shader, ShaderStages.RayGeneration, "RayGenMain");
+        using Shader msShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissMain");
+        using Shader chShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitMain");
+        using Shader msAoShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissAO");
+        using Shader chAoShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitAO");
 
         RayTracingPipelineDesc rtpDesc = new
         (
@@ -263,7 +263,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
             Up = CameraController.Up,
             NearPlane = CameraController.NearPlane,
             FarPlane = CameraController.FarPlane,
-            Fov = CameraController.Fov.ToRadians()
+            Fov = Utils.DegreesToRadians(CameraController.Fov)
         };
 
         if (ImGui.Begin("AO Settings"))
@@ -372,10 +372,5 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         {
             indexBuffer.Dispose();
         }
-    }
-
-    private string IncludeHandler(string path)
-    {
-        return File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", path));
     }
 }

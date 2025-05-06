@@ -30,7 +30,7 @@ internal unsafe class ComputeShaderTest() : VisualTest("Compute Shader Test")
 
     protected override void OnLoad()
     {
-        string hlsl = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.hlsl"));
+        string shader = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Shader.slang");
 
         BufferDesc cbDesc = new((uint)sizeof(Constants), BufferUsage.ConstantBuffer | BufferUsage.Dynamic);
 
@@ -52,7 +52,7 @@ internal unsafe class ComputeShaderTest() : VisualTest("Compute Shader Test")
 
         resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
 
-        using Shader csShader = Context.Factory.CompileShader(ShaderStages.Compute, hlsl, "CSMain");
+        using Shader csShader = Context.Factory.CompileShader(shader, ShaderStages.Compute, "Main");
 
         ComputePipelineDesc cpDesc = new(csShader, resourceLayout);
 

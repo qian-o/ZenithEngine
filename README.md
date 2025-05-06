@@ -56,3 +56,11 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - Delete the `Triangle` project and change it to the `Rasterization` project.
 - `Rasterization` and `RayTracing` use the Cornell Box model.
 - After the release of Silk.NET 3.0, refactor all interface calls and use the unsafe method.
+- Delete the offset calculation for cbv, srv, and uav in Vulkan.
+- Delete support for Dynamic Buffer.
+- Replace descriptor sets with VK_EXT_descriptor_buffer.
+
+## Task List
+1. Add reflection feature in `ZenithEngine.ShaderCompiler`.
+2. Adjust all Shader files to remove register and space definitions.
+3. Remove offset calculation for binding locations in `ZenithEngine.Vulkan`.

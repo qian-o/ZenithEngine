@@ -19,9 +19,9 @@ internal unsafe class VKShaderTable : GraphicsResource
                          uint missCount,
                          uint hitGroupCount) : base(context)
     {
-        const uint handleSize = 32;
+        const uint handleSize = 32u;
 
-        uint handleSizeAligned = Utils.AlignedSize<uint>(handleSize, 64);
+        uint handleSizeAligned = Utils.Align(handleSize, 64u);
 
         uint rayGenSize = rayGenCount * handleSize;
         uint missSize = missCount * handleSize;
