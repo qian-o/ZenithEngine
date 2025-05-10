@@ -61,5 +61,3 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 
 ## Task List
 1. Add reflection feature in `ZenithEngine.ShaderCompiler`.
-2. Adjust all Shader files to remove register and space definitions.
-3. Remove offset calculation for binding locations in `ZenithEngine.Vulkan`.
