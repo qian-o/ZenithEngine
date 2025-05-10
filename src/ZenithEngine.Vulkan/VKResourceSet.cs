@@ -25,16 +25,16 @@ internal unsafe class VKResourceSet : ResourceSet
 
         for (int i = 0; i < layoutDesc.Elements.Length; i++)
         {
-            LayoutElementDesc element = layoutDesc.Elements[i];
+            ResourceElementDesc element = layoutDesc.Elements[i];
             GraphicsResource[] resources = desc.Resources[(int)resourceOffset..(int)(resourceOffset + element.Count)];
 
             WriteDescriptorSet write = new()
             {
                 SType = StructureType.WriteDescriptorSet,
                 DstSet = Token.Set,
-                DstBinding = VKHelpers.GetBinding(element.Type, element.Slot),
+                DstBinding = element.Slot,
                 DescriptorCount = element.Count,
-                DescriptorType = VKFormats.GetDescriptorType(element.Type, element.AllowDynamicOffset)
+                DescriptorType = VKFormats.GetDescriptorType(element.Type)
             };
 
             if (element.Type
@@ -51,8 +51,7 @@ internal unsafe class VKResourceSet : ResourceSet
                     infos[j] = new()
                     {
                         Buffer = buffer.Buffer,
-                        Offset = 0,
-                        Range = element.Range is 0 ? Vk.WholeSize : element.Range
+                        Range = Vk.WholeSize
                     };
                 }
 

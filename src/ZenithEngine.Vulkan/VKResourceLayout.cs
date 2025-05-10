@@ -23,12 +23,12 @@ internal unsafe class VKResourceLayout : ResourceLayout
 
         for (int i = 0; i < desc.Elements.Length; i++)
         {
-            LayoutElementDesc element = desc.Elements[i];
+            ResourceElementDesc element = desc.Elements[i];
 
             bindings[i] = new()
             {
-                Binding = VKHelpers.GetBinding(element.Type, element.Slot),
-                DescriptorType = VKFormats.GetDescriptorType(element.Type, element.AllowDynamicOffset),
+                Binding = element.Slot,
+                DescriptorType = VKFormats.GetDescriptorType(element.Type),
                 DescriptorCount = element.Count,
                 StageFlags = VKFormats.GetShaderStageFlags(element.Stages)
             };

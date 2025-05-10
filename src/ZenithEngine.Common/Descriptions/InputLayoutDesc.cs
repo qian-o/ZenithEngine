@@ -2,19 +2,19 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct LayoutDesc(VertexStepFunction stepFunction = VertexStepFunction.PerVertexData,
-                         uint stepRate = 0,
-                         uint stride = 0,
-                         params ElementDesc[] elements)
+public struct InputLayoutDesc(VertexStepFunction stepFunction = VertexStepFunction.PerVertexData,
+                              uint stepRate = 0,
+                              uint stride = 0,
+                              params InputElementDesc[] elements)
 {
-    public LayoutDesc() : this(VertexStepFunction.PerVertexData, 0, 0, [])
+    public InputLayoutDesc() : this(VertexStepFunction.PerVertexData, 0, 0, [])
     {
     }
 
     /// <summary>
     /// A array of individual vertex elements comprising a single vertex.
     /// </summary>
-    public ElementDesc[] Elements = elements;
+    public InputElementDesc[] Elements = elements;
 
     /// <summary>
     /// The frequency with which the vertex function fetches attribute data.
@@ -32,9 +32,9 @@ public struct LayoutDesc(VertexStepFunction stepFunction = VertexStepFunction.Pe
     /// </summary>
     public uint Stride = stride;
 
-    public LayoutDesc Add(ElementDesc element)
+    public InputLayoutDesc Add(InputElementDesc element)
     {
-        if (element.Offset is ElementDesc.AppendAligned)
+        if (element.Offset is InputElementDesc.AppendAligned)
         {
             element.Offset = (int)Stride;
         }

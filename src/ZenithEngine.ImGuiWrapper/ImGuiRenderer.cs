@@ -25,9 +25,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
     private Buffer indexBuffer = null!;
     private Buffer constantsBuffer = null!;
     private Sampler sampler = null!;
-    private ResourceLayout layout0 = null!;
-    private ResourceLayout layout1 = null!;
-    private ResourceSet set0 = null!;
+    private ResourceLayout layout = null!;
     private GraphicsPipeline pipeline = null!;
 
     public ImGuiRenderer(GraphicsContext context,
@@ -139,7 +137,6 @@ internal unsafe class ImGuiRenderer : DisposableObject
         commandBuffer.SetGraphicsPipeline(pipeline);
         commandBuffer.SetVertexBuffer(0, vertexBuffer);
         commandBuffer.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
-        commandBuffer.SetResourceSet(0, set0);
 
         for (int i = 0, vertexOffset = 0, indexOffset = 0; i < drawDataPtr.CmdListsCount; i++)
         {
@@ -170,7 +167,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
                     commandBuffer.SetScissorRectangles([offset], [extent]);
 
-                    commandBuffer.SetResourceSet(1, bindings[drawCmd.TextureId.Handle].ResourceSet);
+                    commandBuffer.SetResourceSet(0, bindings[drawCmd.TextureId.Handle].ResourceSet);
 
                     commandBuffer.DrawIndexed(drawCmd.ElemCount,
                                               1,
@@ -202,7 +199,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
             id++;
         }
 
-        ResourceSetDesc desc = new(layout1, texture);
+        ResourceSetDesc desc = new(layout, constantsBuffer, texture, sampler);
 
         bindings[id] = new(texture, Context.Factory.CreateResourceSet(in desc));
 
@@ -237,9 +234,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
         indexBuffer.Dispose();
         constantsBuffer.Dispose();
         sampler.Dispose();
-        layout0.Dispose();
-        layout1.Dispose();
-        set0.Dispose();
+        layout.Dispose();
         pipeline.Dispose();
     }
 
@@ -259,38 +254,26 @@ internal unsafe class ImGuiRenderer : DisposableObject
         constantsBuffer = Context.Factory.CreateBuffer(in cbDesc);
         sampler = Context.Factory.CreateSampler(in Samplers.PointClamp);
 
-        ResourceLayoutDesc layout0Desc = new
-        (
-            new(ShaderStages.Vertex, ResourceType.ConstantBuffer, 0),
-            new(ShaderStages.Pixel, ResourceType.Sampler, 0)
-        );
+        Shaders.Get(Context.Backend, colorSpaceHandling, out ResourceLayoutDesc resourceLayoutDesc, out byte[] vs, out byte[] ps);
 
-        ResourceLayoutDesc layout1Desc = new([new(ShaderStages.Pixel, ResourceType.Texture, 0)]);
+        layout = Context.Factory.CreateResourceLayout(in resourceLayoutDesc);
 
-        layout0 = Context.Factory.CreateResourceLayout(in layout0Desc);
-        layout1 = Context.Factory.CreateResourceLayout(in layout1Desc);
-
-        ResourceSetDesc set0Desc = new(layout0, constantsBuffer, sampler);
-
-        set0 = Context.Factory.CreateResourceSet(in set0Desc);
-
-        Shaders.Get(Context.Backend, colorSpaceHandling, out byte[] vs, out byte[] ps);
         ShaderDesc vsShaderDesc = new(ShaderStages.Vertex, vs, Shaders.VSMain);
         ShaderDesc psShaderDesc = new(ShaderStages.Pixel, ps, Shaders.PSMain);
 
         using Shader vsShader = Context.Factory.CreateShader(in vsShaderDesc);
         using Shader psShader = Context.Factory.CreateShader(in psShaderDesc);
 
-        LayoutDesc layoutDesc = new();
-        layoutDesc.Add(new(ElementFormat.Float2, ElementSemanticType.Position, 0));
-        layoutDesc.Add(new(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
-        layoutDesc.Add(new(ElementFormat.UByte4Normalized, ElementSemanticType.Color, 0));
+        InputLayoutDesc inputLayout = new();
+        inputLayout.Add(new(ElementFormat.Float2, ElementSemanticType.Position, 0));
+        inputLayout.Add(new(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
+        inputLayout.Add(new(ElementFormat.UByte4Normalized, ElementSemanticType.Color, 0));
 
         GraphicsPipelineDesc pipelineDesc = new
         (
             shaders: new(vertex: vsShader, pixel: psShader),
-            inputLayouts: [layoutDesc],
-            resourceLayouts: [layout0, layout1],
+            inputLayouts: [inputLayout],
+            resourceLayouts: [layout],
             outputs: outputDesc,
             renderStates: new(RasterizerStates.None, DepthStencilStates.None, BlendStates.AlphaBlend)
         );

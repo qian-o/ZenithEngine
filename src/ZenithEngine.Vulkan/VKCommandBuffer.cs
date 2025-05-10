@@ -660,12 +660,8 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                       VKFormats.GetIndexType(format));
     }
 
-    public override void SetResourceSet(uint slot,
-                                        ResourceSet resourceSet,
-                                        uint[]? bufferOffsets = null)
+    public override void SetResourceSet(uint slot, ResourceSet resourceSet)
     {
-        bufferOffsets ??= [];
-
         VKResourceSet vkResourceSet = resourceSet.VK();
 
         (PipelineBindPoint bindPoint, VkPipelineLayout layout) = activePipeline switch
@@ -676,17 +672,14 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(activePipeline))
         };
 
-        fixed (uint* bufferOffsetsPtr = bufferOffsets)
-        {
-            Context.Vk.CmdBindDescriptorSets(CommandBuffer,
-                                             bindPoint,
-                                             layout,
-                                             slot,
-                                             1,
-                                             in vkResourceSet.Token.Set,
-                                             (uint)bufferOffsets.Length,
-                                             bufferOffsetsPtr);
-        }
+        Context.Vk.CmdBindDescriptorSets(CommandBuffer,
+                                         bindPoint,
+                                         layout,
+                                         slot,
+                                         1,
+                                         in vkResourceSet.Token.Set,
+                                         0,
+                                         null);
     }
     #endregion
 

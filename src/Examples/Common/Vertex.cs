@@ -13,15 +13,15 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
 
     public Vector2D<float> TexCoord = texCoord;
 
-    public static LayoutDesc GetLayout()
+    public static InputLayoutDesc GetInputLayout()
     {
-        LayoutDesc layout = new();
+        InputLayoutDesc inputLayout = new();
 
-        layout.Add(new(ElementFormat.Float3, ElementSemanticType.Position, 0));
-        layout.Add(new(ElementFormat.Float3, ElementSemanticType.Normal, 0));
-        layout.Add(new(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
+        inputLayout.Add(new(ElementFormat.Float3, ElementSemanticType.Position, 0));
+        inputLayout.Add(new(ElementFormat.Float3, ElementSemanticType.Normal, 0));
+        inputLayout.Add(new(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
 
-        return layout;
+        return inputLayout;
     }
 
     public static void CornellBox(uint materialId,

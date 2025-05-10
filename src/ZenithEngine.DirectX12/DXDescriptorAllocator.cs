@@ -17,12 +17,12 @@ internal unsafe class DXDescriptorAllocator : GraphicsResource
 
     public DXDescriptorAllocator(GraphicsContext context,
                                  DescriptorHeapType heapType,
-                                 uint count) : base(context)
+                                 uint numDescriptors) : base(context)
     {
         DescriptorHeapDesc desc = new()
         {
             Type = heapType,
-            NumDescriptors = count,
+            NumDescriptors = numDescriptors,
             Flags = DescriptorHeapFlags.None,
             NodeMask = 0
         };
@@ -30,7 +30,7 @@ internal unsafe class DXDescriptorAllocator : GraphicsResource
         Context.Device.CreateDescriptorHeap(&desc, out Heap).ThrowIfError();
 
         descriptorSize = Context.Device.GetDescriptorHandleIncrementSize(heapType);
-        descriptorUsed = new bool[count];
+        descriptorUsed = new bool[numDescriptors];
         @lock = new();
 
         cpuStart = Heap.GetCPUDescriptorHandleForHeapStart();

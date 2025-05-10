@@ -6,8 +6,7 @@ namespace ZenithEngine.DirectX12;
 
 internal unsafe class DXDescriptorTableAllocator : GraphicsResource
 {
-    public ComPtr<ID3D12DescriptorHeap> CpuHeap;
-    public ComPtr<ID3D12DescriptorHeap> GpuHeap;
+    public ComPtr<ID3D12DescriptorHeap> Heap;
 
     private readonly CpuDescriptorHandle cpuStart;
     private readonly GpuDescriptorHandle gpuStart;
@@ -19,25 +18,17 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
                                       DescriptorHeapType heapType,
                                       uint numDescriptors) : base(context)
     {
-        DescriptorHeapDesc cpuDesc = new()
-        {
-            Type = heapType,
-            NumDescriptors = numDescriptors,
-            Flags = DescriptorHeapFlags.None
-        };
-
-        DescriptorHeapDesc gpuDesc = new()
+        DescriptorHeapDesc desc = new()
         {
             Type = heapType,
             NumDescriptors = numDescriptors,
             Flags = DescriptorHeapFlags.ShaderVisible
         };
 
-        Context.Device.CreateDescriptorHeap(&cpuDesc, out CpuHeap).ThrowIfError();
-        Context.Device.CreateDescriptorHeap(&gpuDesc, out GpuHeap).ThrowIfError();
+        Context.Device.CreateDescriptorHeap(&desc, out Heap).ThrowIfError();
 
-        cpuStart = CpuHeap.GetCPUDescriptorHandleForHeapStart();
-        gpuStart = GpuHeap.GetGPUDescriptorHandleForHeapStart();
+        cpuStart = Heap.GetCPUDescriptorHandleForHeapStart();
+        gpuStart = Heap.GetGPUDescriptorHandleForHeapStart();
         descriptorSize = Context.Device.GetDescriptorHandleIncrementSize(heapType);
 
         HeapType = heapType;
@@ -47,41 +38,23 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
 
     private new DXGraphicsContext Context => (DXGraphicsContext)base.Context;
 
-    public void UpdateDescriptor(CpuDescriptorHandle handle)
+    public void UpdateDescriptors(CpuDescriptorHandle[] handles)
     {
-        Context.Device.CopyDescriptorsSimple(1,
-                                             new(cpuStart.Ptr + (allocatedDescriptors * descriptorSize)),
-                                             handle,
-                                             HeapType);
+        CpuDescriptorHandle dest = new(cpuStart.Ptr + (allocatedDescriptors * descriptorSize));
 
-        allocatedDescriptors++;
-    }
+        foreach (CpuDescriptorHandle handle in handles)
+        {
+            Context.Device.CopyDescriptorsSimple(1, dest, handle, HeapType);
 
-    public CpuDescriptorHandle UpdateDescriptorHandle()
-    {
-        CpuDescriptorHandle handle = new(cpuStart.Ptr + (allocatedDescriptors * descriptorSize));
+            dest.Ptr += descriptorSize;
+        }
 
-        allocatedDescriptors++;
-
-        return handle;
+        allocatedDescriptors += (uint)handles.Length;
     }
 
     public GpuDescriptorHandle GetCurrentTableHandle()
     {
         return new(gpuStart.Ptr + (allocatedDescriptors * descriptorSize));
-    }
-
-    public void Submit()
-    {
-        if (allocatedDescriptors is 0)
-        {
-            return;
-        }
-
-        Context.Device.CopyDescriptorsSimple(allocatedDescriptors,
-                                             GpuHeap.GetCPUDescriptorHandleForHeapStart(),
-                                             CpuHeap.GetCPUDescriptorHandleForHeapStart(),
-                                             HeapType);
     }
 
     public void Reset()
@@ -95,7 +68,6 @@ internal unsafe class DXDescriptorTableAllocator : GraphicsResource
 
     protected override void Destroy()
     {
-        GpuHeap.Dispose();
-        CpuHeap.Dispose();
+        Heap.Dispose();
     }
 }

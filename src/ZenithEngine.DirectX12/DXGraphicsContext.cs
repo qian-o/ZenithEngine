@@ -9,6 +9,8 @@ namespace ZenithEngine.DirectX12;
 internal unsafe class DXGraphicsContext : GraphicsContext
 {
     public const int DefaultShader4ComponentMapping = 0x1688;
+    public const uint DefaultCbvSrvUavDescriptors = 1024;
+    public const uint DefaultSamplerDescriptors = 16;
 
     public ComPtr<IDXGIFactory6> Factory6;
     public ComPtr<IDXGIAdapter> Adapter;
@@ -142,8 +144,8 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
         RtvAllocator = new(this, DescriptorHeapType.Rtv, 512);
         DsvAllocator = new(this, DescriptorHeapType.Dsv, 512);
-        CbvSrvUavAllocator = new(this, DescriptorHeapType.CbvSrvUav, 8192);
-        SamplerAllocator = new(this, DescriptorHeapType.Sampler, 128);
+        CbvSrvUavAllocator = new(this, DescriptorHeapType.CbvSrvUav, DefaultCbvSrvUavDescriptors * 8);
+        SamplerAllocator = new(this, DescriptorHeapType.Sampler, DefaultSamplerDescriptors * 8);
         DebugLayer = useDebugLayer ? new(this) : null;
 
         Capabilities.Init();
