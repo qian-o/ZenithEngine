@@ -254,9 +254,9 @@ internal unsafe class ImGuiRenderer : DisposableObject
         constantsBuffer = Context.Factory.CreateBuffer(in cbDesc);
         sampler = Context.Factory.CreateSampler(in Samplers.PointClamp);
 
-        Shaders.Get(Context.Backend, colorSpaceHandling, out ResourceLayoutDesc resourceLayoutDesc, out byte[] vs, out byte[] ps);
+        Shaders.Get(Context.Backend, colorSpaceHandling, out ResourceLayoutDesc layoutDesc, out byte[] vs, out byte[] ps);
 
-        layout = Context.Factory.CreateResourceLayout(in resourceLayoutDesc);
+        layout = Context.Factory.CreateResourceLayout(in layoutDesc);
 
         ShaderDesc vsShaderDesc = new(ShaderStages.Vertex, vs, Shaders.VSMain);
         ShaderDesc psShaderDesc = new(ShaderStages.Pixel, ps, Shaders.PSMain);
