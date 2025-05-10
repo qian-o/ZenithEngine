@@ -218,11 +218,11 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
         resSet = Context.Factory.CreateResourceSet(in resSetDesc);
 
-        using Shader rgShader = Context.Factory.CompileShader(shader, ShaderStages.RayGeneration, "RayGenMain");
-        using Shader msShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissMain");
-        using Shader chShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitMain");
-        using Shader msAoShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissAO");
-        using Shader chAoShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitAO");
+        using Shader rgShader = Context.Factory.CompileShader(shader, ShaderStages.RayGeneration, "RayGenMain", out _);
+        using Shader msShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissMain", out _);
+        using Shader chShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitMain", out _);
+        using Shader msAoShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissAO", out _);
+        using Shader chAoShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitAO", out _);
 
         RayTracingPipelineDesc rtpDesc = new
         (

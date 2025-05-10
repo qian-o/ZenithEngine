@@ -11,7 +11,8 @@ public static class ResourceFactoryExtensions
     public static Shader CompileShader(this ResourceFactory factory,
                                        string path,
                                        ShaderStages stage,
-                                       string entryPoint)
+                                       string entryPoint,
+                                       out ShaderReflection reflection)
     {
         List<string> arguments =
         [
@@ -41,7 +42,9 @@ public static class ResourceFactoryExtensions
                 throw new ZenithEngineException(ExceptionHelpers.NotSupported(factory.Context.Backend));
         }
 
-        byte[] shaderBytes = SlangCompiler.CompileWithReflection([.. arguments], out _);
+        byte[] shaderBytes = SlangCompiler.CompileWithReflection([.. arguments], out SlangReflection slangReflection);
+
+        reflection = new(slangReflection);
 
         ShaderDesc shaderDesc = new(stage, shaderBytes, entryPoint);
 
