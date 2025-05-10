@@ -12,14 +12,13 @@ namespace ZenithEngine.ShaderCompiler;
 
 public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
 {
-    private readonly ReadOnlyDictionary<string, ShaderBinding> cache;
+    private readonly ReadOnlyDictionary<string, ShaderBinding> bindings;
 
     internal ShaderReflection(ShaderStages stage, SlangReflection slangReflection)
     {
         SlangEntryPoint entryPoint = slangReflection.EntryPoints[0];
 
-        Dictionary<string, ShaderBinding> keyValues = [];
-
+        Dictionary<string, ShaderBinding> bindings = [];
         foreach (SlangNamedTypeBinding namedTypeBinding in entryPoint.Bindings)
         {
             SlangBinding binding = namedTypeBinding.Binding;
@@ -38,7 +37,7 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
                     throw new ZenithEngineException(ExceptionHelpers.NotSupported(parameter.Type.Kind));
                 }
 
-                ParseParameterBlock(namedTypeBinding.Name, stage, keyValues, parameter.Type);
+                ParseParameterBlock(namedTypeBinding.Name, stage, bindings, parameter.Type);
             }
             else
             {
@@ -47,60 +46,75 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
                                                binding.Index,
                                                binding.Count);
 
-                keyValues.Add(namedTypeBinding.Name, new(binding.Space, desc));
+                bindings.Add(namedTypeBinding.Name, new(binding.Space, desc));
             }
         }
 
-        cache = new(keyValues);
+        uint space = 0;
+        foreach (uint item in bindings.Values.Select(static item => item.Space).Distinct())
+        {
+            if (item != space)
+            {
+                throw new ZenithEngineException("The space of the resource is not continuous.");
+            }
+
+            space++;
+        }
+
+        this.bindings = new(bindings);
     }
 
     internal ShaderReflection(ShaderReflection[] reflections)
     {
-        Dictionary<string, ShaderBinding> keyValues = [];
-
+        Dictionary<string, ShaderBinding> bindings = [];
         foreach (ShaderReflection reflection in reflections)
         {
-            foreach (KeyValuePair<string, ShaderBinding> binding in reflection.cache)
+            foreach (KeyValuePair<string, ShaderBinding> binding in reflection.bindings)
             {
-                if (!keyValues.TryGetValue(binding.Key, out ShaderBinding value))
+                if (!bindings.TryGetValue(binding.Key, out ShaderBinding value))
                 {
-                    keyValues.Add(binding.Key, binding.Value);
+                    bindings.Add(binding.Key, binding.Value);
                 }
                 else
                 {
+                    if (value.Space != binding.Value.Space)
+                    {
+                        throw new ZenithEngineException("This shader reflection has different spaces.");
+                    }
+
                     ResourceElementDesc desc = value.Desc;
 
                     desc.Stages |= binding.Value.Desc.Stages;
 
-                    keyValues[binding.Key] = new(value.Space, desc);
+                    bindings[binding.Key] = new(value.Space, desc);
                 }
             }
         }
 
-        cache = new(keyValues);
+        this.bindings = new(bindings);
     }
 
-    public ShaderBinding this[string key] => cache[key];
+    public ShaderBinding this[string key] => bindings[key];
 
-    public IEnumerable<string> Keys => cache.Keys;
+    public IEnumerable<string> Keys => bindings.Keys;
 
-    public IEnumerable<ShaderBinding> Values => cache.Values;
+    public IEnumerable<ShaderBinding> Values => bindings.Values;
 
-    public int Count => cache.Count;
+    public int Count => bindings.Count;
 
     public bool ContainsKey(string key)
     {
-        return cache.ContainsKey(key);
+        return bindings.ContainsKey(key);
     }
 
     public IEnumerator<KeyValuePair<string, ShaderBinding>> GetEnumerator()
     {
-        return cache.GetEnumerator();
+        return bindings.GetEnumerator();
     }
 
     public bool TryGetValue(string key, [MaybeNullWhen(false)] out ShaderBinding value)
     {
-        return cache.TryGetValue(key, out value);
+        return bindings.TryGetValue(key, out value);
     }
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -113,9 +127,14 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
         return new ShaderReflection([this, other]);
     }
 
+    public ResourceLayoutDesc[] ToResourceLayoutDescs()
+    {
+        throw new NotImplementedException();
+    }
+
     private static void ParseParameterBlock(string name,
                                             ShaderStages stage,
-                                            Dictionary<string, ShaderBinding> keyValues,
+                                            Dictionary<string, ShaderBinding> bindings,
                                             SlangType type)
     {
         foreach (SlangVar var in type.ParameterBlock!.ElementType.Struct!.Fields)
@@ -124,7 +143,7 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
 
             if (var.Type.Kind is SlangTypeKind.ParameterBlock)
             {
-                ParseParameterBlock(varName, stage, keyValues, var.Type);
+                ParseParameterBlock(varName, stage, bindings, var.Type);
             }
             else
             {
@@ -133,7 +152,7 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
                                                var.Binding.Index,
                                                var.Binding.Count);
 
-                keyValues.Add(varName, new(var.Binding.Space, desc));
+                bindings.Add(varName, new(var.Binding.Space, desc));
             }
         }
     }
