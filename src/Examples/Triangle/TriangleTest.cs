@@ -81,7 +81,7 @@ internal unsafe class TriangleTest() : VisualTest("Triangle Test")
         GraphicsPipelineDesc gpDesc = new
         (
             shaders: new(vertex: vsShader, pixel: psShader),
-            inputLayouts: [Vertex.GetLayout()],
+            inputLayouts: [Vertex.GetInputLayout()],
             resourceLayouts: [layout],
             outputs: SwapChain.FrameBuffer.Output,
             renderStates: new(RasterizerStates.None, DepthStencilStates.None, BlendStates.Opaque)

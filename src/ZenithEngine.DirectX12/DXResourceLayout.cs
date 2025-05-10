@@ -18,7 +18,7 @@ internal class DXResourceLayout : ResourceLayout
         uint index = 0;
         for (int i = 0; i < desc.Elements.Length; i++)
         {
-            LayoutElementDesc element = desc.Elements[i];
+            ResourceElementDesc element = desc.Elements[i];
 
             bindings[i] = new(element.Stages,
                               element.Type,
@@ -73,7 +73,7 @@ internal class DXResourceLayout : ResourceLayout
 
         uint cbvSrvUavOffset = 0;
         uint samplerOffset = 0;
-        foreach (LayoutElementDesc element in Desc.Elements)
+        foreach (ResourceElementDesc element in Desc.Elements)
         {
             if (stage is not ShaderStages.None && !element.Stages.HasFlag(stage))
             {

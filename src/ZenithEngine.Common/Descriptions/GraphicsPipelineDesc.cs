@@ -4,7 +4,7 @@ using ZenithEngine.Common.Graphics;
 namespace ZenithEngine.Common.Descriptions;
 
 public struct GraphicsPipelineDesc(GraphicsShaderDesc shaders,
-                                   InputLayout[] inputLayouts,
+                                   InputLayoutDesc[] inputLayouts,
                                    ResourceLayout[] resourceLayouts,
                                    OutputDesc outputs,
                                    RenderStateDesc? renderStates = null,
@@ -27,7 +27,7 @@ public struct GraphicsPipelineDesc(GraphicsShaderDesc shaders,
     /// <summary>
     /// vertex input layout.
     /// </summary>
-    public InputLayout[] InputLayouts = inputLayouts;
+    public InputLayoutDesc[] InputLayouts = inputLayouts;
 
     /// <summary>
     /// Describes the resource layouts input array.

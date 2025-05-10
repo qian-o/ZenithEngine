@@ -264,7 +264,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
         using Shader vsShader = Context.Factory.CreateShader(in vsShaderDesc);
         using Shader psShader = Context.Factory.CreateShader(in psShaderDesc);
 
-        InputLayout inputLayout = new();
+        InputLayoutDesc inputLayout = new();
         inputLayout.Add(new(ElementFormat.Float2, ElementSemanticType.Position, 0));
         inputLayout.Add(new(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
         inputLayout.Add(new(ElementFormat.UByte4Normalized, ElementSemanticType.Color, 0));

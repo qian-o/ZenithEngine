@@ -1,20 +1,20 @@
 ﻿using ZenithEngine.Common.Enums;
 
-namespace ZenithEngine.Common.Graphics;
+namespace ZenithEngine.Common.Descriptions;
 
-public struct InputLayout(VertexStepFunction stepFunction = VertexStepFunction.PerVertexData,
-                          uint stepRate = 0,
-                          uint stride = 0,
-                          params InputElement[] elements)
+public struct InputLayoutDesc(VertexStepFunction stepFunction = VertexStepFunction.PerVertexData,
+                              uint stepRate = 0,
+                              uint stride = 0,
+                              params InputElementDesc[] elements)
 {
-    public InputLayout() : this(VertexStepFunction.PerVertexData, 0, 0, [])
+    public InputLayoutDesc() : this(VertexStepFunction.PerVertexData, 0, 0, [])
     {
     }
 
     /// <summary>
     /// A array of individual vertex elements comprising a single vertex.
     /// </summary>
-    public InputElement[] Elements = elements;
+    public InputElementDesc[] Elements = elements;
 
     /// <summary>
     /// The frequency with which the vertex function fetches attribute data.
@@ -32,9 +32,9 @@ public struct InputLayout(VertexStepFunction stepFunction = VertexStepFunction.P
     /// </summary>
     public uint Stride = stride;
 
-    public InputLayout Add(InputElement element)
+    public InputLayoutDesc Add(InputElementDesc element)
     {
-        if (element.Offset is InputElement.AppendAligned)
+        if (element.Offset is InputElementDesc.AppendAligned)
         {
             element.Offset = (int)Stride;
         }

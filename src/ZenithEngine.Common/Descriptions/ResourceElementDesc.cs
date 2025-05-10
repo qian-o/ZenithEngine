@@ -2,12 +2,12 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct LayoutElementDesc(ShaderStages stages,
-                                ResourceType type,
-                                uint slot,
-                                uint count = 1)
+public struct ResourceElementDesc(ShaderStages stages,
+                                  ResourceType type,
+                                  uint slot,
+                                  uint count = 1)
 {
-    public LayoutElementDesc() : this(ShaderStages.None, ResourceType.ConstantBuffer, 0, 1)
+    public ResourceElementDesc() : this(ShaderStages.None, ResourceType.ConstantBuffer, 0, 1)
     {
     }
 

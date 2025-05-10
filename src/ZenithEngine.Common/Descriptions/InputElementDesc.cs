@@ -1,18 +1,18 @@
 ﻿using ZenithEngine.Common.Enums;
 
-namespace ZenithEngine.Common.Graphics;
+namespace ZenithEngine.Common.Descriptions;
 
-public struct InputElement(ElementFormat format,
-                           ElementSemanticType semantic,
-                           uint semanticIndex,
-                           int offset = InputElement.AppendAligned)
+public struct InputElementDesc(ElementFormat format,
+                               ElementSemanticType semantic,
+                               uint semanticIndex,
+                               int offset = InputElementDesc.AppendAligned)
 {
     public const int AppendAligned = -1;
 
-    public InputElement() : this(ElementFormat.UByte1,
-                                ElementSemanticType.Position,
-                                0,
-                                AppendAligned)
+    public InputElementDesc() : this(ElementFormat.UByte1,
+                                     ElementSemanticType.Position,
+                                     0,
+                                     AppendAligned)
     {
     }
 

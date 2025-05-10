@@ -20,7 +20,7 @@ internal unsafe class DXResourceSet : ResourceSet
 
         for (int i = 0; i < layoutDesc.Elements.Length; i++)
         {
-            LayoutElementDesc element = layoutDesc.Elements[i];
+            ResourceElementDesc element = layoutDesc.Elements[i];
             GraphicsResource[] resources = desc.Resources[(int)resourceOffset..(int)(resourceOffset + element.Count)];
 
             if (element.Type is ResourceType.Texture or ResourceType.TextureReadWrite)

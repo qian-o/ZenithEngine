@@ -23,7 +23,7 @@ internal unsafe class VKResourceLayout : ResourceLayout
 
         for (int i = 0; i < desc.Elements.Length; i++)
         {
-            LayoutElementDesc element = desc.Elements[i];
+            ResourceElementDesc element = desc.Elements[i];
 
             bindings[i] = new()
             {

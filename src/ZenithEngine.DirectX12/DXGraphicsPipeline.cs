@@ -130,14 +130,14 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
         // Input Layouts
         {
             uint numElements = (uint)desc.InputLayouts.Sum(static item => item.Elements.Length);
-            InputElementDesc* pInputElementDescs = Allocator.Alloc<InputElementDesc>(numElements);
+            Silk.NET.Direct3D12.InputElementDesc* pInputElementDescs = Allocator.Alloc<Silk.NET.Direct3D12.InputElementDesc>(numElements);
 
             uint offset = 0;
             for (int i = 0; i < desc.InputLayouts.Length; i++)
             {
-                InputLayout inputLayout = desc.InputLayouts[i];
+                Common.Descriptions.InputLayoutDesc inputLayout = desc.InputLayouts[i];
 
-                foreach (InputElement element in inputLayout.Elements)
+                foreach (Common.Descriptions.InputElementDesc element in inputLayout.Elements)
                 {
                     pInputElementDescs[offset++] = new()
                     {

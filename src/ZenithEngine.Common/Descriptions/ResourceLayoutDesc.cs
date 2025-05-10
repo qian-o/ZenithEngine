@@ -1,10 +1,10 @@
 ﻿namespace ZenithEngine.Common.Descriptions;
 
-public struct ResourceLayoutDesc(params LayoutElementDesc[] elements)
+public struct ResourceLayoutDesc(params ResourceElementDesc[] elements)
 {
     public ResourceLayoutDesc() : this([])
     {
     }
 
-    public LayoutElementDesc[] Elements = elements;
+    public ResourceElementDesc[] Elements = elements;
 }

@@ -1,7 +1,7 @@
 ﻿using Silk.NET.Maths;
 using ZenithEngine.Common;
+using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
-using ZenithEngine.Common.Graphics;
 
 namespace Common;
 
@@ -13,9 +13,9 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
 
     public Vector2D<float> TexCoord = texCoord;
 
-    public static InputLayout GetLayout()
+    public static InputLayoutDesc GetInputLayout()
     {
-        InputLayout inputLayout = new();
+        InputLayoutDesc inputLayout = new();
 
         inputLayout.Add(new(ElementFormat.Float3, ElementSemanticType.Position, 0));
         inputLayout.Add(new(ElementFormat.Float3, ElementSemanticType.Normal, 0));
