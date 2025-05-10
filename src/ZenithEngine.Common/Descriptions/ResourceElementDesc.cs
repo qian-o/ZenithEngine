@@ -4,7 +4,7 @@ namespace ZenithEngine.Common.Descriptions;
 
 public struct ResourceElementDesc(ShaderStages stages,
                                   ResourceType type,
-                                  uint slot,
+                                  uint index,
                                   uint count = 1)
 {
     public ResourceElementDesc() : this(ShaderStages.None, ResourceType.ConstantBuffer, 0, 1)
@@ -22,9 +22,9 @@ public struct ResourceElementDesc(ShaderStages stages,
     public ResourceType Type = type;
 
     /// <summary>
-    /// The slot of the element.
+    /// The binding index of the resource in the shader.
     /// </summary>
-    public uint Slot = slot;
+    public uint Index = index;
 
     /// <summary>
     /// For regular resources, this value is 1, for array resources, this value is the size of the array.

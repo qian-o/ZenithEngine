@@ -32,7 +32,7 @@ internal unsafe class VKResourceSet : ResourceSet
             {
                 SType = StructureType.WriteDescriptorSet,
                 DstSet = Token.Set,
-                DstBinding = element.Slot,
+                DstBinding = element.Index,
                 DescriptorCount = element.Count,
                 DescriptorType = VKFormats.GetDescriptorType(element.Type)
             };

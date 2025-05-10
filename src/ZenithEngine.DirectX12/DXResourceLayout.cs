@@ -88,7 +88,7 @@ internal class DXResourceLayout : ResourceLayout
                         {
                             RangeType = DescriptorRangeType.Cbv,
                             NumDescriptors = element.Count,
-                            BaseShaderRegister = element.Slot,
+                            BaseShaderRegister = element.Index,
                             RegisterSpace = registerSpace,
                             OffsetInDescriptorsFromTableStart = cbvSrvUavOffset
                         });
@@ -104,7 +104,7 @@ internal class DXResourceLayout : ResourceLayout
                         {
                             RangeType = DescriptorRangeType.Srv,
                             NumDescriptors = element.Count,
-                            BaseShaderRegister = element.Slot,
+                            BaseShaderRegister = element.Index,
                             RegisterSpace = registerSpace,
                             OffsetInDescriptorsFromTableStart = cbvSrvUavOffset
                         });
@@ -119,7 +119,7 @@ internal class DXResourceLayout : ResourceLayout
                         {
                             RangeType = DescriptorRangeType.Uav,
                             NumDescriptors = element.Count,
-                            BaseShaderRegister = element.Slot,
+                            BaseShaderRegister = element.Index,
                             RegisterSpace = registerSpace,
                             OffsetInDescriptorsFromTableStart = cbvSrvUavOffset
                         });
@@ -133,7 +133,7 @@ internal class DXResourceLayout : ResourceLayout
                         {
                             RangeType = DescriptorRangeType.Sampler,
                             NumDescriptors = element.Count,
-                            BaseShaderRegister = element.Slot,
+                            BaseShaderRegister = element.Index,
                             RegisterSpace = registerSpace,
                             OffsetInDescriptorsFromTableStart = samplerOffset
                         });
