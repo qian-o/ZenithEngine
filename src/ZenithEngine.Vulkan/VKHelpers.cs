@@ -124,23 +124,4 @@ internal static class VKHelpers
             throw new ZenithEngineException(ExceptionHelpers.NotSupported(barrier.OldLayout));
         }
     }
-
-    public static uint GetBinding(ResourceType type, uint slot)
-    {
-        return type switch
-        {
-            ResourceType.ConstantBuffer => slot,
-
-            ResourceType.StructuredBuffer or
-            ResourceType.Texture or
-            ResourceType.AccelerationStructure => Utils.CbvCount + slot,
-
-            ResourceType.StructuredBufferReadWrite or
-            ResourceType.TextureReadWrite => Utils.CbvCount + Utils.SrvCount + slot,
-
-            ResourceType.Sampler => Utils.CbvCount + Utils.SrvCount + Utils.UavCount + slot,
-
-            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
-        };
-    }
 }

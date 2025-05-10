@@ -27,7 +27,7 @@ internal unsafe class VKResourceLayout : ResourceLayout
 
             bindings[i] = new()
             {
-                Binding = VKHelpers.GetBinding(element.Type, element.Slot),
+                Binding = element.Slot,
                 DescriptorType = VKFormats.GetDescriptorType(element.Type),
                 DescriptorCount = element.Count,
                 StageFlags = VKFormats.GetShaderStageFlags(element.Stages)

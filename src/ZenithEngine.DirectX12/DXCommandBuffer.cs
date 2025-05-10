@@ -41,13 +41,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
         if (ProcessorType is not CommandProcessorType.Copy)
         {
-            cbvSrvUavAllocator = new(Context,
-                                     DescriptorHeapType.CbvSrvUav,
-                                     (Utils.CbvCount + Utils.SrvCount + Utils.UavCount) * 10);
-
-            samplerAllocator = new(Context,
-                                   DescriptorHeapType.Sampler,
-                                   Utils.SmpCount * 10);
+            cbvSrvUavAllocator = new(Context, DescriptorHeapType.CbvSrvUav, DXGraphicsContext.DefaultCbvSrvUavDescriptors);
+            samplerAllocator = new(Context, DescriptorHeapType.Sampler, DXGraphicsContext.DefaultSamplerDescriptors);
 
             descriptorHeaps =
             [

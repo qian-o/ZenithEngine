@@ -32,12 +32,7 @@ public static class ResourceFactoryExtensions
                 break;
             case Backend.Vulkan:
                 {
-                    arguments.AddRange(["-fvk-use-entrypoint-name", "-fvk-use-dx-layout"]);
-
-                    arguments.AddRange(["-fvk-b-shift", "0", "all"]);
-                    arguments.AddRange(["-fvk-t-shift", $"{Utils.CbvCount}", "all"]);
-                    arguments.AddRange(["-fvk-u-shift", $"{Utils.CbvCount + Utils.SrvCount}", "all"]);
-                    arguments.AddRange(["-fvk-s-shift", $"{Utils.CbvCount + Utils.SrvCount + Utils.UavCount}", "all"]);
+                    arguments.AddRange(["-fvk-use-dx-layout", "-fvk-use-entrypoint-name"]);
 
                     arguments.AddRange(["-target", "spirv"]);
                 }
