@@ -5,11 +5,9 @@ namespace ZenithEngine.Common.Descriptions;
 public struct LayoutElementDesc(ShaderStages stages,
                                 ResourceType type,
                                 uint slot,
-                                uint count = 1,
-                                bool allowDynamicOffset = false,
-                                uint range = 0)
+                                uint count = 1)
 {
-    public LayoutElementDesc() : this(ShaderStages.None, ResourceType.ConstantBuffer, 0, 1, false, 0)
+    public LayoutElementDesc() : this(ShaderStages.None, ResourceType.ConstantBuffer, 0, 1)
     {
     }
 
@@ -32,15 +30,4 @@ public struct LayoutElementDesc(ShaderStages stages,
     /// For regular resources, this value is 1, for array resources, this value is the size of the array.
     /// </summary>
     public uint Count = count;
-
-    /// <summary>
-    /// This value indicates whether this resource can have a dynamic offset.
-    /// </summary>
-    public bool AllowDynamicOffset = allowDynamicOffset;
-
-    /// <summary>
-    /// If it is greater than 0, it overrides the size of this resource (in bytes).
-    /// Only valid on Buffers.
-    /// </summary>
-    public uint Range = range;
 }

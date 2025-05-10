@@ -576,12 +576,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
         GraphicsCommandList.IASetIndexBuffer(&view);
     }
 
-    public override void SetResourceSet(uint slot,
-                                        ResourceSet resourceSet,
-                                        uint[]? bufferOffsets = null)
+    public override void SetResourceSet(uint slot, ResourceSet resourceSet)
     {
-        bufferOffsets ??= [];
-
         (bool isGraphics, uint rootParameterOffset) = activePipeline switch
         {
             DXGraphicsPipeline graphicsPipeline => (true, graphicsPipeline.GetRootParameterOffset(slot)),
@@ -594,8 +590,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                               cbvSrvUavAllocator!,
                               samplerAllocator!,
                               isGraphics,
-                              rootParameterOffset,
-                              bufferOffsets);
+                              rootParameterOffset);
     }
     #endregion
 

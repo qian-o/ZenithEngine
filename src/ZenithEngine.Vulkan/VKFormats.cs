@@ -279,14 +279,14 @@ internal static class VKFormats
         };
     }
 
-    public static DescriptorType GetDescriptorType(ResourceType type, bool allowDynamicOffset)
+    public static DescriptorType GetDescriptorType(ResourceType type)
     {
         return type switch
         {
-            ResourceType.ConstantBuffer => allowDynamicOffset ? DescriptorType.UniformBufferDynamic : DescriptorType.UniformBuffer,
+            ResourceType.ConstantBuffer => DescriptorType.UniformBuffer,
 
             ResourceType.StructuredBuffer or
-            ResourceType.StructuredBufferReadWrite => allowDynamicOffset ? DescriptorType.StorageBufferDynamic : DescriptorType.StorageBuffer,
+            ResourceType.StructuredBufferReadWrite => DescriptorType.StorageBuffer,
 
             ResourceType.Texture => DescriptorType.SampledImage,
             ResourceType.TextureReadWrite => DescriptorType.StorageImage,

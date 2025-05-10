@@ -16,27 +16,13 @@ internal class DXResourceLayout : ResourceLayout
         bindings = new DXResourceBinding[desc.Elements.Length];
 
         uint index = 0;
-        int dynamicOffsetIndex = 0;
         for (int i = 0; i < desc.Elements.Length; i++)
         {
             LayoutElementDesc element = desc.Elements[i];
 
-            if (element.Type is ResourceType.ConstantBuffer or ResourceType.StructuredBuffer or ResourceType.StructuredBufferReadWrite && element.AllowDynamicOffset)
-            {
-                bindings[i] = new(element.Stages,
-                                  element.Type,
-                                  element.Range,
-                                  [.. Enumerable.Range((int)index, (int)element.Count).Select(static item => (uint)item)],
-                                  dynamicOffsetIndex++);
-            }
-            else
-            {
-                bindings[i] = new(element.Stages,
-                                  element.Type,
-                                  element.Range,
-                                  [.. Enumerable.Range((int)index, (int)element.Count).Select(static item => (uint)item)],
-                                  -1);
-            }
+            bindings[i] = new(element.Stages,
+                              element.Type,
+                              [.. Enumerable.Range((int)index, (int)element.Count).Select(static item => (uint)item)]);
 
             index += element.Count;
         }

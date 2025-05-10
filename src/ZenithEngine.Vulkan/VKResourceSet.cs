@@ -34,7 +34,7 @@ internal unsafe class VKResourceSet : ResourceSet
                 DstSet = Token.Set,
                 DstBinding = VKHelpers.GetBinding(element.Type, element.Slot),
                 DescriptorCount = element.Count,
-                DescriptorType = VKFormats.GetDescriptorType(element.Type, element.AllowDynamicOffset)
+                DescriptorType = VKFormats.GetDescriptorType(element.Type)
             };
 
             if (element.Type
@@ -51,8 +51,7 @@ internal unsafe class VKResourceSet : ResourceSet
                     infos[j] = new()
                     {
                         Buffer = buffer.Buffer,
-                        Offset = 0,
-                        Range = element.Range is 0 ? Vk.WholeSize : element.Range
+                        Range = Vk.WholeSize
                     };
                 }
 

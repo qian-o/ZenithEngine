@@ -231,10 +231,7 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// </summary>
     /// <param name="slot">The resource set slot.</param>
     /// <param name="resourceSet">Resource set.</param>
-    /// <param name="bufferOffsets">Array of buffer offsets.</param>
-    public abstract void SetResourceSet(uint slot,
-                                        ResourceSet resourceSet,
-                                        uint[]? bufferOffsets = null);
+    public abstract void SetResourceSet(uint slot, ResourceSet resourceSet);
     #endregion
 
     #region Drawing Operations
