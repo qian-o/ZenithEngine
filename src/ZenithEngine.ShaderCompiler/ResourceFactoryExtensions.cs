@@ -44,7 +44,7 @@ public static class ResourceFactoryExtensions
 
         byte[] shaderBytes = SlangCompiler.CompileWithReflection([.. arguments], out SlangReflection slangReflection);
 
-        reflection = new(slangReflection);
+        reflection = new(stage, slangReflection);
 
         ShaderDesc shaderDesc = new(stage, shaderBytes, entryPoint);
 
