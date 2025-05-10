@@ -129,7 +129,20 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
 
     public ResourceLayoutDesc[] ToResourceLayoutDescs()
     {
-        throw new NotImplementedException();
+        uint[] spaces = [.. bindings.Values.Select(static item => item.Space).Distinct()];
+
+        ResourceLayoutDesc[] resourceLayoutDescs = new ResourceLayoutDesc[spaces.Length];
+
+        for (int i = 0; i < spaces.Length; i++)
+        {
+            uint space = spaces[i];
+
+            ResourceElementDesc[] elements = [.. bindings.Values.Where(item => item.Space == space).Select(static item => item.Desc)];
+
+            resourceLayoutDescs[i] = new(elements);
+        }
+
+        return resourceLayoutDescs;
     }
 
     private static void ParseParameterBlock(string name,
