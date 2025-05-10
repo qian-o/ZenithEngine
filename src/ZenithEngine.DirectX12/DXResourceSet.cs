@@ -180,14 +180,7 @@ internal unsafe class DXResourceSet : ResourceSet
             }
         }
 
-        if (cbvSrvUavHandles.Count > 0)
-        {
-            cbvSrvUavAllocator.UpdateDescriptors([.. cbvSrvUavHandles]);
-        }
-
-        if (samplerHandles.Count > 0)
-        {
-            samplerAllocator.UpdateDescriptors([.. samplerHandles]);
-        }
+        cbvSrvUavAllocator.UpdateDescriptors([.. cbvSrvUavHandles]);
+        samplerAllocator.UpdateDescriptors([.. samplerHandles]);
     }
 }
