@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using Slangc.NET;
 using Slangc.NET.Enums;
 using Slangc.NET.Models;
@@ -8,17 +10,15 @@ using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.ShaderCompiler;
 
-public class ShaderReflection
+public class ShaderReflection : IReadOnlyDictionary<string, ResourceElementDesc>
 {
-    private record ShaderBinding(string Name, ShaderStages Stages, ResourceType Type, uint Space, uint Index, uint Count);
-
-    private readonly ReadOnlyDictionary<string, ShaderBinding> cache;
+    private readonly ReadOnlyDictionary<string, ResourceElementDesc> cache;
 
     internal ShaderReflection(ShaderStages stage, SlangReflection slangReflection)
     {
         SlangEntryPoint entryPoint = slangReflection.EntryPoints[0];
 
-        Dictionary<string, ShaderBinding> bindings = [];
+        Dictionary<string, ResourceElementDesc> keyValues = [];
 
         foreach (SlangNamedTypeBinding namedTypeBinding in entryPoint.Bindings)
         {
@@ -38,62 +38,73 @@ public class ShaderReflection
                     throw new ZenithEngineException(ExceptionHelpers.NotSupported(parameter.Type.Kind));
                 }
 
-                ParseParameterBlock(namedTypeBinding.Name, stage, bindings, parameter.Type);
+                ParseParameterBlock(namedTypeBinding.Name, stage, keyValues, parameter.Type);
             }
             else
             {
-                bindings.Add(namedTypeBinding.Name, new(namedTypeBinding.Name,
-                                                        stage,
-                                                        GetResourceType(binding.Kind, parameter.Type),
-                                                        binding.Space,
-                                                        binding.Index,
-                                                        binding.Count));
+                keyValues.Add(namedTypeBinding.Name, new(stage,
+                                                         GetResourceType(binding.Kind, parameter.Type),
+                                                         binding.Index,
+                                                         binding.Count));
             }
         }
 
-        cache = new(bindings);
+        cache = new(keyValues);
     }
 
     internal ShaderReflection(ShaderReflection[] reflections)
     {
-        Dictionary<string, ShaderBinding> bindings = [];
+        Dictionary<string, ResourceElementDesc> keyValues = [];
 
         foreach (ShaderReflection reflection in reflections)
         {
-            foreach (KeyValuePair<string, ShaderBinding> binding in reflection.cache)
+            foreach (KeyValuePair<string, ResourceElementDesc> binding in reflection.cache)
             {
-                if (!bindings.TryGetValue(binding.Key, out ShaderBinding? value))
+                if (!keyValues.TryGetValue(binding.Key, out ResourceElementDesc value))
                 {
-                    bindings.Add(binding.Key, binding.Value);
+                    keyValues.Add(binding.Key, binding.Value);
                 }
                 else
                 {
                     ShaderStages stages = value.Stages | binding.Value.Stages;
 
-                    bindings[binding.Key] = new(binding.Value.Name,
-                                                stages,
-                                                binding.Value.Type,
-                                                binding.Value.Space,
-                                                binding.Value.Index,
-                                                binding.Value.Count);
+                    keyValues[binding.Key] = new(stages,
+                                                 binding.Value.Type,
+                                                 binding.Value.Index,
+                                                 binding.Value.Count);
                 }
             }
         }
 
-        cache = new(bindings);
+        cache = new(keyValues);
     }
 
-    public ResourceElementDesc this[string name]
-    {
-        get
-        {
-            if (!cache.TryGetValue(name, out ShaderBinding? binding))
-            {
-                throw new ZenithEngineException($"The shader resource `{name}` is not found.");
-            }
+    public ResourceElementDesc this[string key] => cache[key];
 
-            return new(binding.Stages, binding.Type, binding.Index, binding.Count);
-        }
+    public IEnumerable<string> Keys => cache.Keys;
+
+    public IEnumerable<ResourceElementDesc> Values => cache.Values;
+
+    public int Count => cache.Count;
+
+    public bool ContainsKey(string key)
+    {
+        return cache.ContainsKey(key);
+    }
+
+    public IEnumerator<KeyValuePair<string, ResourceElementDesc>> GetEnumerator()
+    {
+        return cache.GetEnumerator();
+    }
+
+    public bool TryGetValue(string key, [MaybeNullWhen(false)] out ResourceElementDesc value)
+    {
+        return cache.TryGetValue(key, out value);
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 
     public ShaderReflection Merge(ShaderReflection other)
@@ -101,7 +112,10 @@ public class ShaderReflection
         return new ShaderReflection([this, other]);
     }
 
-    private static void ParseParameterBlock(string name, ShaderStages stage, Dictionary<string, ShaderBinding> bindings, SlangType type)
+    private static void ParseParameterBlock(string name,
+                                            ShaderStages stage,
+                                            Dictionary<string, ResourceElementDesc> keyValues,
+                                            SlangType type)
     {
         foreach (SlangVar var in type.ParameterBlock!.ElementType.Struct!.Fields)
         {
@@ -109,16 +123,14 @@ public class ShaderReflection
 
             if (var.Type.Kind is SlangTypeKind.ParameterBlock)
             {
-                ParseParameterBlock(varName, stage, bindings, var.Type);
+                ParseParameterBlock(varName, stage, keyValues, var.Type);
             }
             else
             {
-                bindings.Add(varName, new(varName,
-                                          stage,
-                                          GetResourceType(var.Binding!.Kind, var.Type),
-                                          var.Binding.Space,
-                                          var.Binding.Index,
-                                          var.Binding.Count));
+                keyValues.Add(varName, new(stage,
+                                           GetResourceType(var.Binding!.Kind, var.Type),
+                                           var.Binding.Index,
+                                           var.Binding.Count));
             }
         }
     }
