@@ -128,6 +128,9 @@ internal unsafe class DXResourceSet : ResourceSet
                                        DXDescriptorTableAllocator samplerAllocator,
                                        DXResourceBinding[] bindings)
     {
+        List<CpuDescriptorHandle> cbvSrvUavHandles = [];
+        List<CpuDescriptorHandle> samplerHandles = [];
+
         foreach (DXResourceBinding binding in bindings)
         {
             foreach (uint index in binding.Indices)
@@ -138,43 +141,53 @@ internal unsafe class DXResourceSet : ResourceSet
                 {
                     case ResourceType.ConstantBuffer:
                         {
-                            cbvSrvUavAllocator.UpdateDescriptor(((DXBuffer)resource).Cbv);
+                            cbvSrvUavHandles.Add(((DXBuffer)resource).Cbv);
                         }
                         break;
                     case ResourceType.StructuredBuffer:
                         {
-                            cbvSrvUavAllocator.UpdateDescriptor(((DXBuffer)resource).Srv);
+                            cbvSrvUavHandles.Add(((DXBuffer)resource).Srv);
                         }
                         break;
                     case ResourceType.StructuredBufferReadWrite:
                         {
-                            cbvSrvUavAllocator.UpdateDescriptor(((DXBuffer)resource).Uav);
+                            cbvSrvUavHandles.Add(((DXBuffer)resource).Uav);
                         }
                         break;
                     case ResourceType.Texture:
                         {
-                            cbvSrvUavAllocator.UpdateDescriptor(((DXTexture)resource).Srv);
+                            cbvSrvUavHandles.Add(((DXTexture)resource).Srv);
                         }
                         break;
                     case ResourceType.TextureReadWrite:
                         {
-                            cbvSrvUavAllocator.UpdateDescriptor(((DXTexture)resource).Uav);
+                            cbvSrvUavHandles.Add(((DXTexture)resource).Uav);
                         }
                         break;
                     case ResourceType.Sampler:
                         {
-                            samplerAllocator.UpdateDescriptor(((DXSampler)resource).Handle);
+                            samplerHandles.Add(((DXSampler)resource).Handle);
                         }
                         break;
                     case ResourceType.AccelerationStructure:
                         {
-                            cbvSrvUavAllocator.UpdateDescriptor(((DXTopLevelAS)resource).Srv);
+                            cbvSrvUavHandles.Add(((DXTopLevelAS)resource).Srv);
                         }
                         break;
                     default:
                         throw new ZenithEngineException(ExceptionHelpers.NotSupported(binding.Type));
                 }
             }
+        }
+
+        if (cbvSrvUavHandles.Count > 0)
+        {
+            cbvSrvUavAllocator.UpdateDescriptors([.. cbvSrvUavHandles]);
+        }
+
+        if (samplerHandles.Count > 0)
+        {
+            samplerAllocator.UpdateDescriptors([.. samplerHandles]);
         }
     }
 }
