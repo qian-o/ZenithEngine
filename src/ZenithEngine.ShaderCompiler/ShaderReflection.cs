@@ -3,6 +3,7 @@ using Slangc.NET;
 using Slangc.NET.Enums;
 using Slangc.NET.Models;
 using ZenithEngine.Common;
+using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.ShaderCompiler;
@@ -80,6 +81,19 @@ public class ShaderReflection
         }
 
         cache = new(bindings);
+    }
+
+    public ResourceElementDesc this[string name]
+    {
+        get
+        {
+            if (!cache.TryGetValue(name, out ShaderBinding? binding))
+            {
+                throw new ZenithEngineException($"The shader resource `{name}` is not found.");
+            }
+
+            return new(binding.Stages, binding.Type, binding.Index, binding.Count);
+        }
     }
 
     public ShaderReflection Merge(ShaderReflection other)
