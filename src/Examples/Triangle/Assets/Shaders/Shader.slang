@@ -1,9 +1,4 @@
-﻿struct Constants
-{
-    float4x4 Model;
-};
-
-struct VertexInput
+﻿struct VertexInput
 {
     float3 Position : POSITION;
 
@@ -21,7 +16,12 @@ struct VertexOutput
     float2 TexCoord : TEXCOORD0;
 };
 
-ConstantBuffer<Constants> constants : register(b0, space0);
+struct Constants
+{
+    float4x4 Model;
+};
+
+uniform Constants constants;
 
 VertexOutput VertexMain(VertexInput input)
 {
