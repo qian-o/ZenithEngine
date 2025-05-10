@@ -2,10 +2,7 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct ResourceElementDesc(ShaderStages stages,
-                                  ResourceType type,
-                                  uint index,
-                                  uint count = 1)
+public struct ResourceElementDesc(ShaderStages stages, ResourceType type, uint index, uint count = 1)
 {
     public ResourceElementDesc() : this(ShaderStages.None, ResourceType.ConstantBuffer, 0, 1)
     {
