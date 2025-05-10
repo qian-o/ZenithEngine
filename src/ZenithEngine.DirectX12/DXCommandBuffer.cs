@@ -51,8 +51,8 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
             descriptorHeaps =
             [
-                cbvSrvUavAllocator.GpuHeap,
-                samplerAllocator.GpuHeap
+                cbvSrvUavAllocator.Heap,
+                samplerAllocator.Heap
             ];
         }
     }
@@ -602,9 +602,6 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     {
         ValidatePipeline<DXGraphicsPipeline>(out _);
 
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
-
         GraphicsCommandList.DrawInstanced(vertexCount,
                                           instanceCount,
                                           firstVertex,
@@ -616,9 +613,6 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                       uint drawCount)
     {
         ValidatePipeline<DXGraphicsPipeline>(out _);
-
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
 
         GraphicsCommandList.ExecuteIndirect(Context.DrawSignature,
                                             drawCount,
@@ -636,9 +630,6 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     {
         ValidatePipeline<DXGraphicsPipeline>(out _);
 
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
-
         GraphicsCommandList.DrawIndexedInstanced(indexCount,
                                                  instanceCount,
                                                  firstIndex,
@@ -651,9 +642,6 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                                              uint drawCount)
     {
         ValidatePipeline<DXGraphicsPipeline>(out _);
-
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
 
         GraphicsCommandList.ExecuteIndirect(Context.DrawIndexedSignature,
                                             drawCount,
@@ -671,9 +659,6 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     {
         ValidatePipeline<DXComputePipeline>(out _);
 
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
-
         GraphicsCommandList.Dispatch(groupCountX,
                                      groupCountY,
                                      groupCountZ);
@@ -682,9 +667,6 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     public override void DispatchIndirect(Buffer argBuffer, uint offset)
     {
         ValidatePipeline<DXComputePipeline>(out _);
-
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
 
         GraphicsCommandList.ExecuteIndirect(Context.DispatchSignature,
                                             1,
@@ -699,9 +681,6 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     public override void DispatchRays(uint width, uint height, uint depth)
     {
         ValidatePipeline(out DXRayTracingPipeline dxPipeline);
-
-        cbvSrvUavAllocator?.Submit();
-        samplerAllocator?.Submit();
 
         DispatchRaysDesc dispatchRaysDesc = new()
         {
