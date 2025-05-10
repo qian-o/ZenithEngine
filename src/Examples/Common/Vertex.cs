@@ -1,7 +1,7 @@
 ﻿using Silk.NET.Maths;
 using ZenithEngine.Common;
-using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
+using ZenithEngine.Common.Graphics;
 
 namespace Common;
 
@@ -13,15 +13,15 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
 
     public Vector2D<float> TexCoord = texCoord;
 
-    public static LayoutDesc GetLayout()
+    public static InputLayout GetLayout()
     {
-        LayoutDesc layout = new();
+        InputLayout inputLayout = new();
 
-        layout.Add(new(ElementFormat.Float3, ElementSemanticType.Position, 0));
-        layout.Add(new(ElementFormat.Float3, ElementSemanticType.Normal, 0));
-        layout.Add(new(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
+        inputLayout.Add(new(ElementFormat.Float3, ElementSemanticType.Position, 0));
+        inputLayout.Add(new(ElementFormat.Float3, ElementSemanticType.Normal, 0));
+        inputLayout.Add(new(ElementFormat.Float2, ElementSemanticType.TexCoord, 0));
 
-        return layout;
+        return inputLayout;
     }
 
     public static void CornellBox(uint materialId,

@@ -135,19 +135,19 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
             uint offset = 0;
             for (int i = 0; i < desc.InputLayouts.Length; i++)
             {
-                LayoutDesc layoutDesc = desc.InputLayouts[i];
+                InputLayout inputLayout = desc.InputLayouts[i];
 
-                foreach (ElementDesc elementDesc in layoutDesc.Elements)
+                foreach (InputElement element in inputLayout.Elements)
                 {
                     pInputElementDescs[offset++] = new()
                     {
-                        SemanticName = Allocator.AllocUTF8(elementDesc.Semantic.ToString().ToUpper()),
-                        SemanticIndex = elementDesc.SemanticIndex,
-                        Format = DXFormats.GetFormat(elementDesc.Format),
+                        SemanticName = Allocator.AllocUTF8(element.Semantic.ToString().ToUpper()),
+                        SemanticIndex = element.SemanticIndex,
+                        Format = DXFormats.GetFormat(element.Format),
                         InputSlot = (uint)i,
-                        AlignedByteOffset = (uint)elementDesc.Offset,
-                        InputSlotClass = DXFormats.GetInputClassification(layoutDesc.StepFunction),
-                        InstanceDataStepRate = layoutDesc.StepRate
+                        AlignedByteOffset = (uint)element.Offset,
+                        InputSlotClass = DXFormats.GetInputClassification(inputLayout.StepFunction),
+                        InstanceDataStepRate = inputLayout.StepRate
                     };
                 }
             }

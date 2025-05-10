@@ -167,18 +167,18 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             uint attributeIndex = 0;
             for (uint i = 0; i < vertexInputBindingCount; i++)
             {
-                LayoutDesc layout = desc.InputLayouts[i];
+                InputLayout inputLayout = desc.InputLayouts[i];
 
                 bindingDescriptions[i] = new()
                 {
                     Binding = i,
-                    Stride = layout.Stride,
-                    InputRate = layout.StepRate is 0 ? VertexInputRate.Vertex : VertexInputRate.Instance
+                    Stride = inputLayout.Stride,
+                    InputRate = inputLayout.StepRate is 0 ? VertexInputRate.Vertex : VertexInputRate.Instance
                 };
 
-                for (int j = 0; j < layout.Elements.Length; j++)
+                for (int j = 0; j < inputLayout.Elements.Length; j++)
                 {
-                    ElementDesc element = layout.Elements[j];
+                    InputElement element = inputLayout.Elements[j];
 
                     attributeDescriptions[attributeIndex] = new()
                     {
@@ -191,7 +191,7 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
                     attributeIndex++;
                 }
 
-                bindingLocation += (uint)layout.Elements.Length;
+                bindingLocation += (uint)inputLayout.Elements.Length;
             }
 
             PipelineVertexInputStateCreateInfo vertexInputState = new()
