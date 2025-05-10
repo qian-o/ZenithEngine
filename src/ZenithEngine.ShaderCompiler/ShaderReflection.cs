@@ -10,15 +10,15 @@ using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.ShaderCompiler;
 
-public class ShaderReflection : IReadOnlyDictionary<string, ResourceElementDesc>
+public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
 {
-    private readonly ReadOnlyDictionary<string, ResourceElementDesc> cache;
+    private readonly ReadOnlyDictionary<string, ShaderBinding> cache;
 
     internal ShaderReflection(ShaderStages stage, SlangReflection slangReflection)
     {
         SlangEntryPoint entryPoint = slangReflection.EntryPoints[0];
 
-        Dictionary<string, ResourceElementDesc> keyValues = [];
+        Dictionary<string, ShaderBinding> keyValues = [];
 
         foreach (SlangNamedTypeBinding namedTypeBinding in entryPoint.Bindings)
         {
@@ -42,10 +42,12 @@ public class ShaderReflection : IReadOnlyDictionary<string, ResourceElementDesc>
             }
             else
             {
-                keyValues.Add(namedTypeBinding.Name, new(stage,
-                                                         GetResourceType(binding.Kind, parameter.Type),
-                                                         binding.Index,
-                                                         binding.Count));
+                ResourceElementDesc desc = new(stage,
+                                               GetResourceType(binding.Kind, parameter.Type),
+                                               binding.Index,
+                                               binding.Count);
+
+                keyValues.Add(namedTypeBinding.Name, new(binding.Space, desc));
             }
         }
 
@@ -54,24 +56,23 @@ public class ShaderReflection : IReadOnlyDictionary<string, ResourceElementDesc>
 
     internal ShaderReflection(ShaderReflection[] reflections)
     {
-        Dictionary<string, ResourceElementDesc> keyValues = [];
+        Dictionary<string, ShaderBinding> keyValues = [];
 
         foreach (ShaderReflection reflection in reflections)
         {
-            foreach (KeyValuePair<string, ResourceElementDesc> binding in reflection.cache)
+            foreach (KeyValuePair<string, ShaderBinding> binding in reflection.cache)
             {
-                if (!keyValues.TryGetValue(binding.Key, out ResourceElementDesc value))
+                if (!keyValues.TryGetValue(binding.Key, out ShaderBinding value))
                 {
                     keyValues.Add(binding.Key, binding.Value);
                 }
                 else
                 {
-                    ShaderStages stages = value.Stages | binding.Value.Stages;
+                    ResourceElementDesc desc = value.Desc;
 
-                    keyValues[binding.Key] = new(stages,
-                                                 binding.Value.Type,
-                                                 binding.Value.Index,
-                                                 binding.Value.Count);
+                    desc.Stages |= binding.Value.Desc.Stages;
+
+                    keyValues[binding.Key] = new(value.Space, desc);
                 }
             }
         }
@@ -79,11 +80,11 @@ public class ShaderReflection : IReadOnlyDictionary<string, ResourceElementDesc>
         cache = new(keyValues);
     }
 
-    public ResourceElementDesc this[string key] => cache[key];
+    public ShaderBinding this[string key] => cache[key];
 
     public IEnumerable<string> Keys => cache.Keys;
 
-    public IEnumerable<ResourceElementDesc> Values => cache.Values;
+    public IEnumerable<ShaderBinding> Values => cache.Values;
 
     public int Count => cache.Count;
 
@@ -92,12 +93,12 @@ public class ShaderReflection : IReadOnlyDictionary<string, ResourceElementDesc>
         return cache.ContainsKey(key);
     }
 
-    public IEnumerator<KeyValuePair<string, ResourceElementDesc>> GetEnumerator()
+    public IEnumerator<KeyValuePair<string, ShaderBinding>> GetEnumerator()
     {
         return cache.GetEnumerator();
     }
 
-    public bool TryGetValue(string key, [MaybeNullWhen(false)] out ResourceElementDesc value)
+    public bool TryGetValue(string key, [MaybeNullWhen(false)] out ShaderBinding value)
     {
         return cache.TryGetValue(key, out value);
     }
@@ -114,7 +115,7 @@ public class ShaderReflection : IReadOnlyDictionary<string, ResourceElementDesc>
 
     private static void ParseParameterBlock(string name,
                                             ShaderStages stage,
-                                            Dictionary<string, ResourceElementDesc> keyValues,
+                                            Dictionary<string, ShaderBinding> keyValues,
                                             SlangType type)
     {
         foreach (SlangVar var in type.ParameterBlock!.ElementType.Struct!.Fields)
@@ -127,10 +128,12 @@ public class ShaderReflection : IReadOnlyDictionary<string, ResourceElementDesc>
             }
             else
             {
-                keyValues.Add(varName, new(stage,
-                                           GetResourceType(var.Binding!.Kind, var.Type),
-                                           var.Binding.Index,
-                                           var.Binding.Count));
+                ResourceElementDesc desc = new(stage,
+                                               GetResourceType(var.Binding!.Kind, var.Type),
+                                               var.Binding.Index,
+                                               var.Binding.Count);
+
+                keyValues.Add(varName, new(var.Binding.Space, desc));
             }
         }
     }
