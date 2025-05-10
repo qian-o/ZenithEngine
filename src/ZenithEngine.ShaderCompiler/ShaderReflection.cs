@@ -64,7 +64,7 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
         cache = new(bindings);
     }
 
-    internal ShaderReflection(ShaderReflection[] reflections)
+    internal ShaderReflection(params ShaderReflection[] reflections)
     {
         Dictionary<string, ShaderBinding> bindings = [];
         foreach (ShaderReflection reflection in reflections)
@@ -94,6 +94,8 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
         cache = new(bindings);
     }
 
+    public static ShaderReflection Empty => new();
+
     public ShaderBinding this[string key] => cache[key];
 
     public IEnumerable<string> Keys => cache.Keys;
@@ -120,11 +122,6 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
-    }
-
-    public ShaderReflection Merge(ShaderReflection other)
-    {
-        return new ShaderReflection([this, other]);
     }
 
     public ResourceLayoutDesc[] ToResourceLayoutDescs()

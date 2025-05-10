@@ -12,7 +12,7 @@ public static class ResourceFactoryExtensions
                                        string path,
                                        ShaderStages stage,
                                        string entryPoint,
-                                       out ShaderReflection reflection)
+                                       ref ShaderReflection reflection)
     {
         List<string> arguments =
         [
@@ -44,7 +44,7 @@ public static class ResourceFactoryExtensions
 
         byte[] shaderBytes = SlangCompiler.CompileWithReflection([.. arguments], out SlangReflection slangReflection);
 
-        reflection = new(stage, slangReflection);
+        reflection = new(reflection, new(stage, slangReflection));
 
         ShaderDesc shaderDesc = new(stage, shaderBytes, entryPoint);
 
