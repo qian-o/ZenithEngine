@@ -46,15 +46,15 @@ public class ShaderReflection
             }
         }
 
-        uint space = 0;
-        foreach (uint item in bindings.Values.Select(static item => item.Space).Distinct())
+        uint expectedSpace = 0;
+        foreach (uint space in bindings.Values.Select(static item => item.Space).Distinct())
         {
-            if (item != space)
+            if (space != expectedSpace)
             {
                 throw new ZenithEngineException("The space of the resource is not continuous.");
             }
 
-            space++;
+            expectedSpace++;
         }
 
         Bindings = new(bindings);
