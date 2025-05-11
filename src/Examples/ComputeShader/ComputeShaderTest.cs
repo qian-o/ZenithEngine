@@ -51,13 +51,13 @@ internal unsafe class ComputeShaderTest() : VisualTest("Compute Shader Test")
 
         layout = Context.Factory.CreateResourceLayout(in layoutDesc);
 
-        ResourceSetDesc rsDesc = new(layout, constantsBuffer, output);
+        ResourceSetDesc setDesc = new(layout, constantsBuffer, output);
 
-        set = Context.Factory.CreateResourceSet(in rsDesc);
+        set = Context.Factory.CreateResourceSet(in setDesc);
 
-        ComputePipelineDesc cpDesc = new(csShader, layout);
+        ComputePipelineDesc pipelineDesc = new(csShader, layout);
 
-        pipeline = Context.Factory.CreateComputePipeline(in cpDesc);
+        pipeline = Context.Factory.CreateComputePipeline(in pipelineDesc);
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)
