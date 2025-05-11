@@ -42,9 +42,9 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
             else
             {
                 ResourceElementDesc desc = new(stage,
-                                               GetResourceType(binding.Kind, parameter.Type),
+                                               GetType(binding.Kind, parameter.Type),
                                                binding.Index,
-                                               GetCount(binding, parameter.Type));
+                                               GetCount(parameter.Type, binding.Count));
 
                 bindings.Add(namedTypeBinding.Name, new(binding.Space, desc));
             }
@@ -161,29 +161,25 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
             else
             {
                 ResourceElementDesc desc = new(stage,
-                                               GetResourceType(var.Binding!.Kind, var.Type),
+                                               GetType(var.Binding!.Kind, var.Type),
                                                var.Binding.Index,
-                                               GetCount(var.Binding, var.Type));
+                                               GetCount(var.Type, var.Binding.Count));
 
                 bindings.Add(varName, new(var.Binding.Space, desc));
             }
         }
     }
 
-    private static ResourceType GetResourceType(SlangParameterCategory parameterCategory, SlangType type)
+    private static ResourceType GetType(SlangParameterCategory kind, SlangType type)
     {
-        return parameterCategory switch
+        return kind switch
         {
             SlangParameterCategory.ConstantBuffer or
             SlangParameterCategory.Uniform => ResourceType.ConstantBuffer,
 
             SlangParameterCategory.SamplerState => ResourceType.Sampler,
 
-            SlangParameterCategory.ShaderResource or
-            SlangParameterCategory.UnorderedAccess or
-            SlangParameterCategory.DescriptorTableSlot => Indistinct(type),
-
-            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(parameterCategory))
+            _ => Indistinct(type)
         };
 
         static ResourceType Indistinct(SlangType type)
@@ -218,12 +214,12 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
         }
     }
 
-    private static uint GetCount(SlangBinding binding, SlangType type)
+    private static uint GetCount(SlangType type, uint defaultCount)
     {
         return type.Kind switch
         {
             SlangTypeKind.Array => type.Array!.ElementCount,
-            _ => binding.Count
+            _ => defaultCount
         };
     }
 }
