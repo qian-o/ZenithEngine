@@ -55,6 +55,3 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - Delete the `Triangle` project and change it to the `Rasterization` project.
 - `Rasterization` and `RayTracing` use the Cornell Box model.
 - After the release of Silk.NET 3.0, refactor all interface calls and use the unsafe method.
-
-## Task List
-1. Add reflection feature in `ZenithEngine.ShaderCompiler`.
