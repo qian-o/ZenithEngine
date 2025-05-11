@@ -11,8 +11,38 @@ public static class ResourceFactoryExtensions
     public static Shader CompileShader(this ResourceFactory factory,
                                        string path,
                                        ShaderStages stage,
+                                       string entryPoint)
+    {
+        string[] arguments = GetArguments(factory, path, stage, entryPoint);
+
+        byte[] shaderBytes = SlangCompiler.Compile(arguments);
+
+        ShaderDesc shaderDesc = new(stage, shaderBytes, entryPoint);
+
+        return factory.CreateShader(in shaderDesc);
+    }
+
+    public static Shader CompileShader(this ResourceFactory factory,
+                                       string path,
+                                       ShaderStages stage,
                                        string entryPoint,
-                                       ref ShaderReflection reflection)
+                                       out ShaderReflection reflection)
+    {
+        string[] arguments = GetArguments(factory, path, stage, entryPoint);
+
+        byte[] shaderBytes = SlangCompiler.CompileWithReflection(arguments, out SlangReflection slangReflection);
+
+        reflection = new(stage, slangReflection);
+
+        ShaderDesc shaderDesc = new(stage, shaderBytes, entryPoint);
+
+        return factory.CreateShader(in shaderDesc);
+    }
+
+    private static string[] GetArguments(ResourceFactory factory,
+                                         string path,
+                                         ShaderStages stage,
+                                         string entryPoint)
     {
         List<string> arguments =
         [
@@ -42,12 +72,6 @@ public static class ResourceFactoryExtensions
                 throw new ZenithEngineException(ExceptionHelpers.NotSupported(factory.Context.Backend));
         }
 
-        byte[] shaderBytes = SlangCompiler.CompileWithReflection([.. arguments], out SlangReflection slangReflection);
-
-        reflection = new(reflection, new(stage, slangReflection));
-
-        ShaderDesc shaderDesc = new(stage, shaderBytes, entryPoint);
-
-        return factory.CreateShader(in shaderDesc);
+        return [.. arguments];
     }
 }

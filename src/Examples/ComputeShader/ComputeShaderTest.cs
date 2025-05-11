@@ -40,8 +40,7 @@ internal unsafe class ComputeShaderTest() : VisualTest("Compute Shader Test")
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ShaderReflection reflection = ShaderReflection.Empty;
-        using Shader csShader = Context.Factory.CompileShader(shader, ShaderStages.Compute, "Main", ref reflection);
+        using Shader csShader = Context.Factory.CompileShader(shader, ShaderStages.Compute, "Main", out ShaderReflection reflection);
 
         ResourceLayoutDesc layoutDesc = new
         (

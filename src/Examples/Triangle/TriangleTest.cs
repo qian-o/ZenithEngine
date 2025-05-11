@@ -67,9 +67,9 @@ internal unsafe class TriangleTest() : VisualTest("Triangle Test")
 
         Context.UpdateBuffer(constantsBuffer, (nint)(&constants), (uint)sizeof(Constants));
 
-        ShaderReflection reflection = ShaderReflection.Empty;
-        using Shader vsShader = Context.Factory.CompileShader(shader, ShaderStages.Vertex, "VertexMain", ref reflection);
-        using Shader psShader = Context.Factory.CompileShader(shader, ShaderStages.Pixel, "PixelMain", ref reflection);
+        using Shader vsShader = Context.Factory.CompileShader(shader, ShaderStages.Vertex, "VertexMain", out ShaderReflection vsReflection);
+        using Shader psShader = Context.Factory.CompileShader(shader, ShaderStages.Pixel, "PixelMain", out ShaderReflection psReflection);
+        ShaderReflection reflection = ShaderReflection.Merge(vsReflection, psReflection);
 
         ResourceLayoutDesc layoutDesc = new(reflection["constants"].Desc);
 

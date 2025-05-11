@@ -194,12 +194,12 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ShaderReflection reflection = ShaderReflection.Empty;
-        using Shader rgShader = Context.Factory.CompileShader(shader, ShaderStages.RayGeneration, "RayGenMain", ref reflection);
-        using Shader msShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissMain", ref reflection);
-        using Shader chShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitMain", ref reflection);
-        using Shader msAoShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissAO", ref reflection);
-        using Shader chAoShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitAO", ref reflection);
+        using Shader rgShader = Context.Factory.CompileShader(shader, ShaderStages.RayGeneration, "RayGenMain", out ShaderReflection rgReflection);
+        using Shader msShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissMain", out ShaderReflection msReflection);
+        using Shader chShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitMain", out ShaderReflection chReflection);
+        using Shader msAoShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissAO", out ShaderReflection msAoReflection);
+        using Shader chAoShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitAO", out ShaderReflection chAoReflection);
+        ShaderReflection reflection = ShaderReflection.Merge(rgReflection, msReflection, chReflection, msAoReflection, chAoReflection);
 
         ResourceLayoutDesc layoutDesc = new
         (
