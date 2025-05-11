@@ -8,8 +8,8 @@ struct Constants
     float TotalTime;
 };
 
-ConstantBuffer<Constants> constants : register(b0, space0);
-RWTexture2D<float4> Output : register(u0, space0);
+uniform Constants constants;
+uniform RWTexture2D output;
 
 float mod(float x, float y)
 {
@@ -34,5 +34,5 @@ void Main(uint3 id: SV_DispatchThreadID)
 
     color = tanh(color / 1e2);
 
-    Output[id.xy] = color;
+    output[id.xy] = color;
 }

@@ -91,9 +91,9 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
     private Buffer? materialsBuffer;
     private Buffer? globalBuffer;
     private Texture? output;
-    private ResourceLayout? resLayout;
-    private ResourceSet? resSet;
-    private RayTracingPipeline rtPipeline = null!;
+    private ResourceLayout? layout;
+    private ResourceSet? set;
+    private RayTracingPipeline pipeline = null!;
 
     private Global global;
     private int globalHash;
@@ -194,19 +194,26 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceLayoutDesc resLayoutDesc = new
-        ([
-            new(ShaderStages.RayGeneration | ShaderStages.ClosestHit, ResourceType.AccelerationStructure, 0),
-            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 1, 4),
-            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 5, 4),
-            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 9),
-            new(ShaderStages.RayGeneration | ShaderStages.ClosestHit, ResourceType.ConstantBuffer, 0),
-            new(ShaderStages.RayGeneration, ResourceType.TextureReadWrite, 0),
-        ]);
+        using Shader rgShader = Context.Factory.CompileShader(shader, ShaderStages.RayGeneration, "RayGenMain", out ShaderReflection rgReflection);
+        using Shader msShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissMain", out ShaderReflection msReflection);
+        using Shader chShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitMain", out ShaderReflection chReflection);
+        using Shader msAoShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissAO", out ShaderReflection msAoReflection);
+        using Shader chAoShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitAO", out ShaderReflection chAoReflection);
+        ShaderReflection reflection = ShaderReflection.Merge(rgReflection, msReflection, chReflection, msAoReflection, chAoReflection);
 
-        resLayout = Context.Factory.CreateResourceLayout(in resLayoutDesc);
+        ResourceLayoutDesc layoutDesc = new
+        (
+            reflection["scene"].Desc,
+            reflection["vertexBuffers"].Desc,
+            reflection["indexBuffers"].Desc,
+            reflection["materials"].Desc,
+            reflection["global"].Desc,
+            reflection["output"].Desc
+        );
 
-        ResourceSetDesc resSetDesc = new(resLayout,
+        layout = Context.Factory.CreateResourceLayout(in layoutDesc);
+
+        ResourceSetDesc setDesc = new(layout,
         [
             tlas,
             .. vertexBuffers,
@@ -216,15 +223,9 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
             output
         ]);
 
-        resSet = Context.Factory.CreateResourceSet(in resSetDesc);
+        set = Context.Factory.CreateResourceSet(in setDesc);
 
-        using Shader rgShader = Context.Factory.CompileShader(shader, ShaderStages.RayGeneration, "RayGenMain");
-        using Shader msShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissMain");
-        using Shader chShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitMain");
-        using Shader msAoShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissAO");
-        using Shader chAoShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitAO");
-
-        RayTracingPipelineDesc rtpDesc = new
+        RayTracingPipelineDesc pipelineDesc = new
         (
             shaders: new(rgShader, [msShader, msAoShader], [chShader, chAoShader]),
             hitGroups:
@@ -232,10 +233,10 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
                 new("DefaultHitGroup", closestHit: "ClosestHitMain"),
                 new("AoHitGroup", closestHit: "ClosestHitAO")
             ],
-            resourceLayouts: [resLayout]
+            resourceLayouts: [layout]
         );
 
-        rtPipeline = Context.Factory.CreateRayTracingPipeline(in rtpDesc);
+        pipeline = Context.Factory.CreateRayTracingPipeline(in pipelineDesc);
 
         CameraController.Transform(Matrix4X4.CreateTranslation(278.000f, 273.000f, -800.000f));
         CameraController.FarPlane = 2400.000f;
@@ -310,10 +311,10 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
         commandBuffer.Begin();
 
-        commandBuffer.PrepareResources([resSet!]);
+        commandBuffer.PrepareResources([set!]);
 
-        commandBuffer.SetRayTracingPipeline(rtPipeline);
-        commandBuffer.SetResourceSet(0, resSet!);
+        commandBuffer.SetRayTracingPipeline(pipeline);
+        commandBuffer.SetResourceSet(0, set!);
 
         commandBuffer.DispatchRays(Width, Height, 1);
 
@@ -328,7 +329,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
             ImGuiController.RemoveBinding(output);
         }
 
-        resSet?.Dispose();
+        set?.Dispose();
         output?.Dispose();
 
         TextureDesc outputDesc = new(width,
@@ -337,7 +338,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceSetDesc resSetDesc = new(resLayout!,
+        ResourceSetDesc resSetDesc = new(layout!,
         [
             tlas!,
             .. vertexBuffers,
@@ -347,16 +348,16 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
             output
         ]);
 
-        resSet = Context.Factory.CreateResourceSet(in resSetDesc);
+        set = Context.Factory.CreateResourceSet(in resSetDesc);
 
         global.FrameNumber = 0;
     }
 
     protected override void OnDestroy()
     {
-        rtPipeline.Dispose();
-        resSet?.Dispose();
-        resLayout?.Dispose();
+        pipeline.Dispose();
+        set?.Dispose();
+        layout?.Dispose();
         output?.Dispose();
         globalBuffer?.Dispose();
         materialsBuffer?.Dispose();

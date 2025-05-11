@@ -67,12 +67,12 @@ struct AOPayload
     float Value;
 };
 
-RaytracingAccelerationStructure scene : register(t0, space0);
-StructuredBuffer<Vertex> vertexBuffers[4] : register(t1, space0);
-StructuredBuffer<uint> indexBuffers[4] : register(t5, space0);
-StructuredBuffer<Material> materials : register(t9, space0);
-ConstantBuffer<Global> global : register(b0, space0);
-RWTexture2D<float4> output : register(u0, space0);
+uniform RaytracingAccelerationStructure scene;
+uniform StructuredBuffer<Vertex> vertexBuffers[4];
+uniform StructuredBuffer<uint> indexBuffers[4];
+uniform StructuredBuffer<Material> materials;
+uniform Global global;
+uniform RWTexture2D output;
 
 Vertex GetVertex(uint geometryIndex, uint primitiveIndex, float3 barycentrics)
 {
