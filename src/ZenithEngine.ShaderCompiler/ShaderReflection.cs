@@ -96,20 +96,14 @@ public class ShaderReflection
 
     public ResourceLayoutDesc[] ToResourceLayoutDescs()
     {
-        uint[] spaces = [.. Bindings.Values.Select(static item => item.Space).Distinct()];
+        List<ResourceLayoutDesc> resourceLayoutDescs = [];
 
-        ResourceLayoutDesc[] resourceLayoutDescs = new ResourceLayoutDesc[spaces.Length];
-
-        for (int i = 0; i < spaces.Length; i++)
+        foreach (uint space in Bindings.Values.Select(static item => item.Space).Distinct())
         {
-            uint space = spaces[i];
-
-            ResourceElementDesc[] elements = [.. Bindings.Values.Where(item => item.Space == space).Select(static item => item.Desc)];
-
-            resourceLayoutDescs[i] = new(elements);
+            resourceLayoutDescs.Add(new([.. Bindings.Values.Where(item => item.Space == space).Select(static item => item.Desc)]));
         }
 
-        return resourceLayoutDescs;
+        return [.. resourceLayoutDescs];
     }
 
     public static ShaderReflection Merge(params ShaderReflection[] reflections)
