@@ -44,7 +44,7 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
                 ResourceElementDesc desc = new(stage,
                                                GetResourceType(binding.Kind, parameter.Type),
                                                binding.Index,
-                                               binding.Count);
+                                               GetCount(binding, parameter.Type));
 
                 bindings.Add(namedTypeBinding.Name, new(binding.Space, desc));
             }
@@ -163,7 +163,7 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
                 ResourceElementDesc desc = new(stage,
                                                GetResourceType(var.Binding!.Kind, var.Type),
                                                var.Binding.Index,
-                                               var.Binding.Count);
+                                               GetCount(var.Binding, var.Type));
 
                 bindings.Add(varName, new(var.Binding.Space, desc));
             }
@@ -216,5 +216,14 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
                 _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type.Resource.BaseShape))
             };
         }
+    }
+
+    private static uint GetCount(SlangBinding binding, SlangType type)
+    {
+        return type.Kind switch
+        {
+            SlangTypeKind.Array => type.Array!.ElementCount,
+            _ => binding.Count
+        };
     }
 }
