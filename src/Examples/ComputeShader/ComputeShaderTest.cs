@@ -24,9 +24,9 @@ internal unsafe class ComputeShaderTest() : VisualTest("Compute Shader Test")
 
     private Buffer constantsBuffer = null!;
     private Texture output = null!;
-    private ResourceLayout resourceLayout = null!;
-    private ResourceSet resourceSet = null!;
-    private ComputePipeline computePipeline = null!;
+    private ResourceLayout layout = null!;
+    private ResourceSet set = null!;
+    private ComputePipeline pipeline = null!;
 
     protected override void OnLoad()
     {
@@ -40,23 +40,24 @@ internal unsafe class ComputeShaderTest() : VisualTest("Compute Shader Test")
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceLayoutDesc rlDesc = new
+        ShaderReflection reflection = ShaderReflection.Empty;
+        using Shader csShader = Context.Factory.CompileShader(shader, ShaderStages.Compute, "Main", ref reflection);
+
+        ResourceLayoutDesc layoutDesc = new
         (
-            new(ShaderStages.Compute, ResourceType.ConstantBuffer, 0),
-            new(ShaderStages.Compute, ResourceType.TextureReadWrite, 0)
+            reflection["constants"].Desc,
+            reflection["output"].Desc
         );
 
-        resourceLayout = Context.Factory.CreateResourceLayout(in rlDesc);
+        layout = Context.Factory.CreateResourceLayout(in layoutDesc);
 
-        ResourceSetDesc rsDesc = new(resourceLayout, constantsBuffer, output);
+        ResourceSetDesc rsDesc = new(layout, constantsBuffer, output);
 
-        resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
+        set = Context.Factory.CreateResourceSet(in rsDesc);
 
-        using Shader csShader = Context.Factory.CompileShader(shader, ShaderStages.Compute, "Main", out _);
+        ComputePipelineDesc cpDesc = new(csShader, layout);
 
-        ComputePipelineDesc cpDesc = new(csShader, resourceLayout);
-
-        computePipeline = Context.Factory.CreateComputePipeline(in cpDesc);
+        pipeline = Context.Factory.CreateComputePipeline(in cpDesc);
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)
@@ -78,10 +79,10 @@ internal unsafe class ComputeShaderTest() : VisualTest("Compute Shader Test")
 
         commandBuffer.Begin();
 
-        commandBuffer.PrepareResources([resourceSet]);
+        commandBuffer.PrepareResources([set]);
 
-        commandBuffer.SetComputePipeline(computePipeline);
-        commandBuffer.SetResourceSet(0, resourceSet);
+        commandBuffer.SetComputePipeline(pipeline);
+        commandBuffer.SetResourceSet(0, set);
 
         commandBuffer.Dispatch((uint)Math.Ceiling(Width / 32.0), (uint)Math.Ceiling(Height / 32.0), 1);
 
@@ -91,7 +92,7 @@ internal unsafe class ComputeShaderTest() : VisualTest("Compute Shader Test")
 
     protected override void OnSizeChanged(uint width, uint height)
     {
-        resourceSet.Dispose();
+        set.Dispose();
         output.Dispose();
 
         ImGuiController.RemoveBinding(output);
@@ -100,16 +101,16 @@ internal unsafe class ComputeShaderTest() : VisualTest("Compute Shader Test")
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
-        ResourceSetDesc rsDesc = new(resourceLayout, constantsBuffer, output);
+        ResourceSetDesc rsDesc = new(layout, constantsBuffer, output);
 
-        resourceSet = Context.Factory.CreateResourceSet(in rsDesc);
+        set = Context.Factory.CreateResourceSet(in rsDesc);
     }
 
     protected override void OnDestroy()
     {
-        computePipeline.Dispose();
-        resourceSet.Dispose();
-        resourceLayout.Dispose();
+        pipeline.Dispose();
+        set.Dispose();
+        layout.Dispose();
         output.Dispose();
         constantsBuffer.Dispose();
     }

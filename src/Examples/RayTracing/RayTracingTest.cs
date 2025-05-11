@@ -194,15 +194,22 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
         output = Context.Factory.CreateTexture(in outputDesc);
 
+        ShaderReflection reflection = ShaderReflection.Empty;
+        using Shader rgShader = Context.Factory.CompileShader(shader, ShaderStages.RayGeneration, "RayGenMain", ref reflection);
+        using Shader msShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissMain", ref reflection);
+        using Shader chShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitMain", ref reflection);
+        using Shader msAoShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissAO", ref reflection);
+        using Shader chAoShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitAO", ref reflection);
+
         ResourceLayoutDesc resLayoutDesc = new
-        ([
-            new(ShaderStages.RayGeneration | ShaderStages.ClosestHit, ResourceType.AccelerationStructure, 0),
-            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 1, 4),
-            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 5, 4),
-            new(ShaderStages.ClosestHit, ResourceType.StructuredBuffer, 9),
-            new(ShaderStages.RayGeneration | ShaderStages.ClosestHit, ResourceType.ConstantBuffer, 0),
-            new(ShaderStages.RayGeneration, ResourceType.TextureReadWrite, 0),
-        ]);
+        (
+            reflection["scene"].Desc,
+            reflection["vertexBuffers"].Desc,
+            reflection["indexBuffers"].Desc,
+            reflection["materials"].Desc,
+            reflection["global"].Desc,
+            reflection["output"].Desc
+        );
 
         resLayout = Context.Factory.CreateResourceLayout(in resLayoutDesc);
 
@@ -217,12 +224,6 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         ]);
 
         resSet = Context.Factory.CreateResourceSet(in resSetDesc);
-
-        using Shader rgShader = Context.Factory.CompileShader(shader, ShaderStages.RayGeneration, "RayGenMain", out _);
-        using Shader msShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissMain", out _);
-        using Shader chShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitMain", out _);
-        using Shader msAoShader = Context.Factory.CompileShader(shader, ShaderStages.Miss, "MissAO", out _);
-        using Shader chAoShader = Context.Factory.CompileShader(shader, ShaderStages.ClosestHit, "ClosestHitAO", out _);
 
         RayTracingPipelineDesc rtpDesc = new
         (
