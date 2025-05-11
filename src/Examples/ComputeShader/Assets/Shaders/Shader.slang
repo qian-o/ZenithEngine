@@ -9,7 +9,7 @@ struct Constants
 };
 
 uniform Constants constants;
-uniform RWTexture2D<float4> output;
+uniform RWTexture2D output;
 
 float mod(float x, float y)
 {

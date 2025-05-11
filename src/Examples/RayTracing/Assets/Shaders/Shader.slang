@@ -72,7 +72,7 @@ uniform StructuredBuffer<Vertex> vertexBuffers[4];
 uniform StructuredBuffer<uint> indexBuffers[4];
 uniform StructuredBuffer<Material> materials;
 uniform Global global;
-uniform RWTexture2D<float4> output;
+uniform RWTexture2D output;
 
 Vertex GetVertex(uint geometryIndex, uint primitiveIndex, float3 barycentrics)
 {
