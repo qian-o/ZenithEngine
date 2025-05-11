@@ -28,12 +28,7 @@ public class ShaderReflection
 
             if (binding.Kind is SlangParameterCategory.SubElementRegisterSpace)
             {
-                if (parameter.Type.Kind is not SlangTypeKind.ParameterBlock)
-                {
-                    throw new ZenithEngineException(ExceptionHelpers.NotSupported(parameter.Type.Kind));
-                }
-
-                ParseParameterBlock(namedTypeBinding.Name, stage, bindings, parameter.Type);
+                ParseParameterBlock(bindings, namedTypeBinding.Name, stage, parameter.Type);
             }
             else
             {
@@ -111,9 +106,9 @@ public class ShaderReflection
         return new(reflections);
     }
 
-    private static void ParseParameterBlock(string name,
+    private static void ParseParameterBlock(Dictionary<string, ShaderBinding> bindings,
+                                            string name,
                                             ShaderStages stage,
-                                            Dictionary<string, ShaderBinding> bindings,
                                             SlangType type)
     {
         foreach (SlangVar var in type.ParameterBlock!.ElementType.Struct!.Fields)
@@ -122,7 +117,7 @@ public class ShaderReflection
 
             if (var.Type.Kind is SlangTypeKind.ParameterBlock)
             {
-                ParseParameterBlock(varName, stage, bindings, var.Type);
+                ParseParameterBlock(bindings, varName, stage, var.Type);
             }
             else
             {
@@ -164,7 +159,7 @@ public class ShaderReflection
         {
             bool isReadWrite = type.Resource!.Access is SlangResourceAccess.ReadWrite;
 
-            return type.Resource!.BaseShape switch
+            return type.Resource.BaseShape switch
             {
                 SlangResourceShape.Texture1D or
                 SlangResourceShape.Texture2D or
