@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.ObjectModel;
 using Slangc.NET;
 using Slangc.NET.Enums;
 using Slangc.NET.Models;
@@ -10,10 +8,8 @@ using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.ShaderCompiler;
 
-public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
+public class ShaderReflection
 {
-    private readonly ReadOnlyDictionary<string, ShaderBinding> cache;
-
     internal ShaderReflection(ShaderStages stage, SlangReflection slangReflection)
     {
         SlangEntryPoint entryPoint = slangReflection.EntryPoints[0];
@@ -61,7 +57,7 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
             space++;
         }
 
-        cache = new(bindings);
+        Bindings = new(bindings);
     }
 
     internal ShaderReflection(ShaderReflection[] reflections)
@@ -69,7 +65,7 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
         Dictionary<string, ShaderBinding> bindings = [];
         foreach (ShaderReflection reflection in reflections)
         {
-            foreach (KeyValuePair<string, ShaderBinding> binding in reflection.cache)
+            foreach (KeyValuePair<string, ShaderBinding> binding in reflection.Bindings)
             {
                 if (!bindings.TryGetValue(binding.Key, out ShaderBinding value))
                 {
@@ -91,40 +87,16 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
             }
         }
 
-        cache = new(bindings);
+        Bindings = new(bindings);
     }
 
-    public ShaderBinding this[string key] => cache[key];
+    public ReadOnlyDictionary<string, ShaderBinding> Bindings { get; }
 
-    public IEnumerable<string> Keys => cache.Keys;
-
-    public IEnumerable<ShaderBinding> Values => cache.Values;
-
-    public int Count => cache.Count;
-
-    public bool ContainsKey(string key)
-    {
-        return cache.ContainsKey(key);
-    }
-
-    public IEnumerator<KeyValuePair<string, ShaderBinding>> GetEnumerator()
-    {
-        return cache.GetEnumerator();
-    }
-
-    public bool TryGetValue(string key, [MaybeNullWhen(false)] out ShaderBinding value)
-    {
-        return cache.TryGetValue(key, out value);
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
+    public ShaderBinding this[string key] => Bindings[key];
 
     public ResourceLayoutDesc[] ToResourceLayoutDescs()
     {
-        uint[] spaces = [.. cache.Values.Select(static item => item.Space).Distinct()];
+        uint[] spaces = [.. Bindings.Values.Select(static item => item.Space).Distinct()];
 
         ResourceLayoutDesc[] resourceLayoutDescs = new ResourceLayoutDesc[spaces.Length];
 
@@ -132,7 +104,7 @@ public class ShaderReflection : IReadOnlyDictionary<string, ShaderBinding>
         {
             uint space = spaces[i];
 
-            ResourceElementDesc[] elements = [.. cache.Values.Where(item => item.Space == space).Select(static item => item.Desc)];
+            ResourceElementDesc[] elements = [.. Bindings.Values.Where(item => item.Space == space).Select(static item => item.Desc)];
 
             resourceLayoutDescs[i] = new(elements);
         }
