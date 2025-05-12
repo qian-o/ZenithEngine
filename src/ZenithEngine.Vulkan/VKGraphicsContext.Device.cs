@@ -64,10 +64,10 @@ internal unsafe partial class VKGraphicsContext
         GraphicsQueue = Vk.GetDeviceQueue(Device, GraphicsQueueFamilyIndex, 0);
         ComputeQueue = Vk.GetDeviceQueue(Device, ComputeQueueFamilyIndex, 0);
         CopyQueue = Vk.GetDeviceQueue(Device, CopyQueueFamilyIndex, 0);
-        KhrSwapchain = Vk.TryGetExtension<KhrSwapchain>(Instance, Device);
-        KhrRayTracingPipeline = Vk.TryGetExtension<KhrRayTracingPipeline>(Instance, Device);
-        KhrAccelerationStructure = Vk.TryGetExtension<KhrAccelerationStructure>(Instance, Device);
-        KhrDeferredHostOperations = Vk.TryGetExtension<KhrDeferredHostOperations>(Instance, Device);
+        KhrSwapchain = Vk.GetExtension<KhrSwapchain>(Instance, Device);
+        KhrRayTracingPipeline = Vk.GetExtension<KhrRayTracingPipeline>(Instance, Device);
+        KhrAccelerationStructure = Vk.GetExtension<KhrAccelerationStructure>(Instance, Device);
+        KhrDeferredHostOperations = Vk.GetExtension<KhrDeferredHostOperations>(Instance, Device);
         DescriptorSetAllocator = new(this);
     }
 

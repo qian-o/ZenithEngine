@@ -21,7 +21,7 @@ internal static class VulkanExtensions
         }
     }
 
-    public static T? TryGetExtension<T>(this Vk vk, VkInstance instance) where T : NativeExtension<Vk>
+    public static T? GetExtension<T>(this Vk vk, VkInstance instance) where T : NativeExtension<Vk>
     {
         if (vk.TryGetInstanceExtension(instance, out T ext))
         {
@@ -31,7 +31,7 @@ internal static class VulkanExtensions
         return null;
     }
 
-    public static T? TryGetExtension<T>(this Vk vk, VkInstance instance, VkDevice device) where T : NativeExtension<Vk>
+    public static T? GetExtension<T>(this Vk vk, VkInstance instance, VkDevice device) where T : NativeExtension<Vk>
     {
         if (vk.TryGetDeviceExtension(instance, device, out T ext))
         {

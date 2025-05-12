@@ -160,14 +160,14 @@ internal unsafe partial class VKGraphicsContext : GraphicsContext
 
         Vk.CreateInstance(&createInfo, null, out Instance).ThrowIfError();
 
-        ExtDebugUtils = Vk.TryGetExtension<ExtDebugUtils>(Instance);
-        KhrSurface = Vk.TryGetExtension<KhrSurface>(Instance);
-        KhrWin32Surface = Vk.TryGetExtension<KhrWin32Surface>(Instance);
-        KhrWaylandSurface = Vk.TryGetExtension<KhrWaylandSurface>(Instance);
-        KhrXlibSurface = Vk.TryGetExtension<KhrXlibSurface>(Instance);
-        KhrAndroidSurface = Vk.TryGetExtension<KhrAndroidSurface>(Instance);
-        MvkIosSurface = Vk.TryGetExtension<MvkIosSurface>(Instance);
-        MvkMacosSurface = Vk.TryGetExtension<MvkMacosSurface>(Instance);
+        ExtDebugUtils = Vk.GetExtension<ExtDebugUtils>(Instance);
+        KhrSurface = Vk.GetExtension<KhrSurface>(Instance);
+        KhrWin32Surface = Vk.GetExtension<KhrWin32Surface>(Instance);
+        KhrWaylandSurface = Vk.GetExtension<KhrWaylandSurface>(Instance);
+        KhrXlibSurface = Vk.GetExtension<KhrXlibSurface>(Instance);
+        KhrAndroidSurface = Vk.GetExtension<KhrAndroidSurface>(Instance);
+        MvkIosSurface = Vk.GetExtension<MvkIosSurface>(Instance);
+        MvkMacosSurface = Vk.GetExtension<MvkMacosSurface>(Instance);
         DebugLayer = useDebugLayer ? new(this) : null;
     }
 
