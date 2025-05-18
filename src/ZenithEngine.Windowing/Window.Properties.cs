@@ -14,7 +14,6 @@ internal unsafe partial class Window : IWindowProperties
     private WindowState state;
     private WindowBorder border;
     private bool topMost;
-    private bool showInTaskbar = true;
     private Vector2D<int> position = new(100, 100);
     private Vector2D<uint> size = new(800, 600);
     private Vector2D<uint> minimumSize = new(100, 100);
@@ -154,23 +153,6 @@ internal unsafe partial class Window : IWindowProperties
             }
 
             WindowUtils.Sdl.SetWindowAlwaysOnTop(Handle, value ? SdlBool.True : SdlBool.False);
-        }
-    }
-
-    public bool ShowInTaskbar
-    {
-        get => showInTaskbar;
-        set
-        {
-            showInTaskbar = value;
-
-            if (!IsInitialized())
-            {
-                return;
-            }
-
-            // SDL does not support this feature.
-            // WindowManager.Sdl.SetWindowSkipTaskbar(Handle, value ? SdlBool.False : SdlBool.True);
         }
     }
 

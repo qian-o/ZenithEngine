@@ -163,11 +163,6 @@ internal unsafe partial class Window : IWindow
             flags |= WindowFlags.AlwaysOnTop;
         }
 
-        if (!ShowInTaskbar)
-        {
-            flags |= WindowFlags.SkipTaskbar;
-        }
-
         Handle = WindowUtils.Sdl.CreateWindow(Title,
                                               Position.X,
                                               Position.Y,

@@ -72,13 +72,11 @@ public static unsafe class WindowController
                                        uint width = 800,
                                        uint height = 600)
     {
-        Window window = new()
+        return (Window)new()
         {
             Title = title,
             Size = new(width, height)
         };
-
-        return window;
     }
 
     internal static void AddLoop(IWindow window)

@@ -16,8 +16,6 @@ public interface IWindowProperties
 
     bool TopMost { get; set; }
 
-    bool ShowInTaskbar { get; set; }
-
     Vector2D<int> Position { get; set; }
 
     Vector2D<uint> Size { get; set; }
