@@ -117,3 +117,42 @@ public struct Globals
 {
     public Camera Camera;
 }
+
+public struct Ray
+{
+    public float3 Origin;
+
+    public float3 Direction;
+}
+
+public struct BSDF
+{
+    public float3 Direction;
+
+    public float Pdf;
+};
+
+public struct Payload
+{
+    public Ray Ray;
+
+    public BSDF Bsdf;
+
+    public float3 Radiance;
+
+    public float3 Absorbtion;
+
+    public float3 Beta;
+
+    public float3 Position;
+
+    public float3 Normal;
+
+    public float3 ForwardNormal;
+
+    public uint Depth;
+
+    public bool Stop;
+
+    public float Eta;
+};
