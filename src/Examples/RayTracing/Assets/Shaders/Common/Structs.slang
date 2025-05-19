@@ -6,22 +6,18 @@
 
     public float2 TexCoord;
 
-    public static Vertex GetVertex(StructuredBuffer<Vertex>[] vertexBuffers, StructuredBuffer<uint>[] indexBuffers,
-                                   BuiltInTriangleIntersectionAttributes attrib)
+    public static Vertex GetVertex(StructuredBuffer<Vertex> vertices, StructuredBuffer<uint> indices,
+                                   StructuredBuffer<uint2> offsets, BuiltInTriangleIntersectionAttributes attrib)
     {
-        uint geometryIndex = GeometryIndex();
+        uint2 offset = offsets[GeometryIndex()];
+
         uint primitiveIndex = PrimitiveIndex();
+
+        Vertex v0 = vertices[offset.x + indices[offset.y + (primitiveIndex * 3)]];
+        Vertex v1 = vertices[offset.x + indices[offset.y + (primitiveIndex * 3 + 1)]];
+        Vertex v2 = vertices[offset.x + indices[offset.y + (primitiveIndex * 3 + 2)]];
+
         float3 barycentrics = float3(1.0 - attrib.barycentrics.x - attrib.barycentrics.y, attrib.barycentrics.xy);
-
-        StructuredBuffer<Vertex> vertexBuffer = vertexBuffers[geometryIndex];
-        StructuredBuffer<uint> indexBuffer = indexBuffers[geometryIndex];
-
-        uint3 indices = uint3(indexBuffer[primitiveIndex * 3], indexBuffer[primitiveIndex * 3 + 1],
-                              indexBuffer[primitiveIndex * 3 + 2]);
-
-        Vertex v0 = vertexBuffer[indices.x];
-        Vertex v1 = vertexBuffer[indices.y];
-        Vertex v2 = vertexBuffer[indices.z];
 
         Vertex result;
         result.Position = barycentrics.x * v0.Position + barycentrics.y * v1.Position + barycentrics.z * v2.Position;
