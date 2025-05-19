@@ -6,4 +6,5 @@ uniform StructuredBuffer<Vertex> vertices;
 uniform StructuredBuffer<uint> indices;
 uniform StructuredBuffer<uint2> offsets;
 uniform Globals globals;
+uniform RWTexture2D accumulation;
 uniform RWTexture2D output;

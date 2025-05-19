@@ -79,18 +79,14 @@ public struct Camera
 
     public float Fov;
 
-    public float ApertureSize;
-
-    public float FocalDistance;
-
-    public RayDesc GetRayDesc()
+    public RayDesc GetRayDesc(float2 offset)
     {
         uint2 launchID = DispatchRaysIndex().xy;
         uint2 launchSize = DispatchRaysDimensions().xy;
 
         float aspectRatio = (float)launchSize.x / launchSize.y;
 
-        float2 xy = (launchID / launchSize * 2.0 - 1.0) * tan(Fov * 0.5);
+        float2 xy = ((launchID + offset) / launchSize * 2.0 - 1.0) * tan(Fov * 0.5);
 
         if (aspectRatio > 1.0)
         {
@@ -169,4 +165,9 @@ public struct Payload
     public bool Stop;
 
     public float Eta;
+
+    public __init()
+    {
+        Beta = float3(1.0, 1.0, 1.0);
+    }
 };

@@ -1,4 +1,5 @@
-﻿import "Common/Random";
+﻿import "Common/Math";
+import "Common/Random";
 import "Common/Structs";
 import "Uniforms";
 
