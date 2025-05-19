@@ -6,6 +6,8 @@
 
     public float2 TexCoord;
 
+    public int MaterialIndex;
+
     public static Vertex GetVertex(StructuredBuffer<Vertex> vertices, StructuredBuffer<uint> indices,
                                    StructuredBuffer<uint2> offsets, BuiltInTriangleIntersectionAttributes attrib)
     {
@@ -23,6 +25,7 @@
         result.Position = barycentrics.x * v0.Position + barycentrics.y * v1.Position + barycentrics.z * v2.Position;
         result.Normal = normalize(barycentrics.x * v0.Normal + barycentrics.y * v1.Normal + barycentrics.z * v2.Normal);
         result.TexCoord = barycentrics.x * v0.TexCoord + barycentrics.y * v1.TexCoord + barycentrics.z * v2.TexCoord;
+        result.MaterialIndex = (int)(barycentrics.x * v0.MaterialIndex + barycentrics.y * v1.MaterialIndex + barycentrics.z * v2.MaterialIndex);
 
         return result;
     }
