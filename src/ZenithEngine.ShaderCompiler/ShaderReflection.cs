@@ -89,16 +89,21 @@ public class ShaderReflection
 
     public ShaderBinding this[string key] => Bindings[key];
 
-    public ResourceLayoutDesc[] ToResourceLayoutDescs()
-    {
-        List<ResourceLayoutDesc> resourceLayoutDescs = [];
+    public uint SpaceCount => (uint)Bindings.Values.Select(static item => item.Space).Distinct().Count();
 
-        foreach (uint space in Bindings.Values.Select(static item => item.Space).Distinct())
+    public ReadOnlyDictionary<string, ShaderBinding> GetBindingsBySpace(uint space)
+    {
+        Dictionary<string, ShaderBinding> bindings = [];
+
+        foreach (KeyValuePair<string, ShaderBinding> binding in Bindings)
         {
-            resourceLayoutDescs.Add(new([.. Bindings.Values.Where(item => item.Space == space).Select(static item => item.Desc)]));
+            if (binding.Value.Space == space)
+            {
+                bindings.Add(binding.Key, binding.Value);
+            }
         }
 
-        return [.. resourceLayoutDescs];
+        return new(bindings);
     }
 
     public static ShaderReflection Merge(params ShaderReflection[] reflections)
