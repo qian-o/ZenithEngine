@@ -53,6 +53,7 @@ public class ShaderReflection
         }
 
         Bindings = new(bindings);
+        SpaceCount = expectedSpace;
     }
 
     internal ShaderReflection(ShaderReflection[] reflections)
@@ -83,13 +84,14 @@ public class ShaderReflection
         }
 
         Bindings = new(bindings);
+        SpaceCount = (uint)Bindings.Values.Select(static item => item.Space).Distinct().Count();
     }
 
     public ReadOnlyDictionary<string, ShaderBinding> Bindings { get; }
 
-    public ShaderBinding this[string key] => Bindings[key];
+    public uint SpaceCount { get; }
 
-    public uint SpaceCount => (uint)Bindings.Values.Select(static item => item.Space).Distinct().Count();
+    public ShaderBinding this[string key] => Bindings[key];
 
     public ReadOnlyDictionary<string, ShaderBinding> GetBindingsBySpace(uint space)
     {
