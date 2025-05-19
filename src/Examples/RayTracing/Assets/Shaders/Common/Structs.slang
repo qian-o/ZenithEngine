@@ -59,7 +59,7 @@ public struct Material
 
     public int AlbedoTextureIndex;
 
-    public int EemissionTextureIndex;
+    public int MetallicRoughnessTextureIndex;
 
     public int NormalTextureIndex;
 
