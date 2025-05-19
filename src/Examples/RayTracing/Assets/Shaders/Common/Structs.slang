@@ -79,6 +79,10 @@ public struct Camera
 
     public float Fov;
 
+    public float ApertureSize;
+
+    public float FocalDistance;
+
     public RayDesc GetRayDesc()
     {
         uint2 launchID = DispatchRaysIndex().xy;
@@ -112,6 +116,20 @@ public struct Camera
 public struct Globals
 {
     public Camera Camera;
+
+    public uint LightCount;
+
+    public bool DoubleSidedLighting;
+
+    public uint SampleCount;
+
+    public uint MaxDepth;
+
+    public uint FrameIndex;
+
+    public float HdrMultiplier;
+
+    public float HdrResolution;
 }
 
 public struct Ray
