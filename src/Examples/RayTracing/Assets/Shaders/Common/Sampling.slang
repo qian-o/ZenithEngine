@@ -8,7 +8,9 @@ public class Sampling
     {
         float closest = FAR;
 
-        for (uint i = 0; i < globals.LightCount; i++)
+        uint lightCount = lights.getCount();
+
+        for (uint i = 0; i < lightCount; i++)
         {
             Light light = lights[i];
 

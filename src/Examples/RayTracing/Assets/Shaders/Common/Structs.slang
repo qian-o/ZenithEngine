@@ -146,8 +146,6 @@ public struct Globals
 {
     public Camera Camera;
 
-    public uint LightCount;
-
     public bool DoubleSidedLighting;
 
     public uint SampleCount;
