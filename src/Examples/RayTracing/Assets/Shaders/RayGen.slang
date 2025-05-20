@@ -1,4 +1,4 @@
-﻿import "Common/Math";
+﻿import "Common/Maths";
 import "Common/Random";
 import "Common/Structs";
 import "Common/Uniforms";
@@ -17,7 +17,7 @@ void Main()
     {
         RayDesc rayDesc = globals.Camera.GetRayDesc(float2(Random.Rnd(seed), Random.Rnd(seed)));
 
-        Payload payload;
+        Payload payload = {};
         for (uint j = 0; j < globals.MaxDepth; j++)
         {
             TraceRay(scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
@@ -43,7 +43,7 @@ void Main()
     radiance = accumulatedRadiance * inv;
 
     // LDR scale
-    float3 ldr = Math.ToneMap(radiance, 1.5);
+    float3 ldr = Maths.ToneMap(radiance, 1.5);
 
     output[launchID] = float4(ldr, 1.0);
 }

@@ -1,6 +1,4 @@
-﻿import "Common/Math";
-import "Common/Random";
-import "Common/Structs";
+﻿import "Common/Structs";
 import "Common/Uniforms";
 
 [shader("miss")]

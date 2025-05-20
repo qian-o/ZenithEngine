@@ -1,4 +1,4 @@
-﻿public class Math
+﻿public class Maths
 {
     public static float3 ToneMap(float3 rgb, float limit)
     {

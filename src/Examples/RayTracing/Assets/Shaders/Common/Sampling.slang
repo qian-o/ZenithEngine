@@ -1,4 +1,4 @@
-﻿import "Math";
+﻿import "Maths";
 import "Structs";
 import "Uniforms";
 
@@ -27,7 +27,7 @@ public class Sampling
     {
         float3 Le = lightSample.Emission;
 
-        return payload.Depth == 0 ? Le : Math.PowerHeuristic(bsdfSample.Pdf, lightSample.Pdf) * Le;
+        return payload.Depth == 0 ? Le : Maths.PowerHeuristic(bsdfSample.Pdf, lightSample.Pdf) * Le;
     }
 
     private static void CheckAreaLightIntersection(inout float closest, inout LightSample lightSample, in Light light,
