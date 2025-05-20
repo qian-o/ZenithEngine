@@ -1,4 +1,11 @@
-﻿public struct Vertex
+﻿public enum LightType : int
+{
+    Area = 0,
+
+    Sphere = 1
+}
+
+public struct Vertex
 {
     public float3 Position;
 
@@ -64,6 +71,23 @@ public struct Material
     public int NormalTextureIndex;
 
     public int HeightTextureIndex;
+}
+
+public struct Light
+{
+    public LightType Type;
+
+    public float3 Position;
+
+    public float3 Emission;
+
+    public float3 U;
+
+    public float3 V;
+
+    public float Area;
+
+    public float Radius;
 }
 
 public struct Camera
@@ -138,7 +162,18 @@ public struct Ray
     public float3 Direction;
 }
 
-public struct BSDF
+public struct LightSample
+{
+    public float3 Normal;
+
+    public float3 Position;
+
+    public float3 Emission;
+
+    public float Pdf;
+}
+
+public struct BSDFSample
 {
     public float3 Direction;
 
@@ -149,7 +184,7 @@ public struct Payload
 {
     public Ray Ray;
 
-    public BSDF Bsdf;
+    public BSDFSample Bsdf;
 
     public float3 Radiance;
 
