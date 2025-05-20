@@ -1,4 +1,5 @@
-﻿import "Common/Structs";
+﻿import "Common/Math";
+import "Common/Structs";
 
 public class Sampling
 {
@@ -19,6 +20,13 @@ public class Sampling
                 CheckSphereLightIntersection(closest, lightSample, light, hit);
             }
         }
+    }
+
+    public static float3 SampleEmitter(in Payload payload, in LightSample lightSample, in BSDFSample bsdfSample)
+    {
+        float3 lightE = lightSample.Emission;
+
+        return payload.Depth == 0 ? lightE : Math.PowerHeuristic(bsdfSample.Pdf, lightSample.Pdf) * lightE;
     }
 
     private static void CheckAreaLightIntersection(inout float closest, inout LightSample lightSample, in Light light,

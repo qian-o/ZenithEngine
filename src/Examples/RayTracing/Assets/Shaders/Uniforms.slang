@@ -17,4 +17,7 @@ uniform Light lights[];
 uniform Texture2D textures[];
 
 // Space 3
+uniform Texture2D hdrs[];
+
+// Space 4
 uniform SamplerState samplers[];

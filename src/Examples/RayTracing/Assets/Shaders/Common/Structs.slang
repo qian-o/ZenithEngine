@@ -156,6 +156,8 @@ public struct Globals
 
     public uint FrameIndex;
 
+    public bool UseHdr;
+
     public float HdrMultiplier;
 
     public float HdrResolution;

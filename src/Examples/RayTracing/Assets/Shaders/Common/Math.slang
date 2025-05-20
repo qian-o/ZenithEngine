@@ -6,4 +6,11 @@
 
         return rgb / (1.0 + luminance / limit);
     }
+
+    public static float PowerHeuristic(float a, float b)
+    {
+        float t = a * a;
+
+        return t / (t + b * b);
+    }
 }
