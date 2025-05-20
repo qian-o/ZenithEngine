@@ -23,6 +23,8 @@ public class Sampling
                 CheckSphereLightIntersection(closest, lightSample, light, hit);
             }
         }
+
+        return closest < FAR;
     }
 
     public static float3 SampleEmitter(in Payload payload, in LightSample lightSample, in BSDFSample bsdfSample)
