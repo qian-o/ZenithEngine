@@ -18,7 +18,7 @@ void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
         texture2D texture = textures[material.AlbedoTextureIndex];
         SamplerState sampler = samplers[material.AlbedoTextureIndex];
 
-        material.Albedo.rgb *= texture.Sample(sampler, vertex.TexCoord).rgb;
+        material.Albedo.rgb *= texture.SampleLevel(sampler, vertex.TexCoord, 0).rgb;
     }
 
     // Metallic and Roughness
@@ -27,8 +27,8 @@ void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
         texture2D texture = textures[material.MetallicRoughnessTextureIndex];
         SamplerState sampler = samplers[material.MetallicRoughnessTextureIndex];
 
-        material.Metallic = texture.Sample(sampler, vertex.TexCoord).r;
-        material.Roughness = texture.Sample(sampler, vertex.TexCoord).g;
+        material.Metallic = texture.SampleLevel(sampler, vertex.TexCoord, 0).r;
+        material.Roughness = texture.SampleLevel(sampler, vertex.TexCoord, 0).g;
     }
 
     // Normal Map
@@ -37,20 +37,20 @@ void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
         texture2D texture = textures[material.NormalTextureIndex];
         SamplerState sampler = samplers[material.NormalTextureIndex];
 
-        vertex.Normal = normalize(texture.Sample(sampler, vertex.TexCoord).xyz * 2.0f - 1.0f);
+        vertex.Normal = normalize(texture.SampleLevel(sampler, vertex.TexCoord, 0).xyz * 2.0f - 1.0f);
     }
 
     payload.Position = vertex.Position;
     payload.Normal = vertex.Normal;
     payload.ForwardNormal = dot(vertex.Normal, WorldRayDirection()) > 0 ? -vertex.Normal : vertex.Normal;
-    payload.Eta = dot(vertex.Normal, payload.ForwardNormal) > 0 ? 1.0f / material.IOR : material.IOR;
+    payload.Eta = dot(vertex.Normal, payload.ForwardNormal) > 0 ? 1.0 / material.IOR : material.IOR;
 
     LightSample lightSample;
     BSDFSample bsdfSample;
 
     payload.Radiance += material.Emission.rgb * payload.Beta;
 
-    if (Sampling.InteresetsEmitter(lightSample, globals.LightCount, lights, RayTCurrent()))
+    if (Sampling.InteresetsEmitter(lightSample, RayTCurrent()))
     {
         float3 Le = Sampling.SampleEmitter(payload, lightSample, payload.Bsdf);
 

@@ -1,13 +1,14 @@
-﻿import "Common/Math";
-import "Common/Structs";
+﻿import "Math";
+import "Structs";
+import "Uniforms";
 
 public class Sampling
 {
-    public static bool InteresetsEmitter(inout LightSample lightSample, uint lightCount, Light[] lights, float hit)
+    public static bool InteresetsEmitter(inout LightSample lightSample, float hit)
     {
         float closest = FAR;
 
-        for (uint i = 0; i < lightCount; i++)
+        for (uint i = 0; i < globals.LightCount; i++)
         {
             Light light = lights[i];
 

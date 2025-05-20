@@ -198,7 +198,7 @@ public struct Payload
 
     public float3 Absorbtion;
 
-    public float3 Beta;
+    public float3 Beta = float3(1.0, 1.0, 1.0);
 
     public float3 Position;
 
@@ -211,9 +211,4 @@ public struct Payload
     public bool Stop;
 
     public float Eta;
-
-    public __init()
-    {
-        Beta = float3(1.0, 1.0, 1.0);
-    }
 };
