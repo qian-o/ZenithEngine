@@ -51,7 +51,8 @@ public static class ResourceFactoryExtensions
             "-stage", stage.ToString().ToLowerInvariant(),
             "-entry", entryPoint,
             "-O3",
-            "-matrix-layout-row-major"
+            "-matrix-layout-row-major",
+            "-preserve-params"
         ];
 
         switch (factory.Context.Backend)

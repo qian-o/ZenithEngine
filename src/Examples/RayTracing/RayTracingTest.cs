@@ -9,9 +9,14 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 {
     protected override void OnLoad()
     {
-        string ch = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "ClosestHit.slang");
+        string rayGeneration = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "RayGen.slang");
+        string miss = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "Miss.slang");
+        string closestHit = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "ClosestHit.slang");
 
-        using Shader _ = Context.Factory.CompileShader(ch, ShaderStages.ClosestHit, "Main", out ShaderReflection chReflection);
+        using Shader _1 = Context.Factory.CompileShader(rayGeneration, ShaderStages.RayGeneration, "Main", out ShaderReflection rayGenerationReflection);
+        using Shader _2 = Context.Factory.CompileShader(miss, ShaderStages.Miss, "Main", out ShaderReflection missReflection);
+        using Shader _3 = Context.Factory.CompileShader(closestHit, ShaderStages.ClosestHit, "Main", out ShaderReflection closestHitReflection);
+        ShaderReflection reflection = ShaderReflection.Merge(rayGenerationReflection, missReflection, closestHitReflection);
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)
