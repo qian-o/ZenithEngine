@@ -1,5 +1,6 @@
 ﻿using Common;
 using ZenithEngine.Common.Enums;
+using ZenithEngine.Common.Graphics;
 using ZenithEngine.ShaderCompiler;
 
 namespace RayTracing;
@@ -10,7 +11,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
     {
         string ch = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "ClosestHit.slang");
 
-        Context.Factory.CompileShader(ch, ShaderStages.ClosestHit, "Main", out ShaderReflection chReflection);
+        using Shader _ = Context.Factory.CompileShader(ch, ShaderStages.ClosestHit, "Main", out ShaderReflection chReflection);
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)
