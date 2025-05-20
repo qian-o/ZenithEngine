@@ -43,4 +43,9 @@ void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
     payload.Normal = vertex.Normal;
     payload.ForwardNormal = dot(vertex.Normal, WorldRayDirection()) > 0 ? -vertex.Normal : vertex.Normal;
     payload.Eta = dot(vertex.Normal, payload.ForwardNormal) > 0 ? 1.0f / material.IOR : material.IOR;
+
+    LightSample lightSample;
+    BSDFSample bsdfSample;
+
+    payload.Radiance += material.Emission.rgb * payload.Beta;
 }

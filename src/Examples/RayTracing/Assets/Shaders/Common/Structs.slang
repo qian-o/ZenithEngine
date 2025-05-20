@@ -1,4 +1,13 @@
-﻿public enum LightType : int
+﻿#define PI 3.14159265358979323846
+#define TWO_PI 6.28318530717958647692
+#define INV_PI 0.31830988618379067154
+#define INV_2PI 0.15915494309189533577
+
+#define EPS 0.001
+#define NEAR 0.0001
+#define FAR 1000000.0
+
+public enum LightType : int
 {
     Area = 0,
 
@@ -32,7 +41,8 @@ public struct Vertex
         result.Position = barycentrics.x * v0.Position + barycentrics.y * v1.Position + barycentrics.z * v2.Position;
         result.Normal = normalize(barycentrics.x * v0.Normal + barycentrics.y * v1.Normal + barycentrics.z * v2.Normal);
         result.TexCoord = barycentrics.x * v0.TexCoord + barycentrics.y * v1.TexCoord + barycentrics.z * v2.TexCoord;
-        result.MaterialIndex = (int)(barycentrics.x * v0.MaterialIndex + barycentrics.y * v1.MaterialIndex + barycentrics.z * v2.MaterialIndex);
+        result.MaterialIndex = (int)(barycentrics.x * v0.MaterialIndex + barycentrics.y * v1.MaterialIndex +
+                                     barycentrics.z * v2.MaterialIndex);
 
         return result;
     }
@@ -100,10 +110,6 @@ public struct Camera
 
     public float3 Up;
 
-    public float NearPlane;
-
-    public float FarPlane;
-
     public float Fov;
 
     public RayDesc GetRayDesc(float2 offset)
@@ -129,8 +135,8 @@ public struct Camera
         RayDesc rayDesc;
         rayDesc.Origin = Position;
         rayDesc.Direction = normalize(Forward + xy.x * Right + xy.y * Up);
-        rayDesc.TMin = NearPlane;
-        rayDesc.TMax = FarPlane;
+        rayDesc.TMin = NEAR;
+        rayDesc.TMax = FAR;
 
         return rayDesc;
     }
