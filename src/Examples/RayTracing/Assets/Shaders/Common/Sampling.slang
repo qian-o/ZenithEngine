@@ -6,7 +6,7 @@ public class Sampling
     {
         float closest = FAR;
 
-        for (uint i = 0; i < lightCount; ++i)
+        for (uint i = 0; i < lightCount; i++)
         {
             Light light = lights[i];
 
