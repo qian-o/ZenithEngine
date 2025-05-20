@@ -2,7 +2,7 @@
 import "Common/Random";
 import "Common/Sampling";
 import "Common/Structs";
-import "Uniforms";
+import "Common/Uniforms";
 
 [shader("closesthit")]
 void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)

@@ -17,5 +17,7 @@ public class Lighting
             float3 color = float3(0.0, 0.0, 0.0);
             // float4 dirPdf = HDR.EnvSample(color, );
         }
+
+        return L;
     }
 }

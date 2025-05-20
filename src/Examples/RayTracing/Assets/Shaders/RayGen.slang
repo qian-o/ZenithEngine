@@ -1,7 +1,7 @@
 ﻿import "Common/Math";
 import "Common/Random";
 import "Common/Structs";
-import "Uniforms";
+import "Common/Uniforms";
 
 [shader("raygeneration")]
 void Main()

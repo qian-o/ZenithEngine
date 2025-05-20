@@ -12,6 +12,9 @@ uniform SamplerState hdrSamplers[3];
 uniform RWTexture2D accumulation;
 uniform RWTexture2D output;
 
+// Space 1
+uniform Light lights[];
+
 // Space 2
 uniform Texture2D textures[];
 
