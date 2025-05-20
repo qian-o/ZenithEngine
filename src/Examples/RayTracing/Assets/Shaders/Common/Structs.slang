@@ -1,11 +1,11 @@
-﻿#define PI 3.14159265358979323846
-#define TWO_PI 6.28318530717958647692
-#define INV_PI 0.31830988618379067154
-#define INV_2PI 0.15915494309189533577
+﻿public const float PI = 3.14159265358979323846;
+public const float TWO_PI = 6.28318530717958647692;
+public const float INV_PI = 0.31830988618379067154;
+public const float INV_2PI = 0.15915494309189533577;
 
-#define EPS 0.001
-#define NEAR 0.0001
-#define FAR 1000000.0
+public const float EPS = 0.001;
+public const float NEAR = 0.0001;
+public const float FAR = 1000000.0;
 
 public enum LightType : int
 {

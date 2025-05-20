@@ -1,5 +1,6 @@
 ﻿import "Common/Math";
 import "Common/Random";
+import "Common/Sampling";
 import "Common/Structs";
 import "Uniforms";
 
@@ -48,4 +49,8 @@ void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
     BSDFSample bsdfSample;
 
     payload.Radiance += material.Emission.rgb * payload.Beta;
+
+    if (Sampling.InteresetsEmitter(lightSample, globals.LightCount, lights, RayTCurrent()))
+    {
+    }
 }
