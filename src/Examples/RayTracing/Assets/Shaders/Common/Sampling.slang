@@ -24,9 +24,9 @@ public class Sampling
 
     public static float3 SampleEmitter(in Payload payload, in LightSample lightSample, in BSDFSample bsdfSample)
     {
-        float3 lightE = lightSample.Emission;
+        float3 Le = lightSample.Emission;
 
-        return payload.Depth == 0 ? lightE : Math.PowerHeuristic(bsdfSample.Pdf, lightSample.Pdf) * lightE;
+        return payload.Depth == 0 ? Le : Math.PowerHeuristic(bsdfSample.Pdf, lightSample.Pdf) * Le;
     }
 
     private static void CheckAreaLightIntersection(inout float closest, inout LightSample lightSample, in Light light,

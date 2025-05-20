@@ -52,11 +52,11 @@ void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
 
     if (Sampling.InteresetsEmitter(lightSample, globals.LightCount, lights, RayTCurrent()))
     {
-        float3 lightE = Sampling.SampleEmitter(payload, lightSample, payload.Bsdf);
+        float3 Le = Sampling.SampleEmitter(payload, lightSample, payload.Bsdf);
 
         if (globals.DoubleSidedLighting || dot(payload.ForwardNormal, lightSample.Normal) > 0.0)
         {
-            payload.Radiance += lightE * payload.Beta;
+            payload.Radiance += Le * payload.Beta;
         }
 
         payload.Stop = true;
