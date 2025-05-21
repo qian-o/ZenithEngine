@@ -1,5 +1,6 @@
 ﻿import "Common/Structs";
-import "Common/Uniforms";
+
+uniform ParameterBlock<Uniforms> uniforms;
 
 [shader("miss")]
 void Main(inout Payload payload)

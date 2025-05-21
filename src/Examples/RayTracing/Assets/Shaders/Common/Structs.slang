@@ -24,16 +24,15 @@ public struct Vertex
 
     public int MaterialIndex;
 
-    public static Vertex GetVertex(StructuredBuffer<Vertex> vertices, StructuredBuffer<uint> indices,
-                                   StructuredBuffer<uint2> offsets, BuiltInTriangleIntersectionAttributes attrib)
+    public static Vertex GetVertex(in Uniforms uniforms, BuiltInTriangleIntersectionAttributes attrib)
     {
-        uint2 offset = offsets[GeometryIndex()];
+        uint2 offset = uniforms.Offsets[GeometryIndex()];
 
         uint primitiveIndex = PrimitiveIndex();
 
-        Vertex v0 = vertices[offset.x + indices[offset.y + (primitiveIndex * 3)]];
-        Vertex v1 = vertices[offset.x + indices[offset.y + (primitiveIndex * 3 + 1)]];
-        Vertex v2 = vertices[offset.x + indices[offset.y + (primitiveIndex * 3 + 2)]];
+        Vertex v0 = uniforms.Vertices[offset.x + uniforms.Indices[offset.y + (primitiveIndex * 3)]];
+        Vertex v1 = uniforms.Vertices[offset.x + uniforms.Indices[offset.y + (primitiveIndex * 3 + 1)]];
+        Vertex v2 = uniforms.Vertices[offset.x + uniforms.Indices[offset.y + (primitiveIndex * 3 + 2)]];
 
         float3 barycentrics = float3(1.0 - attrib.barycentrics.x - attrib.barycentrics.y, attrib.barycentrics.xy);
 
@@ -159,6 +158,35 @@ public struct Globals
     public float HdrMultiplier;
 
     public float HdrResolution;
+}
+
+public struct Uniforms
+{
+    public RaytracingAccelerationStructure Scene;
+
+    public StructuredBuffer<Material> Materials;
+
+    public StructuredBuffer<Vertex> Vertices;
+
+    public StructuredBuffer<uint> Indices;
+
+    public StructuredBuffer<uint2> Offsets;
+
+    public Globals Globals;
+
+    public Texture2D Textures[128];
+
+    public SamplerState Samplers[128];
+
+    public Texture2D HdrTextures[3];
+
+    public SamplerState HdrSamplers[3];
+
+    public StructuredBuffer<Light> Lights;
+
+    public RWTexture2D Accumulation;
+
+    public RWTexture2D Output;
 }
 
 public struct Ray

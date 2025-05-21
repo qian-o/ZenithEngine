@@ -17,7 +17,7 @@
                       abs(p.z) < origin ? p.z + floatScale * n.z : p_i.z);
     }
 
-    public static void ComputeDefaultBasis(const float3 normal, out float3 x, out float3 y)
+    public static void ComputeDefaultBasis(float3 normal, out float3 x, out float3 y)
     {
         float3 z = normal;
         const float yz = -z.y * z.z;

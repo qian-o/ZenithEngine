@@ -1,18 +1,17 @@
 ﻿import "Maths";
 import "Structs";
-import "Uniforms";
 
 public class Sampling
 {
-    public static bool InteresetsEmitter(inout LightSample lightSample, float hit)
+    public static bool InteresetsEmitter(inout LightSample lightSample, in Uniforms uniforms, float hit)
     {
         float closest = FAR;
 
-        uint lightCount = lights.getCount();
+        uint lightCount = uniforms.Lights.getCount();
 
         for (uint i = 0; i < lightCount; i++)
         {
-            Light light = lights[i];
+            Light light = uniforms.Lights[i];
 
             if (light.Type == LightType.Area)
             {

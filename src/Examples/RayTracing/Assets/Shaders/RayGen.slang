@@ -1,7 +1,8 @@
 ﻿import "Common/Maths";
 import "Common/Random";
 import "Common/Structs";
-import "Common/Uniforms";
+
+uniform ParameterBlock<Uniforms> uniforms;
 
 [shader("raygeneration")]
 void Main()
@@ -9,19 +10,19 @@ void Main()
     uint2 launchID = DispatchRaysIndex().xy;
     uint2 launchSize = DispatchRaysDimensions().xy;
 
-    uint seed = Random.Tea(launchSize.x * launchID.y + launchID.x, globals.FrameIndex);
+    uint seed = Random.Tea(launchSize.x * launchID.y + launchID.x, uniforms.Globals.FrameIndex);
 
     float3 radiance = float3(0.0, 0.0, 0.0);
 
-    for (uint i = 0; i < globals.SampleCount; i++)
+    for (uint i = 0; i < uniforms.Globals.SampleCount; i++)
     {
-        RayDesc rayDesc = globals.Camera.GetRayDesc(float2(Random.Rnd(seed), Random.Rnd(seed)));
+        RayDesc rayDesc = uniforms.Globals.Camera.GetRayDesc(float2(Random.Rnd(seed), Random.Rnd(seed)));
 
         Payload payload = {};
         payload.Seed = seed;
-        for (uint j = 0; j < globals.MaxDepth; j++)
+        for (uint j = 0; j < uniforms.Globals.MaxDepth; j++)
         {
-            TraceRay(scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
+            TraceRay(uniforms.Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
 
             if (payload.Stop)
             {
@@ -32,19 +33,19 @@ void Main()
         radiance += payload.Radiance;
     }
 
-    radiance /= float(globals.SampleCount);
+    radiance /= float(uniforms.Globals.SampleCount);
 
     // HDR scale
-    float4 accumulated = globals.FrameIndex == 0 ? float4(0.0, 0.0, 0.0, 0.0) : accumulation[launchID];
+    float4 accumulated = uniforms.Globals.FrameIndex == 0 ? float4(0.0, 0.0, 0.0, 0.0) : uniforms.Accumulation[launchID];
     float3 accumulatedRadiance = accumulated.rgb * radiance;
 
-    accumulation[launchID] = float4(accumulatedRadiance, 1.0);
+    uniforms.Accumulation[launchID] = float4(accumulatedRadiance, 1.0);
 
-    float inv = 1.0 / float(globals.FrameIndex);
+    float inv = 1.0 / float(uniforms.Globals.FrameIndex);
     radiance = accumulatedRadiance * inv;
 
     // LDR scale
     float3 ldr = Maths.ToneMap(radiance, 1.5);
 
-    output[launchID] = float4(ldr, 1.0);
+    uniforms.Output[launchID] = float4(ldr, 1.0);
 }
