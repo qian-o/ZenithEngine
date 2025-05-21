@@ -18,6 +18,7 @@ void Main()
         RayDesc rayDesc = globals.Camera.GetRayDesc(float2(Random.Rnd(seed), Random.Rnd(seed)));
 
         Payload payload = {};
+        payload.Seed = seed;
         for (uint j = 0; j < globals.MaxDepth; j++)
         {
             TraceRay(scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);

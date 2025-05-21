@@ -188,6 +188,8 @@ public struct BSDFSample
 
 public struct Payload
 {
+    public uint Seed;
+
     public Ray Ray;
 
     public BSDFSample Bsdf;
@@ -209,4 +211,9 @@ public struct Payload
     public bool Stop;
 
     public float Eta;
+};
+
+public struct ShadowPayload
+{
+    public bool InShadow = true;
 };
