@@ -3,7 +3,7 @@ import "Structs";
 
 public class Sampling
 {
-    public static bool InteresetsEmitter(inout LightSample lightSample, in Uniforms uniforms, float hit)
+    public static bool InteresetsEmitter(in Uniforms uniforms, float hit, inout LightSample lightSample)
     {
         float closest = FAR;
 
@@ -15,11 +15,11 @@ public class Sampling
 
             if (light.Type == LightType.Area)
             {
-                CheckAreaLightIntersection(closest, lightSample, light, hit);
+                CheckAreaLightIntersection(light, hit, closest, lightSample);
             }
             else
             {
-                CheckSphereLightIntersection(closest, lightSample, light, hit);
+                CheckSphereLightIntersection(light, hit, closest, lightSample);
             }
         }
 
@@ -33,8 +33,8 @@ public class Sampling
         return payload.Depth == 0 ? Le : Maths.PowerHeuristic(bsdfSample.Pdf, lightSample.Pdf) * Le;
     }
 
-    private static void CheckAreaLightIntersection(inout float closest, inout LightSample lightSample, in Light light,
-                                                   float hit)
+    private static void CheckAreaLightIntersection(in Light light, float hit, inout float closest,
+                                                   inout LightSample lightSample)
     {
         float dist = PlaneIntersect(light);
 
@@ -57,8 +57,8 @@ public class Sampling
         }
     }
 
-    private static void CheckSphereLightIntersection(inout float closest, inout LightSample lightSample, in Light light,
-                                                     float hit)
+    private static void CheckSphereLightIntersection(in Light light, float hit, inout float closest,
+                                                     inout LightSample lightSample)
     {
         float dist = SphereIntersect(light);
 

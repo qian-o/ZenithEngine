@@ -3,7 +3,7 @@ import "Structs";
 
 public class Lighting
 {
-    public static float3 DirectLighting(inout Payload payload, in Uniforms uniforms, in Material material)
+    public static float3 DirectLighting(in Uniforms uniforms, in Material material, inout Payload payload)
     {
         float3 L = float3(0.0, 0.0, 0.0);
 
@@ -14,7 +14,7 @@ public class Lighting
         if (uniforms.Globals.UseHdr)
         {
             float3 color = float3(0.0, 0.0, 0.0);
-            float4 dirPdf = HDR.EnvSample(color, uniforms, payload.Seed);
+            float4 dirPdf = HDR.EnvSample(uniforms, payload.Seed, color);
 
             float3 lightDir = dirPdf.xyz;
             float pdf = dirPdf.w;

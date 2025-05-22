@@ -20,7 +20,7 @@ public class HDR
         return (pdf * uniforms.Globals.HdrResolution) / (TWO_PI * PI * sin(theta));
     }
 
-    public static float4 EnvSample(inout float3 color, in Uniforms uniforms, uint seed)
+    public static float4 EnvSample(in Uniforms uniforms, inout uint seed, out float3 color)
     {
         Texture2D hdr0 = uniforms.HdrTextures[0];
         Texture2D hdr1 = uniforms.HdrTextures[1];

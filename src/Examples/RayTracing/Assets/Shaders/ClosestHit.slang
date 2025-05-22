@@ -49,7 +49,7 @@ void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
 
     payload.Radiance += material.Emission.rgb * payload.Beta;
 
-    if (Sampling.InteresetsEmitter(lightSample, uniforms, RayTCurrent()))
+    if (Sampling.InteresetsEmitter(uniforms, RayTCurrent(), lightSample))
     {
         float3 Le = Sampling.SampleEmitter(payload, lightSample, payload.Bsdf);
 
