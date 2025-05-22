@@ -36,7 +36,8 @@ void Main()
     radiance /= float(uniforms.Globals.SampleCount);
 
     // HDR scale
-    float4 accumulated = uniforms.Globals.FrameIndex == 0 ? float4(0.0, 0.0, 0.0, 0.0) : uniforms.Accumulation[launchID];
+    float4 accumulated =
+        uniforms.Globals.FrameIndex == 0 ? float4(0.0, 0.0, 0.0, 0.0) : uniforms.Accumulation[launchID];
     float3 accumulatedRadiance = accumulated.xyz * radiance;
 
     uniforms.Accumulation[launchID] = float4(accumulatedRadiance, 1.0);
