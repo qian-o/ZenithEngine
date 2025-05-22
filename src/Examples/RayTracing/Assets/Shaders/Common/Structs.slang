@@ -56,6 +56,10 @@ public struct Material
 
     public float SpecularTint;
 
+    public float Sheen;
+
+    public float SheenTint;
+
     public float ClearCoat;
 
     public float ClearCoatGloss;

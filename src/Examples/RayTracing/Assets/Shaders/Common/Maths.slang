@@ -34,6 +34,19 @@ public class Maths
         return 0.5f * (rs * rs + rp * rp);
     }
 
+    public static float GTR1(float NDotH, float a)
+    {
+        if (a >= 1.0)
+        {
+            return (1.0 / Constants.PI);
+        }
+
+        float a2 = a * a;
+        float t = 1.0 + (a2 - 1.0) * NDotH * NDotH;
+
+        return (a2 - 1.0) / (Constants.PI * log(a2) * t);
+    }
+
     public static float GTR2(float NDotH, float a)
     {
         float a2 = a * a;
@@ -46,5 +59,11 @@ public class Maths
         float a = alphaG * alphaG;
         float b = NDotv * NDotv;
         return 1.0 / (NDotv + sqrt(a + b - a * b));
+    }
+
+    public static float SchlickFresnel(float u)
+    {
+        float m = clamp(1.0 - u, 0.0, 1.0);
+        return m * m * m * m * m; // power of 5
     }
 }
