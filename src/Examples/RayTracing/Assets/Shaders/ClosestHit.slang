@@ -1,4 +1,8 @@
-﻿import "Common/DisneyBSDF";
+﻿import "Common/Constants";
+import "Common/DisneyBSDF";
+import "Common/Lighting";
+import "Common/Maths";
+import "Common/Random";
 import "Common/Sampling";
 import "Common/Structs";
 
@@ -65,4 +69,42 @@ void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
     }
 
     payload.Beta *= exp(-payload.Absorbtion * RayTCurrent());
+    payload.Radiance += Lighting.DirectLighting(uniforms, material, payload) * payload.Beta;
+
+    float3 F = DisneyBSDF.Sample(payload, material, bsdfSample.Direction, bsdfSample.Pdf);
+
+    float cosTheta = abs(dot(payload.ForwardNormal, bsdfSample.Direction));
+
+    if (bsdfSample.Pdf <= 0.0)
+    {
+        payload.Stop = true;
+
+        return;
+    }
+
+    payload.Beta *= F * cosTheta / (bsdfSample.Pdf + Constants.EPS);
+
+    if (dot(payload.ForwardNormal, bsdfSample.Direction) < 0.0)
+    {
+        payload.Absorbtion = -log(material.Extinction.xyz) / (material.AttenuationDistance + Constants.EPS);
+    }
+
+    // Russian roulette
+    if (Maths.Max3(payload.Beta) < 0.01 && payload.Depth > 2)
+    {
+        float q = max(float(0.05), 1.0 - Maths.Max3(payload.Beta));
+
+        if (Random.Rnd(payload.Seed) < q)
+        {
+            payload.Stop = true;
+        }
+
+        payload.Beta /= (1.0 - q);
+    }
+
+    payload.Bsdf = bsdfSample;
+
+    // Update a new ray path bounce direction
+    payload.Ray.Direction = bsdfSample.Direction;
+    payload.Ray.Origin = vertex.Position;
 }

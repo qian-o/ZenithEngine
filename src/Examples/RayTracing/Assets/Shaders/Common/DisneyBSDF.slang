@@ -1,5 +1,6 @@
 ﻿import "Constants";
 import "Maths";
+import "Random";
 import "Structs";
 
 public class DisneyBSDF
@@ -68,6 +69,110 @@ public class DisneyBSDF
         pdf = lerp(brdfPdf, bsdfPdf, transWeight);
 
         return lerp(brdf, bsdf, transWeight);
+    }
+
+    public static float3 Sample(in Payload payload, in Material material, inout float3 L, inout float pdf)
+    {
+        pdf = 0.0;
+        float3 f = float3(0.0, 0.0, 0.0);
+
+        float diffuseRatio = 0.5 * (1.0 - material.Metallic);
+        float transWeight = (1.0 - material.Metallic) * material.Transmission;
+
+        float3 Cdlin = material.Albedo.xyz;
+        float Cdlum = 0.3 * Cdlin.x + 0.6 * Cdlin.y + 0.1 * Cdlin.z; // luminance approx.
+
+        float3 Ctint = Cdlum > 0.0 ? Cdlin / Cdlum : float3(1.0, 1.0, 1.0); // normalize lum. to isolate hue+sat
+        float3 Cspec0 = lerp(material.Albedo.w * 0.08 * lerp(float3(1.0, 1.0, 1.0), Ctint, material.SpecularTint),
+                             Cdlin, material.Metallic);
+        float3 Csheen = lerp(float3(1.0, 1.0, 1.0), Ctint, material.SheenTint);
+        float eta = payload.Eta;
+
+        float3 N = payload.ForwardNormal;
+        float3 V = -WorldRayDirection();
+
+        float3x3 frame = Maths.LocalFrame(N);
+
+        float r1 = Random.Rnd(payload.Seed);
+        float r2 = Random.Rnd(payload.Seed);
+
+        if (Random.Rnd(payload.Seed) < transWeight)
+        {
+            float3 H = Maths.ImportanceSampleGTR2(material.Roughness, r1, r2);
+            H = mul(frame, H);
+
+            if (dot(V, H) < 0.0)
+                H = -H;
+
+            float3 R = reflect(-V, H);
+            float F = Maths.DielectricFresnel(abs(dot(R, H)), eta);
+
+            // Reflection/Total internal reflection
+            if (r2 < F)
+            {
+                L = normalize(R);
+                f = EvalDielectricReflection(payload, material, V, N, L, H, pdf);
+            }
+            else // Transmission
+            {
+                L = normalize(refract(-V, H, eta));
+                f = EvalDielectricRefraction(payload, material, V, N, L, H, pdf);
+            }
+
+            f *= transWeight;
+            pdf *= transWeight;
+        }
+        else
+        {
+            if (Random.Rnd(payload.Seed) < diffuseRatio)
+            {
+                L = Maths.CosineSampleHemisphere(payload.Seed);
+                L = mul(frame, L);
+
+                float3 H = normalize(L + V);
+
+                f = EvalDiffuse(material, Csheen, V, N, L, H, pdf);
+                pdf *= diffuseRatio;
+            }
+            else // Specular
+            {
+                float primarySpecRatio = 1.0 / (1.0 + material.ClearCoat);
+
+                // Sample primary specular lobe
+                if (Random.Rnd(payload.Seed) < primarySpecRatio)
+                {
+                    // TODO: Implement http://jcgt.org/published/0007/04/01/
+                    float3 H = Maths.ImportanceSampleGTR2(material.Roughness, r1, r2);
+                    H = mul(frame, H);
+
+                    if (dot(V, H) < 0.0)
+                        H = -H;
+
+                    L = normalize(reflect(-V, H));
+
+                    f = EvalSpecular(material, Cspec0, V, N, L, H, pdf);
+                    pdf *= primarySpecRatio * (1.0 - diffuseRatio);
+                }
+                else // Sample clearcoat lobe
+                {
+                    float3 H = Maths.ImportanceSampleGTR1(lerp(0.1, 0.001, material.ClearCoatGloss), r1, r2);
+                    H = mul(frame, H);
+
+                    if (dot(V, H) < 0.0)
+                        H = -H;
+
+                    L = normalize(reflect(-V, H));
+
+                    f = EvalClearcoat(material, V, N, L, H, pdf);
+                    pdf *= (1.0 - primarySpecRatio) * (1.0 - diffuseRatio);
+                }
+            }
+
+            f *= (1.0 - transWeight);
+            pdf *= (1.0 - transWeight);
+        }
+
+        return f;
     }
 
     private static float3 EvalDielectricReflection(in Payload payload, in Material material, in float3 V, in float3 N,

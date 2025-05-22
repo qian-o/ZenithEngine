@@ -170,7 +170,7 @@ public class Sampling
 
     private static LightSample SampleSphereLight(in Uniforms uniforms, in Light light, inout uint seed)
     {
-        float3 position = light.Position + UniformSampleSphere(seed) * light.Radius;
+        float3 position = light.Position + Maths.UniformSampleSphere(seed) * light.Radius;
 
         LightSample lightSample;
         lightSample.Normal = normalize(position - light.Position);
@@ -178,20 +178,5 @@ public class Sampling
         lightSample.Position = position;
 
         return lightSample;
-    }
-
-    private static float3 UniformSampleSphere(inout uint seed)
-    {
-        float r1 = Random.Rnd(seed);
-        float r2 = Random.Rnd(seed);
-
-        float z = 1.0 - 2.0 * r1;
-        float r = sqrt(max(0.0, 1.0 - z * z));
-        float phi = 2.0 * Constants.PI * r2;
-
-        float x = r * cos(phi);
-        float y = r * sin(phi);
-
-        return float3(x, y, z);
     }
 }
