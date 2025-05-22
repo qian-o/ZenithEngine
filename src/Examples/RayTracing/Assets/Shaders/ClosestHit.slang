@@ -17,7 +17,7 @@ void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
         texture2D texture = uniforms.Textures[material.AlbedoTextureIndex];
         SamplerState sampler = uniforms.Samplers[material.AlbedoTextureIndex];
 
-        material.Albedo.rgb *= texture.SampleLevel(sampler, vertex.TexCoord, 0).rgb;
+        material.Albedo.xyz *= texture.SampleLevel(sampler, vertex.TexCoord, 0).xyz;
     }
 
     // Metallic and Roughness
@@ -47,7 +47,7 @@ void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
     LightSample lightSample;
     BSDFSample bsdfSample;
 
-    payload.Radiance += material.Emission.rgb * payload.Beta;
+    payload.Radiance += material.Emission.xyz * payload.Beta;
 
     if (Sampling.InteresetsEmitter(uniforms, RayTCurrent(), lightSample))
     {

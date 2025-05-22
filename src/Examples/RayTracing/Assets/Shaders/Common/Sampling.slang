@@ -1,11 +1,12 @@
-﻿import "Maths";
+﻿import "Constants";
+import "Maths";
 import "Structs";
 
 public class Sampling
 {
     public static bool InteresetsEmitter(in Uniforms uniforms, float hit, inout LightSample lightSample)
     {
-        float closest = FAR;
+        float closest = Constants.FAR;
 
         uint lightCount = uniforms.Lights.getCount();
 
@@ -23,7 +24,7 @@ public class Sampling
             }
         }
 
-        return closest < FAR;
+        return closest < Constants.FAR;
     }
 
     public static float3 SampleEmitter(in Payload payload, in LightSample lightSample, in BSDFSample bsdfSample)
@@ -40,7 +41,7 @@ public class Sampling
 
         if (dist < 0.0)
         {
-            dist = FAR;
+            dist = Constants.FAR;
         }
 
         if (dist < closest && dist < hit)
@@ -64,7 +65,7 @@ public class Sampling
 
         if (dist < 0.0)
         {
-            dist = FAR;
+            dist = Constants.FAR;
         }
 
         if (dist < closest && dist < hit)
@@ -98,7 +99,7 @@ public class Sampling
         float3 pos = WorldRayOrigin() + t * WorldRayDirection();
         float3 view = pos - light.Position;
 
-        if (t > EPS)
+        if (t > Constants.EPS)
         {
             float a1 = dot(u, view);
             if (a1 >= 0.0 && a1 <= 1.0)
@@ -111,7 +112,7 @@ public class Sampling
             }
         }
 
-        return FAR;
+        return Constants.FAR;
     }
 
     private static float SphereIntersect(in Light light)
@@ -122,25 +123,25 @@ public class Sampling
 
         if (det < 0.0)
         {
-            return FAR;
+            return Constants.FAR;
         }
 
         det = sqrt(det);
 
         float t1 = b - det;
 
-        if (t1 > EPS)
+        if (t1 > Constants.EPS)
         {
             return t1;
         }
 
         float t2 = b + det;
 
-        if (t2 > EPS)
+        if (t2 > Constants.EPS)
         {
             return t2;
         }
 
-        return FAR;
+        return Constants.FAR;
     }
 }

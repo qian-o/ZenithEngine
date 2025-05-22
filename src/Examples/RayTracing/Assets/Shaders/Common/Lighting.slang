@@ -1,4 +1,5 @@
-﻿import "HDR";
+﻿import "Constants";
+import "HDR";
 import "Structs";
 
 public class Lighting
@@ -24,7 +25,7 @@ public class Lighting
             RayDesc rayDesc;
             rayDesc.Origin = surfacePos;
             rayDesc.Direction = lightDir;
-            rayDesc.TMin = NEAR;
+            rayDesc.TMin = Constants.NEAR;
             rayDesc.TMax = 1;
 
             TraceRay(uniforms.Scene,
