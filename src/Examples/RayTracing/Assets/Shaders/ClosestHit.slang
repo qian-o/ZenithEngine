@@ -1,4 +1,5 @@
-﻿import "Common/Sampling";
+﻿import "Common/DisneyBSDF";
+import "Common/Sampling";
 import "Common/Structs";
 
 uniform ParameterBlock<Uniforms> uniforms;

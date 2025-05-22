@@ -2,9 +2,11 @@
 
 public enum LightType : int
 {
-    Area = 0,
+    Unknown = 0,
 
-    Sphere = 1
+    Area = 1,
+
+    Sphere = 2
 }
 
 public struct Vertex

@@ -1,10 +1,11 @@
 ﻿import "Constants";
 import "Maths";
+import "Random";
 import "Structs";
 
 public class Sampling
 {
-    public static bool InteresetsEmitter(in Uniforms uniforms, float hit, inout LightSample lightSample)
+    public static bool InteresetsEmitter(in Uniforms uniforms, float hit, out LightSample lightSample)
     {
         float closest = Constants.FAR;
 
@@ -34,8 +35,14 @@ public class Sampling
         return payload.Depth == 0 ? Le : Maths.PowerHeuristic(bsdfSample.Pdf, lightSample.Pdf) * Le;
     }
 
+    public static LightSample SampleLight(in Uniforms uniforms, in Light light, inout uint seed)
+    {
+        return light.Type == LightType.Area ? SampleAreaLight(uniforms, light, seed)
+                                            : SampleSphereLight(uniforms, light, seed);
+    }
+
     private static void CheckAreaLightIntersection(in Light light, float hit, inout float closest,
-                                                   inout LightSample lightSample)
+                                                   out LightSample lightSample)
     {
         float dist = PlaneIntersect(light);
 
@@ -59,7 +66,7 @@ public class Sampling
     }
 
     private static void CheckSphereLightIntersection(in Light light, float hit, inout float closest,
-                                                     inout LightSample lightSample)
+                                                     out LightSample lightSample)
     {
         float dist = SphereIntersect(light);
 
@@ -143,5 +150,48 @@ public class Sampling
         }
 
         return Constants.FAR;
+    }
+
+    private static LightSample SampleAreaLight(in Uniforms uniforms, in Light light, inout uint seed)
+    {
+        float r1 = Random.Rnd(seed);
+        float r2 = Random.Rnd(seed);
+
+        float3 u = light.U * r1;
+        float3 v = light.V * r2;
+
+        LightSample lightSample;
+        lightSample.Normal = normalize(cross(light.U, light.V));
+        lightSample.Emission = light.Emission * float(uniforms.Lights.getCount());
+        lightSample.Position = light.Position + u + v;
+
+        return lightSample;
+    }
+
+    private static LightSample SampleSphereLight(in Uniforms uniforms, in Light light, inout uint seed)
+    {
+        float3 position = light.Position + UniformSampleSphere(seed) * light.Radius;
+
+        LightSample lightSample;
+        lightSample.Normal = normalize(position - light.Position);
+        lightSample.Emission = light.Emission * float(uniforms.Lights.getCount());
+        lightSample.Position = position;
+
+        return lightSample;
+    }
+
+    private static float3 UniformSampleSphere(inout uint seed)
+    {
+        float r1 = Random.Rnd(seed);
+        float r2 = Random.Rnd(seed);
+
+        float z = 1.0 - 2.0 * r1;
+        float r = sqrt(max(0.0, 1.0 - z * z));
+        float phi = 2.0 * Constants.PI * r2;
+
+        float x = r * cos(phi);
+        float y = r * sin(phi);
+
+        return float3(x, y, z);
     }
 }
