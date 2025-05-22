@@ -10,7 +10,7 @@
 
     public static const float EPS = 0.001;
 
-    public static const float NEAR = 0.0001;
+    public static const float MINIMUM = 0.0001;
 
-    public static const float FAR = 1000000.0;
+    public static const float INFINITY = 1000000.0;
 }

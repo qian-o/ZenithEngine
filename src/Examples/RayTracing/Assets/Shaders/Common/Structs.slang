@@ -133,8 +133,8 @@ public struct Camera
         RayDesc rayDesc;
         rayDesc.Origin = Position;
         rayDesc.Direction = normalize(Forward + xy.x * Right + xy.y * Up);
-        rayDesc.TMin = Constants.NEAR;
-        rayDesc.TMax = Constants.FAR;
+        rayDesc.TMin = Constants.MINIMUM;
+        rayDesc.TMax = Constants.INFINITY;
 
         return rayDesc;
     }

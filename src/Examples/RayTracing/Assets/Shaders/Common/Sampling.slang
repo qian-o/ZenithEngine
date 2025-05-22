@@ -7,7 +7,7 @@ public class Sampling
 {
     public static bool InteresetsEmitter(in Uniforms uniforms, float hit, out LightSample lightSample)
     {
-        float closest = Constants.FAR;
+        float closest = Constants.INFINITY;
 
         uint lightCount = uniforms.Lights.getCount();
 
@@ -25,7 +25,7 @@ public class Sampling
             }
         }
 
-        return closest < Constants.FAR;
+        return closest < Constants.INFINITY;
     }
 
     public static float3 SampleEmitter(in Payload payload, in LightSample lightSample, in BSDFSample bsdfSample)
@@ -48,7 +48,7 @@ public class Sampling
 
         if (dist < 0.0)
         {
-            dist = Constants.FAR;
+            dist = Constants.INFINITY;
         }
 
         if (dist < closest && dist < hit)
@@ -72,7 +72,7 @@ public class Sampling
 
         if (dist < 0.0)
         {
-            dist = Constants.FAR;
+            dist = Constants.INFINITY;
         }
 
         if (dist < closest && dist < hit)
@@ -119,7 +119,7 @@ public class Sampling
             }
         }
 
-        return Constants.FAR;
+        return Constants.INFINITY;
     }
 
     private static float SphereIntersect(in Light light)
@@ -130,7 +130,7 @@ public class Sampling
 
         if (det < 0.0)
         {
-            return Constants.FAR;
+            return Constants.INFINITY;
         }
 
         det = sqrt(det);
@@ -149,7 +149,7 @@ public class Sampling
             return t2;
         }
 
-        return Constants.FAR;
+        return Constants.INFINITY;
     }
 
     private static LightSample SampleAreaLight(in Uniforms uniforms, in Light light, inout uint seed)

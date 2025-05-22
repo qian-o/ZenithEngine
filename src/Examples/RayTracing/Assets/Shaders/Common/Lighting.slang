@@ -28,9 +28,9 @@ public class Lighting
 
             RayDesc rayDesc;
             rayDesc.Origin = surfacePos;
-            rayDesc.TMin = Constants.NEAR;
+            rayDesc.TMin = Constants.MINIMUM;
             rayDesc.Direction = lightDir;
-            rayDesc.TMax = Constants.FAR;
+            rayDesc.TMax = Constants.INFINITY;
 
             TraceRay(uniforms.Scene,
                      RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH |
@@ -75,7 +75,7 @@ public class Lighting
 
             RayDesc rayDesc;
             rayDesc.Origin = surfacePos;
-            rayDesc.TMin = Constants.NEAR;
+            rayDesc.TMin = Constants.MINIMUM;
             rayDesc.Direction = lightDir;
             rayDesc.TMax = lightDist;
 
