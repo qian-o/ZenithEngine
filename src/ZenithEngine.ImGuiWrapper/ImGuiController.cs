@@ -15,24 +15,24 @@ public unsafe class ImGuiController : DisposableObject
 
     private bool frameBegun;
 
-    public ImGuiController(GraphicsContext graphicsContext,
+    public ImGuiController(IInput input,
+                           GraphicsContext graphicsContext,
                            OutputDesc outputDesc,
-                           IInputController inputController,
                            ColorSpaceHandling colorSpaceHandling = ColorSpaceHandling.Legacy,
                            ImGuiFontConfig? fontConfig = null,
                            Action<ImGuiIOPtr>? ioConfig = null)
     {
         ImGui.SetCurrentContext(ImGuiContext = ImGui.CreateContext());
 
+        Input = input;
         Renderer = new(graphicsContext, outputDesc, colorSpaceHandling);
-        InputController = inputController;
 
         Initialize(fontConfig, ioConfig);
     }
 
-    internal ImGuiRenderer Renderer { get; }
+    internal IInput Input { get; }
 
-    internal IInputController InputController { get; }
+    internal ImGuiRenderer Renderer { get; }
 
     public void Update(double deltaSeconds, Vector2D<uint> size)
     {
@@ -43,7 +43,7 @@ public unsafe class ImGuiController : DisposableObject
 
         ImGui.SetCurrentContext(ImGuiContext);
 
-        InputController.Cursor = ImGui.GetMouseCursor() switch
+        Input.Cursor = ImGui.GetMouseCursor() switch
         {
             ImGuiMouseCursor.TextInput => Cursor.TextInput,
             ImGuiMouseCursor.ResizeAll => Cursor.ResizeAll,
@@ -95,13 +95,13 @@ public unsafe class ImGuiController : DisposableObject
 
     protected override void Destroy()
     {
-        InputController.KeyUp -= KeyUp;
-        InputController.KeyDown -= KeyDown;
-        InputController.KeyChar -= KeyChar;
-        InputController.MouseUp -= MouseUp;
-        InputController.MouseDown -= MouseDown;
-        InputController.MouseMove -= MouseMove;
-        InputController.MouseWheel -= MouseWheel;
+        Input.KeyUp -= KeyUp;
+        Input.KeyDown -= KeyDown;
+        Input.KeyChar -= KeyChar;
+        Input.MouseUp -= MouseUp;
+        Input.MouseDown -= MouseDown;
+        Input.MouseMove -= MouseMove;
+        Input.MouseWheel -= MouseWheel;
 
         Renderer.Dispose();
 
@@ -133,13 +133,13 @@ public unsafe class ImGuiController : DisposableObject
 
         Renderer.CreateFontDeviceTexture();
 
-        InputController.KeyUp += KeyUp;
-        InputController.KeyDown += KeyDown;
-        InputController.KeyChar += KeyChar;
-        InputController.MouseUp += MouseUp;
-        InputController.MouseDown += MouseDown;
-        InputController.MouseMove += MouseMove;
-        InputController.MouseWheel += MouseWheel;
+        Input.KeyUp += KeyUp;
+        Input.KeyDown += KeyDown;
+        Input.KeyChar += KeyChar;
+        Input.MouseUp += MouseUp;
+        Input.MouseDown += MouseDown;
+        Input.MouseMove += MouseMove;
+        Input.MouseWheel += MouseWheel;
     }
 
     private void KeyUp(object? sender, KeyEventArgs e)

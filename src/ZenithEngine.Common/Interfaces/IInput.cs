@@ -4,7 +4,7 @@ using ZenithEngine.Common.Events;
 
 namespace ZenithEngine.Common.Interfaces;
 
-public interface IInputController
+public interface IInput
 {
     Cursor Cursor { get; set; }
 

@@ -4,7 +4,7 @@ using ZenithEngine.Common.Interfaces;
 
 namespace ZenithEngine.Windowing;
 
-internal partial class Window : IInputController
+internal partial class Window : IInput
 {
     public Cursor Cursor { get => WindowUtils.GetCursor(); set => WindowUtils.SetCursor(value); }
 

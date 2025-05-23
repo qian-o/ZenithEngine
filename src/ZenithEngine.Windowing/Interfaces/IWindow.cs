@@ -2,7 +2,7 @@
 
 namespace ZenithEngine.Windowing.Interfaces;
 
-public interface IWindow : IWindowEvents, IWindowProperties, IInputController
+public interface IWindow : IWindowEvents, IWindowProperties, IInput
 {
     void Show();
 

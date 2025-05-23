@@ -36,9 +36,9 @@ public abstract unsafe class VisualTest
 
             SwapChain = Context.Factory.CreateSwapChain(in swapChainDesc);
 
-            ImGuiController = new(Context,
+            ImGuiController = new(Window,
+                                  Context,
                                   SwapChain.FrameBuffer.Output,
-                                  Window,
                                   fontConfig: new(Path.Combine(AppContext.BaseDirectory, "Assets", "Fonts", "msyh.ttf"),
                                                   18,
                                                   static (io) => (nint)io.Fonts.GetGlyphRangesChineseSimplifiedCommon()));
