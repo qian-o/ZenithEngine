@@ -15,7 +15,7 @@
         <PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
         <PackageVersion Include="Silk.NET.Vulkan.Extensions.MVK" Version="2.22.0" />
         <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.8" />
-        <PackageVersion Include="Slangc.NET" Version="2025.8.2-rc.2" />
+        <PackageVersion Include="Slangc.NET" Version="2025.9.2" />
         <PackageVersion Include="System.Text.Json" Version="9.0.5" />
     </ItemGroup>
 

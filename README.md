@@ -48,6 +48,5 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - `,+[\s]+[^\S\r\n]+};` Search for the comma after the last property when simplifying property assignments.
 
 ## Draft
-- Delete the `Triangle` project and change it to the `Rasterization` project.
-- `Rasterization` and `RayTracing` use the Cornell Box model.
+- Merge all visual test projects into one project, named `VisualTests`.
 - After the release of Silk.NET 3.0, refactor all interface calls and use the unsafe method.
