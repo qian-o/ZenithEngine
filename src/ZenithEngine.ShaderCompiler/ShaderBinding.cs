@@ -10,6 +10,6 @@ public readonly struct ShaderBinding(uint space, ResourceElementDesc desc)
 
     public override string ToString()
     {
-        return $"Space: {Space}, Index: {Desc.Index}, Type: {Desc.Type}";
+        return $"Space: {Space}, Index: {Desc.Index}, Count: {Desc.Count}, Type: {Desc.Type}";
     }
 }
