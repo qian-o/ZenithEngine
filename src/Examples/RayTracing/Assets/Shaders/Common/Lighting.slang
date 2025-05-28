@@ -1,5 +1,5 @@
 ﻿import "Constants";
-import "Common/DisneyBSDF";
+import "DisneyBSDF";
 import "HDR";
 import "Maths";
 import "Random";
