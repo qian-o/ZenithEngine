@@ -24,11 +24,11 @@ internal class Uniforms : DisposableObject
         this.context = context;
 
         Scene = scene;
+        Globals = new Buffer<Globals>(context, 1, BufferUsage.ConstantBuffer);
         Materials = new Buffer<Material>(context, (uint)materials.Length, BufferUsage.ShaderResource);
         Vertices = new Buffer<Vertex>(context, (uint)vertices.Length, BufferUsage.ShaderResource);
         Indices = new Buffer<uint>(context, (uint)indices.Length, BufferUsage.ShaderResource);
         Offsets = new Buffer<Vector2D<uint>>(context, (uint)offsets.Length, BufferUsage.ShaderResource);
-        Globals = new Buffer<Globals>(context, 1, BufferUsage.ConstantBuffer);
         Lights = new Buffer<Light>(context, (uint)lights.Length, BufferUsage.ShaderResource);
 
         Materials.CopyFrom(materials);
@@ -42,6 +42,8 @@ internal class Uniforms : DisposableObject
 
     public TopLevelAS Scene { get; }
 
+    public Buffer<Globals> Globals { get; }
+
     public Buffer<Material> Materials { get; }
 
     public Buffer<Vertex> Vertices { get; }
@@ -49,8 +51,6 @@ internal class Uniforms : DisposableObject
     public Buffer<uint> Indices { get; }
 
     public Buffer<Vector2D<uint>> Offsets { get; }
-
-    public Buffer<Globals> Globals { get; }
 
     public Buffer<Light> Lights { get; }
 

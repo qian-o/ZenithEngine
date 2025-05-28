@@ -1,4 +1,5 @@
-﻿using ZenithEngine.Common;
+﻿using System.Runtime.CompilerServices;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -25,7 +26,7 @@ public unsafe class Buffer<T> : DisposableObject where T : unmanaged
         mapped = context.MapMemory(buffer, MapMode.ReadWrite);
     }
 
-    public T this[int index]
+    public ref T this[int index]
     {
         get
         {
@@ -34,18 +35,7 @@ public unsafe class Buffer<T> : DisposableObject where T : unmanaged
                 throw new IndexOutOfRangeException($"Index {index} is out of range for buffer of length {length}.");
             }
 
-            return new ReadOnlySpan<T>((void*)mapped.Data, (int)length)[index];
-        }
-        set
-        {
-            if (index < 0 || index >= length)
-            {
-                throw new IndexOutOfRangeException($"Index {index} is out of range for buffer of length {length}.");
-            }
-
-            Span<T> span = new((void*)mapped.Data, (int)length);
-
-            span[index] = value;
+            return ref Unsafe.AsRef<T>((void*)(mapped.Data + (index * sizeof(T))));
         }
     }
 

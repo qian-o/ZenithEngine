@@ -49,3 +49,5 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 
 ## Draft
 - After the release of Silk.NET 3.0, refactor all interface calls and use the unsafe method.
+- Move all resources in `ZenithEngine.Common.Graphics` to `ZenithEngine.Common`.
+- When the CommandBuffer is submitted, it is no longer simulated in the CommandProcessor, but directly submitted to the GPU, and only WaitIdle to wait for the GPU to complete processing is retained in the CommandProcessor.

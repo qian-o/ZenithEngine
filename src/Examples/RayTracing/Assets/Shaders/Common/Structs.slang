@@ -149,6 +149,8 @@ public struct Uniforms
 {
     public RaytracingAccelerationStructure Scene;
 
+    public Globals Globals;
+
     public StructuredBuffer<Material> Materials;
 
     public StructuredBuffer<Vertex> Vertices;
@@ -156,8 +158,6 @@ public struct Uniforms
     public StructuredBuffer<uint> Indices;
 
     public StructuredBuffer<uint2> Offsets;
-
-    public Globals Globals;
 
     public StructuredBuffer<Light> Lights;
 
