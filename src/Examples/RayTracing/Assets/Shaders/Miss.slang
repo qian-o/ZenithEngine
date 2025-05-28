@@ -1,5 +1,4 @@
 ﻿import "Common/Constants";
-import "Common/HDR";
 import "Common/Maths";
 import "Common/Sampling";
 import "Common/Structs";
@@ -23,26 +22,6 @@ void Main(inout Payload payload)
         payload.Radiance += Le * payload.Beta;
 
         return;
-    }
-
-    if (uniforms.Globals.UseHdr)
-    {
-        float misWeight = 1.0;
-
-        float2 uv = float2((Constants.PI + atan2(WorldRayDirection().z, WorldRayDirection().x)) * Constants.INV_2PI,
-                           acos(WorldRayDirection().y) * Constants.INV_PI);
-
-        if (payload.Depth > 0)
-        {
-            float lightPdf = HDR.EnvPdf(uniforms);
-
-            misWeight = Maths.PowerHeuristic(payload.Bsdf.Pdf, lightPdf);
-        }
-
-        payload.Radiance += misWeight * uniforms.HdrTextures[0].SampleLevel(uniforms.HdrSamplers[0], uv, 0).xyz *
-                            payload.Beta * uniforms.Globals.HdrMultiplier;
-
-        payload.Stop = true;
     }
 }
 

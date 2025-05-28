@@ -11,6 +11,7 @@ public unsafe class Buffer<T> : DisposableObject where T : unmanaged
     private readonly GraphicsContext context;
     private readonly uint length;
     private readonly Buffer buffer;
+    private readonly MappedResource mapped;
 
     public Buffer(GraphicsContext context, uint length, BufferUsage usage)
     {
@@ -20,6 +21,8 @@ public unsafe class Buffer<T> : DisposableObject where T : unmanaged
         BufferDesc desc = new((uint)(sizeof(T) * length), usage | BufferUsage.Dynamic, (uint)sizeof(T));
 
         buffer = context.Factory.CreateBuffer(in desc);
+
+        mapped = context.MapMemory(buffer, MapMode.ReadWrite);
     }
 
     public T this[int index]
@@ -31,13 +34,7 @@ public unsafe class Buffer<T> : DisposableObject where T : unmanaged
                 throw new IndexOutOfRangeException($"Index {index} is out of range for buffer of length {length}.");
             }
 
-            MappedResource mapped = context.MapMemory(buffer, MapMode.Read);
-
-            T value = new ReadOnlySpan<T>((void*)mapped.Data, (int)length)[index];
-
-            context.UnmapMemory(buffer);
-
-            return value;
+            return new ReadOnlySpan<T>((void*)mapped.Data, (int)length)[index];
         }
         set
         {
@@ -46,13 +43,9 @@ public unsafe class Buffer<T> : DisposableObject where T : unmanaged
                 throw new IndexOutOfRangeException($"Index {index} is out of range for buffer of length {length}.");
             }
 
-            MappedResource mapped = context.MapMemory(buffer, MapMode.Write);
-
             Span<T> span = new((void*)mapped.Data, (int)length);
 
             span[index] = value;
-
-            context.UnmapMemory(buffer);
         }
     }
 
@@ -63,17 +56,15 @@ public unsafe class Buffer<T> : DisposableObject where T : unmanaged
             throw new ArgumentOutOfRangeException(nameof(source), "Source span exceeds buffer length.");
         }
 
-        MappedResource mapped = context.MapMemory(buffer, MapMode.Write);
-
         Span<T> span = new((void*)mapped.Data, (int)length);
 
         source.CopyTo(span);
-
-        context.UnmapMemory(buffer);
     }
 
     protected override void Destroy()
     {
+        context.UnmapMemory(buffer);
+
         buffer.Dispose();
     }
 }

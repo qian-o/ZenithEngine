@@ -47,16 +47,4 @@ public struct Material
 
     [FieldOffset(88)]
     public float AttenuationDistance;
-
-    [FieldOffset(92)]
-    public int AlbedoTextureIndex;
-
-    [FieldOffset(96)]
-    public int MetallicRoughnessTextureIndex;
-
-    [FieldOffset(100)]
-    public int NormalTextureIndex;
-
-    [FieldOffset(104)]
-    public int HeightTextureIndex;
 }

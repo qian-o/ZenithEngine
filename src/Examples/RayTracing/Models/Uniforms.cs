@@ -17,10 +17,6 @@ internal class Uniforms : DisposableObject
                     Vertex[] vertices,
                     uint[] indices,
                     Vector2D<uint>[] offsets,
-                    Texture[] textures,
-                    Sampler[] samplers,
-                    Texture[] hdrTextures,
-                    Sampler[] hdrSamplers,
                     Light[] lights,
                     uint width,
                     uint height)
@@ -33,10 +29,6 @@ internal class Uniforms : DisposableObject
         Indices = new Buffer<uint>(context, (uint)indices.Length, BufferUsage.ShaderResource);
         Offsets = new Buffer<Vector2D<uint>>(context, (uint)offsets.Length, BufferUsage.ShaderResource);
         Globals = new Buffer<Globals>(context, 1, BufferUsage.ConstantBuffer);
-        Textures = textures;
-        Samplers = samplers;
-        HdrTextures = hdrTextures;
-        HdrSamplers = hdrSamplers;
         Lights = new Buffer<Light>(context, (uint)lights.Length, BufferUsage.ShaderResource);
 
         Materials.CopyFrom(materials);
@@ -59,14 +51,6 @@ internal class Uniforms : DisposableObject
     public Buffer<Vector2D<uint>> Offsets { get; }
 
     public Buffer<Globals> Globals { get; }
-
-    public Texture[] Textures { get; }
-
-    public Sampler[] Samplers { get; }
-
-    public Texture[] HdrTextures { get; }
-
-    public Sampler[] HdrSamplers { get; }
 
     public Buffer<Light> Lights { get; }
 
@@ -94,25 +78,5 @@ internal class Uniforms : DisposableObject
         Lights.Dispose();
         Accumulation.Dispose();
         Output.Dispose();
-
-        foreach (Texture texture in Textures)
-        {
-            texture.Dispose();
-        }
-
-        foreach (Sampler sampler in Samplers)
-        {
-            sampler.Dispose();
-        }
-
-        foreach (Texture hdrTexture in HdrTextures)
-        {
-            hdrTexture.Dispose();
-        }
-
-        foreach (Sampler hdrSampler in HdrSamplers)
-        {
-            hdrSampler.Dispose();
-        }
     }
 }

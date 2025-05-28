@@ -164,11 +164,7 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
                 ClearCoatGloss = 0.0f,
                 Transmission = 0.0f,
                 IOR = 1.45f,
-                AttenuationDistance = 1.0f,
-                AlbedoTextureIndex = -1,
-                MetallicRoughnessTextureIndex = -1,
-                NormalTextureIndex = -1,
-                HeightTextureIndex = -1
+                AttenuationDistance = 1.0f
             },
             1 => new()
             {
@@ -185,11 +181,7 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
                 ClearCoatGloss = 0.0f,
                 Transmission = 0.0f,
                 IOR = 1.45f,
-                AttenuationDistance = 1.0f,
-                AlbedoTextureIndex = -1,
-                MetallicRoughnessTextureIndex = -1,
-                NormalTextureIndex = -1,
-                HeightTextureIndex = -1
+                AttenuationDistance = 1.0f
             },
             2 => new()
             {
@@ -206,11 +198,7 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
                 ClearCoatGloss = 0.0f,
                 Transmission = 0.0f,
                 IOR = 1.45f,
-                AttenuationDistance = 1.0f,
-                AlbedoTextureIndex = -1,
-                MetallicRoughnessTextureIndex = -1,
-                NormalTextureIndex = -1,
-                HeightTextureIndex = -1
+                AttenuationDistance = 1.0f
             },
             3 => new()
             {
@@ -227,11 +215,7 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
                 ClearCoatGloss = 0.0f,
                 Transmission = 0.0f,
                 IOR = 1.45f,
-                AttenuationDistance = 1.0f,
-                AlbedoTextureIndex = -1,
-                MetallicRoughnessTextureIndex = -1,
-                NormalTextureIndex = -1,
-                HeightTextureIndex = -1
+                AttenuationDistance = 1.0f
             },
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(materialId))
         };

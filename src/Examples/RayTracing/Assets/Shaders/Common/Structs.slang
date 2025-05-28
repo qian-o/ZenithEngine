@@ -71,14 +71,6 @@ public struct Material
     public float IOR;
 
     public float AttenuationDistance;
-
-    public int AlbedoTextureIndex;
-
-    public int MetallicRoughnessTextureIndex;
-
-    public int NormalTextureIndex;
-
-    public int HeightTextureIndex;
 }
 
 public struct Light
@@ -151,12 +143,6 @@ public struct Globals
     public uint MaxDepth;
 
     public uint FrameIndex;
-
-    public bool UseHdr;
-
-    public float HdrMultiplier;
-
-    public float HdrResolution;
 }
 
 public struct Uniforms
@@ -172,14 +158,6 @@ public struct Uniforms
     public StructuredBuffer<uint2> Offsets;
 
     public Globals Globals;
-
-    public Texture2D Textures[128];
-
-    public SamplerState Samplers[128];
-
-    public Texture2D HdrTextures[3];
-
-    public SamplerState HdrSamplers[3];
 
     public StructuredBuffer<Light> Lights;
 

@@ -1,4 +1,5 @@
 ﻿using Common;
+using RayTracing.Models;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 using ZenithEngine.ShaderCompiler;
@@ -8,6 +9,8 @@ namespace RayTracing;
 internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 {
     private readonly string shaderPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders");
+
+    private Uniforms uniforms = null!;
 
     protected override void OnLoad()
     {
@@ -36,5 +39,6 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
     protected override void OnDestroy()
     {
+        uniforms.Dispose();
     }
 }

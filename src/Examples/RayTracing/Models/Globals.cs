@@ -19,13 +19,4 @@ internal struct Globals
 
     [FieldOffset(76)]
     public uint FrameIndex;
-
-    [FieldOffset(80)]
-    public bool UseHdr;
-
-    [FieldOffset(84)]
-    public float HdrMultiplier;
-
-    [FieldOffset(88)]
-    public float HdrResolution;
 }
