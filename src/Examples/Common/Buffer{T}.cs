@@ -44,9 +44,9 @@ public unsafe class Buffer<T> : DisposableObject where T : unmanaged
         return buffer.buffer;
     }
 
-    public void CopyFrom(ReadOnlySpan<T> source, uint offset = 0)
+    public void CopyFrom(ReadOnlySpan<T> source)
     {
-        if (source.Length + offset > length)
+        if (source.Length > length)
         {
             throw new ArgumentOutOfRangeException(nameof(source), "Source span exceeds buffer length.");
         }

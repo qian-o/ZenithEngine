@@ -115,7 +115,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
             Position = new Vector3D<float>(278.0f, 548.8f, 279.5f),
             Emission = new Vector3D<float>(17.0f, 12.0f, 4.0f),
             U = new Vector3D<float>(0.0f, 0.0f, 1.0f),
-            V = new Vector3D<float>(1.0f, 0.0f, 0.0f),
+            V = new Vector3D<float>(-0.13f, 0.0f, 0.0f),
             Area = 48.0f * 48.0f,
             Radius = 0.0f
         };
@@ -176,7 +176,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         globals.Camera.Up = CameraController.Up;
         globals.Camera.Fov = Utils.DegreesToRadians(CameraController.Fov);
         globals.DoubleSidedLighting = true;
-        globals.SampleCount = 5;
+        globals.SampleCount = 1;
         globals.MaxDepth = 5;
         globals.FrameIndex++;
 
