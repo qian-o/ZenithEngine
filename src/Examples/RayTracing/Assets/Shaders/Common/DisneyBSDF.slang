@@ -99,7 +99,7 @@ public class DisneyBSDF
         if (Random.Rnd(payload.Seed) < transWeight)
         {
             float3 H = Maths.ImportanceSampleGTR2(material.Roughness, r1, r2);
-            H = mul(frame, H);
+            H = mul(H, frame);
 
             if (dot(V, H) < 0.0)
                 H = -H;
@@ -127,7 +127,7 @@ public class DisneyBSDF
             if (Random.Rnd(payload.Seed) < diffuseRatio)
             {
                 L = Maths.CosineSampleHemisphere(payload.Seed);
-                L = mul(frame, L);
+                L = mul(L, frame);
 
                 float3 H = normalize(L + V);
 
@@ -143,7 +143,7 @@ public class DisneyBSDF
                 {
                     // TODO: Implement http://jcgt.org/published/0007/04/01/
                     float3 H = Maths.ImportanceSampleGTR2(material.Roughness, r1, r2);
-                    H = mul(frame, H);
+                    H = mul(H, frame);
 
                     if (dot(V, H) < 0.0)
                         H = -H;
@@ -156,7 +156,7 @@ public class DisneyBSDF
                 else // Sample clearcoat lobe
                 {
                     float3 H = Maths.ImportanceSampleGTR1(lerp(0.1, 0.001, material.ClearCoatGloss), r1, r2);
-                    H = mul(frame, H);
+                    H = mul(H, frame);
 
                     if (dot(V, H) < 0.0)
                         H = -H;
