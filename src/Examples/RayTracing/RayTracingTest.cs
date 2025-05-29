@@ -2,6 +2,7 @@
 using Hexa.NET.ImGui;
 using RayTracing.Models;
 using Silk.NET.Maths;
+using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -161,15 +162,42 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         };
 
         pipeline = Context.Factory.CreateRayTracingPipeline(in pipelineDesc);
+
+        CameraController.Transform(Matrix4X4.CreateTranslation(278.000f, 273.000f, -800.000f));
+        CameraController.Speed = 240.000f;
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)
     {
+        ref Globals globals = ref uniforms.Globals[0];
+        globals.Camera.Position = CameraController.Position;
+        globals.Camera.Forward = CameraController.Forward;
+        globals.Camera.Right = CameraController.Right;
+        globals.Camera.Up = CameraController.Up;
+        globals.Camera.Fov = Utils.DegreesToRadians(CameraController.Fov);
+        globals.DoubleSidedLighting = true;
+        globals.SampleCount = 5;
+        globals.MaxDepth = 5;
+        globals.FrameIndex++;
+
         ImGui.GetBackgroundDrawList().AddImage(ImGuiController.GetBinding(uniforms.Output), new(0, 0), new(Width, Height));
     }
 
     protected override void OnRender(double deltaTime, double totalTime)
     {
+        CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
+
+        commandBuffer.Begin();
+
+        commandBuffer.PrepareResources([set]);
+
+        commandBuffer.SetRayTracingPipeline(pipeline);
+        commandBuffer.SetResourceSet(0, set);
+
+        commandBuffer.DispatchRays(Width, Height, 1);
+
+        commandBuffer.End();
+        commandBuffer.Commit();
     }
 
     protected override void OnSizeChanged(uint width, uint height)

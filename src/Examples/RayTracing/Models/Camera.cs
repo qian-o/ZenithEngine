@@ -9,15 +9,15 @@ internal struct Camera
     [FieldOffset(0)]
     public Vector3D<float> Position;
 
-    [FieldOffset(12)]
+    [FieldOffset(16)]
     public Vector3D<float> Forward;
 
-    [FieldOffset(24)]
+    [FieldOffset(32)]
     public Vector3D<float> Right;
 
-    [FieldOffset(36)]
+    [FieldOffset(48)]
     public Vector3D<float> Up;
 
-    [FieldOffset(48)]
+    [FieldOffset(60)]
     public float Fov;
 }
