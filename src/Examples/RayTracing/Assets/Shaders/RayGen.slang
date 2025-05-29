@@ -19,13 +19,20 @@ void RayGeneration()
         RayDesc rayDesc = uniforms.Globals.Camera.GetRayDesc(float2(Random.Rnd(seed), Random.Rnd(seed)));
 
         Payload payload = {};
-        payload.Seed = seed;
         for (uint j = 0; j < uniforms.Globals.MaxDepth; j++)
         {
             payload.Depth = j;
             payload.Stop = false;
 
+            payload.Seed = seed;
+            payload.Ray.Origin = rayDesc.Origin;
+            payload.Ray.Direction = rayDesc.Direction;
+
             TraceRay(uniforms.Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
+
+            seed = payload.Seed;
+            rayDesc.Origin = payload.Ray.Origin;
+            rayDesc.Direction = payload.Ray.Direction;
 
             if (payload.Stop)
             {
