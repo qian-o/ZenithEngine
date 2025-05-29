@@ -1,5 +1,8 @@
 ﻿using Common;
+using Hexa.NET.ImGui;
 using RayTracing.Models;
+using Silk.NET.Maths;
+using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 using ZenithEngine.ShaderCompiler;
@@ -10,6 +13,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 {
     private readonly string shaderPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders");
 
+    private BottomLevelAS blas = null!;
     private Uniforms uniforms = null!;
 
     protected override void OnLoad()
@@ -23,10 +27,101 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         using Shader _3 = Context.Factory.CompileShader(miss, ShaderStages.Miss, "ShadowMain", out ShaderReflection r3);
         using Shader _4 = Context.Factory.CompileShader(closestHit, ShaderStages.ClosestHit, "Main", out ShaderReflection r4);
         ShaderReflection reflection = ShaderReflection.Merge(r1, r2, r3, r4);
+
+        List<Vertex> allVertices = [];
+        List<uint> allIndices = [];
+        List<Vector2D<uint>> offsets = [];
+        List<Material> materials = [];
+        for (uint i = 0; i < 4; i++)
+        {
+            offsets.Add(new Vector2D<uint>((uint)allVertices.Count, (uint)allIndices.Count));
+
+            Vertex.CornellBox(i, out Vertex[] vertices, out uint[] indices, out Material material);
+
+            allVertices.AddRange(vertices);
+            allIndices.AddRange(indices);
+            materials.Add(material);
+        }
+
+        Buffer<Vertex> vertexBuffer = new(Context, (uint)allVertices.Count, BufferUsage.ShaderResource);
+        vertexBuffer.CopyFrom(allVertices.ToArray());
+
+        Buffer<uint> indexBuffer = new(Context, (uint)allIndices.Count, BufferUsage.ShaderResource);
+        indexBuffer.CopyFrom(allIndices.ToArray());
+
+        CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
+
+        commandBuffer.Begin();
+
+        List<AccelerationStructureTriangles> triangles = [];
+        for (int i = 0; i < offsets.Count; i++)
+        {
+            Vector2D<uint> offset = offsets[i];
+
+            uint vertexCount;
+            uint indexCount;
+            if (i < offsets.Count - 1)
+            {
+                Vector2D<uint> next = offsets[i + 1];
+
+                vertexCount = next.X - offset.X;
+                indexCount = next.Y - offset.Y;
+            }
+            else
+            {
+                vertexCount = (uint)allVertices.Count - offset.X;
+                indexCount = (uint)allIndices.Count - offset.Y;
+            }
+
+            triangles.Add(new(vertexBuffer)
+            {
+                VertexFormat = PixelFormat.R32G32B32Float,
+                VertexStrideInBytes = (uint)sizeof(Vertex),
+                VertexCount = vertexCount,
+                VertexOffsetInBytes = offset.X * (uint)sizeof(Vertex),
+                IndexBuffer = indexBuffer,
+                IndexFormat = IndexFormat.UInt32,
+                IndexCount = indexCount,
+                IndexOffsetInBytes = offset.Y * sizeof(uint),
+                Transform = Matrix3X4<float>.Identity,
+                Options = AccelerationStructureGeometryOptions.Opaque
+            });
+        }
+
+        BottomLevelASDesc bottomLevelASDesc = new([.. triangles]);
+
+        blas = commandBuffer.BuildAccelerationStructure(in bottomLevelASDesc);
+
+        TopLevelASDesc tlasDesc = new([new(blas)
+        {
+            Transform = Matrix3X4<float>.Identity,
+            InstanceID = 0,
+            InstanceMask = 0xFF,
+            InstanceContributionToHitGroupIndex = 0
+        }]);
+
+        TopLevelAS tlas = commandBuffer.BuildAccelerationStructure(in tlasDesc);
+
+        commandBuffer.End();
+        commandBuffer.Commit();
+
+        Light light = new()
+        {
+            Type = LightType.Area,
+            Position = new Vector3D<float>(278.0f, 548.8f, 279.5f),
+            Emission = new Vector3D<float>(17.0f, 12.0f, 4.0f),
+            U = new Vector3D<float>(0.0f, 0.0f, 1.0f),
+            V = new Vector3D<float>(1.0f, 0.0f, 0.0f),
+            Area = 48.0f * 48.0f,
+            Radius = 0.0f
+        };
+
+        uniforms = new(Context, tlas, [.. materials], vertexBuffer, indexBuffer, [.. offsets], [light], 100, 100);
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)
     {
+        ImGui.GetBackgroundDrawList().AddImage(ImGuiController.GetBinding(uniforms.Output), new(0, 0), new(Width, Height));
     }
 
     protected override void OnRender(double deltaTime, double totalTime)
@@ -35,10 +130,14 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
     protected override void OnSizeChanged(uint width, uint height)
     {
+        ImGuiController.RemoveBinding(uniforms.Output);
+
+        uniforms.ResetTextures(width, height);
     }
 
     protected override void OnDestroy()
     {
         uniforms.Dispose();
+        blas.Dispose();
     }
 }

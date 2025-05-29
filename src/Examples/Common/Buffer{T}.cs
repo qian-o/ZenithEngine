@@ -17,7 +17,7 @@ public unsafe class Buffer<T> : DisposableObject where T : unmanaged
     public Buffer(GraphicsContext context, uint length, BufferUsage usage)
     {
         this.context = context;
-        this.length = length;
+        this.length = length is 0 ? 1 : length;
 
         BufferDesc desc = new((uint)(sizeof(T) * length), usage | BufferUsage.Dynamic, (uint)sizeof(T));
 
@@ -37,6 +37,11 @@ public unsafe class Buffer<T> : DisposableObject where T : unmanaged
 
             return ref Unsafe.AsRef<T>((void*)(mapped.Data + (index * sizeof(T))));
         }
+    }
+
+    public static implicit operator Buffer(Buffer<T> buffer)
+    {
+        return buffer.buffer;
     }
 
     public void CopyFrom(ReadOnlySpan<T> source, uint offset = 0)

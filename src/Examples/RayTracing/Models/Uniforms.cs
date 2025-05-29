@@ -14,8 +14,8 @@ internal class Uniforms : DisposableObject
     public Uniforms(GraphicsContext context,
                     TopLevelAS scene,
                     Material[] materials,
-                    Vertex[] vertices,
-                    uint[] indices,
+                    Buffer<Vertex> vertices,
+                    Buffer<uint> indices,
                     Vector2D<uint>[] offsets,
                     Light[] lights,
                     uint width,
@@ -24,17 +24,19 @@ internal class Uniforms : DisposableObject
         this.context = context;
 
         Scene = scene;
-        Globals = new Buffer<Globals>(context, 1, BufferUsage.ConstantBuffer);
-        Materials = new Buffer<Material>(context, (uint)materials.Length, BufferUsage.ShaderResource);
-        Vertices = new Buffer<Vertex>(context, (uint)vertices.Length, BufferUsage.ShaderResource);
-        Indices = new Buffer<uint>(context, (uint)indices.Length, BufferUsage.ShaderResource);
-        Offsets = new Buffer<Vector2D<uint>>(context, (uint)offsets.Length, BufferUsage.ShaderResource);
-        Lights = new Buffer<Light>(context, (uint)lights.Length, BufferUsage.ShaderResource);
 
+        Globals = new Buffer<Globals>(context, 1, BufferUsage.ConstantBuffer);
+
+        Materials = new Buffer<Material>(context, (uint)materials.Length, BufferUsage.ShaderResource);
         Materials.CopyFrom(materials);
-        Vertices.CopyFrom(vertices);
-        Indices.CopyFrom(indices);
+
+        Vertices = vertices;
+        Indices = indices;
+
+        Offsets = new Buffer<Vector2D<uint>>(context, (uint)offsets.Length, BufferUsage.ShaderResource);
         Offsets.CopyFrom(offsets);
+
+        Lights = new Buffer<Light>(context, (uint)lights.Length, BufferUsage.ShaderResource);
         Lights.CopyFrom(lights);
 
         CreateTextures(width, height);
@@ -58,9 +60,17 @@ internal class Uniforms : DisposableObject
 
     public Texture Output { get; private set; } = null!;
 
+    public void ResetTextures(uint width, uint height)
+    {
+        Accumulation.Dispose();
+        Output.Dispose();
+
+        CreateTextures(width, height);
+    }
+
     private void CreateTextures(uint width, uint height)
     {
-        TextureDesc accumulationDesc = new(width, height, format: PixelFormat.R32G32B32A32Float, usage: TextureUsage.ShaderResource | TextureUsage.UnorderedAccess);
+        TextureDesc accumulationDesc = new(width, height, format: PixelFormat.R32G32B32A32Float, usage: TextureUsage.UnorderedAccess);
         Accumulation = context.Factory.CreateTexture(in accumulationDesc);
 
         TextureDesc outputDesc = new(width, height, format: PixelFormat.R8G8B8A8UNorm, usage: TextureUsage.ShaderResource | TextureUsage.UnorderedAccess);
