@@ -20,4 +20,13 @@ internal struct Camera
 
     [FieldOffset(60)]
     public float Fov;
+
+    public override readonly int GetHashCode()
+    {
+        return HashCode.Combine(Position.GetHashCode(),
+                                Forward.GetHashCode(),
+                                Right.GetHashCode(),
+                                Up.GetHashCode(),
+                                Fov.GetHashCode());
+    }
 }

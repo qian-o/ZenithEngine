@@ -20,6 +20,8 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
     private ResourceSet set = null!;
     private RayTracingPipeline pipeline = null!;
 
+    private int cameraHash;
+
     protected override void OnLoad()
     {
         string rayGeneration = Path.Combine(shaderPath, "RayGen.slang");
@@ -177,7 +179,14 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         globals.Camera.Fov = Utils.DegreesToRadians(CameraController.Fov);
         globals.DoubleSidedLighting = true;
         globals.SampleCount = 1;
-        globals.MaxDepth = 5;
+        globals.MaxDepth = 2;
+
+        if (cameraHash != globals.Camera.GetHashCode())
+        {
+            globals.FrameIndex = 0;
+
+            cameraHash = globals.Camera.GetHashCode();
+        }
 
         ImGui.GetBackgroundDrawList().AddImage(ImGuiController.GetBinding(uniforms.Output), new(0, 0), new(Width, Height));
     }

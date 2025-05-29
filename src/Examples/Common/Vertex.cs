@@ -47,7 +47,7 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
                         new(549.6f, 0.0f, 559.2f),
                         new(556.0f, 548.8f, 559.2f),
                         new(556.0f, 548.8f, 0.0f),
-                        0, false);
+                        0);
                 break;
             case 1:
                 // Right wall (green)
@@ -55,7 +55,7 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
                         new(0.0f, 0.0f, 0.0f),
                         new(0.0f, 548.8f, 0.0f),
                         new(0.0f, 548.8f, 559.2f),
-                        1, false);
+                        1);
                 break;
             case 2:
                 // Ceiling (white)
@@ -63,75 +63,75 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
                         new(556.0f, 548.8f, 559.2f),
                         new(0.0f, 548.8f, 559.2f),
                         new(0.0f, 548.8f, 0.0f),
-                        2, false);
+                        2);
 
                 // Floor (white)
                 AddQuad(new(552.8f, 0.0f, 0.0f),
                         new(0.0f, 0.0f, 0.0f),
                         new(0.0f, 0.0f, 559.2f),
                         new(549.6f, 0.0f, 559.2f),
-                        2, false);
+                        2);
 
                 // Back wall (white)
                 AddQuad(new(549.6f, 0.0f, 559.2f),
                         new(0.0f, 0.0f, 559.2f),
                         new(0.0f, 548.8f, 559.2f),
                         new(556.0f, 548.8f, 559.2f),
-                        2, false);
+                        2);
 
                 // Short block (white)
                 AddQuad(new(130.0f, 165.0f, 65.0f),
                         new(82.0f, 165.0f, 225.0f),
                         new(240.0f, 165.0f, 272.0f),
                         new(290.0f, 165.0f, 114.0f),
-                        2, false);
+                        2);
                 AddQuad(new(290.0f, 0.0f, 114.0f),
                         new(290.0f, 165.0f, 114.0f),
                         new(240.0f, 165.0f, 272.0f),
                         new(240.0f, 0.0f, 272.0f),
-                        2, false);
+                        2);
                 AddQuad(new(130.0f, 0.0f, 65.0f),
                         new(130.0f, 165.0f, 65.0f),
                         new(290.0f, 165.0f, 114.0f),
                         new(290.0f, 0.0f, 114.0f),
-                        2, false);
+                        2);
                 AddQuad(new(82.0f, 0.0f, 225.0f),
                         new(82.0f, 165.0f, 225.0f),
                         new(130.0f, 165.0f, 65.0f),
                         new(130.0f, 0.0f, 65.0f),
-                        2, false);
+                        2);
                 AddQuad(new(240.0f, 0.0f, 272.0f),
                         new(240.0f, 165.0f, 272.0f),
                         new(82.0f, 165.0f, 225.0f),
                         new(82.0f, 0.0f, 225.0f),
-                        2, false);
+                        2);
 
                 // Tall block (white)
                 AddQuad(new(423.0f, 330.0f, 247.0f),
                         new(265.0f, 330.0f, 296.0f),
                         new(314.0f, 330.0f, 456.0f),
                         new(472.0f, 330.0f, 406.0f),
-                        2, false);
+                        2);
                 AddQuad(new(423.0f, 0.0f, 247.0f),
                         new(423.0f, 330.0f, 247.0f),
                         new(472.0f, 330.0f, 406.0f),
                         new(472.0f, 0.0f, 406.0f),
-                        2, false);
+                        2);
                 AddQuad(new(472.0f, 0.0f, 406.0f),
                         new(472.0f, 330.0f, 406.0f),
                         new(314.0f, 330.0f, 456.0f),
                         new(314.0f, 0.0f, 456.0f),
-                        2, false);
+                        2);
                 AddQuad(new(314.0f, 0.0f, 456.0f),
                         new(314.0f, 330.0f, 456.0f),
                         new(265.0f, 330.0f, 296.0f),
                         new(265.0f, 0.0f, 296.0f),
-                        2, false);
+                        2);
                 AddQuad(new(265.0f, 0.0f, 296.0f),
                         new(265.0f, 330.0f, 296.0f),
                         new(423.0f, 330.0f, 247.0f),
                         new(423.0f, 0.0f, 247.0f),
-                        2, false);
+                        2);
                 break;
             case 3:
                 // Light (short block)
@@ -139,7 +139,7 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
                         new(343.0f, 548.6f, 332.0f),
                         new(213.0f, 548.6f, 332.0f),
                         new(213.0f, 548.6f, 227.0f),
-                        3, true);
+                        3);
                 break;
             default:
                 throw new ZenithEngineException(ExceptionHelpers.NotSupported(materialId));
@@ -224,15 +224,9 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
                      Vector3D<float> v1,
                      Vector3D<float> v2,
                      Vector3D<float> v3,
-                     int materialIndex,
-                     bool flipNormals)
+                     int materialIndex)
         {
             Vector3D<float> normal = Vector3D.Normalize(Vector3D.Cross(v1 - v0, v2 - v0));
-
-            if (flipNormals)
-            {
-                normal = -normal;
-            }
 
             uint startIndex = (uint)verticesList.Count;
 
