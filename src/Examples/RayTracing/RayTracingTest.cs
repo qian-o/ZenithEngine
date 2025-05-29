@@ -112,8 +112,8 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         Light light = new()
         {
             Type = LightType.Area,
-            Position = new Vector3D<float>(340.0f, 548.8f, 230.0f),
-            Emission = new Vector3D<float>(17.0f, 12.0f, 4.0f),
+            Position = new Vector3D<float>(340.0f, 548.0f, 230.0f),
+            Emission = new Vector3D<float>(170.0f, 120.0f, 40.0f),
             U = new Vector3D<float>(0.0f, 0.0f, 100.0f),
             V = new Vector3D<float>(-130.0f, 0.0f, 0.0f),
             Area = 48.0f * 48.0f,

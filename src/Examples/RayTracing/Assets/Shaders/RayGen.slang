@@ -38,18 +38,18 @@ void RayGeneration()
 
     radiance /= float(uniforms.Globals.SampleCount);
 
-    //// HDR scale
-    //float4 accumulated =
-    //    uniforms.Globals.FrameIndex <= 1 ? float4(0.0, 0.0, 0.0, 0.0) : uniforms.Accumulation[launchID];
-    //float3 accumulatedRadiance = accumulated.xyz * radiance;
+    // HDR scale
+    float4 accumulated =
+        uniforms.Globals.FrameIndex <= 1 ? float4(0.0, 0.0, 0.0, 0.0) : uniforms.Accumulation[launchID];
+    float3 accumulatedRadiance = accumulated.xyz + radiance;
 
-    //uniforms.Accumulation[launchID] = float4(accumulatedRadiance, 1.0);
+    uniforms.Accumulation[launchID] = float4(accumulatedRadiance, 1.0);
 
-    //float inv = 1.0 / float(uniforms.Globals.FrameIndex);
-    //radiance = accumulatedRadiance * inv;
+    float inv = 1.0 / float(uniforms.Globals.FrameIndex);
+    radiance = accumulatedRadiance * inv;
 
     // LDR scale
-    //float3 ldr = Maths.ToneMap(radiance, 1.5);
+    float3 ldr = Maths.ToneMap(radiance, 1.5);
 
-    uniforms.Output[launchID] = float4(radiance, 1.0);
+    uniforms.Output[launchID] = float4(ldr, 1.0);
 }
