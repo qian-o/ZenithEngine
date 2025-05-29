@@ -15,6 +15,9 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
     private BottomLevelAS blas = null!;
     private Uniforms uniforms = null!;
+    private ResourceLayout layout = null!;
+    private ResourceSet set = null!;
+    private RayTracingPipeline pipeline = null!;
 
     protected override void OnLoad()
     {
@@ -22,10 +25,10 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         string miss = Path.Combine(shaderPath, "Miss.slang");
         string closestHit = Path.Combine(shaderPath, "ClosestHit.slang");
 
-        using Shader _1 = Context.Factory.CompileShader(rayGeneration, ShaderStages.RayGeneration, "Main", out ShaderReflection r1);
-        using Shader _2 = Context.Factory.CompileShader(miss, ShaderStages.Miss, "Main", out ShaderReflection r2);
-        using Shader _3 = Context.Factory.CompileShader(miss, ShaderStages.Miss, "ShadowMain", out ShaderReflection r3);
-        using Shader _4 = Context.Factory.CompileShader(closestHit, ShaderStages.ClosestHit, "Main", out ShaderReflection r4);
+        using Shader rg = Context.Factory.CompileShader(rayGeneration, ShaderStages.RayGeneration, "RayGeneration", out ShaderReflection r1);
+        using Shader ms = Context.Factory.CompileShader(miss, ShaderStages.Miss, "Miss", out ShaderReflection r2);
+        using Shader sms = Context.Factory.CompileShader(miss, ShaderStages.Miss, "ShadowMiss", out ShaderReflection r3);
+        using Shader ch = Context.Factory.CompileShader(closestHit, ShaderStages.ClosestHit, "ClosestHit", out ShaderReflection r4);
         ShaderReflection reflection = ShaderReflection.Merge(r1, r2, r3, r4);
 
         List<Vertex> allVertices = [];
@@ -117,6 +120,47 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         };
 
         uniforms = new(Context, tlas, [.. materials], vertexBuffer, indexBuffer, [.. offsets], [light], 100, 100);
+
+        ResourceLayoutDesc layoutDesc = new
+        (
+            reflection["uniforms.Scene"].Desc,
+            reflection["uniforms.Globals"].Desc,
+            reflection["uniforms.Materials"].Desc,
+            reflection["uniforms.Vertices"].Desc,
+            reflection["uniforms.Indices"].Desc,
+            reflection["uniforms.Offsets"].Desc,
+            reflection["uniforms.Lights"].Desc,
+            reflection["uniforms.Accumulation"].Desc,
+            reflection["uniforms.Output"].Desc
+        );
+
+        layout = Context.Factory.CreateResourceLayout(in layoutDesc);
+
+        ResourceSetDesc setDesc = new(layout,
+                                      uniforms.Scene,
+                                      uniforms.Globals,
+                                      uniforms.Materials,
+                                      uniforms.Vertices,
+                                      uniforms.Indices,
+                                      uniforms.Offsets,
+                                      uniforms.Lights,
+                                      uniforms.Accumulation,
+                                      uniforms.Output);
+
+        set = Context.Factory.CreateResourceSet(in setDesc);
+
+        RayTracingPipelineDesc pipelineDesc = new()
+        {
+            Shaders = new(rg, [ms, sms], [ch]),
+            HitGroups =
+            [
+                new("Default", closestHit: "ClosestHit"),
+                new("Shadow")
+            ],
+            ResourceLayouts = [layout]
+        };
+
+        pipeline = Context.Factory.CreateRayTracingPipeline(in pipelineDesc);
     }
 
     protected override void OnUpdate(double deltaTime, double totalTime)
@@ -130,13 +174,31 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
     protected override void OnSizeChanged(uint width, uint height)
     {
+        set.Dispose();
+
         ImGuiController.RemoveBinding(uniforms.Output);
 
         uniforms.ResetTextures(width, height);
+
+        ResourceSetDesc setDesc = new(layout,
+                                      uniforms.Scene,
+                                      uniforms.Globals,
+                                      uniforms.Materials,
+                                      uniforms.Vertices,
+                                      uniforms.Indices,
+                                      uniforms.Offsets,
+                                      uniforms.Lights,
+                                      uniforms.Accumulation,
+                                      uniforms.Output);
+
+        set = Context.Factory.CreateResourceSet(in setDesc);
     }
 
     protected override void OnDestroy()
     {
+        pipeline.Dispose();
+        set.Dispose();
+        layout.Dispose();
         uniforms.Dispose();
         blas.Dispose();
     }

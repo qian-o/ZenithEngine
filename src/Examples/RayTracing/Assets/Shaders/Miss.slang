@@ -6,7 +6,7 @@ import "Common/Structs";
 uniform ParameterBlock<Uniforms> uniforms;
 
 [shader("miss")]
-void Main(inout Payload payload)
+void Miss(inout Payload payload)
 {
     // Stop path tracing loop from rgen shader
     payload.Stop = true;
@@ -26,7 +26,7 @@ void Main(inout Payload payload)
 }
 
 [shader("miss")]
-void ShadowMain(inout ShadowPayload payload)
+void ShadowMiss(inout ShadowPayload payload)
 {
     payload.InShadow = false;
 }

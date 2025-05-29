@@ -5,7 +5,7 @@ import "Common/Structs";
 uniform ParameterBlock<Uniforms> uniforms;
 
 [shader("raygeneration")]
-void Main()
+void RayGeneration()
 {
     uint2 launchID = DispatchRaysIndex().xy;
     uint2 launchSize = DispatchRaysDimensions().xy;

@@ -9,7 +9,7 @@ import "Common/Structs";
 uniform ParameterBlock<Uniforms> uniforms;
 
 [shader("closesthit")]
-void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
+void ClosestHit(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
 {
     Vertex vertex = Vertex.GetVertex(uniforms, attrib);
     Material material = uniforms.Materials[vertex.MaterialIndex];
