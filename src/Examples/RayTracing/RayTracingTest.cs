@@ -112,10 +112,10 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         Light light = new()
         {
             Type = LightType.Area,
-            Position = new Vector3D<float>(278.0f, 548.8f, 279.5f),
+            Position = new Vector3D<float>(340.0f, 548.8f, 230.0f),
             Emission = new Vector3D<float>(17.0f, 12.0f, 4.0f),
-            U = new Vector3D<float>(0.0f, 0.0f, 1.0f),
-            V = new Vector3D<float>(-0.13f, 0.0f, 0.0f),
+            U = new Vector3D<float>(0.0f, 0.0f, 100.0f),
+            V = new Vector3D<float>(-130.0f, 0.0f, 0.0f),
             Area = 48.0f * 48.0f,
             Radius = 0.0f
         };
@@ -178,7 +178,6 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         globals.DoubleSidedLighting = true;
         globals.SampleCount = 1;
         globals.MaxDepth = 5;
-        globals.FrameIndex++;
 
         ImGui.GetBackgroundDrawList().AddImage(ImGuiController.GetBinding(uniforms.Output), new(0, 0), new(Width, Height));
     }
@@ -198,6 +197,8 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
         commandBuffer.End();
         commandBuffer.Commit();
+
+        uniforms.Globals[0].FrameIndex++;
     }
 
     protected override void OnSizeChanged(uint width, uint height)
@@ -220,6 +221,8 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
                                       uniforms.Output);
 
         set = Context.Factory.CreateResourceSet(in setDesc);
+
+        uniforms.Globals[0].FrameIndex = 0;
     }
 
     protected override void OnDestroy()

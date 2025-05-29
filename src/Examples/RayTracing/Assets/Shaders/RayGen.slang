@@ -22,6 +22,9 @@ void RayGeneration()
         payload.Seed = seed;
         for (uint j = 0; j < uniforms.Globals.MaxDepth; j++)
         {
+            payload.Depth = j;
+            payload.Stop = false;
+
             TraceRay(uniforms.Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
 
             if (payload.Stop)
@@ -35,18 +38,18 @@ void RayGeneration()
 
     radiance /= float(uniforms.Globals.SampleCount);
 
-    // HDR scale
-    float4 accumulated =
-        uniforms.Globals.FrameIndex == 0 ? float4(0.0, 0.0, 0.0, 0.0) : uniforms.Accumulation[launchID];
-    float3 accumulatedRadiance = accumulated.xyz * radiance;
+    //// HDR scale
+    //float4 accumulated =
+    //    uniforms.Globals.FrameIndex <= 1 ? float4(0.0, 0.0, 0.0, 0.0) : uniforms.Accumulation[launchID];
+    //float3 accumulatedRadiance = accumulated.xyz * radiance;
 
-    uniforms.Accumulation[launchID] = float4(accumulatedRadiance, 1.0);
+    //uniforms.Accumulation[launchID] = float4(accumulatedRadiance, 1.0);
 
-    float inv = 1.0 / float(uniforms.Globals.FrameIndex);
-    radiance = accumulatedRadiance * inv;
+    //float inv = 1.0 / float(uniforms.Globals.FrameIndex);
+    //radiance = accumulatedRadiance * inv;
 
     // LDR scale
-    float3 ldr = Maths.ToneMap(radiance, 1.5);
+    //float3 ldr = Maths.ToneMap(radiance, 1.5);
 
-    uniforms.Output[launchID] = float4(ldr, 1.0);
+    uniforms.Output[launchID] = float4(radiance, 1.0);
 }
