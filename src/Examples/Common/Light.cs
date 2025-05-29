@@ -15,15 +15,15 @@ public struct Light
     [FieldOffset(16)]
     public Vector3D<float> Emission;
 
-    [FieldOffset(28)]
+    [FieldOffset(32)]
     public Vector3D<float> U;
 
-    [FieldOffset(40)]
+    [FieldOffset(48)]
     public Vector3D<float> V;
 
-    [FieldOffset(52)]
+    [FieldOffset(60)]
     public float Area;
 
-    [FieldOffset(56)]
+    [FieldOffset(64)]
     public float Radius;
 }

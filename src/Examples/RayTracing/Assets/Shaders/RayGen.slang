@@ -48,5 +48,11 @@ void RayGeneration()
     // LDR scale
     float3 ldr = Maths.ToneMap(radiance, 1.5);
 
-    uniforms.Output[launchID] = float4(ldr, 1.0);
+    RayDesc rayDesc = uniforms.Globals.Camera.GetRayDesc(float2(Random.Rnd(seed), Random.Rnd(seed)));
+
+    Payload payload = {};
+    payload.Seed = seed;
+    TraceRay(uniforms.Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
+
+    uniforms.Output[launchID] = float4(payload.Radiance, 1.0);
 }

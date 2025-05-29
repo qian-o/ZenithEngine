@@ -120,7 +120,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
             Radius = 0.0f
         };
 
-        uniforms = new(Context, tlas, [.. materials], vertexBuffer, indexBuffer, [.. offsets], [light], 100, 100);
+        uniforms = new(Context, tlas, [.. materials], vertexBuffer, indexBuffer, [.. offsets], [light], Width, Height);
 
         ResourceLayoutDesc layoutDesc = new
         (

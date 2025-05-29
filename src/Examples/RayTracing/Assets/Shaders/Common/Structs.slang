@@ -104,10 +104,10 @@ public struct Camera
 
     public RayDesc GetRayDesc(float2 offset)
     {
-        uint2 launchID = DispatchRaysIndex().xy;
-        uint2 launchSize = DispatchRaysDimensions().xy;
+        float2 launchID = float2(DispatchRaysIndex().xy);
+        float2 launchSize = float2(DispatchRaysDimensions().xy);
 
-        float aspectRatio = (float)launchSize.x / launchSize.y;
+        float aspectRatio = launchSize.x / launchSize.y;
 
         float2 xy = ((launchID + offset) / launchSize * 2.0 - 1.0) * tan(Fov * 0.5);
 
