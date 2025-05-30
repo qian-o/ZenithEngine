@@ -1,5 +1,4 @@
 ﻿import "Common/Constants";
-import "Common/HDR";
 import "Common/Maths";
 import "Common/Sampling";
 import "Common/Structs";
@@ -7,7 +6,7 @@ import "Common/Structs";
 uniform ParameterBlock<Uniforms> uniforms;
 
 [shader("miss")]
-void Main(inout Payload payload)
+void Miss(inout Payload payload)
 {
     // Stop path tracing loop from rgen shader
     payload.Stop = true;
@@ -24,30 +23,10 @@ void Main(inout Payload payload)
 
         return;
     }
-
-    if (uniforms.Globals.UseHdr)
-    {
-        float misWeight = 1.0;
-
-        float2 uv = float2((Constants.PI + atan2(WorldRayDirection().z, WorldRayDirection().x)) * Constants.INV_2PI,
-                           acos(WorldRayDirection().y) * Constants.INV_PI);
-
-        if (payload.Depth > 0)
-        {
-            float lightPdf = HDR.EnvPdf(uniforms);
-
-            misWeight = Maths.PowerHeuristic(payload.Bsdf.Pdf, lightPdf);
-        }
-
-        payload.Radiance += misWeight * uniforms.HdrTextures[0].SampleLevel(uniforms.HdrSamplers[0], uv, 0).xyz *
-                            payload.Beta * uniforms.Globals.HdrMultiplier;
-
-        payload.Stop = true;
-    }
 }
 
 [shader("miss")]
-void ShadowMain(inout ShadowPayload payload)
+void ShadowMiss(inout ShadowPayload payload)
 {
     payload.InShadow = false;
 }

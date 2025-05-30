@@ -5,7 +5,7 @@ import "Common/Structs";
 uniform ParameterBlock<Uniforms> uniforms;
 
 [shader("raygeneration")]
-void Main()
+void RayGeneration()
 {
     uint2 launchID = DispatchRaysIndex().xy;
     uint2 launchSize = DispatchRaysDimensions().xy;
@@ -19,10 +19,20 @@ void Main()
         RayDesc rayDesc = uniforms.Globals.Camera.GetRayDesc(float2(Random.Rnd(seed), Random.Rnd(seed)));
 
         Payload payload = {};
-        payload.Seed = seed;
         for (uint j = 0; j < uniforms.Globals.MaxDepth; j++)
         {
+            payload.Depth = j;
+            payload.Stop = false;
+
+            payload.Seed = seed;
+            payload.Ray.Origin = rayDesc.Origin;
+            payload.Ray.Direction = rayDesc.Direction;
+
             TraceRay(uniforms.Scene, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, rayDesc, payload);
+
+            seed = payload.Seed;
+            rayDesc.Origin = payload.Ray.Origin;
+            rayDesc.Direction = payload.Ray.Direction;
 
             if (payload.Stop)
             {
@@ -37,8 +47,8 @@ void Main()
 
     // HDR scale
     float4 accumulated =
-        uniforms.Globals.FrameIndex == 0 ? float4(0.0, 0.0, 0.0, 0.0) : uniforms.Accumulation[launchID];
-    float3 accumulatedRadiance = accumulated.xyz * radiance;
+        uniforms.Globals.FrameIndex <= 1 ? float4(0.0, 0.0, 0.0, 0.0) : uniforms.Accumulation[launchID];
+    float3 accumulatedRadiance = accumulated.xyz + radiance;
 
     uniforms.Accumulation[launchID] = float4(accumulatedRadiance, 1.0);
 

@@ -9,40 +9,10 @@ import "Common/Structs";
 uniform ParameterBlock<Uniforms> uniforms;
 
 [shader("closesthit")]
-void Main(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
+void ClosestHit(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
 {
     Vertex vertex = Vertex.GetVertex(uniforms, attrib);
     Material material = uniforms.Materials[vertex.MaterialIndex];
-
-    // Update the material properties using textures.
-
-    // Albedo
-    if (material.AlbedoTextureIndex >= 0)
-    {
-        texture2D texture = uniforms.Textures[material.AlbedoTextureIndex];
-        SamplerState sampler = uniforms.Samplers[material.AlbedoTextureIndex];
-
-        material.Albedo.xyz *= texture.SampleLevel(sampler, vertex.TexCoord, 0).xyz;
-    }
-
-    // Metallic and Roughness
-    if (material.MetallicRoughnessTextureIndex >= 0)
-    {
-        texture2D texture = uniforms.Textures[material.MetallicRoughnessTextureIndex];
-        SamplerState sampler = uniforms.Samplers[material.MetallicRoughnessTextureIndex];
-
-        material.Metallic = texture.SampleLevel(sampler, vertex.TexCoord, 0).r;
-        material.Roughness = texture.SampleLevel(sampler, vertex.TexCoord, 0).g;
-    }
-
-    // Normal Map
-    if (material.NormalTextureIndex >= 0)
-    {
-        texture2D texture = uniforms.Textures[material.NormalTextureIndex];
-        SamplerState sampler = uniforms.Samplers[material.NormalTextureIndex];
-
-        vertex.Normal = normalize(texture.SampleLevel(sampler, vertex.TexCoord, 0).xyz * 2.0f - 1.0f);
-    }
 
     payload.Position = vertex.Position;
     payload.Normal = vertex.Normal;

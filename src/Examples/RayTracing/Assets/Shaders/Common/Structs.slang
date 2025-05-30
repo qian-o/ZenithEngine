@@ -35,8 +35,7 @@ public struct Vertex
         result.Position = barycentrics.x * v0.Position + barycentrics.y * v1.Position + barycentrics.z * v2.Position;
         result.Normal = normalize(barycentrics.x * v0.Normal + barycentrics.y * v1.Normal + barycentrics.z * v2.Normal);
         result.TexCoord = barycentrics.x * v0.TexCoord + barycentrics.y * v1.TexCoord + barycentrics.z * v2.TexCoord;
-        result.MaterialIndex = (int)(barycentrics.x * v0.MaterialIndex + barycentrics.y * v1.MaterialIndex +
-                                     barycentrics.z * v2.MaterialIndex);
+        result.MaterialIndex = v0.MaterialIndex;
 
         return result;
     }
@@ -71,14 +70,6 @@ public struct Material
     public float IOR;
 
     public float AttenuationDistance;
-
-    public int AlbedoTextureIndex;
-
-    public int MetallicRoughnessTextureIndex;
-
-    public int NormalTextureIndex;
-
-    public int HeightTextureIndex;
 }
 
 public struct Light
@@ -112,10 +103,10 @@ public struct Camera
 
     public RayDesc GetRayDesc(float2 offset)
     {
-        uint2 launchID = DispatchRaysIndex().xy;
-        uint2 launchSize = DispatchRaysDimensions().xy;
+        float2 launchID = float2(DispatchRaysIndex().xy);
+        float2 launchSize = float2(DispatchRaysDimensions().xy);
 
-        float aspectRatio = (float)launchSize.x / launchSize.y;
+        float aspectRatio = launchSize.x / launchSize.y;
 
         float2 xy = ((launchID + offset) / launchSize * 2.0 - 1.0) * tan(Fov * 0.5);
 
@@ -151,17 +142,13 @@ public struct Globals
     public uint MaxDepth;
 
     public uint FrameIndex;
-
-    public bool UseHdr;
-
-    public float HdrMultiplier;
-
-    public float HdrResolution;
 }
 
 public struct Uniforms
 {
     public RaytracingAccelerationStructure Scene;
+
+    public Globals Globals;
 
     public StructuredBuffer<Material> Materials;
 
@@ -170,16 +157,6 @@ public struct Uniforms
     public StructuredBuffer<uint> Indices;
 
     public StructuredBuffer<uint2> Offsets;
-
-    public Globals Globals;
-
-    public Texture2D Textures[128];
-
-    public SamplerState Samplers[128];
-
-    public Texture2D HdrTextures[3];
-
-    public SamplerState HdrSamplers[3];
 
     public StructuredBuffer<Light> Lights;
 
