@@ -178,8 +178,8 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         globals.Camera.Up = CameraController.Up;
         globals.Camera.Fov = Utils.DegreesToRadians(CameraController.Fov);
         globals.DoubleSidedLighting = true;
-        globals.SampleCount = 2;
-        globals.MaxDepth = 4;
+        globals.SampleCount = 4;
+        globals.MaxDepth = 5;
 
         if (cameraHash != globals.Camera.GetHashCode())
         {
