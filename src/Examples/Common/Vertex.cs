@@ -152,68 +152,32 @@ public struct Vertex(Vector3D<float> position, Vector3D<float> normal, Vector2D<
             0 => new()
             {
                 Albedo = new(0.63f, 0.06f, 0.06f, 0.50f),
-                Emission = new(0.0f),
                 Extinction = new(1.0f, 1.0f, 1.0f, 0.0f),
-                Metallic = 0.0f,
                 Roughness = 0.5f,
-                SubSurface = 0.0f,
-                SpecularTint = 0.0f,
-                Sheen = 0.0f,
-                SheenTint = 0.0f,
-                ClearCoat = 0.0f,
-                ClearCoatGloss = 0.0f,
-                Transmission = 0.0f,
                 IOR = 1.45f,
                 AttenuationDistance = 1.0f
             },
             1 => new()
             {
                 Albedo = new(0.14f, 0.45f, 0.09f, 0.50f),
-                Emission = new(0.0f),
                 Extinction = new(1.0f, 1.0f, 1.0f, 0.0f),
-                Metallic = 0.0f,
                 Roughness = 0.5f,
-                SubSurface = 0.0f,
-                SpecularTint = 0.0f,
-                Sheen = 0.0f,
-                SheenTint = 0.0f,
-                ClearCoat = 0.0f,
-                ClearCoatGloss = 0.0f,
-                Transmission = 0.0f,
                 IOR = 1.45f,
                 AttenuationDistance = 1.0f
             },
             2 => new()
             {
                 Albedo = new(0.73f, 0.71f, 0.68f, 0.50f),
-                Emission = new(0.0f),
                 Extinction = new(1.0f, 1.0f, 1.0f, 0.0f),
-                Metallic = 0.0f,
                 Roughness = 0.5f,
-                SubSurface = 0.0f,
-                SpecularTint = 0.0f,
-                Sheen = 0.0f,
-                SheenTint = 0.0f,
-                ClearCoat = 0.0f,
-                ClearCoatGloss = 0.0f,
-                Transmission = 0.0f,
                 IOR = 1.45f,
                 AttenuationDistance = 1.0f
             },
             3 => new()
             {
                 Albedo = new(1.0f, 1.0f, 1.0f, 0.50f),
-                Emission = new(0.0f),
                 Extinction = new(1.0f, 1.0f, 1.0f, 0.0f),
-                Metallic = 0.0f,
                 Roughness = 0.5f,
-                SubSurface = 0.0f,
-                SpecularTint = 0.0f,
-                Sheen = 0.0f,
-                SheenTint = 0.0f,
-                ClearCoat = 0.0f,
-                ClearCoatGloss = 0.0f,
-                Transmission = 0.0f,
                 IOR = 1.45f,
                 AttenuationDistance = 1.0f
             },
