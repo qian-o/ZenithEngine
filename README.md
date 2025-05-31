@@ -48,8 +48,11 @@ Zenith Engine is a modern, cross-platform graphics rendering engine written in C
 - `,+[\s]+[^\S\r\n]+};` Search for the comma after the last property when simplifying property assignments.
 
 ## Draft
+- Add four CommandProcessor properties in GraphicsContext: Graphics, Compute, Copy, and Internal (Copy), and no longer create them through ResourceFactory.
+- Add immediate Upload methods for Buffer and Texture, using the Internal CommandProcessor for uploads and waiting for the GPU to complete.
 - After the release of Silk.NET 3.0, refactor all interface calls and use the unsafe method.
 - Move all resources in `ZenithEngine.Common.Graphics` to `ZenithEngine.Common`.
+- The descriptor heap internally maintains multiple sub-descriptor heaps, each with a size of 256 descriptors, allowing dynamic adjustment of the descriptor heap size to avoid wasting memory space.
 - When the CommandBuffer is submitted, it is no longer simulated in the CommandProcessor, but directly submitted to the GPU, and only WaitIdle to wait for the GPU to complete processing is retained in the CommandProcessor.
 - Change `ZenithEngine.Common` to `Zenith.NET` and merge the functionalities of `ZenithEngine.ShaderCompiler` and `ZenithEngine.ImGuiWrapper`.
 - Change `ZenithEngine.DirectX12` to `Zenith.NET.DirectX12`.
