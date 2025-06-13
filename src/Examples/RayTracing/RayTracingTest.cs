@@ -49,10 +49,10 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
             materials.Add(material);
         }
 
-        Buffer<Vertex> vertexBuffer = new(Context, (uint)allVertices.Count, BufferUsage.ShaderResource);
+        Buffer<Vertex> vertexBuffer = new(Context, (uint)allVertices.Count, BufferUsage.ShaderResource | BufferUsage.AccelerationStructure);
         vertexBuffer.CopyFrom(allVertices.ToArray());
 
-        Buffer<uint> indexBuffer = new(Context, (uint)allIndices.Count, BufferUsage.ShaderResource);
+        Buffer<uint> indexBuffer = new(Context, (uint)allIndices.Count, BufferUsage.ShaderResource | BufferUsage.AccelerationStructure);
         indexBuffer.CopyFrom(allIndices.ToArray());
 
         CommandBuffer commandBuffer = CommandProcessor.CommandBuffer();
