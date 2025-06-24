@@ -23,4 +23,10 @@ public interface IInput
     event EventHandler<MouseButtonEventArgs>? MouseUp;
 
     event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseWheel;
+
+    event EventHandler<GamepadButtonEventArgs>? GamepadButtonDown;
+
+    event EventHandler<GamepadButtonEventArgs>? GamepadButtonUp;
+
+    event EventHandler<GamepadAxisEventArgs>? GamepadAxisMotion;
 }

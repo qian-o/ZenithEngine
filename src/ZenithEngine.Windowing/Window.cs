@@ -225,6 +225,15 @@ internal unsafe partial class Window : IWindow
             case EventType.Mousewheel:
                 MouseWheel?.Invoke(this, new(new(@event.Wheel.X, @event.Wheel.Y)));
                 break;
+            case EventType.Joybuttondown:
+                ProcessGamepadButtonEvent(@event.Jbutton, true);
+                break;
+            case EventType.Joybuttonup:
+                ProcessGamepadButtonEvent(@event.Jbutton, false);
+                break;
+            case EventType.Joyaxismotion:
+                ProcessGamepadAxisEvent(@event.Jaxis);
+                break;
         }
     }
 
@@ -309,5 +318,27 @@ internal unsafe partial class Window : IWindow
                                         mouseButtonEvent.Clicks));
             }
         }
+    }
+
+    private void ProcessGamepadButtonEvent(JoyButtonEvent joyButtonEvent, bool isButtonDown)
+    {
+        GamepadButton button = WindowUtils.GetGamepadButton(joyButtonEvent.Button);
+
+        if (isButtonDown)
+        {
+            GamepadButtonDown?.Invoke(this, new(joyButtonEvent.Which, button));
+        }
+        else
+        {
+            GamepadButtonUp?.Invoke(this, new(joyButtonEvent.Which, button));
+        }
+    }
+
+    private void ProcessGamepadAxisEvent(JoyAxisEvent joyAxisEvent)
+    {
+        GamepadAxis axis = WindowUtils.GetGamepadAxis(joyAxisEvent.Axis);
+        float value = WindowUtils.NormalizeAxisValue(joyAxisEvent.Value);
+
+        GamepadAxisMotion?.Invoke(this, new(joyAxisEvent.Which, axis, value));
     }
 }

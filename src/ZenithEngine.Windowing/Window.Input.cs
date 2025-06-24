@@ -23,4 +23,10 @@ internal partial class Window : IInput
     public event EventHandler<MouseButtonEventArgs>? MouseUp;
 
     public event EventHandler<ValueEventArgs<Vector2D<int>>>? MouseWheel;
+
+    public event EventHandler<GamepadButtonEventArgs>? GamepadButtonDown;
+
+    public event EventHandler<GamepadButtonEventArgs>? GamepadButtonUp;
+
+    public event EventHandler<GamepadAxisEventArgs>? GamepadAxisMotion;
 }

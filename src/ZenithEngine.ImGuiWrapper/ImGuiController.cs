@@ -102,6 +102,9 @@ public unsafe class ImGuiController : DisposableObject
         Input.MouseDown -= MouseDown;
         Input.MouseMove -= MouseMove;
         Input.MouseWheel -= MouseWheel;
+        Input.GamepadButtonUp -= GamepadButtonUp;
+        Input.GamepadButtonDown -= GamepadButtonDown;
+        Input.GamepadAxisMotion -= GamepadAxisMotion;
 
         Renderer.Dispose();
 
@@ -115,6 +118,7 @@ public unsafe class ImGuiController : DisposableObject
         ImGuiIOPtr io = ImGui.GetIO();
 
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags.NavEnableGamepad;
 
         io.BackendFlags |= ImGuiBackendFlags.HasMouseCursors;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
@@ -140,6 +144,9 @@ public unsafe class ImGuiController : DisposableObject
         Input.MouseDown += MouseDown;
         Input.MouseMove += MouseMove;
         Input.MouseWheel += MouseWheel;
+        Input.GamepadButtonUp += GamepadButtonUp;
+        Input.GamepadButtonDown += GamepadButtonDown;
+        Input.GamepadAxisMotion += GamepadAxisMotion;
     }
 
     private void KeyUp(object? sender, KeyEventArgs e)
@@ -187,6 +194,53 @@ public unsafe class ImGuiController : DisposableObject
     private void MouseWheel(object? sender, ValueEventArgs<Vector2D<int>> e)
     {
         ImGui.GetIO().AddMouseWheelEvent(e.Value.X, e.Value.Y);
+    }
+
+    private void GamepadButtonDown(object? sender, GamepadButtonEventArgs e)
+    {
+        if (TryMapGamepadButton(e.Button, out ImGuiKey result))
+        {
+            ImGui.GetIO().AddKeyEvent(result, true);
+        }
+    }
+
+    private void GamepadButtonUp(object? sender, GamepadButtonEventArgs e)
+    {
+        if (TryMapGamepadButton(e.Button, out ImGuiKey result))
+        {
+            ImGui.GetIO().AddKeyEvent(result, false);
+        }
+    }
+
+    private void GamepadAxisMotion(object? sender, GamepadAxisEventArgs e)
+    {
+        var io = ImGui.GetIO();
+
+        switch (e.Axis)
+        {
+            case GamepadAxis.LeftX:
+                io.AddKeyAnalogEvent(ImGuiKey.GamepadLStickLeft, e.Value < -0.1f, Math.Abs(Math.Min(e.Value, 0.0f)));
+                io.AddKeyAnalogEvent(ImGuiKey.GamepadLStickRight, e.Value > 0.1f, Math.Max(e.Value, 0.0f));
+                break;
+            case GamepadAxis.LeftY:
+                io.AddKeyAnalogEvent(ImGuiKey.GamepadLStickUp, e.Value < -0.1f, Math.Abs(Math.Min(e.Value, 0.0f)));
+                io.AddKeyAnalogEvent(ImGuiKey.GamepadLStickDown, e.Value > 0.1f, Math.Max(e.Value, 0.0f));
+                break;
+            case GamepadAxis.RightX:
+                io.AddKeyAnalogEvent(ImGuiKey.GamepadRStickLeft, e.Value < -0.1f, Math.Abs(Math.Min(e.Value, 0.0f)));
+                io.AddKeyAnalogEvent(ImGuiKey.GamepadRStickRight, e.Value > 0.1f, Math.Max(e.Value, 0.0f));
+                break;
+            case GamepadAxis.RightY:
+                io.AddKeyAnalogEvent(ImGuiKey.GamepadRStickUp, e.Value < -0.1f, Math.Abs(Math.Min(e.Value, 0.0f)));
+                io.AddKeyAnalogEvent(ImGuiKey.GamepadRStickDown, e.Value > 0.1f, Math.Max(e.Value, 0.0f));
+                break;
+            case GamepadAxis.TriggerLeft:
+                io.AddKeyAnalogEvent(ImGuiKey.GamepadL2, e.Value > 0.1f, e.Value);
+                break;
+            case GamepadAxis.TriggerRight:
+                io.AddKeyAnalogEvent(ImGuiKey.GamepadR2, e.Value > 0.1f, e.Value);
+                break;
+        }
     }
 
     private static bool TryMapKey(Key key, out ImGuiKey result)
@@ -264,5 +318,29 @@ public unsafe class ImGuiController : DisposableObject
         };
 
         return result is not ImGuiMouseButton.Count;
+    }
+
+    private static bool TryMapGamepadButton(GamepadButton button, out ImGuiKey result)
+    {
+        result = button switch
+        {
+            GamepadButton.A => ImGuiKey.GamepadFaceDown,
+            GamepadButton.B => ImGuiKey.GamepadFaceRight,
+            GamepadButton.X => ImGuiKey.GamepadFaceLeft,
+            GamepadButton.Y => ImGuiKey.GamepadFaceUp,
+            GamepadButton.Back => ImGuiKey.GamepadBack,
+            GamepadButton.Start => ImGuiKey.GamepadStart,
+            GamepadButton.LeftStick => ImGuiKey.GamepadL3,
+            GamepadButton.RightStick => ImGuiKey.GamepadR3,
+            GamepadButton.LeftShoulder => ImGuiKey.GamepadL1,
+            GamepadButton.RightShoulder => ImGuiKey.GamepadR1,
+            GamepadButton.DPadUp => ImGuiKey.GamepadDpadUp,
+            GamepadButton.DPadDown => ImGuiKey.GamepadDpadDown,
+            GamepadButton.DPadLeft => ImGuiKey.GamepadDpadLeft,
+            GamepadButton.DPadRight => ImGuiKey.GamepadDpadRight,
+            _ => ImGuiKey.COUNT
+        };
+
+        return result is not ImGuiKey.COUNT;
     }
 }

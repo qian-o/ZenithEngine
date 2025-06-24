@@ -9,10 +9,12 @@ public static unsafe class WindowUtils
     private static readonly Dictionary<Scancode, Key> keyMap;
     private static readonly Dictionary<Cursor, nint> cursorMap;
     private static readonly Dictionary<byte, MouseButton> mouseButtonMap;
+    private static readonly Dictionary<byte, GamepadButton> gamepadButtonMap;
+    private static readonly Dictionary<byte, GamepadAxis> gamepadAxisMap;
 
     static WindowUtils()
     {
-        Sdl.Init(Sdl.InitVideo);
+        Sdl.Init(Sdl.InitVideo | Sdl.InitJoystick);
 
         keyMap = new()
         {
@@ -162,6 +164,39 @@ public static unsafe class WindowUtils
             { 11, MouseButton.Button11 },
             { 12, MouseButton.Button12 }
         };
+        gamepadButtonMap = new()
+        {
+            { 0, GamepadButton.A },
+            { 1, GamepadButton.B },
+            { 2, GamepadButton.X },
+            { 3, GamepadButton.Y },
+            { 4, GamepadButton.Back },
+            { 5, GamepadButton.Guide },
+            { 6, GamepadButton.Start },
+            { 7, GamepadButton.LeftStick },
+            { 8, GamepadButton.RightStick },
+            { 9, GamepadButton.LeftShoulder },
+            { 10, GamepadButton.RightShoulder },
+            { 11, GamepadButton.DPadUp },
+            { 12, GamepadButton.DPadDown },
+            { 13, GamepadButton.DPadLeft },
+            { 14, GamepadButton.DPadRight },
+            { 15, GamepadButton.Misc1 },
+            { 16, GamepadButton.Paddle1 },
+            { 17, GamepadButton.Paddle2 },
+            { 18, GamepadButton.Paddle3 },
+            { 19, GamepadButton.Paddle4 },
+            { 20, GamepadButton.Touchpad }
+        };
+        gamepadAxisMap = new()
+        {
+            { 0, GamepadAxis.LeftX },
+            { 1, GamepadAxis.LeftY },
+            { 2, GamepadAxis.RightX },
+            { 3, GamepadAxis.RightY },
+            { 4, GamepadAxis.TriggerLeft },
+            { 5, GamepadAxis.TriggerRight }
+        };
     }
 
     public static Sdl Sdl { get; } = Sdl.GetApi();
@@ -276,5 +311,22 @@ public static unsafe class WindowUtils
     internal static MouseButton GetMouseButton(byte button)
     {
         return mouseButtonMap.TryGetValue(button, out MouseButton mouseButton) ? mouseButton : MouseButton.Unknown;
+    }
+
+    internal static GamepadButton GetGamepadButton(byte button)
+    {
+        return gamepadButtonMap.TryGetValue(button, out GamepadButton gamepadButton) ? gamepadButton : GamepadButton.Unknown;
+    }
+
+    internal static GamepadAxis GetGamepadAxis(byte axis)
+    {
+        return gamepadAxisMap.TryGetValue(axis, out GamepadAxis gamepadAxis) ? gamepadAxis : GamepadAxis.Unknown;
+    }
+
+    internal static float NormalizeAxisValue(short value)
+    {
+        // SDL joystick axis values range from -32768 to 32767
+        // Normalize to -1.0 to 1.0 range
+        return value / 32767.0f;
     }
 }
