@@ -8,6 +8,7 @@ namespace Common;
 public class CameraController
 {
     private readonly HashSet<Key> keyDowns = [];
+    private readonly Dictionary<GamepadAxis, float> gamepadAxes = new();
 
     private Vector2D<int>? lastMousePosition;
 
@@ -18,6 +19,13 @@ public class CameraController
         window.MouseDown += Window_MouseDown;
         window.MouseMove += Window_MouseMove;
         window.MouseUp += Window_MouseUp;
+        window.GamepadAxisMotion += Window_GamepadAxisMotion;
+        
+        // Initialize gamepad axes
+        foreach (GamepadAxis axis in Enum.GetValues<GamepadAxis>())
+        {
+            gamepadAxes[axis] = 0.0f;
+        }
     }
 
     public Vector2D<uint> Size { get; private set; } = Vector2D<uint>.One;
@@ -82,6 +90,53 @@ public class CameraController
         {
             Position += Up * Speed * (float)deltaSeconds;
         }
+
+        // Gamepad movement using left stick
+        float leftStickX = gamepadAxes[GamepadAxis.LeftX];
+        float leftStickY = gamepadAxes[GamepadAxis.LeftY];
+        
+        // Apply deadzone
+        const float deadzone = 0.15f;
+        if (Math.Abs(leftStickX) > deadzone)
+        {
+            Position += Right * leftStickX * Speed * (float)deltaSeconds;
+        }
+        if (Math.Abs(leftStickY) > deadzone)
+        {
+            Position -= Forward * leftStickY * Speed * (float)deltaSeconds; // Inverted Y
+        }
+
+        // Gamepad camera rotation using right stick
+        float rightStickX = gamepadAxes[GamepadAxis.RightX];
+        float rightStickY = gamepadAxes[GamepadAxis.RightY];
+        
+        if (Math.Abs(rightStickX) > deadzone || Math.Abs(rightStickY) > deadzone)
+        {
+            const float sensitivity = 3.0f;
+            float yaw = -rightStickX * sensitivity * (float)deltaSeconds;
+            float pitch = rightStickY * sensitivity * (float)deltaSeconds;
+
+            // Clamp pitch to prevent camera flipping
+            const float clipRadians = MathF.PI / 2.0f - 0.01f;
+            float newPitch = MathF.Asin(Forward.Y) + pitch;
+
+            if (newPitch > clipRadians)
+            {
+                newPitch = clipRadians;
+            }
+            else if (newPitch < -clipRadians)
+            {
+                newPitch = -clipRadians;
+            }
+
+            pitch = newPitch - MathF.Asin(Forward.Y);
+
+            Forward = Vector3D.TransformNormal(Forward, Matrix4X4.CreateFromAxisAngle(Up, yaw));
+            Forward = Vector3D.TransformNormal(Forward, Matrix4X4.CreateFromAxisAngle(Right, pitch));
+
+            Right = Vector3D.Normalize(Vector3D.Cross(Forward, Vector3D<float>.UnitY));
+            Up = Vector3D.Normalize(Vector3D.Cross(Right, Forward));
+        }
     }
 
     private void Window_KeyDown(object? sender, KeyEventArgs e)
@@ -145,5 +200,10 @@ public class CameraController
         {
             lastMousePosition = null;
         }
+    }
+
+    private void Window_GamepadAxisMotion(object? sender, GamepadAxisEventArgs e)
+    {
+        gamepadAxes[e.Axis] = e.Value;
     }
 }
