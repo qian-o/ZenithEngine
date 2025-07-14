@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <PackageReference Include="SharpMetal" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ZenithEngine.Common\ZenithEngine.Common.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -17,6 +17,7 @@
   <Project Path="src/ZenithEngine.DirectX12/ZenithEngine.DirectX12.csproj" />
   <Project Path="src/ZenithEngine.Editor/ZenithEngine.Editor.csproj" Id="af7140b6-8aac-4199-b603-e17a96c6373e" />
   <Project Path="src/ZenithEngine.ImGuiWrapper/ZenithEngine.ImGuiWrapper.csproj" />
+  <Project Path="src/ZenithEngine.Metal/ZenithEngine.Metal.csproj" Id="6ad7a4a9-2c44-4892-ab34-87ef4cf1cd76" />
   <Project Path="src/ZenithEngine.ShaderCompiler/ZenithEngine.ShaderCompiler.csproj" />
   <Project Path="src/ZenithEngine.Vulkan/ZenithEngine.Vulkan.csproj" />
   <Project Path="src/ZenithEngine.Windowing/ZenithEngine.Windowing.csproj" />
