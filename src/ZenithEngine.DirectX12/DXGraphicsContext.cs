@@ -89,7 +89,7 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
         Factory6.EnumAdapterByGpuPreference(0, GpuPreference.HighPerformance, out Adapter).ThrowIfError();
 
-        D3D12.CreateDevice(Adapter, D3DFeatureLevel.Level120, out Device).ThrowIfError();
+        D3D12.CreateDevice(Adapter, D3DFeatureLevel.Level122, out Device).ThrowIfError();
 
         Device.QueryInterface(out Device5).ThrowIfError(true);
         Device.QueryInterface(out InfoQueue1).ThrowIfError(true);
