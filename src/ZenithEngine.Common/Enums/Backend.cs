@@ -4,5 +4,7 @@ public enum Backend
 {
     DirectX12,
 
+    Metal,
+
     Vulkan
 }
