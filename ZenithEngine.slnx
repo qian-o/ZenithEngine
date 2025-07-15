@@ -14,6 +14,7 @@
   </Folder>
   <Project Path="src/ZenithEngine.Common/ZenithEngine.Common.csproj" />
   <Project Path="src/ZenithEngine.DirectX12/ZenithEngine.DirectX12.csproj" />
+  <Project Path="src/ZenithEngine.Editor/ZenithEngine.Editor.csproj" Id="af7140b6-8aac-4199-b603-e17a96c6373e" />
   <Project Path="src/ZenithEngine.ImGuiWrapper/ZenithEngine.ImGuiWrapper.csproj" />
   <Project Path="src/ZenithEngine.ShaderCompiler/ZenithEngine.ShaderCompiler.csproj" />
   <Project Path="src/ZenithEngine.Vulkan/ZenithEngine.Vulkan.csproj" />
