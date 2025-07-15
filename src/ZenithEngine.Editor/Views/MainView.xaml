@@ -7,5 +7,14 @@
         <vm:MainViewModel />
     </Page.DataContext>
 
-    <Grid />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Thumb Name="DragArea"
+               Grid.RowSpan="2"
+               Background="Transparent" />
+    </Grid>
 </Page>
