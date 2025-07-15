@@ -2,6 +2,7 @@
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 using ZenithEngine.Editor.Models;
+using ZenithEngine.Editor.Views;
 using ZenithEngine.ImGuiWrapper;
 using ZenithEngine.Windowing;
 using ZenithEngine.Windowing.Interfaces;
@@ -16,11 +17,21 @@ internal static class App
 
         Context = GraphicsContext.Create(System.Backend);
         Context.CreateDevice();
+
+        MainView = new MainView();
+
+        MainWindow = WindowController.CreateWindow("ZenithEngine Editor", 1280, 720);
+        MainWindow.State = WindowState.Maximized;
+        MainWindow.Render += (_, _) => MainView.Render();
     }
 
     public static SystemConfig System { get; }
 
     public static GraphicsContext Context { get; }
+
+    public static MainView MainView { get; }
+
+    public static IWindow MainWindow { get; }
 
     public static SwapChain SwapChain { get; private set; } = null!;
 
@@ -34,17 +45,13 @@ internal static class App
 
     public static void Run()
     {
-        IWindow window = WindowController.CreateWindow("ZenithEngine Editor", 1280, 720);
-
-        window.Loaded += (_, _) =>
+        MainWindow.Loaded += (_, _) =>
         {
-            window.Center();
-
-            SwapChainDesc swapChainDesc = new() { Surface = window.Surface };
+            SwapChainDesc swapChainDesc = new() { Surface = MainWindow.Surface };
 
             SwapChain = Context.Factory.CreateSwapChain(in swapChainDesc);
 
-            ImGuiController = new(window, Context, SwapChain.FrameBuffer.Output);
+            ImGuiController = new(MainWindow, Context, SwapChain.FrameBuffer.Output);
 
             GraphicsQueue = Context.Factory.CreateCommandProcessor(CommandProcessorType.Graphics);
 
@@ -53,9 +60,9 @@ internal static class App
             CopyQueue = Context.Factory.CreateCommandProcessor(CommandProcessorType.Copy);
         };
 
-        window.Update += (_, args) => ImGuiController.Update(args.DeltaTime, window.Size);
+        MainWindow.Update += (_, args) => ImGuiController.Update(args.DeltaTime, MainWindow.Size);
 
-        window.Render += (_, _) =>
+        MainWindow.Render += (_, _) =>
         {
             CommandBuffer commandBuffer = GraphicsQueue.CommandBuffer();
 
@@ -79,9 +86,9 @@ internal static class App
             SwapChain.Present();
         };
 
-        window.SizeChanged += (a, b) => SwapChain.Resize();
+        MainWindow.SizeChanged += (a, b) => SwapChain.Resize();
 
-        window.Show();
+        MainWindow.Show();
 
         WindowController.Loop(true);
 
@@ -93,5 +100,10 @@ internal static class App
         Context.Dispose();
 
         System.Save();
+    }
+
+    public static void Exit()
+    {
+        MainWindow.Close();
     }
 }
