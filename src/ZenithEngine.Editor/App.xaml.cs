@@ -22,18 +22,18 @@ public sealed partial class App : Application
 
         window.AppWindow.SetPresenter(overlappedPresenter);
 
-        bool isfirstActivation = false;
+        bool isfirst = false;
 
         window.Activated += (_, _) =>
         {
-            if (isfirstActivation)
+            if (isfirst)
             {
                 return;
             }
 
             overlappedPresenter.Maximize();
 
-            isfirstActivation = true;
+            isfirst = true;
         };
 
         window.Activate();
