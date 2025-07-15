@@ -1,10 +1,11 @@
 ﻿<Project>
-
+    
     <PropertyGroup>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     </PropertyGroup>
-
+    
     <ItemGroup>
+        <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
         <PackageVersion Include="Hexa.NET.ImGui" Version="2.2.7" />
         <PackageVersion Include="Roslynator.Analyzers" Version="4.13.1" />
         <PackageVersion Include="Silk.NET.Direct3D12" Version="2.22.0" />
@@ -18,5 +19,5 @@
         <PackageVersion Include="Slangc.NET" Version="2025.12.1" />
         <PackageVersion Include="System.Text.Json" Version="9.0.7" />
     </ItemGroup>
-
+    
 </Project>

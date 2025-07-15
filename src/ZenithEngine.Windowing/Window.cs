@@ -197,9 +197,7 @@ internal unsafe partial class Window : IWindow
 
     private void ProcessEvent(Event @event)
     {
-        EventType type = (EventType)@event.Type;
-
-        switch (type)
+        switch ((EventType)@event.Type)
         {
             case EventType.Windowevent:
                 ProcessWindowEvent(@event.Window);
@@ -230,9 +228,7 @@ internal unsafe partial class Window : IWindow
 
     private void ProcessWindowEvent(WindowEvent windowEvent)
     {
-        WindowEventID windowEventID = (WindowEventID)windowEvent.Event;
-
-        switch (windowEventID)
+        switch ((WindowEventID)windowEvent.Event)
         {
             case WindowEventID.Moved:
                 PositionChanged?.Invoke(this, new(Position));
@@ -271,13 +267,14 @@ internal unsafe partial class Window : IWindow
     private void ProcessTextInputEvent(TextInputEvent textInputEvent)
     {
         const int charSize = 32;
+        const char terminator = '\0';
 
         char* chars = stackalloc char[charSize];
         Encoding.UTF8.GetChars(&textInputEvent.Text[0], charSize, chars, charSize);
 
         for (int i = 0; i < charSize; i++)
         {
-            if (chars[i] is '\0')
+            if (chars[i] is terminator)
             {
                 break;
             }
