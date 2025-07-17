@@ -19,7 +19,7 @@ public unsafe class ImGuiController : DisposableObject
                            GraphicsContext graphicsContext,
                            OutputDesc outputDesc,
                            ColorSpaceHandling colorSpaceHandling = ColorSpaceHandling.Legacy,
-                           ImGuiFontConfig? fontConfig = null,
+                           string? font = null,
                            Action<ImGuiIOPtr>? ioConfig = null)
     {
         ImGui.SetCurrentContext(ImGuiContext = ImGui.CreateContext());
@@ -27,7 +27,7 @@ public unsafe class ImGuiController : DisposableObject
         Input = input;
         Renderer = new(graphicsContext, outputDesc, colorSpaceHandling);
 
-        Initialize(fontConfig, ioConfig);
+        Initialize(font, ioConfig);
     }
 
     internal IInput Input { get; }
@@ -83,7 +83,7 @@ public unsafe class ImGuiController : DisposableObject
         }
     }
 
-    public ulong GetBinding(Texture texture)
+    public ImTextureRef GetBinding(Texture texture)
     {
         return Renderer.GetBinding(texture);
     }
@@ -110,7 +110,7 @@ public unsafe class ImGuiController : DisposableObject
         ImGui.DestroyContext(ImGuiContext);
     }
 
-    private void Initialize(ImGuiFontConfig? fontConfig, Action<ImGuiIOPtr>? ioConfig)
+    private void Initialize(string? font, Action<ImGuiIOPtr>? ioConfig)
     {
         ImGuiIOPtr io = ImGui.GetIO();
 
@@ -118,20 +118,16 @@ public unsafe class ImGuiController : DisposableObject
 
         io.BackendFlags |= ImGuiBackendFlags.HasMouseCursors;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
+        io.BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
 
-        if (fontConfig is not null)
+        if (font is not null)
         {
             io.Fonts.Clear();
 
-            io.Fonts.AddFontFromFileTTF(fontConfig.Value.Font,
-                                        (int)fontConfig.Value.Size,
-                                        null,
-                                        (uint*)fontConfig.Value.GlyphRange(io));
+            io.Fonts.AddFontFromFileTTF(font);
         }
 
         ioConfig?.Invoke(io);
-
-        Renderer.CreateFontDeviceTexture();
 
         Input.KeyUp += KeyUp;
         Input.KeyDown += KeyDown;

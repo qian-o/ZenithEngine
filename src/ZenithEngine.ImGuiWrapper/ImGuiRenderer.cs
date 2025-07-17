@@ -19,8 +19,6 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
     private readonly Dictionary<ulong, BindingToken> bindings = [];
 
-    private Texture? fontTexture;
-
     private Buffer vertexBuffer = null!;
     private Buffer indexBuffer = null!;
     private Buffer constantsBuffer = null!;
@@ -38,32 +36,6 @@ internal unsafe class ImGuiRenderer : DisposableObject
     }
 
     public GraphicsContext Context { get; }
-
-    public void CreateFontDeviceTexture()
-    {
-        if (fontTexture is not null)
-        {
-            RemoveBinding(fontTexture);
-
-            fontTexture.Dispose();
-        }
-
-        byte* pixels;
-        int width;
-        int height;
-        ImGui.GetIO().Fonts.GetTexDataAsRGBA32(&pixels, &width, &height);
-
-        TextureDesc fontTextureDesc = new((uint)width, (uint)height);
-
-        fontTexture = Context.Factory.CreateTexture(in fontTextureDesc);
-
-        Context.UpdateTexture(fontTexture,
-                              (nint)pixels,
-                              (uint)(width * height * 4),
-                              new(width: (uint)width, height: (uint)height, depth: 1));
-
-        GetBinding(fontTexture);
-    }
 
     public void PrepareResources(CommandBuffer commandBuffer)
     {
@@ -167,7 +139,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
                     commandBuffer.SetScissorRectangles([offset], [extent]);
 
-                    commandBuffer.SetResourceSet(0, bindings[drawCmd.TextureId.Handle].ResourceSet);
+                    commandBuffer.SetResourceSet(0, bindings[drawCmd.TexRef.TexID.Handle].ResourceSet);
 
                     commandBuffer.DrawIndexed(drawCmd.ElemCount,
                                               1,
@@ -183,13 +155,13 @@ internal unsafe class ImGuiRenderer : DisposableObject
         commandBuffer.EndDebugEvent();
     }
 
-    public ulong GetBinding(Texture texture)
+    public ImTextureRef GetBinding(Texture texture)
     {
         foreach (KeyValuePair<ulong, BindingToken> item in bindings)
         {
             if (item.Value.Texture == texture)
             {
-                return item.Key;
+                return new(texId: new(item.Key));
             }
         }
 
@@ -203,7 +175,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
         bindings[id] = new(texture, Context.Factory.CreateResourceSet(in desc));
 
-        return id;
+        return new(texId: new(id));
     }
 
     public void RemoveBinding(Texture texture)
@@ -227,8 +199,6 @@ internal unsafe class ImGuiRenderer : DisposableObject
         {
             token.ResourceSet.Dispose();
         }
-
-        fontTexture?.Dispose();
 
         vertexBuffer.Dispose();
         indexBuffer.Dispose();

@@ -39,9 +39,7 @@ public abstract unsafe class VisualTest
             ImGuiController = new(Window,
                                   Context,
                                   SwapChain.FrameBuffer.Output,
-                                  fontConfig: new(Path.Combine(AppContext.BaseDirectory, "Assets", "Fonts", "msyh.ttf"),
-                                                  18,
-                                                  static (io) => (nint)io.Fonts.GetGlyphRangesChineseSimplifiedCommon()));
+                                  font: Path.Combine(AppContext.BaseDirectory, "Assets", "Fonts", "msyh.ttf"));
 
             CommandProcessor = Context.Factory.CreateCommandProcessor(CommandProcessorType.Graphics);
 
