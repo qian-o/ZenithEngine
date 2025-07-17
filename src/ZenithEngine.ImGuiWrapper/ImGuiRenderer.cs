@@ -18,7 +18,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
         public Matrix4X4<float> Projection;
     }
 
-    private readonly Dictionary<ulong, Texture> internals = [];
+    private readonly Dictionary<ulong, Texture> textures = [];
     private readonly Dictionary<ulong, BindingToken> bindings = [];
 
     private Buffer vertexBuffer = null!;
@@ -41,11 +41,11 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
     public void PrepareResources(CommandBuffer commandBuffer, ImDrawDataPtr drawDataPtr)
     {
-        ImVector<ImTextureDataPtr> textures = Unsafe.AsRef<ImVector<ImTextureDataPtr>>(drawDataPtr.Handle->Textures);
+        ImVector<ImTextureDataPtr> imTextures = Unsafe.AsRef<ImVector<ImTextureDataPtr>>(drawDataPtr.Handle->Textures);
 
-        for (int i = 0; i < textures.Size; i++)
+        for (int i = 0; i < imTextures.Size; i++)
         {
-            ImTextureDataPtr imTexture = textures[i];
+            ImTextureDataPtr imTexture = imTextures[i];
 
             if (imTexture.Status is ImTextureStatus.WantCreate)
             {
@@ -65,13 +65,13 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
                 imTexture.SetTexID(GetBinding(texture).TexID);
 
-                internals[imTexture.TexID.Handle] = texture;
+                textures[imTexture.TexID.Handle] = texture;
 
                 imTexture.Status = ImTextureStatus.Ok;
             }
             else if (imTexture.Status is ImTextureStatus.WantUpdates)
             {
-                if (internals.TryGetValue(imTexture.TexID.Handle, out Texture? texture))
+                if (textures.TryGetValue(imTexture.TexID.Handle, out Texture? texture))
                 {
                     for (int j = 0; j < imTexture.Updates.Size; j++)
                     {
@@ -85,6 +85,19 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
                     imTexture.Status = ImTextureStatus.Ok;
                 }
+            }
+            else if (imTexture.Status is ImTextureStatus.WantDestroy)
+            {
+                if (textures.TryGetValue(imTexture.TexID.Handle, out Texture? texture))
+                {
+                    RemoveBinding(texture);
+
+                    texture.Dispose();
+
+                    textures.Remove(imTexture.TexID.Handle);
+                }
+
+                imTexture.Status = ImTextureStatus.Ok;
             }
         }
 
@@ -247,6 +260,11 @@ internal unsafe class ImGuiRenderer : DisposableObject
         foreach (BindingToken token in bindings.Values)
         {
             token.ResourceSet.Dispose();
+        }
+
+        foreach (Texture texture in textures.Values)
+        {
+            texture.Dispose();
         }
 
         vertexBuffer.Dispose();
