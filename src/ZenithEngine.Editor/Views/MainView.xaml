@@ -8,13 +8,12 @@
     </Page.DataContext>
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+        <Border BorderBrush="Red"
+                BorderThickness="1" />
 
-        <Thumb Name="DragArea"
-               Grid.RowSpan="2"
-               Background="Transparent" />
+        <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="24"
+                   Text="Welcome to Zenith Engine Editor" />
     </Grid>
 </Page>
