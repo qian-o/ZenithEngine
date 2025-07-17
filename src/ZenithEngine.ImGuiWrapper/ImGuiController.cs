@@ -68,19 +68,19 @@ public unsafe class ImGuiController : DisposableObject
 
     public void PrepareResources(CommandBuffer commandBuffer)
     {
-        Renderer.PrepareResources(commandBuffer);
-    }
-
-    public void Render(CommandBuffer commandBuffer)
-    {
         if (frameBegun)
         {
             ImGui.Render();
 
-            Renderer.Render(commandBuffer, ImGui.GetDrawData());
+            Renderer.PrepareResources(commandBuffer, ImGui.GetDrawData());
 
             frameBegun = false;
         }
+    }
+
+    public void Render(CommandBuffer commandBuffer)
+    {
+        Renderer.Render(commandBuffer, ImGui.GetDrawData());
     }
 
     public ImTextureRef GetBinding(Texture texture)

@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Hexa.NET.ImGui;
 using Silk.NET.Maths;
 using ZenithEngine.Common;
@@ -17,6 +18,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
         public Matrix4X4<float> Projection;
     }
 
+    private readonly Dictionary<ulong, Texture> internals = [];
     private readonly Dictionary<ulong, BindingToken> bindings = [];
 
     private Buffer vertexBuffer = null!;
@@ -37,8 +39,55 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
     public GraphicsContext Context { get; }
 
-    public void PrepareResources(CommandBuffer commandBuffer)
+    public void PrepareResources(CommandBuffer commandBuffer, ImDrawDataPtr drawDataPtr)
     {
+        ImVector<ImTextureDataPtr> textures = Unsafe.AsRef<ImVector<ImTextureDataPtr>>(drawDataPtr.Handle->Textures);
+
+        for (int i = 0; i < textures.Size; i++)
+        {
+            ImTextureDataPtr imTexture = textures[i];
+
+            if (imTexture.Status is ImTextureStatus.WantCreate)
+            {
+                TextureDesc textureDesc = new((uint)imTexture.Width, (uint)imTexture.Height, format: imTexture.Format switch
+                {
+                    ImTextureFormat.Rgba32 => PixelFormat.R8G8B8A8UNorm,
+                    ImTextureFormat.Alpha8 => PixelFormat.R8UNorm,
+                    _ => throw new NotSupportedException($"Unsupported texture format: {imTexture.Format}")
+                });
+
+                Texture texture = Context.Factory.CreateTexture(in textureDesc);
+
+                commandBuffer.UpdateTexture(texture,
+                                            (nint)imTexture.Pixels,
+                                            (uint)(imTexture.Width * imTexture.Height * imTexture.BytesPerPixel),
+                                            new(width: (uint)imTexture.Width, height: (uint)imTexture.Height, depth: 1));
+
+                imTexture.SetTexID(GetBinding(texture).TexID);
+
+                internals[imTexture.TexID.Handle] = texture;
+
+                imTexture.Status = ImTextureStatus.Ok;
+            }
+            else if (imTexture.Status is ImTextureStatus.WantUpdates)
+            {
+                if (internals.TryGetValue(imTexture.TexID.Handle, out Texture? texture))
+                {
+                    for (int j = 0; j < imTexture.Updates.Size; j++)
+                    {
+                        ImTextureRect rect = imTexture.Updates[j];
+
+                        commandBuffer.UpdateTexture(texture,
+                                                    (nint)imTexture.Pixels,
+                                                    (uint)(rect.W * rect.H * imTexture.BytesPerPixel),
+                                                    new(rect.X, rect.Y, width: rect.W, height: rect.H, depth: 1));
+                    }
+
+                    imTexture.Status = ImTextureStatus.Ok;
+                }
+            }
+        }
+
         commandBuffer.PrepareResources([.. bindings.Values.Select(static item => item.ResourceSet)]);
     }
 
@@ -139,7 +188,7 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
                     commandBuffer.SetScissorRectangles([offset], [extent]);
 
-                    commandBuffer.SetResourceSet(0, bindings[drawCmd.TexRef.TexID.Handle].ResourceSet);
+                    commandBuffer.SetResourceSet(0, bindings[drawCmd.TexRef.GetTexID().Handle].ResourceSet);
 
                     commandBuffer.DrawIndexed(drawCmd.ElemCount,
                                               1,
