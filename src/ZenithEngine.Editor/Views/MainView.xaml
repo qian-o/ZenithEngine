@@ -8,9 +8,26 @@
     </Page.DataContext>
 
     <Grid>
-        <TextBlock HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   FontSize="24"
-                   Text="Welcome to Zenith Engine Editor" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+
+        <MenuBar Grid.Row="0">
+            <MenuBarItem Title="File">
+                <MenuFlyoutItem Text="New" />
+                <MenuFlyoutItem Text="Open..." />
+                <MenuFlyoutItem Text="Save" />
+                <MenuFlyoutItem Text="Exit" />
+            </MenuBarItem>
+        </MenuBar>
+
+        <Grid Grid.Row="1">
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Text="Welcome to Zenith Engine Editor" />
+        </Grid>
     </Grid>
 </Page>
