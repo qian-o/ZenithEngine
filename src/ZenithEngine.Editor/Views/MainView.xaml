@@ -8,9 +8,6 @@
     </Page.DataContext>
 
     <Grid>
-        <Border BorderBrush="Red"
-                BorderThickness="1" />
-
         <TextBlock HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    FontSize="24"
