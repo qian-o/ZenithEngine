@@ -18,6 +18,7 @@
 
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Mvvm" />
+        <PackageReference Include="WinUI.Dock" />
     </ItemGroup>
 
     <ItemGroup>

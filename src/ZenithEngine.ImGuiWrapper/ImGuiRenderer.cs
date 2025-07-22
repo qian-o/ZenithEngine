@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Hexa.NET.ImGui;
 using Silk.NET.Maths;
 using ZenithEngine.Common;
@@ -41,11 +40,9 @@ internal unsafe class ImGuiRenderer : DisposableObject
 
     public void PrepareResources(CommandBuffer commandBuffer, ImDrawDataPtr drawDataPtr)
     {
-        ImVector<ImTextureDataPtr> imTextures = Unsafe.AsRef<ImVector<ImTextureDataPtr>>(drawDataPtr.Handle->Textures);
-
-        for (int i = 0; i < imTextures.Size; i++)
+        for (int i = 0; i < drawDataPtr.Textures.Size; i++)
         {
-            ImTextureDataPtr imTexture = imTextures[i];
+            ImTextureDataPtr imTexture = drawDataPtr.Textures[i];
 
             if (imTexture.Status is ImTextureStatus.WantCreate)
             {
