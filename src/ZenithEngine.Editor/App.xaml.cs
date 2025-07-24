@@ -9,12 +9,14 @@ public sealed partial class App : Application
         InitializeComponent();
     }
 
+    public static Window MainWindow { get; } = new()
+    {
+        Title = "Zenith Engine Editor",
+        Content = new MainView()
+    };
+
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        new Window()
-        {
-            Title = "Zenith Engine Editor",
-            Content = new MainView(),
-        }.Activate();
+        MainWindow.Activate();
     }
 }
