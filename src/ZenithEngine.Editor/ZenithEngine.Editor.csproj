@@ -1,0 +1,32 @@
+﻿<Project Sdk="Uno.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0-desktop</TargetFramework>
+        <UnoSingleProject>true</UnoSingleProject>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ZenithEngine.Common\ZenithEngine.Common.csproj" />
+        <ProjectReference Include="..\ZenithEngine.DirectX12\ZenithEngine.DirectX12.csproj" />
+        <ProjectReference Include="..\ZenithEngine.ImGuiWrapper\ZenithEngine.ImGuiWrapper.csproj" />
+        <ProjectReference Include="..\ZenithEngine.ShaderCompiler\ZenithEngine.ShaderCompiler.csproj" />
+        <ProjectReference Include="..\ZenithEngine.Vulkan\ZenithEngine.Vulkan.csproj" />
+        <ProjectReference Include="..\ZenithEngine.Windowing\ZenithEngine.Windowing.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.Mvvm" />
+        <PackageReference Include="CommunityToolkit.WinUI.Behaviors" />
+        <PackageReference Include="WinUI.Dock" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Page Include="**\*.xaml" Exclude="bin\**\*.xaml;obj\**\*.xaml" />
+        <Compile Update="**\*.xaml.cs">
+            <DependentUpon>%(Filename)</DependentUpon>
+        </Compile>
+    </ItemGroup>
+
+</Project>
