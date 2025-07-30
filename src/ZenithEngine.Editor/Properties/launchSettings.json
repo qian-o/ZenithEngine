@@ -1,11 +1,10 @@
-{
+﻿{
   "profiles": {
-    "ZenithEngine.Editor": {
+    "ZenithEngine.Editor (Desktop)": {
       "commandName": "Project"
     },
-    "WSL": {
-      "commandName": "WSL2",
-      "distributionName": ""
+    "ZenithEngine.Editor (Desktop WSL2)": {
+      "commandName": "WSL2"
     }
   }
 }
