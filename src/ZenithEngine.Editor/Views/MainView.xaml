@@ -28,22 +28,10 @@
             </MenuBarItem>
         </MenuBar>
 
-        <dock:DockManager x:Name="DockManager"
-                          Grid.Row="1">
-            <interactivity:Interaction.Behaviors>
-                <interactivity:EventTriggerBehavior EventName="FillDocument">
-                    <interactivity:InvokeCommandAction Command="{Binding FillDocumentCommand}" />
-                </interactivity:EventTriggerBehavior>
-
-                <interactivity:EventTriggerBehavior EventName="NewGroup">
-                    <interactivity:InvokeCommandAction Command="{Binding NewGroupCommand}" />
-                </interactivity:EventTriggerBehavior>
-
-                <interactivity:EventTriggerBehavior EventName="NewWindow">
-                    <interactivity:InvokeCommandAction Command="{Binding NewWindowCommand}" />
-                </interactivity:EventTriggerBehavior>
-            </interactivity:Interaction.Behaviors>
-
+        <dock:DockManager x:Name="Manager"
+                          Grid.Row="1"
+                          Adapter="{Binding}"
+                          Behavior="{Binding}">
             <dock:LayoutPanel>
                 <dock:DocumentGroup>
                     <dock:Document Title="Welcome"

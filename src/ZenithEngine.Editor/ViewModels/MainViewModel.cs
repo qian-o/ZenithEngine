@@ -1,11 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WinUI.Dock;
 using ZenithEngine.Editor.Models;
 
 namespace ZenithEngine.Editor.ViewModels;
 
-public partial class MainViewModel : ObservableRecipient
+public partial class MainViewModel : ObservableRecipient, IDockAdapter, IDockBehavior
 {
     [ObservableProperty]
     private Project? project;
@@ -31,18 +32,36 @@ public partial class MainViewModel : ObservableRecipient
         App.MainWindow.Close();
     }
 
-    [RelayCommand]
-    private void FillDocument(FillDocumentEventArgs args)
+    void IDockAdapter.OnCreated(Document document)
     {
     }
 
-    [RelayCommand]
-    private void NewGroup(NewGroupEventArgs args)
+    void IDockAdapter.OnCreated(DocumentGroup group, Document? draggedDocument)
     {
     }
 
-    [RelayCommand]
-    private void NewWindow(NewWindowEventArgs args)
+    object? IDockAdapter.GetFloatingWindowTitleBar(Document? draggedDocument)
     {
+        return null;
+    }
+
+    void IDockBehavior.ActivateMainWindow()
+    {
+        App.MainWindow.Activate();
+    }
+
+    void IDockBehavior.OnDocked(Document src, DockManager dest, DockTarget target)
+    {
+        Debug.WriteLine($"Document '{src.ActualTitle}' docked to DockManager at target '{target}'.");
+    }
+
+    void IDockBehavior.OnDocked(Document src, DocumentGroup dest, DockTarget target)
+    {
+        Debug.WriteLine($"Document '{src.ActualTitle}' docked to DocumentGroup at target '{target}'.");
+    }
+
+    void IDockBehavior.OnFloating(Document document)
+    {
+        Debug.WriteLine($"Document '{document.ActualTitle}' is now floating.");
     }
 }
