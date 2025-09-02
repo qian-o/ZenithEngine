@@ -29,5 +29,7 @@ public abstract class ResourceFactory(GraphicsContext context)
 
     public abstract RayTracingPipeline CreateRayTracingPipeline(ref readonly RayTracingPipelineDesc desc);
 
+    public abstract MeshShaderPipeline CreateMeshShaderPipeline(ref readonly MeshShaderPipelineDesc desc);
+
     public abstract CommandProcessor CreateCommandProcessor(CommandProcessorType type);
 }

@@ -63,6 +63,11 @@ internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(cont
         return new VKRayTracingPipeline(Context, in desc);
     }
 
+    public override MeshShaderPipeline CreateMeshShaderPipeline(ref readonly MeshShaderPipelineDesc desc)
+    {
+        return new VKMeshShaderPipeline(Context, in desc);
+    }
+
     public override CommandProcessor CreateCommandProcessor(CommandProcessorType type)
     {
         return new VKCommandProcessor(Context, type);
