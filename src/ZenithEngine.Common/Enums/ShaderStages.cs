@@ -63,5 +63,15 @@ public enum ShaderStages
     /// <summary>
     /// The callable shader stage.
     /// </summary>
-    Callable = 1 << 11
+    Callable = 1 << 11,
+
+    /// <summary>
+    /// The amplification shader stage.
+    /// </summary>
+    Amplification = 1 << 12,
+
+    /// <summary>
+    /// The mesh shader stage.
+    /// </summary>
+    Mesh = 1 << 13
 }

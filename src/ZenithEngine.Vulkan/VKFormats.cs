@@ -361,6 +361,16 @@ internal static class VKFormats
             flags |= ShaderStageFlags.CallableBitKhr;
         }
 
+        if (stages.HasFlag(ShaderStages.Amplification))
+        {
+            flags |= ShaderStageFlags.TaskBitExt;
+        }
+
+        if (stages.HasFlag(ShaderStages.Mesh))
+        {
+            flags |= ShaderStageFlags.MeshBitExt;
+        }
+
         return flags;
     }
 
