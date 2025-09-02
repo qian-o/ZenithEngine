@@ -42,18 +42,10 @@ internal unsafe partial class VKGraphicsContext
                   .AddNext(out PhysicalDeviceVulkan12Features _)
                   .AddNext(out PhysicalDeviceVulkan11Features _);
 
-        if (Capabilities.IsRayQuerySupported)
-        {
-            createInfo.AddNext(out PhysicalDeviceRayQueryFeaturesKHR _);
-        }
-
         if (Capabilities.IsRayTracingSupported)
         {
+            createInfo.AddNext(out PhysicalDeviceRayQueryFeaturesKHR _);
             createInfo.AddNext(out PhysicalDeviceRayTracingPipelineFeaturesKHR _);
-        }
-
-        if (Capabilities.IsRayQuerySupported || Capabilities.IsRayTracingSupported)
-        {
             createInfo.AddNext(out PhysicalDeviceAccelerationStructureFeaturesKHR _);
         }
 
@@ -114,21 +106,13 @@ internal unsafe partial class VKGraphicsContext
     {
         string[] extensions = [KhrSwapchain.ExtensionName];
 
-        if (Capabilities.IsRayQuerySupported)
-        {
-            extensions = [.. extensions, KhrRayQuery.ExtensionName];
-        }
-
         if (Capabilities.IsRayTracingSupported)
-        {
-            extensions = [.. extensions, KhrRayTracingPipeline.ExtensionName];
-        }
-
-        if (Capabilities.IsRayQuerySupported || Capabilities.IsRayTracingSupported)
         {
             extensions =
             [
                 .. extensions,
+                KhrRayQuery.ExtensionName,
+                KhrRayTracingPipeline.ExtensionName,
                 KhrAccelerationStructure.ExtensionName,
                 KhrDeferredHostOperations.ExtensionName
             ];

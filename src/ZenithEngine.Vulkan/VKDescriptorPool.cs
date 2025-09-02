@@ -20,10 +20,7 @@ internal unsafe class VKDescriptorPool : GraphicsResource
 
     public VKDescriptorPool(GraphicsContext context) : base(context)
     {
-        bool supportAS = Context.Capabilities.IsRayTracingSupported
-                         || Context.Capabilities.IsRayQuerySupported;
-
-        uint sizeCount = supportAS ? 8u : 7u;
+        uint sizeCount = Context.Capabilities.IsRayTracingSupported ? 8u : 7u;
         DescriptorPoolSize* sizes = Allocator.Alloc<DescriptorPoolSize>(sizeCount);
 
         sizes[0] = new()
@@ -68,7 +65,7 @@ internal unsafe class VKDescriptorPool : GraphicsResource
             DescriptorCount = DescriptorCount
         };
 
-        if (supportAS)
+        if (Context.Capabilities.IsRayTracingSupported)
         {
             sizes[7] = new()
             {

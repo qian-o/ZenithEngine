@@ -16,8 +16,8 @@ static void DetectPlatform(Backend backend)
         context.CreateDevice();
 
         Console.WriteLine($"    Device: {context.Capabilities.DeviceName}");
-        Console.WriteLine($"    Ray Query: {context.Capabilities.IsRayQuerySupported}");
         Console.WriteLine($"    Ray Tracing: {context.Capabilities.IsRayTracingSupported}");
+        Console.WriteLine($"    Mesh Shaders: {context.Capabilities.IsMeshShaderSupported}");
         Console.WriteLine();
     }
     catch (Exception)

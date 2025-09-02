@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using ZenithEngine.Common.Graphics;
 
@@ -8,14 +9,14 @@ namespace ZenithEngine.Vulkan;
 internal unsafe class VKDeviceCapabilities(VKGraphicsContext context) : DeviceCapabilities
 {
     private string deviceName = "Unknown";
-    private bool isRayQuerySupported;
     private bool isRayTracingSupported;
+    private bool isMeshShaderSupported;
 
     public override string DeviceName => deviceName;
 
-    public override bool IsRayQuerySupported => isRayQuerySupported;
-
     public override bool IsRayTracingSupported => isRayTracingSupported;
+
+    public override bool IsMeshShaderSupported => isMeshShaderSupported;
 
     public void Init()
     {
@@ -36,8 +37,8 @@ internal unsafe class VKDeviceCapabilities(VKGraphicsContext context) : DeviceCa
                                                       &propertyCount,
                                                       properties).ThrowIfError();
 
-        isRayQuerySupported = SupportsExtension(properties, KhrRayQuery.ExtensionName);
         isRayTracingSupported = SupportsExtension(properties, KhrRayTracingPipeline.ExtensionName);
+        isMeshShaderSupported = SupportsExtension(properties, ExtMeshShader.ExtensionName);
     }
 
     private static bool SupportsExtension(ExtensionProperties[] extensionProperties,

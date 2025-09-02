@@ -2,20 +2,21 @@
 using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
 using ZenithEngine.Common.Graphics;
+using Feature = Silk.NET.Direct3D12.Feature;
 
 namespace ZenithEngine.DirectX12;
 
 internal unsafe class DXDeviceCapabilities(DXGraphicsContext context) : DeviceCapabilities
 {
     private string deviceName = "Unknown";
-    private bool isRayQuerySupported;
     private bool isRayTracingSupported;
+    private bool isMeshShaderSupported;
 
     public override string DeviceName => deviceName;
 
-    public override bool IsRayQuerySupported => isRayQuerySupported;
-
     public override bool IsRayTracingSupported => isRayTracingSupported;
+
+    public override bool IsMeshShaderSupported => isMeshShaderSupported;
 
     public void Init()
     {
@@ -24,15 +25,13 @@ internal unsafe class DXDeviceCapabilities(DXGraphicsContext context) : DeviceCa
 
         deviceName = Marshal.PtrToStringUni((nint)desc.Description)!;
 
-        if (context.Device5.Handle is not null)
-        {
-            isRayQuerySupported = true;
-            isRayTracingSupported = true;
-        }
-        else
-        {
-            isRayQuerySupported = false;
-            isRayTracingSupported = false;
-        }
+        FeatureDataD3D12Options5 options5 = new();
+        FeatureDataD3D12Options7 options7 = new();
+
+        context.Device.CheckFeatureSupport(Feature.D3D12Options5, &options5, (uint)sizeof(FeatureDataD3D12Options5)).ThrowIfError();
+        context.Device.CheckFeatureSupport(Feature.D3D12Options7, &options7, (uint)sizeof(FeatureDataD3D12Options7)).ThrowIfError();
+
+        isRayTracingSupported = options5.RaytracingTier is not RaytracingTier.TierNotSupported;
+        isMeshShaderSupported = options7.MeshShaderTier is not MeshShaderTier.TierNotSupported;
     }
 }
