@@ -2,6 +2,7 @@
   <Folder Name="/Examples/">
     <Project Path="src/Examples/Common/Common.csproj" />
     <Project Path="src/Examples/ComputeShader/ComputeShader.csproj" />
+    <Project Path="src/Examples/MeshShader/MeshShader.csproj" Id="59e167b9-d684-4abc-ba6e-6e12bcdb3dac" />
     <Project Path="src/Examples/PlatformDetection/PlatformDetection.csproj" />
     <Project Path="src/Examples/RayTracing/RayTracing.csproj" />
     <Project Path="src/Examples/Triangle/Triangle.csproj" />
