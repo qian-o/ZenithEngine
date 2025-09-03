@@ -20,8 +20,8 @@ struct Meshlet
     uint IndexCount;
 };
 
-uniform Vertex[] vertices;
-uniform Meshlet[] meshlets;
+uniform StructuredBuffer<Vertex> vertices;
+uniform StructuredBuffer<Meshlet> meshlets;
 
 [shader("mesh")]
 [numthreads(1, 1, 1)]
