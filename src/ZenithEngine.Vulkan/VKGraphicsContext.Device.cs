@@ -1,4 +1,5 @@
 ﻿using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using ZenithEngine.Common;
 
@@ -21,6 +22,8 @@ internal unsafe partial class VKGraphicsContext
     public KhrAccelerationStructure? KhrAccelerationStructure { get; private set; }
 
     public KhrDeferredHostOperations? KhrDeferredHostOperations { get; private set; }
+
+    public ExtMeshShader? ExtMeshShader { get; private set; }
 
     public VKDescriptorSetAllocator? DescriptorSetAllocator { get; private set; }
 
@@ -60,6 +63,7 @@ internal unsafe partial class VKGraphicsContext
         KhrRayTracingPipeline = Vk.GetExtension<KhrRayTracingPipeline>(Instance, Device);
         KhrAccelerationStructure = Vk.GetExtension<KhrAccelerationStructure>(Instance, Device);
         KhrDeferredHostOperations = Vk.GetExtension<KhrDeferredHostOperations>(Instance, Device);
+        ExtMeshShader = Vk.GetExtension<ExtMeshShader>(Instance, Device);
         DescriptorSetAllocator = new(this);
     }
 
