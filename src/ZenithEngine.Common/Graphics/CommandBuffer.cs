@@ -318,9 +318,9 @@ public abstract class CommandBuffer(GraphicsContext context,
     #endregion
 
     #region Mesh Shader Operations
-    public abstract void DrawMeshTask(uint groupCountX, uint groupCountY, uint groupCountZ);
+    public abstract void DispatchMesh(uint groupCountX, uint groupCountY, uint groupCountZ);
 
-    public abstract void DrawMeshTasksIndirect(Buffer argBuffer, uint offset, uint drawCount);
+    public abstract void DispatchMeshIndirect(Buffer argBuffer, uint offset, uint drawCount);
     #endregion
 
     #region Debugging

@@ -192,7 +192,7 @@ internal unsafe class DXRayTracingPipeline : RayTracingPipeline
             };
         }
 
-        Context.Device5.CreateStateObject(&stateObjectDesc, out StateObject).ThrowIfError();
+        Context.Device.CreateStateObject(&stateObjectDesc, out StateObject).ThrowIfError();
 
         ShaderTable = new(Context,
                           StateObject,

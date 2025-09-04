@@ -28,7 +28,7 @@ internal unsafe class DXTopLevelAS : TopLevelAS
 
         RaytracingAccelerationStructurePrebuildInfo buildInfo = new();
 
-        Context.Device5.GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &buildInfo);
+        Context.Device.GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &buildInfo);
 
         BufferDesc accelerationStructureBufferDesc = new((uint)buildInfo.ResultDataMaxSizeInBytes);
 

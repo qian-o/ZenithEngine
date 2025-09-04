@@ -796,7 +796,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     #endregion
 
     #region Mesh Shader Operations
-    public override void DrawMeshTask(uint groupCountX, uint groupCountY, uint groupCountZ)
+    public override void DispatchMesh(uint groupCountX, uint groupCountY, uint groupCountZ)
     {
         ValidatePipeline(out VKMeshShaderPipeline _);
 
@@ -806,7 +806,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                                groupCountZ);
     }
 
-    public override void DrawMeshTasksIndirect(Buffer argBuffer, uint offset, uint drawCount)
+    public override void DispatchMeshIndirect(Buffer argBuffer, uint offset, uint drawCount)
     {
         ValidatePipeline(out VKMeshShaderPipeline _);
 
@@ -814,7 +814,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                                         argBuffer.VK().Buffer,
                                                         offset,
                                                         drawCount,
-                                                        (uint)sizeof(IndirectDrawMeshTasksArgs));
+                                                        (uint)sizeof(IndirectDispatchMeshArgs));
     }
     #endregion
 

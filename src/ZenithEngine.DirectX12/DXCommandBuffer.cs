@@ -701,12 +701,12 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
 
     #region Mesh Shader Operations
-    public override void DrawMeshTask(uint groupCountX, uint groupCountY, uint groupCountZ)
+    public override void DispatchMesh(uint groupCountX, uint groupCountY, uint groupCountZ)
     {
-        throw new NotImplementedException();
+        GraphicsCommandList6.DispatchMesh(groupCountX, groupCountY, groupCountZ);
     }
 
-    public override void DrawMeshTasksIndirect(Buffer argBuffer, uint offset, uint drawCount)
+    public override void DispatchMeshIndirect(Buffer argBuffer, uint offset, uint drawCount)
     {
         throw new NotImplementedException();
     }

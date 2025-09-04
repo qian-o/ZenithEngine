@@ -14,9 +14,7 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
     public ComPtr<IDXGIFactory6> Factory6;
     public ComPtr<IDXGIAdapter> Adapter;
-    public ComPtr<ID3D12Device> Device;
-
-    public ComPtr<ID3D12Device5> Device5;
+    public ComPtr<ID3D12Device10> Device;
     public ComPtr<ID3D12InfoQueue1> InfoQueue1;
 
     public ComPtr<ID3D12CommandQueue> GraphicsQueue;
@@ -91,7 +89,6 @@ internal unsafe class DXGraphicsContext : GraphicsContext
 
         D3D12.CreateDevice(Adapter, D3DFeatureLevel.Level122, out Device).ThrowIfError();
 
-        Device.QueryInterface(out Device5).ThrowIfError(true);
         Device.QueryInterface(out InfoQueue1).ThrowIfError(true);
 
         CommandQueueDesc commandQueueDesc = new()
@@ -168,7 +165,6 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         GraphicsQueue.Dispose();
 
         InfoQueue1.Dispose();
-        Device5.Dispose();
 
         Device.Dispose();
         Adapter.Dispose();

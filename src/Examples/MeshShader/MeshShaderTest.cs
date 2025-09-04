@@ -124,7 +124,7 @@ internal unsafe class MeshShaderTest() : VisualTest("Mesh Shader Test")
         commandBuffer.SetMeshShaderPipeline(pipeline);
         commandBuffer.SetResourceSet(0, set);
 
-        commandBuffer.DrawMeshTask(1, 1, 1);
+        commandBuffer.DispatchMesh(1, 1, 1);
 
         commandBuffer.EndRendering();
 

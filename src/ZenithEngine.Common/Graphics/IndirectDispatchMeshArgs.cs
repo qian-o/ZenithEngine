@@ -1,6 +1,6 @@
 ﻿namespace ZenithEngine.Common.Graphics;
 
-public struct IndirectDrawMeshTasksArgs
+public struct IndirectDispatchMeshArgs
 {
     public uint GroupCountX;
 
