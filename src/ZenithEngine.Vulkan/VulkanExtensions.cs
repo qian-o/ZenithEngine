@@ -171,6 +171,16 @@ internal static class VulkanExtensions
         return (VKRayTracingPipeline)pipeline;
     }
 
+    public static VKMeshShaderPipeline VK(this MeshShaderPipeline pipeline)
+    {
+        if (pipeline is not VKMeshShaderPipeline)
+        {
+            throw new ZenithEngineException("MeshShaderPipeline is not a Vulkan mesh shader pipeline.");
+        }
+
+        return (VKMeshShaderPipeline)pipeline;
+    }
+
     public static VKCommandProcessor VK(this CommandProcessor processor)
     {
         if (processor is not VKCommandProcessor)

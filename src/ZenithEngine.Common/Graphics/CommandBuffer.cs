@@ -192,6 +192,12 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// </summary>
     /// <param name="pipeline">The ray tracing pipeline.</param>
     public abstract void SetRayTracingPipeline(RayTracingPipeline pipeline);
+
+    /// <summary>
+    /// Set the mesh shader pipeline for command buffer.
+    /// </summary>
+    /// <param name="pipeline">The mesh shader pipeline.</param>
+    public abstract void SetMeshShaderPipeline(MeshShaderPipeline pipeline);
     #endregion
 
     #region Resource Binding Operations
@@ -309,6 +315,12 @@ public abstract class CommandBuffer(GraphicsContext context,
     /// <param name="height">The height of the ray tracing output.</param>
     /// <param name="depth">The depth of the ray tracing output.</param>
     public abstract void DispatchRays(uint width, uint height, uint depth);
+    #endregion
+
+    #region Mesh Shader Operations
+    public abstract void DrawMeshTask(uint groupCountX, uint groupCountY, uint groupCountZ);
+
+    public abstract void DrawMeshTasksIndirect(Buffer argBuffer, uint offset, uint drawCount);
     #endregion
 
     #region Debugging

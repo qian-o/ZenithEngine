@@ -603,6 +603,15 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                    PipelineBindPoint.RayTracingKhr,
                                    pipeline.VK().Pipeline);
     }
+
+    public override void SetMeshShaderPipeline(MeshShaderPipeline pipeline)
+    {
+        activePipeline = pipeline;
+
+        Context.Vk.CmdBindPipeline(CommandBuffer,
+                                   PipelineBindPoint.Graphics,
+                                   pipeline.VK().Pipeline);
+    }
     #endregion
 
     #region Resource Binding Operations
@@ -669,6 +678,7 @@ internal unsafe class VKCommandBuffer : CommandBuffer
             VKGraphicsPipeline graphicsPipeline => (PipelineBindPoint.Graphics, graphicsPipeline.PipelineLayout),
             VKComputePipeline computePipeline => (PipelineBindPoint.Compute, computePipeline.PipelineLayout),
             VKRayTracingPipeline rayTracingPipeline => (PipelineBindPoint.RayTracingKhr, rayTracingPipeline.PipelineLayout),
+            VKMeshShaderPipeline meshShaderPipeline => (PipelineBindPoint.Graphics, meshShaderPipeline.PipelineLayout),
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(activePipeline))
         };
 
@@ -782,6 +792,29 @@ internal unsafe class VKCommandBuffer : CommandBuffer
                                                     width,
                                                     height,
                                                     depth);
+    }
+    #endregion
+
+    #region Mesh Shader Operations
+    public override void DrawMeshTask(uint groupCountX, uint groupCountY, uint groupCountZ)
+    {
+        ValidatePipeline(out VKMeshShaderPipeline _);
+
+        Context.ExtMeshShader!.CmdDrawMeshTask(CommandBuffer,
+                                               groupCountX,
+                                               groupCountY,
+                                               groupCountZ);
+    }
+
+    public override void DrawMeshTasksIndirect(Buffer argBuffer, uint offset, uint drawCount)
+    {
+        ValidatePipeline(out VKMeshShaderPipeline _);
+
+        Context.ExtMeshShader!.CmdDrawMeshTasksIndirect(CommandBuffer,
+                                                        argBuffer.VK().Buffer,
+                                                        offset,
+                                                        drawCount,
+                                                        (uint)sizeof(IndirectDrawMeshTasksArgs));
     }
     #endregion
 

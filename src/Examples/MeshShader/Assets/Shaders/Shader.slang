@@ -1,4 +1,6 @@
-﻿struct Vertex
+﻿const static uint MAX_PRIMITIVES = 126;
+
+struct Vertex
 {
     float4 Position : SV_POSITION;
 
@@ -9,42 +11,47 @@
 
 struct Meshlet
 {
-    uint PrimitiveCount;
-
-    uint Vertices[64];
+    uint VertexOffset;
 
     uint VertexCount;
 
-    uint Indices[126];
+    uint PrimitiveOffset;
 
-    uint IndexCount;
+    uint PrimitiveCount;
 };
 
 uniform StructuredBuffer<Vertex> vertices;
+uniform StructuredBuffer<uint3> indices;
 uniform StructuredBuffer<Meshlet> meshlets;
 
 [shader("mesh")]
-[numthreads(1, 1, 1)]
+[numthreads(MAX_PRIMITIVES, 1, 1)]
 [outputtopology("triangle")]
-void MeshMain(in uint threadIndex: SV_GroupIndex, out vertices Vertex[64] outVertices, out indices uint[126] outIndices)
+void MeshMain(in uint groupId: SV_GroupID, in uint groupThreadId: SV_GroupThreadID,
+              OutputVertices<Vertex, MAX_PRIMITIVES> outVertices, OutputIndices<uint3, MAX_PRIMITIVES> outIndices)
 {
-    Meshlet meshlet = meshlets[threadIndex];
+    Meshlet meshlet = meshlets[groupId];
+
+    if (groupThreadId >= meshlet.VertexCount && groupThreadId >= meshlet.PrimitiveCount)
+    {
+        return;
+    }
 
     SetMeshOutputCounts(meshlet.VertexCount, meshlet.PrimitiveCount);
 
-    for (uint i = 0; i < meshlet.VertexCount; i++)
+    if (groupThreadId < meshlet.VertexCount)
     {
-        outVertices[i] = vertices[meshlet.Vertices[i]];
+        outVertices[groupThreadId] = vertices[meshlet.VertexOffset + groupThreadId];
     }
 
-    for (uint i = 0; i < meshlet.IndexCount; i++)
+    if (groupThreadId < meshlet.PrimitiveCount)
     {
-        outIndices[i] = meshlet.Indices[i];
+        outIndices[groupThreadId] = indices[meshlet.PrimitiveOffset + groupThreadId];
     }
 }
 
 [shader("pixel")]
-float4 PixelMain(Vertex input) : SV_TARGET
+float4 PixelMain(Vertex vertex) : SV_TARGET
 {
-    return float4(input.Normal * 0.5 + 0.5, 1.0);
+    return float4(vertex.TexCoord, 1.0);
 }

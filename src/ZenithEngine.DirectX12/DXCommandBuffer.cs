@@ -15,6 +15,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
     public ComPtr<ID3D12GraphicsCommandList> GraphicsCommandList;
     public ComPtr<ID3D12GraphicsCommandList4> GraphicsCommandList4;
+    public ComPtr<ID3D12GraphicsCommandList6> GraphicsCommandList6;
 
     private readonly DXDescriptorTableAllocator? cbvSrvUavAllocator;
     private readonly DXDescriptorTableAllocator? samplerAllocator;
@@ -38,6 +39,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
         CommandList.QueryInterface(out GraphicsCommandList).ThrowIfError();
         CommandList.QueryInterface(out GraphicsCommandList4).ThrowIfError(true);
+        CommandList.QueryInterface(out GraphicsCommandList6).ThrowIfError(true);
 
         if (ProcessorType is not CommandProcessorType.Copy)
         {
@@ -496,6 +498,11 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
         pipeline.DX().Apply(GraphicsCommandList4);
     }
+
+    public override void SetMeshShaderPipeline(MeshShaderPipeline pipeline)
+    {
+        throw new NotImplementedException();
+    }
     #endregion
 
     #region Resource Binding Operations
@@ -689,6 +696,19 @@ internal unsafe class DXCommandBuffer : CommandBuffer
         };
 
         GraphicsCommandList4.DispatchRays(&dispatchRaysDesc);
+    }
+    #endregion
+
+
+    #region Mesh Shader Operations
+    public override void DrawMeshTask(uint groupCountX, uint groupCountY, uint groupCountZ)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void DrawMeshTasksIndirect(Buffer argBuffer, uint offset, uint drawCount)
+    {
+        throw new NotImplementedException();
     }
     #endregion
 

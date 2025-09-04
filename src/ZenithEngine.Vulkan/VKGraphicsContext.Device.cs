@@ -47,9 +47,15 @@ internal unsafe partial class VKGraphicsContext
 
         if (Capabilities.IsRayTracingSupported)
         {
-            createInfo.AddNext(out PhysicalDeviceRayQueryFeaturesKHR _);
-            createInfo.AddNext(out PhysicalDeviceRayTracingPipelineFeaturesKHR _);
-            createInfo.AddNext(out PhysicalDeviceAccelerationStructureFeaturesKHR _);
+            createInfo.AddNext(out PhysicalDeviceRayQueryFeaturesKHR _)
+                      .AddNext(out PhysicalDeviceRayTracingPipelineFeaturesKHR _)
+                      .AddNext(out PhysicalDeviceAccelerationStructureFeaturesKHR _);
+        }
+
+        if (Capabilities.IsMeshShaderSupported)
+        {
+            createInfo.AddNext(out PhysicalDeviceMeshShaderFeaturesEXT _)
+                      .AddNext(out PhysicalDeviceFragmentShadingRateFeaturesKHR _);
         }
 
         Vk.GetPhysicalDeviceFeatures2(PhysicalDevice, &features2);
@@ -120,6 +126,11 @@ internal unsafe partial class VKGraphicsContext
                 KhrAccelerationStructure.ExtensionName,
                 KhrDeferredHostOperations.ExtensionName
             ];
+        }
+
+        if (Capabilities.IsMeshShaderSupported)
+        {
+            extensions = [.. extensions, ExtMeshShader.ExtensionName];
         }
 
         count = (uint)extensions.Length;
