@@ -60,13 +60,13 @@ internal unsafe class MeshShaderTest() : VisualTest("Mesh Shader Test")
 
         Meshlet[] meshlets = [meshlet];
 
-        BufferDesc verticesDesc = new((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.ShaderResource);
+        BufferDesc verticesDesc = new((uint)(vertices.Length * sizeof(Vertex)), BufferUsage.ShaderResource, (uint)sizeof(Vertex));
         verticesBuffer = Context.Factory.CreateBuffer(in verticesDesc);
 
-        BufferDesc indicesDesc = new((uint)(indices.Length * sizeof(uint)), BufferUsage.ShaderResource);
+        BufferDesc indicesDesc = new((uint)(indices.Length * sizeof(uint)), BufferUsage.ShaderResource, sizeof(uint) * 3);
         indicesBuffer = Context.Factory.CreateBuffer(in indicesDesc);
 
-        BufferDesc meshletsDesc = new((uint)(meshlets.Length * sizeof(Meshlet)), BufferUsage.ShaderResource);
+        BufferDesc meshletsDesc = new((uint)(meshlets.Length * sizeof(Meshlet)), BufferUsage.ShaderResource, (uint)sizeof(Meshlet));
         meshletsBuffer = Context.Factory.CreateBuffer(in meshletsDesc);
 
         fixed (Vertex* pVertices = vertices)
