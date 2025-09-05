@@ -9,6 +9,7 @@ global using DxFillMode = Silk.NET.Direct3D12.FillMode;
 global using DxHitGroupDesc = Silk.NET.Direct3D12.HitGroupDesc;
 global using DxHitGroupType = Silk.NET.Direct3D12.HitGroupType;
 global using DxInputElementDesc = Silk.NET.Direct3D12.InputElementDesc;
+global using DxInputLayoutDesc = Silk.NET.Direct3D12.InputLayoutDesc;
 global using DxSamplerDesc = Silk.NET.Direct3D12.SamplerDesc;
 global using DxViewport = Silk.NET.Direct3D12.Viewport;
 global using FillMode = ZenithEngine.Common.Enums.FillMode;
