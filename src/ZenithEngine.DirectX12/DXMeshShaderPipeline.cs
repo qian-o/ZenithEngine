@@ -195,7 +195,23 @@ internal unsafe class DXMeshShaderPipeline : MeshShaderPipeline
             }
         }
 
-        PipelineStateStreamDesc pipelineStateStreamDesc = new();
+        PipelineStateStream2 stream2 = new(graphicsPipelineStateDesc);
+
+        if (desc.Shaders.Amplification is not null)
+        {
+            stream2.AS = new(desc.Shaders.Amplification.DX().Shader);
+        }
+
+        if (desc.Shaders.Mesh is not null)
+        {
+            stream2.MS = new(desc.Shaders.Mesh.DX().Shader);
+        }
+
+        PipelineStateStreamDesc pipelineStateStreamDesc = new()
+        {
+            SizeInBytes = (uint)sizeof(PipelineStateStream2),
+            PPipelineStateSubobjectStream = &stream2
+        };
 
         Context.Device.CreatePipelineState(&pipelineStateStreamDesc, out PipelineState).ThrowIfError();
 
