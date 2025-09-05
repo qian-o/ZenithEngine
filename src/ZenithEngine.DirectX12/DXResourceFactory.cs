@@ -65,7 +65,7 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
 
     public override MeshShaderPipeline CreateMeshShaderPipeline(ref readonly MeshShaderPipelineDesc desc)
     {
-        throw new NotImplementedException();
+        return new DXMeshShaderPipeline(Context, in desc);
     }
 
     public override CommandProcessor CreateCommandProcessor(CommandProcessorType type)

@@ -1,4 +1,5 @@
-﻿using Silk.NET.Direct3D12;
+﻿using System.Runtime.InteropServices;
+using Silk.NET.Direct3D12;
 using Silk.NET.DXGI;
 
 namespace ZenithEngine.DirectX12;
@@ -304,203 +305,529 @@ internal unsafe struct PipelineStateStream2
     public SubViewInstancing ViewInstancing;
 }
 
-internal struct SubFlags(PipelineStateFlags flags)
+internal struct SubObject<T>(PipelineStateSubobjectType type) where T : unmanaged
 {
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.Flags;
-
-    public PipelineStateFlags Flags = flags;
-}
-
-internal struct SubNodeMask(uint nodeMask)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.NodeMask;
-
-    public uint NodeMask = nodeMask;
-}
-
-internal unsafe struct SubRootSignature(ID3D12RootSignature* rootSignature)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.RootSignature;
-
-    public ID3D12RootSignature* RootSignature = rootSignature;
-}
-
-internal struct SubInputLayout(DxInputLayoutDesc inputLayout)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.InputLayout;
-
-    public DxInputLayoutDesc InputLayout = inputLayout;
-}
-
-internal struct SubIBStripCutValue(IndexBufferStripCutValue ibStripCutValue)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.IBStripCutValue;
-
-    public IndexBufferStripCutValue IBStripCutValue = ibStripCutValue;
-}
-
-internal struct SubPrimitiveTopology(PrimitiveTopologyType primitiveTopology)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.PrimitiveTopology;
-
-    public PrimitiveTopologyType PrimitiveTopology = primitiveTopology;
-}
-
-internal struct SubVS(ShaderBytecode vs)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.VS;
-
-    public ShaderBytecode VS = vs;
-}
-
-internal struct SubGS(ShaderBytecode gs)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.GS;
-
-    public ShaderBytecode GS = gs;
-}
-
-internal struct SubStreamOutput(StreamOutputDesc streamOutput)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.StreamOutput;
-
-    public StreamOutputDesc StreamOutput = streamOutput;
-}
-
-internal struct SubHS(ShaderBytecode hs)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.HS;
-
-    public ShaderBytecode HS = hs;
-}
-
-internal struct SubDS(ShaderBytecode ds)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.DS;
-
-    public ShaderBytecode DS = ds;
-}
-
-internal struct SubPS(ShaderBytecode ps)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.PS;
-
-    public ShaderBytecode PS = ps;
-}
-
-internal struct SubAS(ShaderBytecode @as)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.As;
-
-    public ShaderBytecode As = @as;
-}
-
-internal struct SubMS(ShaderBytecode ms)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.MS;
-
-    public ShaderBytecode MS = ms;
-}
-
-internal struct SubCS(ShaderBytecode cs)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.CS;
-
-    public ShaderBytecode CS = cs;
-}
-
-internal struct SubBlend(BlendDesc blend)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.Blend;
-
-    public BlendDesc Blend = blend;
-}
-
-internal struct SubDepthStencil1(DepthStencilDesc1 depthStencil1)
-{
-    public SubDepthStencil1(DepthStencilDesc depthStencil) : this(new DepthStencilDesc1()
+    public SubObject() : this(default)
     {
-        DepthEnable = depthStencil.DepthEnable,
-        DepthWriteMask = depthStencil.DepthWriteMask,
-        DepthFunc = depthStencil.DepthFunc,
-        StencilEnable = depthStencil.StencilEnable,
-        StencilReadMask = depthStencil.StencilReadMask,
-        StencilWriteMask = depthStencil.StencilWriteMask,
-        FrontFace = depthStencil.FrontFace,
-        BackFace = depthStencil.BackFace,
-        DepthBoundsTestEnable = 0
-    })
-    {
+        Type = PipelineStateSubobjectType.MaxValid;
     }
 
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.DepthStencil1;
+    public readonly PipelineStateSubobjectType Type = type;
 
-    public DepthStencilDesc1 DepthStencil1 = depthStencil1;
+    public T Data = default;
 }
 
-internal struct SubDepthStencilFormat(Format depthStencilFormat)
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubFlags
 {
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.DepthStencilFormat;
-
-    public Format DepthStencilFormat = depthStencilFormat;
-}
-
-internal struct SubRasterizer(RasterizerDesc rasterizer)
-{
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.Rasterizer;
-
-    public RasterizerDesc Rasterizer = rasterizer;
-}
-
-internal struct SubRenderTargetFormats(RTFormatArray renderTargetFormats)
-{
-    public SubRenderTargetFormats(uint numRenderTargets, GraphicsPipelineStateDesc.RTVFormatsBuffer rTVFormats) : this(new RTFormatArray()
+    public SubFlags()
     {
-        NumRenderTargets = numRenderTargets,
-        RTFormats = new RTFormatArray.RTFormatsBuffer()
+        Object = new(PipelineStateSubobjectType.Flags);
+    }
+
+    public SubFlags(PipelineStateFlags flags) : this()
+    {
+        Object.Data = flags;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<PipelineStateFlags> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubNodeMask
+{
+    public SubNodeMask()
+    {
+        Object = new(PipelineStateSubobjectType.NodeMask);
+    }
+
+    public SubNodeMask(uint nodeMask) : this()
+    {
+        Object.Data = nodeMask;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<uint> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal unsafe struct SubRootSignature
+{
+    public SubRootSignature()
+    {
+        Object = new(PipelineStateSubobjectType.RootSignature);
+    }
+
+    public SubRootSignature(ID3D12RootSignature* rootSignature) : this()
+    {
+        Object.Data = (nint)rootSignature;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<nint> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubInputLayout
+{
+    public SubInputLayout()
+    {
+        Object = new(PipelineStateSubobjectType.InputLayout);
+    }
+
+    public SubInputLayout(DxInputLayoutDesc inputLayout) : this()
+    {
+        Object.Data = inputLayout;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<DxInputLayoutDesc> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubIBStripCutValue
+{
+    public SubIBStripCutValue()
+    {
+        Object = new(PipelineStateSubobjectType.IBStripCutValue);
+    }
+
+    public SubIBStripCutValue(IndexBufferStripCutValue ibStripCutValue) : this()
+    {
+        Object.Data = ibStripCutValue;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<IndexBufferStripCutValue> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubPrimitiveTopology
+{
+    public SubPrimitiveTopology()
+    {
+        Object = new(PipelineStateSubobjectType.PrimitiveTopology);
+    }
+
+    public SubPrimitiveTopology(PrimitiveTopologyType primitiveTopology) : this()
+    {
+        Object.Data = primitiveTopology;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<PrimitiveTopologyType> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubVS
+{
+    public SubVS()
+    {
+        Object = new(PipelineStateSubobjectType.VS);
+    }
+
+    public SubVS(ShaderBytecode vs) : this()
+    {
+        Object.Data = vs;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<ShaderBytecode> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubGS
+{
+    public SubGS()
+    {
+        Object = new(PipelineStateSubobjectType.GS);
+    }
+
+    public SubGS(ShaderBytecode gs) : this()
+    {
+        Object.Data = gs;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<ShaderBytecode> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubStreamOutput
+{
+    public SubStreamOutput()
+    {
+        Object = new(PipelineStateSubobjectType.StreamOutput);
+    }
+
+    public SubStreamOutput(StreamOutputDesc streamOutput) : this()
+    {
+        Object.Data = streamOutput;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<StreamOutputDesc> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubHS
+{
+    public SubHS()
+    {
+        Object = new(PipelineStateSubobjectType.HS);
+    }
+
+    public SubHS(ShaderBytecode hs) : this()
+    {
+        Object.Data = hs;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<ShaderBytecode> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubDS
+{
+    public SubDS()
+    {
+        Object = new(PipelineStateSubobjectType.DS);
+    }
+
+    public SubDS(ShaderBytecode ds) : this()
+    {
+        Object.Data = ds;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<ShaderBytecode> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubPS
+{
+    public SubPS()
+    {
+        Object = new(PipelineStateSubobjectType.PS);
+    }
+
+    public SubPS(ShaderBytecode ps) : this()
+    {
+        Object.Data = ps;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<ShaderBytecode> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubAS
+{
+    public SubAS()
+    {
+        Object = new(PipelineStateSubobjectType.As);
+    }
+
+    public SubAS(ShaderBytecode as_) : this()
+    {
+        Object.Data = as_;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<ShaderBytecode> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubMS
+{
+    public SubMS()
+    {
+        Object = new(PipelineStateSubobjectType.MS);
+    }
+
+    public SubMS(ShaderBytecode ms) : this()
+    {
+        Object.Data = ms;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<ShaderBytecode> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubCS
+{
+    public SubCS()
+    {
+        Object = new(PipelineStateSubobjectType.CS);
+    }
+
+    public SubCS(ShaderBytecode cs) : this()
+    {
+        Object.Data = cs;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<ShaderBytecode> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubBlend
+{
+    public SubBlend()
+    {
+        Object = new(PipelineStateSubobjectType.Blend);
+    }
+
+    public SubBlend(BlendDesc blend) : this()
+    {
+        Object.Data = blend;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<BlendDesc> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubDepthStencil1
+{
+    public SubDepthStencil1()
+    {
+        Object = new(PipelineStateSubobjectType.DepthStencil1);
+    }
+
+    public SubDepthStencil1(DepthStencilDesc1 depthStencil) : this()
+    {
+        Object.Data = depthStencil;
+    }
+
+    public SubDepthStencil1(DepthStencilDesc depthStencilState) : this()
+    {
+        Object.Data = new()
         {
-            Element0 = rTVFormats.Element0,
-            Element1 = rTVFormats.Element1,
-            Element2 = rTVFormats.Element2,
-            Element3 = rTVFormats.Element3,
-            Element4 = rTVFormats.Element4,
-            Element5 = rTVFormats.Element5,
-            Element6 = rTVFormats.Element6,
-            Element7 = rTVFormats.Element7
-        }
-    })
-    {
+            DepthEnable = depthStencilState.DepthEnable,
+            DepthWriteMask = depthStencilState.DepthWriteMask,
+            DepthFunc = depthStencilState.DepthFunc,
+            StencilEnable = depthStencilState.StencilEnable,
+            StencilReadMask = depthStencilState.StencilReadMask,
+            StencilWriteMask = depthStencilState.StencilWriteMask,
+            FrontFace = depthStencilState.FrontFace,
+            BackFace = depthStencilState.BackFace,
+            DepthBoundsTestEnable = 0
+        };
     }
 
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.RenderTargetFormats;
+    [FieldOffset(0)]
+    public SubObject<DepthStencilDesc1> Object;
 
-    public RTFormatArray RenderTargetFormats = renderTargetFormats;
+    [FieldOffset(0)]
+    internal nint padding;
 }
 
-internal struct SubSampleDesc(SampleDesc sampleDesc)
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubDepthStencilFormat
 {
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.SampleDesc;
+    public SubDepthStencilFormat()
+    {
+        Object = new(PipelineStateSubobjectType.DepthStencilFormat);
+    }
 
-    public SampleDesc SampleDesc = sampleDesc;
+    public SubDepthStencilFormat(Format depthStencilFormat) : this()
+    {
+        Object.Data = depthStencilFormat;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<Format> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
 }
 
-internal struct SubSampleMask(uint sampleMask)
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubRasterizer
 {
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.SampleMask;
+    public SubRasterizer()
+    {
+        Object = new(PipelineStateSubobjectType.Rasterizer);
+    }
 
-    public uint SampleMask = sampleMask;
+    public SubRasterizer(RasterizerDesc rasterizer) : this()
+    {
+        Object.Data = rasterizer;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<RasterizerDesc> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
 }
 
-internal struct SubCachedPso(CachedPipelineState cachedPso)
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubRenderTargetFormats
 {
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.CachedPso;
+    public SubRenderTargetFormats()
+    {
+        Object = new(PipelineStateSubobjectType.RenderTargetFormats);
+    }
 
-    public CachedPipelineState CachedPso = cachedPso;
+    public SubRenderTargetFormats(RTFormatArray renderTargetFormats) : this()
+    {
+        Object.Data = renderTargetFormats;
+    }
+
+    public SubRenderTargetFormats(uint numRenderTargets, GraphicsPipelineStateDesc.RTVFormatsBuffer rTVFormats) : this()
+    {
+        Object.Data = new()
+        {
+            NumRenderTargets = numRenderTargets,
+            RTFormats = new()
+            {
+                Element0 = rTVFormats.Element0,
+                Element1 = rTVFormats.Element1,
+                Element2 = rTVFormats.Element2,
+                Element3 = rTVFormats.Element3,
+                Element4 = rTVFormats.Element4,
+                Element5 = rTVFormats.Element5,
+                Element6 = rTVFormats.Element6,
+                Element7 = rTVFormats.Element7
+            }
+        };
+    }
+
+    [FieldOffset(0)]
+    public SubObject<RTFormatArray> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
 }
 
-internal struct SubViewInstancing(ViewInstancingDesc viewInstancing)
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubSampleDesc
 {
-    public readonly PipelineStateSubobjectType Type = PipelineStateSubobjectType.ViewInstancing;
+    public SubSampleDesc()
+    {
+        Object = new(PipelineStateSubobjectType.SampleDesc);
+    }
 
-    public ViewInstancingDesc ViewInstancing = viewInstancing;
+    public SubSampleDesc(SampleDesc sampleDesc) : this()
+    {
+        Object.Data = sampleDesc;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<SampleDesc> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubSampleMask
+{
+    public SubSampleMask()
+    {
+        Object = new(PipelineStateSubobjectType.SampleMask);
+    }
+
+    public SubSampleMask(uint sampleMask) : this()
+    {
+        Object.Data = sampleMask;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<uint> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubCachedPso
+{
+    public SubCachedPso()
+    {
+        Object = new(PipelineStateSubobjectType.CachedPso);
+    }
+
+    public SubCachedPso(CachedPipelineState cachedPso) : this()
+    {
+        Object.Data = cachedPso;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<CachedPipelineState> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+internal struct SubViewInstancing
+{
+    public SubViewInstancing()
+    {
+        Object = new(PipelineStateSubobjectType.ViewInstancing);
+    }
+
+    public SubViewInstancing(ViewInstancingDesc viewInstancing) : this()
+    {
+        Object.Data = viewInstancing;
+    }
+
+    [FieldOffset(0)]
+    public SubObject<ViewInstancingDesc> Object;
+
+    [FieldOffset(0)]
+    internal nint padding;
 }

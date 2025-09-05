@@ -11,7 +11,9 @@ internal static class DXHelpers
         ShaderStages.Hull,
         ShaderStages.Domain,
         ShaderStages.Geometry,
-        ShaderStages.Pixel
+        ShaderStages.Pixel,
+        ShaderStages.Amplification,
+        ShaderStages.Mesh
     ];
 
     public static uint GetInitialLayers(TextureType type)

@@ -501,7 +501,9 @@ internal unsafe class DXCommandBuffer : CommandBuffer
 
     public override void SetMeshShaderPipeline(MeshShaderPipeline pipeline)
     {
-        throw new NotImplementedException();
+        activePipeline = pipeline;
+
+        pipeline.DX().Apply(GraphicsCommandList);
     }
     #endregion
 
@@ -585,6 +587,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
             DXGraphicsPipeline graphicsPipeline => (true, graphicsPipeline.GetRootParameterOffset(slot)),
             DXComputePipeline computePipeline => (false, computePipeline.GetRootParameterOffset(slot)),
             DXRayTracingPipeline rayTracingPipeline => (false, rayTracingPipeline.GetRootParameterOffset(slot)),
+            DXMeshShaderPipeline meshShaderPipeline => (true, meshShaderPipeline.GetRootParameterOffset(slot)),
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(activePipeline))
         };
 

@@ -146,6 +146,16 @@ internal static class DirectX12Extensions
         return (DXRayTracingPipeline)pipeline;
     }
 
+    public static DXMeshShaderPipeline DX(this MeshShaderPipeline pipeline)
+    {
+        if (pipeline is not DXMeshShaderPipeline)
+        {
+            throw new ZenithEngineException("MeshShaderPipeline is not a DirectX12 mesh shader pipeline.");
+        }
+
+        return (DXMeshShaderPipeline)pipeline;
+    }
+
     public static DXCommandProcessor DX(this CommandProcessor processor)
     {
         if (processor is not DXCommandProcessor)

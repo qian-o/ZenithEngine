@@ -181,6 +181,11 @@ internal unsafe class DXMeshShaderPipeline : MeshShaderPipeline
             graphicsPipelineStateDesc.PRootSignature = RootSignature;
         }
 
+        // Primitive Topology
+        {
+            graphicsPipelineStateDesc.PrimitiveTopologyType = DXFormats.GetPrimitiveTopologyType(desc.PrimitiveTopology);
+        }
+
         // Outputs
         {
             graphicsPipelineStateDesc.NumRenderTargets = (uint)desc.Outputs.ColorAttachments.Length;
