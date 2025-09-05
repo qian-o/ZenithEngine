@@ -24,6 +24,7 @@ internal unsafe class DXGraphicsContext : GraphicsContext
     public ComPtr<ID3D12CommandSignature> DrawSignature;
     public ComPtr<ID3D12CommandSignature> DrawIndexedSignature;
     public ComPtr<ID3D12CommandSignature> DispatchSignature;
+    public ComPtr<ID3D12CommandSignature> DispatchMeshSignature;
 
     public DXGraphicsContext()
     {
@@ -138,6 +139,13 @@ internal unsafe class DXGraphicsContext : GraphicsContext
         Device.CreateCommandSignature(&commandSignatureDesc,
                                       (ComPtr<ID3D12RootSignature>)null,
                                       out DispatchSignature).ThrowIfError();
+
+        indirectArgumentDesc.Type = IndirectArgumentType.DispatchMesh;
+        commandSignatureDesc.ByteStride = (uint)sizeof(IndirectDispatchMeshArgs);
+
+        Device.CreateCommandSignature(&commandSignatureDesc,
+                                      (ComPtr<ID3D12RootSignature>)null,
+                                      out DispatchMeshSignature).ThrowIfError();
 
         RtvAllocator = new(this, DescriptorHeapType.Rtv, 512);
         DsvAllocator = new(this, DescriptorHeapType.Dsv, 512);

@@ -706,12 +706,21 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     #region Mesh Shader Operations
     public override void DispatchMesh(uint groupCountX, uint groupCountY, uint groupCountZ)
     {
+        ValidatePipeline<DXMeshShaderPipeline>(out _);
+
         GraphicsCommandList6.DispatchMesh(groupCountX, groupCountY, groupCountZ);
     }
 
     public override void DispatchMeshIndirect(Buffer argBuffer, uint offset, uint drawCount)
     {
-        throw new NotImplementedException();
+        ValidatePipeline<DXMeshShaderPipeline>(out _);
+
+        GraphicsCommandList6.ExecuteIndirect(Context.DispatchMeshSignature,
+                                             drawCount,
+                                             argBuffer.DX().Resource,
+                                             offset,
+                                             (ID3D12Resource*)null,
+                                             0);
     }
     #endregion
 
