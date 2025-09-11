@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <ItemGroup>
-        <PackageReference Include="SharpMetal" />
-    </ItemGroup>
+    <PropertyGroup>
+        <TargetFrameworks>net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
+    </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\ZenithEngine.Common\ZenithEngine.Common.csproj" />
