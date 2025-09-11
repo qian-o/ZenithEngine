@@ -18,8 +18,8 @@
         <PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
         <PackageVersion Include="Silk.NET.Vulkan.Extensions.MVK" Version="2.22.0" />
         <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.11" />
-        <PackageVersion Include="Slangc.NET" Version="2025.15.1" />
-        <PackageVersion Include="System.Text.Json" Version="9.0.8" />
+        <PackageVersion Include="Slangc.NET" Version="2025.16.1" />
+        <PackageVersion Include="System.Text.Json" Version="9.0.9" />
         <PackageVersion Include="WinUI.Dock" Version="2.0.0" />
     </ItemGroup>
 

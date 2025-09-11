@@ -269,6 +269,21 @@ internal unsafe class DXGraphicsPipeline : GraphicsPipeline
         commandList.SetPipelineState(PipelineState);
         commandList.SetGraphicsRootSignature(RootSignature);
         commandList.OMSetStencilRef((uint)Desc.RenderStates.StencilReference);
+
+        if (Desc.RenderStates.BlendFactor.HasValue)
+        {
+            float* factor = (float*)Allocator.Alloc(4);
+
+            factor[0] = Desc.RenderStates.BlendFactor.Value.X;
+            factor[1] = Desc.RenderStates.BlendFactor.Value.Y;
+            factor[2] = Desc.RenderStates.BlendFactor.Value.Z;
+            factor[3] = Desc.RenderStates.BlendFactor.Value.W;
+
+            commandList.OMSetBlendFactor(factor);
+
+            Allocator.Release();
+        }
+
         commandList.IASetPrimitiveTopology(DXFormats.GetPrimitiveTopology(Desc.PrimitiveTopology));
     }
 

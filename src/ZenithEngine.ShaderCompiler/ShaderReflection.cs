@@ -15,7 +15,7 @@ public class ShaderReflection
         Dictionary<string, ShaderBinding> bindings = [];
         foreach (SlangNamedTypeBinding namedTypeBinding in entryPoint.Bindings)
         {
-            SlangBinding binding = namedTypeBinding.Binding;
+            SlangBinding binding = namedTypeBinding.Bindings[0];
 
             if (!binding.Used)
             {
