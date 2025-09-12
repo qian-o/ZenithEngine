@@ -21,10 +21,7 @@ internal unsafe class DXQueryHeap : QueryHeap
 
         Context.Device.CreateQueryHeap(&queryHeapDesc, out QueryHeap).ThrowIfError();
 
-        BufferDesc backBufferDesc = new(desc.Count * sizeof(ulong))
-        {
-            Usage = Common.Enums.BufferUsage.Dynamic
-        };
+        BufferDesc backBufferDesc = new(desc.Count * sizeof(ulong));
 
         BackBuffer = new DXBuffer(Context,
                                   in backBufferDesc,

@@ -2,9 +2,13 @@
 
 namespace ZenithEngine.Common.Descriptions;
 
-public struct QueryHeapDesc
+public struct QueryHeapDesc(QueryType type, uint count)
 {
-    public QueryType Type;
+    public QueryHeapDesc() : this(QueryType.Timestamp, 0)
+    {
+    }
 
-    public uint Count;
+    public QueryType Type = type;
+
+    public uint Count = count;
 }

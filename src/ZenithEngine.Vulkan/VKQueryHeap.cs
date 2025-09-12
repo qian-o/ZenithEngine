@@ -33,7 +33,7 @@ internal unsafe class VKQueryHeap : QueryHeap
                                        (nuint)(data.Length * sizeof(ulong)),
                                        ref data[0],
                                        sizeof(ulong),
-                                       QueryResultFlags.Result64Bit).ThrowIfError();
+                                       QueryResultFlags.Result64Bit);
     }
 
     protected override void SetName(string name)

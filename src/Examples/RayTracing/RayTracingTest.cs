@@ -19,6 +19,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
     private ResourceLayout layout = null!;
     private ResourceSet set = null!;
     private RayTracingPipeline pipeline = null!;
+    private QueryHeap queryHeap = null!;
 
     private int cameraHash;
 
@@ -165,6 +166,10 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
         pipeline = Context.Factory.CreateRayTracingPipeline(in pipelineDesc);
 
+        QueryHeapDesc queryHeapDesc = new(QueryType.Timestamp, 2);
+
+        queryHeap = Context.Factory.CreateQueryHeap(in queryHeapDesc);
+
         CameraController.Transform(Matrix4X4.CreateTranslation(278.000f, 273.000f, -800.000f));
         CameraController.Speed = 240.000f;
     }
@@ -189,6 +194,17 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         }
 
         ImGui.GetBackgroundDrawList().AddImage(ImGuiController.GetBinding(uniforms.Output), new(0, 0), new(Width, Height));
+
+        Span<ulong> timestamps = stackalloc ulong[2];
+
+        queryHeap.GetData(0, timestamps);
+
+        ulong gpuTime = timestamps[1] - timestamps[0];
+
+        ImGui.Begin("Info");
+        ImGui.Text($"Frame: {globals.FrameIndex}");
+        ImGui.Text($"GPU Time: {gpuTime / 1_000_000.0:F2}ms");
+        ImGui.End();
     }
 
     protected override void OnRender(double deltaTime, double totalTime)
@@ -202,7 +218,11 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
         commandBuffer.SetRayTracingPipeline(pipeline);
         commandBuffer.SetResourceSet(0, set);
 
+        commandBuffer.WriteTimestamp(queryHeap, 0);
+
         commandBuffer.DispatchRays(Width, Height, 1);
+
+        commandBuffer.WriteTimestamp(queryHeap, 1);
 
         commandBuffer.End();
         commandBuffer.Commit();
@@ -236,6 +256,7 @@ internal unsafe class RayTracingTest() : VisualTest("RayTracing Test")
 
     protected override void OnDestroy()
     {
+        queryHeap.Dispose();
         pipeline.Dispose();
         set.Dispose();
         layout.Dispose();
