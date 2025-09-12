@@ -68,6 +68,11 @@ internal class DXResourceFactory(GraphicsContext context) : ResourceFactory(cont
         return new DXMeshShaderPipeline(Context, in desc);
     }
 
+    public override QueryHeap CreateQueryHeap(ref readonly QueryHeapDesc desc)
+    {
+        return new DXQueryHeap(Context, in desc);
+    }
+
     public override CommandProcessor CreateCommandProcessor(CommandProcessorType type)
     {
         return new DXCommandProcessor(Context, type);

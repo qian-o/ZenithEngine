@@ -31,5 +31,7 @@ public abstract class ResourceFactory(GraphicsContext context)
 
     public abstract MeshShaderPipeline CreateMeshShaderPipeline(ref readonly MeshShaderPipelineDesc desc);
 
+    public abstract QueryHeap CreateQueryHeap(ref readonly QueryHeapDesc desc);
+
     public abstract CommandProcessor CreateCommandProcessor(CommandProcessorType type);
 }

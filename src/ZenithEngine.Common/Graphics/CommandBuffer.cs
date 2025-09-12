@@ -342,6 +342,14 @@ public abstract class CommandBuffer(GraphicsContext context,
     public abstract void InsertDebugMarker(string label);
     #endregion
 
+    #region Query Operations
+    public abstract void BeginQuery(QueryHeap queryHeap, uint queryIndex);
+
+    public abstract void EndQuery(QueryHeap queryHeap, uint queryIndex);
+
+    public abstract void WriteTimestamp(QueryHeap queryHeap, uint queryIndex);
+    #endregion
+
     protected override void Destroy()
     {
         BufferAllocator.Dispose();

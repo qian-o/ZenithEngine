@@ -181,6 +181,16 @@ internal static class VulkanExtensions
         return (VKMeshShaderPipeline)pipeline;
     }
 
+    public static VKQueryHeap VK(this QueryHeap heap)
+    {
+        if (heap is not VKQueryHeap)
+        {
+            throw new ZenithEngineException("QueryHeap is not a Vulkan query heap.");
+        }
+
+        return (VKQueryHeap)heap;
+    }
+
     public static VKCommandProcessor VK(this CommandProcessor processor)
     {
         if (processor is not VKCommandProcessor)

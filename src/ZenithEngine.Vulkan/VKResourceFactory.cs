@@ -68,6 +68,11 @@ internal class VKResourceFactory(GraphicsContext context) : ResourceFactory(cont
         return new VKMeshShaderPipeline(Context, in desc);
     }
 
+    public override QueryHeap CreateQueryHeap(ref readonly QueryHeapDesc desc)
+    {
+        return new VKQueryHeap(Context, in desc);
+    }
+
     public override CommandProcessor CreateCommandProcessor(CommandProcessorType type)
     {
         return new VKCommandProcessor(Context, type);

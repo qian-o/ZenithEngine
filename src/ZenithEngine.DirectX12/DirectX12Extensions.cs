@@ -156,6 +156,16 @@ internal static class DirectX12Extensions
         return (DXMeshShaderPipeline)pipeline;
     }
 
+    public static DXQueryHeap DX(this QueryHeap queryHeap)
+    {
+        if (queryHeap is not DXQueryHeap)
+        {
+            throw new ZenithEngineException("QueryHeap is not a DirectX12 query heap.");
+        }
+
+        return (DXQueryHeap)queryHeap;
+    }
+
     public static DXCommandProcessor DX(this CommandProcessor processor)
     {
         if (processor is not DXCommandProcessor)

@@ -753,6 +753,58 @@ internal unsafe class DXCommandBuffer : CommandBuffer
     }
     #endregion
 
+    #region Query Operations
+    public override void BeginQuery(QueryHeap queryHeap, uint queryIndex)
+    {
+        if (queryHeap.Desc.Type is QueryType.Timestamp)
+        {
+            return;
+        }
+
+        GraphicsCommandList.BeginQuery(queryHeap.DX().QueryHeap,
+                                       DXFormats.GetQueryType(queryHeap.Desc.Type),
+                                       queryIndex);
+    }
+
+    public override void EndQuery(QueryHeap queryHeap, uint queryIndex)
+    {
+        if (queryHeap.Desc.Type is QueryType.Timestamp)
+        {
+            return;
+        }
+
+        GraphicsCommandList.EndQuery(queryHeap.DX().QueryHeap,
+                                     DXFormats.GetQueryType(queryHeap.Desc.Type),
+                                     queryIndex);
+
+        GraphicsCommandList.ResolveQueryData(queryHeap.DX().QueryHeap,
+                                             DXFormats.GetQueryType(queryHeap.Desc.Type),
+                                             queryIndex,
+                                             1,
+                                             queryHeap.DX().BackBuffer.Resource,
+                                             queryIndex * sizeof(ulong));
+    }
+
+    public override void WriteTimestamp(QueryHeap queryHeap, uint queryIndex)
+    {
+        if (queryHeap.Desc.Type is not QueryType.Timestamp)
+        {
+            return;
+        }
+
+        GraphicsCommandList.EndQuery(queryHeap.DX().QueryHeap,
+                                     DXFormats.GetQueryType(queryHeap.Desc.Type),
+                                     queryIndex);
+
+        GraphicsCommandList.ResolveQueryData(queryHeap.DX().QueryHeap,
+                                             DXFormats.GetQueryType(queryHeap.Desc.Type),
+                                             queryIndex,
+                                             1,
+                                             queryHeap.DX().BackBuffer.Resource,
+                                             queryIndex * sizeof(ulong));
+    }
+    #endregion
+
     protected override void SetName(string name)
     {
         CommandList.SetName(name).ThrowIfError();

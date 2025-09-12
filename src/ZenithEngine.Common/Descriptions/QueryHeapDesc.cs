@@ -4,7 +4,7 @@ namespace ZenithEngine.Common.Descriptions;
 
 public struct QueryHeapDesc
 {
-    public QueryHeapType Type;
+    public QueryType Type;
 
     public uint Count;
 }

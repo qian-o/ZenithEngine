@@ -847,6 +847,56 @@ internal unsafe class VKCommandBuffer : CommandBuffer
     }
     #endregion
 
+    #region Query Operations
+    public override void BeginQuery(QueryHeap queryHeap, uint queryIndex)
+    {
+        if (queryHeap.Desc.Type is QueryType.Timestamp)
+        {
+            return;
+        }
+
+        Context.Vk.CmdResetQueryPool(CommandBuffer,
+                                     queryHeap.VK().QueryPool,
+                                     queryIndex,
+                                     1);
+
+        Context.Vk.CmdBeginQuery(CommandBuffer,
+                                 queryHeap.VK().QueryPool,
+                                 queryIndex,
+                                 queryHeap.Desc.Type is QueryType.Occlusion ? QueryControlFlags.PreciseBit : QueryControlFlags.None);
+    }
+
+    public override void EndQuery(QueryHeap queryHeap, uint queryIndex)
+    {
+        if (queryHeap.Desc.Type is QueryType.Timestamp)
+        {
+            return;
+        }
+
+        Context.Vk.CmdEndQuery(CommandBuffer,
+                               queryHeap.VK().QueryPool,
+                               queryIndex);
+    }
+
+    public override void WriteTimestamp(QueryHeap queryHeap, uint queryIndex)
+    {
+        if (queryHeap.Desc.Type is not QueryType.Timestamp)
+        {
+            return;
+        }
+
+        Context.Vk.CmdResetQueryPool(CommandBuffer,
+                                     queryHeap.VK().QueryPool,
+                                     queryIndex,
+                                     1);
+
+        Context.Vk.CmdWriteTimestamp(CommandBuffer,
+                                     PipelineStageFlags.BottomOfPipeBit,
+                                     queryHeap.VK().QueryPool,
+                                     queryIndex);
+    }
+    #endregion
+
     protected override void SetName(string name)
     {
         DebugUtilsObjectNameInfoEXT nameInfo = new()

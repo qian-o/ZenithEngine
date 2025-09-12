@@ -653,5 +653,15 @@ internal static class VKFormats
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
         };
     }
+
+    public static VkQueryType GetQueryType(QueryType type)
+    {
+        return type switch
+        {
+            QueryType.Occlusion or QueryType.BinaryOcclusion => VkQueryType.Occlusion,
+            QueryType.Timestamp => VkQueryType.Timestamp,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
+        };
+    }
     #endregion
 }

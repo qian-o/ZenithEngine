@@ -498,5 +498,26 @@ internal static class DXFormats
             _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
         };
     }
+
+    public static QueryHeapType GetQueryHeapType(QueryType type)
+    {
+        return type switch
+        {
+            QueryType.Occlusion or QueryType.BinaryOcclusion => QueryHeapType.Occlusion,
+            QueryType.Timestamp => QueryHeapType.Timestamp,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
+        };
+    }
+
+    public static DxQueryType GetQueryType(QueryType type)
+    {
+        return type switch
+        {
+            QueryType.Occlusion => DxQueryType.Occlusion,
+            QueryType.BinaryOcclusion => DxQueryType.BinaryOcclusion,
+            QueryType.Timestamp => DxQueryType.Timestamp,
+            _ => throw new ZenithEngineException(ExceptionHelpers.NotSupported(type))
+        };
+    }
     #endregion
 }

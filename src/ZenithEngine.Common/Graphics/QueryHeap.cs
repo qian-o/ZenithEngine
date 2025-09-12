@@ -8,4 +8,6 @@ public abstract class QueryHeap(GraphicsContext context,
     private QueryHeapDesc descInternal = desc;
 
     public ref QueryHeapDesc Desc => ref descInternal;
+
+    public abstract void GetData(int startIndex, Span<ulong> data);
 }
