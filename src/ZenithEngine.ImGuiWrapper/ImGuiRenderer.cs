@@ -70,15 +70,10 @@ internal unsafe class ImGuiRenderer : DisposableObject
             {
                 if (textures.TryGetValue(imTexture.TexID.Handle, out Texture? texture))
                 {
-                    for (int j = 0; j < imTexture.Updates.Size; j++)
-                    {
-                        ImTextureRect rect = imTexture.Updates[j];
-
-                        commandBuffer.UpdateTexture(texture,
-                                                    (nint)imTexture.Pixels,
-                                                    (uint)(rect.W * rect.H * imTexture.BytesPerPixel),
-                                                    new(rect.X, rect.Y, width: rect.W, height: rect.H, depth: 1));
-                    }
+                    commandBuffer.UpdateTexture(texture,
+                                                (nint)imTexture.Pixels,
+                                                (uint)(imTexture.Width * imTexture.Height * imTexture.BytesPerPixel),
+                                                new(width: (uint)imTexture.Width, height: (uint)imTexture.Height, depth: 1));
 
                     imTexture.Status = ImTextureStatus.Ok;
                 }

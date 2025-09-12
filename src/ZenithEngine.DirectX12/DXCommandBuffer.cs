@@ -170,9 +170,7 @@ internal unsafe class DXCommandBuffer : CommandBuffer
                     Width = region.Width,
                     Height = region.Height,
                     Depth = region.Depth,
-                    RowPitch = dxTexture.GetRowPitch(region.Position.MipLevel,
-                                                     region.Position.ArrayLayer,
-                                                     region.Position.Face)
+                    RowPitch = sourceSizeInBytes / region.Depth / region.Height
                 }
             }
         };
