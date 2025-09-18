@@ -12,7 +12,7 @@ public abstract unsafe class VisualTest
 {
     protected VisualTest(string name)
     {
-        const Backend backend = Backend.DirectX12;
+        const Backend backend = Backend.Vulkan;
 
         Window = WindowController.CreateWindow(name, 1270, 720);
 

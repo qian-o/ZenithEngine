@@ -10,7 +10,7 @@ void Miss(inout Payload payload)
 {
     // Stop path tracing loop from rgen shader
     payload.Stop = true;
-    payload.ForwardNormal = float3(0.0, 0.0, 0.0);
+    payload.Normal = float3(0.0, 0.0, 0.0);
     payload.Position = float3(0.0, 0.0, 0.0);
 
     LightSample lightSample;

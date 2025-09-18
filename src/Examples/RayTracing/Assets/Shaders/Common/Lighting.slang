@@ -30,7 +30,7 @@ public class Lighting
             float lightDistSq = lightDist * lightDist;
             lightDir = normalize(lightDir);
 
-            if (dot(payload.ForwardNormal, lightDir) <= 0.0 || dot(lightDir, sampled.Normal) >= 0.0)
+            if (dot(payload.Normal, lightDir) <= 0.0 || dot(lightDir, sampled.Normal) >= 0.0)
             {
                 return L;
             }
@@ -53,7 +53,7 @@ public class Lighting
                 float3 F = DisneyBSDF.Eval(payload, material, lightDir, bsdfSample.Pdf);
 
                 float lightPdf = lightDistSq / (light.Area * abs(dot(sampled.Normal, lightDir)));
-                float cosTheta = abs(dot(payload.ForwardNormal, lightDir));
+                float cosTheta = abs(dot(payload.Normal, lightDir));
                 float misWeight = Maths.PowerHeuristic(lightPdf, bsdfSample.Pdf);
 
                 L += misWeight * F * cosTheta * sampled.Emission / (lightPdf + Constants.EPS);

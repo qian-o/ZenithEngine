@@ -208,8 +208,6 @@ public struct Payload
 
     public float3 Normal;
 
-    public float3 ForwardNormal;
-
     public uint Depth;
 
     public bool Stop;

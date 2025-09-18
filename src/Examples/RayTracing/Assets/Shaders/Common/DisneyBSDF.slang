@@ -7,7 +7,7 @@ public class DisneyBSDF
 {
     public static float3 Eval(in Payload payload, in Material material, in float3 L, inout float pdf)
     {
-        float3 N = payload.ForwardNormal;
+        float3 N = payload.Normal;
         float3 V = -WorldRayDirection();
         float eta = payload.Eta;
         bool refl = dot(N, L) > 0.0;
@@ -88,7 +88,7 @@ public class DisneyBSDF
         float3 Csheen = lerp(float3(1.0, 1.0, 1.0), Ctint, material.SheenTint);
         float eta = payload.Eta;
 
-        float3 N = payload.ForwardNormal;
+        float3 N = payload.Normal;
         float3 V = -WorldRayDirection();
 
         float3x3 frame = Maths.LocalFrame(N);

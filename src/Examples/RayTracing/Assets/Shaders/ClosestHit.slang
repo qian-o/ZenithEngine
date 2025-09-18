@@ -15,9 +15,8 @@ void ClosestHit(inout Payload payload, BuiltInTriangleIntersectionAttributes att
     Material material = uniforms.Materials[vertex.MaterialIndex];
 
     payload.Position = vertex.Position;
-    payload.Normal = vertex.Normal;
-    payload.ForwardNormal = dot(vertex.Normal, WorldRayDirection()) > 0 ? -vertex.Normal : vertex.Normal;
-    payload.Eta = dot(vertex.Normal, payload.ForwardNormal) > 0 ? 1.0 / material.IOR : material.IOR;
+    payload.Normal = dot(vertex.Normal, WorldRayDirection()) > 0 ? -vertex.Normal : vertex.Normal;
+    payload.Eta = dot(vertex.Normal, payload.Normal) > 0 ? 1.0 / material.IOR : material.IOR;
 
     LightSample lightSample;
     BSDFSample bsdfSample;
@@ -28,7 +27,7 @@ void ClosestHit(inout Payload payload, BuiltInTriangleIntersectionAttributes att
     {
         float3 Le = Sampling.SampleEmitter(payload, lightSample, payload.Bsdf);
 
-        if (uniforms.Globals.DoubleSidedLighting || dot(payload.ForwardNormal, lightSample.Normal) > 0.0)
+        if (uniforms.Globals.DoubleSidedLighting || dot(payload.Normal, lightSample.Normal) > 0.0)
         {
             payload.Radiance += Le * payload.Beta;
         }
@@ -43,7 +42,7 @@ void ClosestHit(inout Payload payload, BuiltInTriangleIntersectionAttributes att
 
     float3 F = DisneyBSDF.Sample(payload, material, bsdfSample.Direction, bsdfSample.Pdf);
 
-    float cosTheta = abs(dot(payload.ForwardNormal, bsdfSample.Direction));
+    float cosTheta = abs(dot(payload.Normal, bsdfSample.Direction));
 
     if (bsdfSample.Pdf <= 0.0)
     {
@@ -54,7 +53,7 @@ void ClosestHit(inout Payload payload, BuiltInTriangleIntersectionAttributes att
 
     payload.Beta *= F * cosTheta / (bsdfSample.Pdf + Constants.EPS);
 
-    if (dot(payload.ForwardNormal, bsdfSample.Direction) < 0.0)
+    if (dot(payload.Normal, bsdfSample.Direction) < 0.0)
     {
         payload.Absorbtion = -log(material.Extinction.xyz) / (material.AttenuationDistance + Constants.EPS);
     }
