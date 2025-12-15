@@ -266,7 +266,8 @@ internal unsafe class VKGraphicsPipeline : GraphicsPipeline
             PipelineMultisampleStateCreateInfo multisampleState = new()
             {
                 SType = StructureType.PipelineMultisampleStateCreateInfo,
-                RasterizationSamples = VKFormats.GetSampleCountFlags(desc.Outputs.SampleCount)
+                RasterizationSamples = VKFormats.GetSampleCountFlags(desc.Outputs.SampleCount),
+                AlphaToCoverageEnable = desc.RenderStates.BlendState.AlphaToCoverageEnabled
             };
 
             createInfo.PMultisampleState = &multisampleState;
