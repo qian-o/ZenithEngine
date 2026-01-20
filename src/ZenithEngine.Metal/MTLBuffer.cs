@@ -24,7 +24,7 @@ internal class MTLBuffer : Buffer
 
     protected override void SetName(string name)
     {
-        Buffer.AddDebugMarker(name, new(0, (int)Buffer.Length));
+        Buffer.Label = name;
     }
 
     protected override void Destroy()
