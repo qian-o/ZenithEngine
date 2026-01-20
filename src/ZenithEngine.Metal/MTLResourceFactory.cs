@@ -8,7 +8,7 @@ internal class MTLResourceFactory(MTLGraphicsContext graphicsContext) : Resource
 {
     public override Buffer CreateBuffer(ref readonly BufferDesc desc)
     {
-        throw new NotImplementedException();
+        return new MTLBuffer(graphicsContext, in desc);
     }
 
     public override CommandProcessor CreateCommandProcessor(CommandProcessorType type)
