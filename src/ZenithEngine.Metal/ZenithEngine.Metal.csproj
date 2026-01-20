@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks>net10.0-ios;net10.0-maccatalyst;net10.0-macos</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
