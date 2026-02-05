@@ -144,4 +144,66 @@ internal static class MTLFormats
             _ => throw new NotSupportedException($"Sample count {sampleCount} is not supported.")
         };
     }
+
+    internal static MTLSamplerMinMagFilter GetMTLSamplerMinMagFilter(SamplerFilter filter)
+    {
+        return filter switch
+        {
+            SamplerFilter.MinPointMagPointMipPoint => MTLSamplerMinMagFilter.Nearest,
+            SamplerFilter.MinPointMagPointMipLinear => MTLSamplerMinMagFilter.Nearest,
+            SamplerFilter.MinPointMagLinearMipPoint => MTLSamplerMinMagFilter.Nearest,
+            SamplerFilter.MinPointMagLinearMipLinear => MTLSamplerMinMagFilter.Nearest,
+            SamplerFilter.MinLinearMagPointMipPoint => MTLSamplerMinMagFilter.Linear,
+            SamplerFilter.MinLinearMagPointMipLinear => MTLSamplerMinMagFilter.Linear,
+            SamplerFilter.MinLinearMagLinearMipPoint => MTLSamplerMinMagFilter.Linear,
+            SamplerFilter.MinLinearMagLinearMipLinear => MTLSamplerMinMagFilter.Linear,
+            SamplerFilter.Anisotropic => MTLSamplerMinMagFilter.Linear,
+            _ => throw new NotSupportedException($"Sampler filter {filter} is not supported.")
+        };
+    }
+
+    internal static MTLSamplerMipFilter GetMTLSamplerMipFilter(SamplerFilter filter)
+    {
+        return filter switch
+        {
+            SamplerFilter.MinPointMagPointMipPoint => MTLSamplerMipFilter.Nearest,
+            SamplerFilter.MinPointMagPointMipLinear => MTLSamplerMipFilter.Linear,
+            SamplerFilter.MinPointMagLinearMipPoint => MTLSamplerMipFilter.Nearest,
+            SamplerFilter.MinPointMagLinearMipLinear => MTLSamplerMipFilter.Linear,
+            SamplerFilter.MinLinearMagPointMipPoint => MTLSamplerMipFilter.Nearest,
+            SamplerFilter.MinLinearMagPointMipLinear => MTLSamplerMipFilter.Linear,
+            SamplerFilter.MinLinearMagLinearMipPoint => MTLSamplerMipFilter.Nearest,
+            SamplerFilter.MinLinearMagLinearMipLinear => MTLSamplerMipFilter.Linear,
+            SamplerFilter.Anisotropic => MTLSamplerMipFilter.Linear,
+            _ => throw new NotSupportedException($"Sampler filter {filter} is not supported.")
+        };
+    }
+
+    internal static MTLSamplerAddressMode GetMTLSamplerAddressMode(AddressMode addressMode)
+    {
+        return addressMode switch
+        {
+            AddressMode.Wrap => MTLSamplerAddressMode.Repeat,
+            AddressMode.Mirror => MTLSamplerAddressMode.MirrorRepeat,
+            AddressMode.Clamp => MTLSamplerAddressMode.ClampToEdge,
+            AddressMode.Border => MTLSamplerAddressMode.ClampToBorderColor,
+            _ => throw new NotSupportedException($"Address mode {addressMode} is not supported.")
+        };
+    }
+
+    internal static MTLCompareFunction GetMTLCompareFunction(ComparisonFunction comparisonFunction)
+    {
+        return comparisonFunction switch
+        {
+            ComparisonFunction.Never => MTLCompareFunction.Never,
+            ComparisonFunction.Less => MTLCompareFunction.Less,
+            ComparisonFunction.Equal => MTLCompareFunction.Equal,
+            ComparisonFunction.LessEqual => MTLCompareFunction.LessEqual,
+            ComparisonFunction.Greater => MTLCompareFunction.Greater,
+            ComparisonFunction.NotEqual => MTLCompareFunction.NotEqual,
+            ComparisonFunction.GreaterEqual => MTLCompareFunction.GreaterEqual,
+            ComparisonFunction.Always => MTLCompareFunction.Always,
+            _ => throw new NotSupportedException($"Comparison function {comparisonFunction} is not supported.")
+        };
+    }
 }

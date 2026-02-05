@@ -25,7 +25,7 @@ internal class MTLResourceFactory(GraphicsContext graphicsContext) : ResourceFac
 
     public override Sampler CreateSampler(ref readonly SamplerDesc desc)
     {
-        throw new NotImplementedException();
+        return new MTLSampler(Context, in desc);
     }
 
     public override Shader CreateShader(ref readonly ShaderDesc desc)
