@@ -8,7 +8,7 @@ namespace ZenithEngine.Metal;
 
 internal unsafe class MTLShader : Shader
 {
-    private MTLFunction? function;
+    private SharpMetal.Metal.MTLFunction? function;
 
     public MTLShader(GraphicsContext context,
                      ref readonly ShaderDesc desc) : base(context, in desc)
@@ -16,7 +16,7 @@ internal unsafe class MTLShader : Shader
         // In Metal, shaders are compiled from a library
         // The shader bytes should be compiled Metal library (.metallib) or Metal source
         
-        MTLLibrary? library = null;
+        SharpMetal.Metal.MTLLibrary? library = null;
 
         try
         {
@@ -61,9 +61,9 @@ internal unsafe class MTLShader : Shader
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public MTLLibrary Library { get; }
+    public SharpMetal.Metal.MTLLibrary Library { get; }
 
-    public MTLFunction Function => function ?? throw new InvalidOperationException("Shader function is null");
+    public SharpMetal.Metal.MTLFunction Function => function ?? throw new InvalidOperationException("Shader function is null");
 
     protected override void SetName(string name)
     {

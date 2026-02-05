@@ -95,7 +95,7 @@ internal class MTLFrameBuffer : FrameBuffer
     /// </summary>
     /// <param name="clearValue">Clear value for the attachments.</param>
     /// <returns>A configured MTLRenderPassDescriptor.</returns>
-    public MTLRenderPassDescriptor CreateRenderPassDescriptor(ClearValue clearValue)
+    public SharpMetal.Metal.MTLRenderPassDescriptor CreateRenderPassDescriptor(ClearValue clearValue)
     {
         MTLRenderPassDescriptor passDescriptor = MTLRenderPassDescriptor.Create();
 

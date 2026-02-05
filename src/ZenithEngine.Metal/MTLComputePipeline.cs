@@ -32,7 +32,7 @@ internal class MTLComputePipeline : ComputePipeline
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public MTLComputePipelineState PipelineState { get; }
+    public SharpMetal.Metal.MTLComputePipelineState PipelineState { get; }
 
     protected override void SetName(string name)
     {

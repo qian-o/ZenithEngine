@@ -9,10 +9,10 @@ namespace ZenithEngine.Metal;
 
 internal unsafe class MTLCommandBuffer : CommandBuffer
 {
-    private MTLCommandBuffer? commandBuffer;
-    private MTLRenderCommandEncoder? renderEncoder;
-    private MTLComputeCommandEncoder? computeEncoder;
-    private MTLBlitCommandEncoder? blitEncoder;
+    private SharpMetal.Metal.MTLCommandBuffer? commandBuffer;
+    private SharpMetal.Metal.MTLRenderCommandEncoder? renderEncoder;
+    private SharpMetal.Metal.MTLComputeCommandEncoder? computeEncoder;
+    private SharpMetal.Metal.MTLBlitCommandEncoder? blitEncoder;
 
     private FrameBuffer? activeFrameBuffer;
     private Pipeline? activePipeline;
@@ -29,7 +29,7 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public MTLCommandBuffer? CommandBuffer => commandBuffer;
+    public SharpMetal.Metal.MTLCommandBuffer? CommandBuffer => commandBuffer;
 
     #region Command Buffer Management
     public override void Begin()

@@ -33,7 +33,7 @@ internal class MTLTexture : Texture
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public MTLTexture Texture { get; }
+    public SharpMetal.Metal.MTLTexture Texture { get; }
 
     private static MTLResourceOptions GetResourceOptions(TextureUsage usage)
     {

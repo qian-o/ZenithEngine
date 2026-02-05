@@ -27,7 +27,7 @@ internal class MTLSampler : Sampler
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public MTLSamplerState Sampler { get; }
+    public SharpMetal.Metal.MTLSamplerState Sampler { get; }
 
     protected override void SetName(string name)
     {

@@ -9,7 +9,7 @@ internal unsafe class MTLGraphicsContext : GraphicsContext
 {
     public MTLGraphicsContext()
     {
-        MTLDevice device;
+        SharpMetal.Metal.MTLDevice device;
         if (MTLDevice.SystemDefault is null)
         {
             throw new InvalidOperationException("No Metal-compatible device found.");
@@ -45,13 +45,13 @@ internal unsafe class MTLGraphicsContext : GraphicsContext
         LogDeviceCapabilities();
     }
 
-    public MTLDevice Device { get; }
+    public SharpMetal.Metal.MTLDevice Device { get; }
 
-    public MTLCommandQueue GraphicsQueue { get; private set; }
+    public SharpMetal.Metal.MTLCommandQueue GraphicsQueue { get; private set; }
 
-    public MTLCommandQueue ComputeQueue { get; private set; }
+    public SharpMetal.Metal.MTLCommandQueue ComputeQueue { get; private set; }
 
-    public MTLCommandQueue CopyQueue { get; private set; }
+    public SharpMetal.Metal.MTLCommandQueue CopyQueue { get; private set; }
 
     public override Backend Backend { get; }
 

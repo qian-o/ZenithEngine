@@ -15,7 +15,7 @@ internal class MTLBuffer : Buffer
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public MTLBuffer Buffer { get; }
+    public SharpMetal.Metal.MTLBuffer Buffer { get; }
 
     private static MTLResourceOptions GetResourceOptions(BufferUsage usage)
     {

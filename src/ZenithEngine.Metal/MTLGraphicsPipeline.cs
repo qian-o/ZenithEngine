@@ -134,7 +134,7 @@ internal class MTLGraphicsPipeline : GraphicsPipeline
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public MTLRenderPipelineState PipelineState { get; }
+    public SharpMetal.Metal.MTLRenderPipelineState PipelineState { get; }
 
     public MTLDepthStencilState? DepthStencilState { get; }
 

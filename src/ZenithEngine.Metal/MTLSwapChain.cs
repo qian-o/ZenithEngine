@@ -12,8 +12,8 @@ internal class MTLSwapChain : SwapChain
 {
     private readonly MTLFence fence;
     private MTLSwapChainFrameBuffer? swapChainFrameBuffer;
-    private CAMetalLayer? metalLayer;
-    private CAMetalDrawable? currentDrawable;
+    private SharpMetal.QuartzCore.CAMetalLayer? metalLayer;
+    private SharpMetal.QuartzCore.CAMetalDrawable? currentDrawable;
 
     public MTLSwapChain(GraphicsContext context,
                        ref readonly SwapChainDesc desc) : base(context, in desc)

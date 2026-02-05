@@ -8,8 +8,8 @@ namespace ZenithEngine.Metal;
 
 internal class MTLQueryHeap : QueryHeap
 {
-    private readonly MTLCounterSampleBuffer? counterSampleBuffer;
-    private readonly MTLBuffer? resultsBuffer;
+    private readonly SharpMetal.Metal.MTLCounterSampleBuffer? counterSampleBuffer;
+    private readonly SharpMetal.Metal.MTLBuffer? resultsBuffer;
 
     public MTLQueryHeap(GraphicsContext context,
                         ref readonly QueryHeapDesc desc) : base(context, in desc)
@@ -59,7 +59,7 @@ internal class MTLQueryHeap : QueryHeap
 
     public MTLCounterSampleBuffer? CounterSampleBuffer => counterSampleBuffer;
 
-    public MTLBuffer? ResultsBuffer => resultsBuffer;
+    public SharpMetal.Metal.MTLBuffer? ResultsBuffer => resultsBuffer;
 
     public override void GetData(int startIndex, Span<ulong> data)
     {
