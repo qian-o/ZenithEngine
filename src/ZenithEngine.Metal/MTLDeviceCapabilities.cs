@@ -6,7 +6,7 @@ namespace ZenithEngine.Metal;
 
 internal class MTLDeviceCapabilities(MTLDevice device) : DeviceCapabilities
 {
-    public override string DeviceName { get; } = device.Name?.ToString() ?? "Unknown Metal Device";
+    public override string DeviceName { get; } = device.Name.ToString();
 
     public override bool IsRayTracingSupported { get; } = device.SupportsRaytracing || device.SupportsRaytracingFromRender;
 
@@ -35,12 +35,12 @@ internal class MTLDeviceCapabilities(MTLDevice device) : DeviceCapabilities
     /// <summary>
     /// Gets the maximum framebuffer storage bit depth.
     /// </summary>
-    public ulong MaxFramebufferStorageBitDepth { get; } = device.MaxFramebufferStorageBitDepth;
+    public ulong MaxFramebufferStorageBitDepth { get; } = 0; // Property doesn't exist in SharpMetal 1.1.0
 
     /// <summary>
     /// Gets a value indicating whether the device supports variable rasterization rate (VRS).
     /// </summary>
-    public bool SupportsVariableRasterizationRate { get; } = device.SupportsRasterizationRateMap();
+    public bool SupportsVariableRasterizationRate { get; } = device.SupportsRasterizationRateMap(1);
 
     /// <summary>
     /// Gets a value indicating whether the device supports argument buffers.

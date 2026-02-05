@@ -45,7 +45,8 @@ internal class MTLBuffer : Buffer
 
     protected override void SetName(string name)
     {
-        Buffer.Label = name;
+        // Label property is settable in SharpMetal
+        Buffer.Label = new NSString(name);
     }
 
     protected override void Destroy()

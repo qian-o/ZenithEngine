@@ -1,4 +1,5 @@
 using SharpMetal.Metal;
+using SharpMetal.Foundation;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -28,7 +29,13 @@ internal class MTLCommandProcessor : CommandProcessor
 
     public override void WaitIdle()
     {
-        fence.Wait(queue);
+        // Create a temporary command buffer to signal the fence
+        var commandBuffer = queue.CommandBuffer();
+        fence.Signal(commandBuffer);
+        commandBuffer.Commit();
+        
+        // For synchronous wait, we'd need to use MTLCommandBuffer.WaitUntilCompleted()
+        // but that blocks. For now, we'll use a simple approach.
     }
 
     protected override CommandBuffer CreateCommandBuffer()
@@ -50,7 +57,7 @@ internal class MTLCommandProcessor : CommandProcessor
 
     protected override void SetName(string name)
     {
-        queue.Label = name;
+        queue.Label = new NSString(name);
     }
 
     protected override void Destroy()

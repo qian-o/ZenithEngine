@@ -19,13 +19,14 @@ internal class MTLComputePipeline : ComputePipeline
         MTLShader shader = (MTLShader)desc.Shader;
 
         MTLComputePipelineDescriptor pipelineDesc = new();
-        pipelineDesc.computeFunction = shader.Function;
+        pipelineDesc.ComputeFunction = shader.Function;
 
         // Set thread group size if available from shader reflection
         // Metal will use the kernel's own threadGroupSize attribute if not specified
 
-        PipelineState = Context.Device.NewComputePipelineState(pipelineDesc, 0, IntPtr.Zero, out NSError? error);
-        if (error is not null)
+        NSError error = new(IntPtr.Zero);
+        PipelineState = Context.Device.NewComputePipelineState(pipelineDesc, 0, IntPtr.Zero, ref error);
+        if (error != IntPtr.Zero)
         {
             throw new InvalidOperationException($"Failed to create Metal compute pipeline state: {error.LocalizedDescription}");
         }

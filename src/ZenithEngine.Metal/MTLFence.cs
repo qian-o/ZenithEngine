@@ -1,45 +1,36 @@
 using SharpMetal.Metal;
+using SharpMetal.Foundation;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Metal;
 
 internal class MTLFence : GraphicsResource
 {
-    private readonly MTLSharedEvent sharedEvent;
+    private MTLSharedEvent sharedEvent;
     private ulong fenceValue;
 
     public MTLFence(GraphicsContext context) : base(context)
     {
-        sharedEvent = Context.Device.NewSharedEvent()!;
+        sharedEvent = Context.Device.NewSharedEvent();
         fenceValue = 0;
     }
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public void Wait(MTLCommandQueue queue)
+    public void Signal(MTLCommandBuffer commandBuffer)
     {
         fenceValue++;
+        commandBuffer.EncodeSignalEvent(sharedEvent, fenceValue);
+    }
 
-        queue.EncodeSignalEvent(sharedEvent, fenceValue);
-
-        // Wait for the GPU to complete work up to this fence value
-        if (sharedEvent.SignaledValue < fenceValue)
-        {
-            using MTLSharedEventListener listener = new();
-            using AutoResetEvent waitEvent = new(false);
-
-            sharedEvent.NotifyListener(listener, fenceValue, (sharedEvent, value) =>
-            {
-                waitEvent.Set();
-            });
-
-            waitEvent.WaitOne();
-        }
+    public void Wait(MTLCommandBuffer commandBuffer)
+    {
+        commandBuffer.EncodeWait(sharedEvent, fenceValue);
     }
 
     protected override void SetName(string name)
     {
-        sharedEvent.Label = name;
+        sharedEvent.Label = new NSString(name);
     }
 
     protected override void Destroy()

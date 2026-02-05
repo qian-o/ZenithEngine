@@ -24,7 +24,7 @@ internal class MTLTexture : Texture
             ArrayLength = desc.ArrayLayers,
             ResourceOptions = resourceOptions,
             StorageMode = storageMode,
-            AllowGpuOptimizedContents = ShouldAllowGpuOptimizedContents(desc.Usage, storageMode),
+            // Note: AllowGpuOptimizedContents doesn't exist in SharpMetal 1.1.0
             Usage = MTLFormats.GetMTLTextureUsage(desc.Usage)
         };
 
@@ -72,7 +72,8 @@ internal class MTLTexture : Texture
 
     protected override void SetName(string name)
     {
-        Texture.Label = name;
+        // Label property is settable in SharpMetal
+        Texture.Label = new NSString(name);
     }
 
     protected override void Destroy()

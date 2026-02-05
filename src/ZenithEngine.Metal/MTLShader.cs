@@ -9,7 +9,7 @@ namespace ZenithEngine.Metal;
 
 internal unsafe class MTLShader : Shader
 {
-    private SharpMetal.Metal.MTLFunction? function;
+    private SharpMetal.Metal.MTLFunction function;
 
     public MTLShader(GraphicsContext context,
                      ref readonly ShaderDesc desc) : base(context, in desc)
@@ -17,44 +17,40 @@ internal unsafe class MTLShader : Shader
         // In Metal, shaders are compiled from a library
         // The shader bytes should be compiled Metal library (.metallib) or Metal source
         
-        SharpMetal.Metal.MTLLibrary? library = null;
+        SharpMetal.Metal.MTLLibrary library;
+        NSError error = new(IntPtr.Zero);
 
-        try
+        // Try to load as source code (most common case)
+        string source = Encoding.UTF8.GetString(desc.ShaderBytes);
+        library = Context.Device.NewLibrary(new NSString(source), new MTLCompileOptions(IntPtr.Zero), ref error);
+        
+        if (error != IntPtr.Zero)
         {
-            // Try to load as a precompiled library
-            fixed (byte* pBytes = desc.ShaderBytes)
+            // If source compilation fails, try as precompiled library
+            try
             {
-                using MTLDispatchData dispatchData = MTLDispatchData.CreateWithBytes((nint)pBytes, (nuint)desc.ShaderBytes.Length);
-                library = Context.Device.NewLibrary(dispatchData, out NSError? error);
-                
-                if (library is null && error is not null)
+                fixed (byte* pBytes = desc.ShaderBytes)
                 {
-                    throw new InvalidOperationException($"Failed to create Metal library: {error.LocalizedDescription}");
+                    error = new(IntPtr.Zero);
+                    library = Context.Device.NewLibrary((IntPtr)pBytes, ref error);
+                    
+                    if (error != IntPtr.Zero)
+                    {
+                        throw new InvalidOperationException($"Failed to load Metal library: {error.LocalizedDescription}");
+                    }
                 }
             }
-        }
-        catch
-        {
-            // If loading as library fails, try as source code
-            string source = Encoding.UTF8.GetString(desc.ShaderBytes);
-            library = Context.Device.NewLibrary(source, null, out NSError? error);
-            
-            if (library is null && error is not null)
+            catch (Exception ex)
             {
-                throw new InvalidOperationException($"Failed to compile Metal shader: {error.LocalizedDescription}");
+                throw new InvalidOperationException($"Failed to create Metal library from shader bytes: {ex.Message}");
             }
-        }
-
-        if (library is null)
-        {
-            throw new InvalidOperationException("Failed to create Metal library from shader bytes");
         }
 
         Library = library;
 
         // Get the function from the library
-        function = library.CreateFunction(desc.EntryPoint);
-        if (function is null)
+        function = library.NewFunction(new NSString(desc.EntryPoint));
+        if (function == IntPtr.Zero)
         {
             throw new InvalidOperationException($"Failed to find function '{desc.EntryPoint}' in Metal library");
         }
@@ -64,20 +60,17 @@ internal unsafe class MTLShader : Shader
 
     public SharpMetal.Metal.MTLLibrary Library { get; }
 
-    public SharpMetal.Metal.MTLFunction Function => function ?? throw new InvalidOperationException("Shader function is null");
+    public SharpMetal.Metal.MTLFunction Function => function;
 
     protected override void SetName(string name)
     {
-        Library.Label = name;
-        if (function is not null)
-        {
-            function.Label = name;
-        }
+        Library.Label = new NSString(name);
+        function.Label = new NSString(name);
     }
 
     protected override void Destroy()
     {
-        function?.Dispose();
+        function.Dispose();
         Library.Dispose();
     }
 }
