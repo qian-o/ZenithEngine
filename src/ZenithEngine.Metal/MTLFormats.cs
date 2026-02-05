@@ -10,13 +10,13 @@ internal static class MTLFormats
     {
         return textureType switch
         {
-            TextureType.Texture1D => MTLTextureType.k1D,
-            TextureType.Texture1DArray => MTLTextureType.k1DArray,
-            TextureType.Texture2D => MTLTextureType.k2D,
-            TextureType.Texture2DArray => MTLTextureType.k2DArray,
-            TextureType.Texture3D => MTLTextureType.k3D,
-            TextureType.TextureCube => MTLTextureType.kCube,
-            TextureType.TextureCubeArray => MTLTextureType.kCubeArray,
+            TextureType.Texture1D => MTLTextureType.Type1D,
+            TextureType.Texture1DArray => MTLTextureType.Type1DArray,
+            TextureType.Texture2D => MTLTextureType.Type2D,
+            TextureType.Texture2DArray => MTLTextureType.Type2DArray,
+            TextureType.Texture3D => MTLTextureType.Type3D,
+            TextureType.TextureCube => MTLTextureType.Cube,
+            TextureType.TextureCubeArray => MTLTextureType.CubeArray,
             _ => throw new NotSupportedException($"Texture type {textureType} is not supported in Metal.")
         };
     }

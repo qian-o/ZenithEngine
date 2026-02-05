@@ -1,3 +1,4 @@
+using SharpMetal.Foundation;
 using System;
 using SharpMetal.Metal;
 using ZenithEngine.Common.Descriptions;
@@ -118,7 +119,7 @@ internal class MTLMeshShaderPipeline : MeshShaderPipeline
                 depthStencilDesc.BackFaceStencil = backFace;
             }
 
-            DepthStencilState = Context.Device.CreateDepthStencilState(depthStencilDesc);
+            DepthStencilState = Context.Device.NewDepthStencilState(depthStencilDesc);
         }
 
         // Store rasterizer state

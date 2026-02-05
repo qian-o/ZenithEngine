@@ -10,16 +10,16 @@ internal unsafe class MTLGraphicsContext : GraphicsContext
     public MTLGraphicsContext()
     {
         SharpMetal.Metal.MTLDevice device;
-        if (MTLDevice.SystemDefault is null)
+        if (MTLDevice.CreateSystemDefaultDevice() is null)
         {
             throw new InvalidOperationException("No Metal-compatible device found.");
         }
         else
         {
-            device = MTLDevice.SystemDefault;
+            device = MTLDevice.CreateSystemDefaultDevice();
         }
 
-        if (!device.SupportsFamily(MTLGpuFamily.Metal4))
+        if (!device.SupportsFamily(MTLGPUFamily.Metal4))
         {
             throw new NotSupportedException(
                 $"The selected Metal device '{device.Name}' does not support the Metal 4 feature set required by this engine. " +
@@ -32,13 +32,13 @@ internal unsafe class MTLGraphicsContext : GraphicsContext
         Factory = new MTLResourceFactory(this);
 
         // Create command queues
-        GraphicsQueue = device.CreateCommandQueue()!;
+        GraphicsQueue = device.NewCommandQueue()!;
         GraphicsQueue.Label = "Graphics Queue";
 
-        ComputeQueue = device.CreateCommandQueue()!;
+        ComputeQueue = device.NewCommandQueue()!;
         ComputeQueue.Label = "Compute Queue";
 
-        CopyQueue = device.CreateCommandQueue()!;
+        CopyQueue = device.NewCommandQueue()!;
         CopyQueue.Label = "Copy Queue";
 
         // Log Metal device capabilities for debugging

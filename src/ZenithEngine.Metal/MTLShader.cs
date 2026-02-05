@@ -1,3 +1,4 @@
+using SharpMetal.Foundation;
 using System;
 using System.Text;
 using SharpMetal.Metal;
@@ -24,7 +25,7 @@ internal unsafe class MTLShader : Shader
             fixed (byte* pBytes = desc.ShaderBytes)
             {
                 using MTLDispatchData dispatchData = MTLDispatchData.CreateWithBytes((nint)pBytes, (nuint)desc.ShaderBytes.Length);
-                library = Context.Device.CreateLibrary(dispatchData, out NSError? error);
+                library = Context.Device.NewLibrary(dispatchData, out NSError? error);
                 
                 if (library is null && error is not null)
                 {
@@ -36,7 +37,7 @@ internal unsafe class MTLShader : Shader
         {
             // If loading as library fails, try as source code
             string source = Encoding.UTF8.GetString(desc.ShaderBytes);
-            library = Context.Device.CreateLibrary(source, null, out NSError? error);
+            library = Context.Device.NewLibrary(source, null, out NSError? error);
             
             if (library is null && error is not null)
             {

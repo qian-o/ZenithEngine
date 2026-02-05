@@ -1,3 +1,4 @@
+using SharpMetal.Foundation;
 using System;
 using SharpMetal.Metal;
 using ZenithEngine.Common.Descriptions;
@@ -17,16 +18,16 @@ internal class MTLComputePipeline : ComputePipeline
 
         MTLShader shader = (MTLShader)desc.Shader;
 
-        using MTLComputePipelineDescriptor pipelineDesc = new();
-        pipelineDesc.ComputeFunction = shader.Function;
+        MTLComputePipelineDescriptor pipelineDesc = new();
+        pipelineDesc.computeFunction = shader.Function;
 
         // Set thread group size if available from shader reflection
         // Metal will use the kernel's own threadGroupSize attribute if not specified
 
-        PipelineState = Context.Device.CreateComputePipelineState(pipelineDesc, 0, null, out NSError? error)!;
-        if (PipelineState is null || error is not null)
+        PipelineState = Context.Device.NewComputePipelineState(pipelineDesc, 0, IntPtr.Zero, out NSError? error);
+        if (error is not null)
         {
-            throw new InvalidOperationException($"Failed to create Metal compute pipeline state: {error?.LocalizedDescription}");
+            throw new InvalidOperationException($"Failed to create Metal compute pipeline state: {error.LocalizedDescription}");
         }
     }
 
@@ -36,7 +37,7 @@ internal class MTLComputePipeline : ComputePipeline
 
     protected override void SetName(string name)
     {
-        PipelineState.Label = name;
+        // Label is readonly in SharpMetal - set during descriptor creation if needed
     }
 
     protected override void Destroy()

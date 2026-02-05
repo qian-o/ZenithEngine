@@ -22,7 +22,7 @@ internal class MTLSampler : Sampler
             LodMaxClamp = desc.MaximumLod
         };
 
-        Sampler = Context.Device.CreateSamplerState(samplerDesc)!;
+        Sampler = Context.Device.NewSamplerState(samplerDesc)!;
     }
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;

@@ -10,7 +10,7 @@ internal class MTLFence : GraphicsResource
 
     public MTLFence(GraphicsContext context) : base(context)
     {
-        sharedEvent = Context.Device.CreateSharedEvent()!;
+        sharedEvent = Context.Device.NewSharedEvent()!;
         fenceValue = 0;
     }
 

@@ -52,7 +52,7 @@ internal class MTLQueryHeap : QueryHeap
 
         // Create a buffer to hold resolved results
         ulong bufferSize = desc.Count * sizeof(ulong);
-        resultsBuffer = Context.Device.CreateBuffer(bufferSize, MTLResourceOptions.StorageModeShared);
+        resultsBuffer = Context.Device.NewBuffer(bufferSize, MTLResourceOptions.ResourceStorageModeShared);
     }
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;

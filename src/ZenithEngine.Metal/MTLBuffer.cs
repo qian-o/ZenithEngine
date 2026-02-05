@@ -10,7 +10,7 @@ internal class MTLBuffer : Buffer
     {
         MTLResourceOptions options = GetResourceOptions(desc.Usage);
 
-        Buffer = Context.Device.CreateBuffer(desc.SizeInBytes, options)!;
+        Buffer = Context.Device.NewBuffer(desc.SizeInBytes, options)!;
     }
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
@@ -19,15 +19,15 @@ internal class MTLBuffer : Buffer
 
     private static MTLResourceOptions GetResourceOptions(BufferUsage usage)
     {
-        MTLResourceOptions options = MTLResourceOptions.StorageModePrivate;
+        MTLResourceOptions options = MTLResourceOptions.ResourceStorageModePrivate;
 
         // Use shared storage for dynamic buffers that need CPU access
         if (usage.HasFlag(BufferUsage.Dynamic))
         {
-            options = MTLResourceOptions.StorageModeShared;
+            options = MTLResourceOptions.ResourceStorageModeShared;
 
             // Use write-combined CPU cache mode for streaming data
-            options |= MTLResourceOptions.CPUCacheModeWriteCombined;
+            options |= MTLResourceOptions.ResourceCPUCacheModeWriteCombined;
         }
 
         // Apply hazard tracking mode optimization
@@ -37,7 +37,7 @@ internal class MTLBuffer : Buffer
         
         if (shouldDisableTracking)
         {
-            options |= MTLResourceOptions.HazardTrackingModeUntracked;
+            options |= MTLResourceOptions.ResourceHazardTrackingModeUntracked;
         }
 
         return options;

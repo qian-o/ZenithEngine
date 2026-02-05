@@ -1,3 +1,4 @@
+using SharpMetal.Foundation;
 using System;
 using SharpMetal.Metal;
 using ZenithEngine.Common.Descriptions;
@@ -87,7 +88,7 @@ internal class MTLGraphicsPipeline : GraphicsPipeline
         }
 
         // Create the pipeline state
-        PipelineState = Context.Device.CreateRenderPipelineState(pipelineDesc, out NSError? error)!;
+        PipelineState = Context.Device.NewRenderPipelineState(pipelineDesc, out NSError? error)!;
         if (PipelineState is null || error is not null)
         {
             throw new InvalidOperationException($"Failed to create Metal render pipeline state: {error?.LocalizedDescription}");
@@ -123,7 +124,7 @@ internal class MTLGraphicsPipeline : GraphicsPipeline
                 depthStencilDesc.BackFaceStencil = backFace;
             }
 
-            DepthStencilState = Context.Device.CreateDepthStencilState(depthStencilDesc);
+            DepthStencilState = Context.Device.NewDepthStencilState(depthStencilDesc);
         }
 
         // Store rasterizer state for command buffer usage

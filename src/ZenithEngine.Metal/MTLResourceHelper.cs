@@ -30,6 +30,6 @@ internal static class MTLResourceHelper
     /// <returns>The appropriate MTLResourceOptions flag, or none if tracking should remain enabled.</returns>
     public static MTLResourceOptions GetHazardTrackingMode(bool shouldDisable)
     {
-        return shouldDisable ? MTLResourceOptions.HazardTrackingModeUntracked : MTLResourceOptions.HazardTrackingModeTracked;
+        return shouldDisable ? MTLResourceOptions.ResourceHazardTrackingModeUntracked : MTLResourceOptions.ResourceHazardTrackingModeTracked;
     }
 }

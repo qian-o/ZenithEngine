@@ -104,8 +104,8 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
         uint bytesPerImage = bytesPerRow * region.Height;
 
         // Copy from buffer to texture
-        MTLOrigin origin = new(region.Position.X, region.Position.Y, region.Position.Z);
-        MTLSize size = new(region.Width, region.Height, region.Depth);
+        MTLOrigin origin = new() { x = (ulong)region.Position.X, y = (ulong)region.Position.Y, z = (ulong)region.Position.Z };
+        MTLSize size = new() { width = (ulong)region.Width, height = (ulong)region.Height, depth = (ulong)region.Depth };
 
         blitEncoder!.CopyFromBuffer(
             tempBuffer.Buffer,
@@ -132,9 +132,9 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
 
         EnsureBlitEncoder();
 
-        MTLOrigin srcOrigin = new(sourcePosition.X, sourcePosition.Y, sourcePosition.Z);
-        MTLSize size = new(width, height, depth);
-        MTLOrigin dstOrigin = new(destinationPosition.X, destinationPosition.Y, destinationPosition.Z);
+        MTLOrigin srcOrigin = new() { x = (ulong)sourcePosition.X, y = (ulong)sourcePosition.Y, z = (ulong)sourcePosition.Z };
+        MTLSize size = new() { width = (ulong)width, height = (ulong)height, depth = (ulong)depth };
+        MTLOrigin dstOrigin = new() { x = (ulong)destinationPosition.X, y = (ulong)destinationPosition.Y, z = (ulong)destinationPosition.Z };
 
         blitEncoder!.CopyFromTexture(
             src.Texture,
@@ -517,7 +517,7 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
         
         // For mesh shaders, we dispatch threadgroups directly
         // The threadgroup size is defined in the mesh shader itself
-        renderEncoder.DrawMeshThreadgroups(threadgroups, new MTLSize(1, 1, 1), new MTLSize(1, 1, 1));
+        renderEncoder.DrawMeshThreadgroups(threadgroups, new MTLSize { width = 1, height = 1, depth = 1 }, new MTLSize { width = 1, height = 1, depth = 1 });
     }
 
     public override void DispatchMeshIndirect(Buffer argBuffer, uint offset, uint drawCount)
@@ -533,7 +533,7 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
         for (uint i = 0; i < drawCount; i++)
         {
             renderEncoder.DrawMeshThreadgroups(mtlBuffer.Buffer, offset + (i * 12), // 12 bytes per draw (3 uints)
-                                               new MTLSize(1, 1, 1), new MTLSize(1, 1, 1));
+                                               new MTLSize { width = 1, height = 1, depth = 1 }, new MTLSize { width = 1, height = 1, depth = 1 });
         }
     }
     #endregion

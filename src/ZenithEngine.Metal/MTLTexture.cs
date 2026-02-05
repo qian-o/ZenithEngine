@@ -28,7 +28,7 @@ internal class MTLTexture : Texture
             Usage = MTLFormats.GetMTLTextureUsage(desc.Usage)
         };
 
-        Texture = Context.Device.CreateTexture(descriptor)!;
+        Texture = Context.Device.NewTexture(descriptor)!;
     }
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
@@ -38,7 +38,7 @@ internal class MTLTexture : Texture
     private static MTLResourceOptions GetResourceOptions(TextureUsage usage)
     {
         // Default to private storage for optimal GPU performance
-        MTLResourceOptions options = MTLResourceOptions.StorageModePrivate;
+        MTLResourceOptions options = MTLResourceOptions.ResourceStorageModePrivate;
 
         // Apply hazard tracking mode optimization
         bool hasUnorderedAccess = usage.HasFlag(TextureUsage.UnorderedAccess);
@@ -47,7 +47,7 @@ internal class MTLTexture : Texture
         
         if (shouldDisableTracking)
         {
-            options |= MTLResourceOptions.HazardTrackingModeUntracked;
+            options |= MTLResourceOptions.ResourceHazardTrackingModeUntracked;
         }
 
         return options;

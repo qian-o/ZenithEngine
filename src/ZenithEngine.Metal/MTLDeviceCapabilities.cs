@@ -1,3 +1,4 @@
+using SharpMetal.Foundation;
 ﻿using SharpMetal.Metal;
 using ZenithEngine.Common.Graphics;
 
@@ -5,11 +6,11 @@ namespace ZenithEngine.Metal;
 
 internal class MTLDeviceCapabilities(MTLDevice device) : DeviceCapabilities
 {
-    public override string DeviceName { get; } = device.Name;
+    public override string DeviceName { get; } = device.Name?.ToString() ?? "Unknown Metal Device";
 
     public override bool IsRayTracingSupported { get; } = device.SupportsRaytracing || device.SupportsRaytracingFromRender;
 
-    public override bool IsMeshShaderSupported { get; } = device.SupportsFamily(MTLGpuFamily.Mac2) || device.SupportsFamily(MTLGpuFamily.Apple7);
+    public override bool IsMeshShaderSupported { get; } = device.SupportsFamily(MTLGPUFamily.Mac2) || device.SupportsFamily(MTLGPUFamily.Apple7);
 
     /// <summary>
     /// Gets the maximum buffer length supported by the device.
@@ -29,7 +30,7 @@ internal class MTLDeviceCapabilities(MTLDevice device) : DeviceCapabilities
     /// <summary>
     /// Gets a value indicating whether the device supports texture swizzle.
     /// </summary>
-    public bool SupportsTextureSwizzle { get; } = device.SupportsFamily(MTLGpuFamily.Apple6) || device.SupportsFamily(MTLGpuFamily.Mac2);
+    public bool SupportsTextureSwizzle { get; } = device.SupportsFamily(MTLGPUFamily.Apple6) || device.SupportsFamily(MTLGPUFamily.Mac2);
 
     /// <summary>
     /// Gets the maximum framebuffer storage bit depth.
@@ -39,10 +40,10 @@ internal class MTLDeviceCapabilities(MTLDevice device) : DeviceCapabilities
     /// <summary>
     /// Gets a value indicating whether the device supports variable rasterization rate (VRS).
     /// </summary>
-    public bool SupportsVariableRasterizationRate { get; } = device.SupportsRasterizationRateMap;
+    public bool SupportsVariableRasterizationRate { get; } = device.SupportsRasterizationRateMap();
 
     /// <summary>
     /// Gets a value indicating whether the device supports argument buffers.
     /// </summary>
-    public bool SupportsArgumentBuffers { get; } = device.SupportsFamily(MTLGpuFamily.Metal4);
+    public bool SupportsArgumentBuffers { get; } = device.SupportsFamily(MTLGPUFamily.Metal4);
 }
