@@ -1,4 +1,4 @@
-using Metal;
+using SharpMetal.Metal;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Graphics;
 
@@ -27,7 +27,7 @@ internal class MTLSampler : Sampler
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public IMTLSamplerState Sampler { get; }
+    public MTLSamplerState Sampler { get; }
 
     protected override void SetName(string name)
     {

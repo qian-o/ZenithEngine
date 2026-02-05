@@ -1,5 +1,5 @@
 ﻿using System;
-using Metal;
+using SharpMetal.Metal;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
@@ -9,7 +9,7 @@ internal unsafe class MTLGraphicsContext : GraphicsContext
 {
     public MTLGraphicsContext()
     {
-        IMTLDevice device;
+        MTLDevice device;
         if (MTLDevice.SystemDefault is null)
         {
             throw new InvalidOperationException("No Metal-compatible device found.");
@@ -45,13 +45,13 @@ internal unsafe class MTLGraphicsContext : GraphicsContext
         LogDeviceCapabilities();
     }
 
-    public IMTLDevice Device { get; }
+    public MTLDevice Device { get; }
 
-    public IMTLCommandQueue GraphicsQueue { get; private set; }
+    public MTLCommandQueue GraphicsQueue { get; private set; }
 
-    public IMTLCommandQueue ComputeQueue { get; private set; }
+    public MTLCommandQueue ComputeQueue { get; private set; }
 
-    public IMTLCommandQueue CopyQueue { get; private set; }
+    public MTLCommandQueue CopyQueue { get; private set; }
 
     public override Backend Backend { get; }
 

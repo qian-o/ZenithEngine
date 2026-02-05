@@ -1,5 +1,5 @@
 ﻿using System;
-using Metal;
+using SharpMetal.Metal;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Metal;
@@ -91,7 +91,7 @@ internal static class MTLFormats
     /// <param name="device">The Metal device to check.</param>
     /// <param name="format">The pixel format to validate.</param>
     /// <returns>True if the format is supported, false otherwise.</returns>
-    internal static bool IsPixelFormatSupported(IMTLDevice device, PixelFormat format)
+    internal static bool IsPixelFormatSupported(MTLDevice device, PixelFormat format)
     {
         try
         {

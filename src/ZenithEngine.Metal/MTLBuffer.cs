@@ -1,4 +1,4 @@
-﻿using Metal;
+﻿using SharpMetal.Metal;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 
@@ -15,7 +15,7 @@ internal class MTLBuffer : Buffer
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public IMTLBuffer Buffer { get; }
+    public MTLBuffer Buffer { get; }
 
     private static MTLResourceOptions GetResourceOptions(BufferUsage usage)
     {

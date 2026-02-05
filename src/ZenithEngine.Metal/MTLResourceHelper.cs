@@ -1,4 +1,4 @@
-using Metal;
+using SharpMetal.Metal;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Metal;

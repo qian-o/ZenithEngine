@@ -1,5 +1,5 @@
 using System;
-using Metal;
+using SharpMetal.Metal;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Graphics;
 
@@ -32,7 +32,7 @@ internal class MTLComputePipeline : ComputePipeline
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public IMTLComputePipelineState PipelineState { get; }
+    public MTLComputePipelineState PipelineState { get; }
 
     protected override void SetName(string name)
     {

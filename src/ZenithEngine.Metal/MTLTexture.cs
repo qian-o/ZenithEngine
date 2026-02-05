@@ -1,5 +1,6 @@
-﻿using Metal;
+﻿using SharpMetal.Metal;
 using ZenithEngine.Common.Descriptions;
+using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Metal;
@@ -32,7 +33,7 @@ internal class MTLTexture : Texture
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public IMTLTexture Texture { get; }
+    public MTLTexture Texture { get; }
 
     private static MTLResourceOptions GetResourceOptions(TextureUsage usage)
     {

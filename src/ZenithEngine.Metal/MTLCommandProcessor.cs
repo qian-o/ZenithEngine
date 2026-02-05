@@ -1,4 +1,4 @@
-using Metal;
+using SharpMetal.Metal;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -7,7 +7,7 @@ namespace ZenithEngine.Metal;
 
 internal class MTLCommandProcessor : CommandProcessor
 {
-    private readonly IMTLCommandQueue queue;
+    private readonly MTLCommandQueue queue;
     private readonly MTLFence fence;
 
     public MTLCommandProcessor(GraphicsContext context,

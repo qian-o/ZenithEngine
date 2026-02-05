@@ -1,9 +1,9 @@
-﻿using Metal;
+﻿using SharpMetal.Metal;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Metal;
 
-internal class MTLDeviceCapabilities(IMTLDevice device) : DeviceCapabilities
+internal class MTLDeviceCapabilities(MTLDevice device) : DeviceCapabilities
 {
     public override string DeviceName { get; } = device.Name;
 

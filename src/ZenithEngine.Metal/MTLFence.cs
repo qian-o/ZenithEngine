@@ -1,11 +1,11 @@
-using Metal;
+using SharpMetal.Metal;
 using ZenithEngine.Common.Graphics;
 
 namespace ZenithEngine.Metal;
 
 internal class MTLFence : GraphicsResource
 {
-    private readonly IMTLSharedEvent sharedEvent;
+    private readonly MTLSharedEvent sharedEvent;
     private ulong fenceValue;
 
     public MTLFence(GraphicsContext context) : base(context)
@@ -16,7 +16,7 @@ internal class MTLFence : GraphicsResource
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public void Wait(IMTLCommandQueue queue)
+    public void Wait(MTLCommandQueue queue)
     {
         fenceValue++;
 

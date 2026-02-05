@@ -1,5 +1,5 @@
 using System;
-using Metal;
+using SharpMetal.Metal;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -8,8 +8,8 @@ namespace ZenithEngine.Metal;
 
 internal class MTLQueryHeap : QueryHeap
 {
-    private readonly IMTLCounterSampleBuffer? counterSampleBuffer;
-    private readonly IMTLBuffer? resultsBuffer;
+    private readonly MTLCounterSampleBuffer? counterSampleBuffer;
+    private readonly MTLBuffer? resultsBuffer;
 
     public MTLQueryHeap(GraphicsContext context,
                         ref readonly QueryHeapDesc desc) : base(context, in desc)
@@ -57,9 +57,9 @@ internal class MTLQueryHeap : QueryHeap
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public IMTLCounterSampleBuffer? CounterSampleBuffer => counterSampleBuffer;
+    public MTLCounterSampleBuffer? CounterSampleBuffer => counterSampleBuffer;
 
-    public IMTLBuffer? ResultsBuffer => resultsBuffer;
+    public MTLBuffer? ResultsBuffer => resultsBuffer;
 
     public override void GetData(int startIndex, Span<ulong> data)
     {
@@ -96,13 +96,13 @@ internal class MTLQueryHeap : QueryHeap
         counterSampleBuffer?.Dispose();
     }
 
-    private IMTLCounterSet GetTimestampCounterSet()
+    private MTLCounterSet GetTimestampCounterSet()
     {
         // Get available counter sets from the device
-        IMTLCounterSet[] counterSets = Context.Device.CounterSets;
+        MTLCounterSet[] counterSets = Context.Device.CounterSets;
         
         // Look for timestamp counter set
-        foreach (IMTLCounterSet counterSet in counterSets)
+        foreach (MTLCounterSet counterSet in counterSets)
         {
             if (counterSet.Name.Contains("timestamp", StringComparison.OrdinalIgnoreCase))
             {

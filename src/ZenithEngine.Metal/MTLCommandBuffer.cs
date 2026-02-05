@@ -1,5 +1,5 @@
 using System;
-using Metal;
+using SharpMetal.Metal;
 using Silk.NET.Maths;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
@@ -9,10 +9,10 @@ namespace ZenithEngine.Metal;
 
 internal unsafe class MTLCommandBuffer : CommandBuffer
 {
-    private IMTLCommandBuffer? commandBuffer;
-    private IMTLRenderCommandEncoder? renderEncoder;
-    private IMTLComputeCommandEncoder? computeEncoder;
-    private IMTLBlitCommandEncoder? blitEncoder;
+    private MTLCommandBuffer? commandBuffer;
+    private MTLRenderCommandEncoder? renderEncoder;
+    private MTLComputeCommandEncoder? computeEncoder;
+    private MTLBlitCommandEncoder? blitEncoder;
 
     private FrameBuffer? activeFrameBuffer;
     private Pipeline? activePipeline;
@@ -29,12 +29,12 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public IMTLCommandBuffer? CommandBuffer => commandBuffer;
+    public MTLCommandBuffer? CommandBuffer => commandBuffer;
 
     #region Command Buffer Management
     public override void Begin()
     {
-        IMTLCommandQueue queue = ProcessorType switch
+        MTLCommandQueue queue = ProcessorType switch
         {
             CommandProcessorType.Graphics => Context.GraphicsQueue,
             CommandProcessorType.Compute => Context.ComputeQueue,
@@ -384,8 +384,7 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
 
     public override void DrawIndirect(Buffer argBuffer,
                                       uint offset,
-                                      uint drawCount,
-                                      uint stride)
+                                      uint drawCount)
     {
         if (renderEncoder is null || drawCount == 0)
         {
@@ -395,6 +394,8 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
         MTLBuffer mtlBuffer = (MTLBuffer)argBuffer;
         
         // Metal doesn't have multi-draw indirect, so we need to iterate
+        // Each draw command is 16 bytes (4 uints: vertexCount, instanceCount, firstVertex, firstInstance)
+        uint stride = 16;
         for (uint i = 0; i < drawCount; i++)
         {
             renderEncoder.DrawPrimitives(currentPrimitiveType,
@@ -428,8 +429,7 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
 
     public override void DrawIndexedIndirect(Buffer argBuffer,
                                              uint offset,
-                                             uint drawCount,
-                                             uint stride)
+                                             uint drawCount)
     {
         if (renderEncoder is null || indexBuffer is null || drawCount == 0)
         {
@@ -439,6 +439,8 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
         MTLBuffer mtlArgBuffer = (MTLBuffer)argBuffer;
         
         // Metal doesn't have multi-draw indirect, so we need to iterate
+        // Each draw command is 20 bytes (5 uints: indexCount, instanceCount, firstIndex, baseVertex, firstInstance)
+        uint stride = 20;
         for (uint i = 0; i < drawCount; i++)
         {
             renderEncoder.DrawIndexedPrimitives(currentPrimitiveType,

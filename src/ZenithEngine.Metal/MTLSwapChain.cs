@@ -1,5 +1,6 @@
 using System;
-using Metal;
+using SharpMetal.Metal;
+using SharpMetal.QuartzCore;
 using Silk.NET.Maths;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Graphics;
@@ -12,7 +13,7 @@ internal class MTLSwapChain : SwapChain
     private readonly MTLFence fence;
     private MTLSwapChainFrameBuffer? swapChainFrameBuffer;
     private CAMetalLayer? metalLayer;
-    private ICAMetalDrawable? currentDrawable;
+    private CAMetalDrawable? currentDrawable;
 
     public MTLSwapChain(GraphicsContext context,
                        ref readonly SwapChainDesc desc) : base(context, in desc)
@@ -29,7 +30,7 @@ internal class MTLSwapChain : SwapChain
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public ICAMetalDrawable? CurrentDrawable => currentDrawable;
+    public CAMetalDrawable? CurrentDrawable => currentDrawable;
 
     public override void Present()
     {
@@ -71,7 +72,7 @@ internal class MTLSwapChain : SwapChain
     /// <summary>
     /// Gets the next drawable from the Metal layer.
     /// </summary>
-    public ICAMetalDrawable? NextDrawable()
+    public CAMetalDrawable? NextDrawable()
     {
         if (metalLayer is null)
         {

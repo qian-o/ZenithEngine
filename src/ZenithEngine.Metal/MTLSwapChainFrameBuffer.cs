@@ -1,5 +1,6 @@
 using System;
-using Metal;
+using SharpMetal.Metal;
+using SharpMetal.QuartzCore;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -67,10 +68,10 @@ internal class MTLSwapChainFrameBuffer : GraphicsResource
     /// <summary>
     /// Updates the framebuffer with the current drawable texture.
     /// </summary>
-    public void UpdateDrawable(ICAMetalDrawable drawable)
+    public void UpdateDrawable(CAMetalDrawable drawable)
     {
         // Wrap the drawable's texture in our MTLTexture wrapper
-        IMTLTexture drawableTexture = drawable.Texture;
+        MTLTexture drawableTexture = drawable.Texture;
         
         // Create a temporary TextureDesc for the drawable
         TextureDesc colorDesc = new(

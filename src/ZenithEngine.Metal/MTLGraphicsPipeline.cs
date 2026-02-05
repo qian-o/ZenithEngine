@@ -1,5 +1,5 @@
 using System;
-using Metal;
+using SharpMetal.Metal;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Graphics;
 
@@ -134,9 +134,9 @@ internal class MTLGraphicsPipeline : GraphicsPipeline
 
     private new MTLGraphicsContext Context => (MTLGraphicsContext)base.Context;
 
-    public IMTLRenderPipelineState PipelineState { get; }
+    public MTLRenderPipelineState PipelineState { get; }
 
-    public IMTLDepthStencilState? DepthStencilState { get; }
+    public MTLDepthStencilState? DepthStencilState { get; }
 
     public ZenithEngine.Common.Enums.CullMode CullMode { get; }
 
@@ -155,7 +155,7 @@ internal class MTLGraphicsPipeline : GraphicsPipeline
         PipelineState.Dispose();
     }
 
-    private static BlendStateRenderTargetDesc GetBlendTargetDesc(BlendState blendState, int index)
+    private static BlendStateRenderTargetDesc GetBlendTargetDesc(BlendStateDesc blendState, int index)
     {
         return index switch
         {

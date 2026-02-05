@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using Metal;
+using SharpMetal.Metal;
 using ZenithEngine.Common;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;

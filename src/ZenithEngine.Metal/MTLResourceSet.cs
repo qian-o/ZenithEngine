@@ -1,5 +1,5 @@
 using System;
-using Metal;
+using SharpMetal.Metal;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
@@ -43,7 +43,7 @@ internal class MTLResourceSet : ResourceSet
     /// </summary>
     /// <param name="encoder">The render command encoder.</param>
     /// <param name="slot">The binding slot.</param>
-    public void BindToRenderEncoder(IMTLRenderCommandEncoder encoder, uint slot)
+    public void BindToRenderEncoder(MTLRenderCommandEncoder encoder, uint slot)
     {
         MTLResourceLayout layout = (MTLResourceLayout)Desc.Layout;
 
@@ -115,7 +115,7 @@ internal class MTLResourceSet : ResourceSet
     /// </summary>
     /// <param name="encoder">The compute command encoder.</param>
     /// <param name="slot">The binding slot.</param>
-    public void BindToComputeEncoder(IMTLComputeCommandEncoder encoder, uint slot)
+    public void BindToComputeEncoder(MTLComputeCommandEncoder encoder, uint slot)
     {
         MTLResourceLayout layout = (MTLResourceLayout)Desc.Layout;
 
