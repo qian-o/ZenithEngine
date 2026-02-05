@@ -312,4 +312,48 @@ internal static class MTLFormats
             _ => throw new NotSupportedException($"Vertex step function {stepFunction} is not supported.")
         };
     }
+
+    internal static MTLCullMode GetMTLCullMode(CullMode cullMode)
+    {
+        return cullMode switch
+        {
+            CullMode.None => MTLCullMode.None,
+            CullMode.Front => MTLCullMode.Front,
+            CullMode.Back => MTLCullMode.Back,
+            _ => throw new NotSupportedException($"Cull mode {cullMode} is not supported.")
+        };
+    }
+
+    internal static MTLWinding GetMTLWinding(FrontFace frontFace)
+    {
+        return frontFace switch
+        {
+            FrontFace.Clockwise => MTLWinding.Clockwise,
+            FrontFace.CounterClockwise => MTLWinding.CounterClockwise,
+            _ => throw new NotSupportedException($"Front face {frontFace} is not supported.")
+        };
+    }
+
+    internal static MTLPrimitiveType GetMTLPrimitiveType(PrimitiveTopology topology)
+    {
+        return topology switch
+        {
+            PrimitiveTopology.PointList => MTLPrimitiveType.Point,
+            PrimitiveTopology.LineList => MTLPrimitiveType.Line,
+            PrimitiveTopology.LineStrip => MTLPrimitiveType.LineStrip,
+            PrimitiveTopology.TriangleList => MTLPrimitiveType.Triangle,
+            PrimitiveTopology.TriangleStrip => MTLPrimitiveType.TriangleStrip,
+            _ => throw new NotSupportedException($"Primitive topology {topology} is not supported.")
+        };
+    }
+
+    internal static MTLIndexType GetMTLIndexType(IndexFormat format)
+    {
+        return format switch
+        {
+            IndexFormat.UInt16 => MTLIndexType.UInt16,
+            IndexFormat.UInt32 => MTLIndexType.UInt32,
+            _ => throw new NotSupportedException($"Index format {format} is not supported.")
+        };
+    }
 }
