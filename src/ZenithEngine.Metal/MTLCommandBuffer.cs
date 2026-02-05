@@ -87,7 +87,35 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
                                        uint sourceSizeInBytes,
                                        TextureRegion region)
     {
-        throw new NotImplementedException();
+        MTLTexture mtlTexture = (MTLTexture)texture;
+        
+        // Create a temporary buffer to hold the source data
+        Buffer temporary = BufferAllocator.Buffer(sourceSizeInBytes);
+        Context.UpdateBuffer(temporary, source, sourceSizeInBytes);
+        
+        MTLBuffer tempBuffer = (MTLBuffer)temporary;
+
+        EnsureBlitEncoder();
+
+        // Calculate bytes per row and bytes per image
+        uint pixelSize = GetPixelSize(texture.Desc.Format);
+        uint bytesPerRow = region.Width * pixelSize;
+        uint bytesPerImage = bytesPerRow * region.Height;
+
+        // Copy from buffer to texture
+        MTLOrigin origin = new(region.Position.X, region.Position.Y, region.Position.Z);
+        MTLSize size = new(region.Width, region.Height, region.Depth);
+
+        blitEncoder!.CopyFromBuffer(
+            tempBuffer.Buffer,
+            0,
+            bytesPerRow,
+            bytesPerImage,
+            size,
+            mtlTexture.Texture,
+            region.Position.ArrayLayer,
+            region.Position.MipLevel,
+            origin);
     }
 
     public override void CopyTexture(Texture source,
@@ -98,7 +126,25 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
                                      uint height,
                                      uint depth)
     {
-        throw new NotImplementedException();
+        MTLTexture src = (MTLTexture)source;
+        MTLTexture dst = (MTLTexture)destination;
+
+        EnsureBlitEncoder();
+
+        MTLOrigin srcOrigin = new(sourcePosition.X, sourcePosition.Y, sourcePosition.Z);
+        MTLSize size = new(width, height, depth);
+        MTLOrigin dstOrigin = new(destinationPosition.X, destinationPosition.Y, destinationPosition.Z);
+
+        blitEncoder!.CopyFromTexture(
+            src.Texture,
+            sourcePosition.ArrayLayer,
+            sourcePosition.MipLevel,
+            srcOrigin,
+            size,
+            dst.Texture,
+            destinationPosition.ArrayLayer,
+            destinationPosition.MipLevel,
+            dstOrigin);
     }
 
     public override void ResolveTexture(Texture source,
@@ -106,7 +152,18 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
                                         Texture destination,
                                         TexturePosition destinationPosition)
     {
-        throw new NotImplementedException();
+        MTLTexture src = (MTLTexture)source;
+        MTLTexture dst = (MTLTexture)destination;
+
+        // Metal doesn't have a separate resolve command in blit encoder
+        // Resolve operations are typically done at the end of a render pass
+        // For now, we'll do a regular copy which works for non-MSAA textures
+        
+        uint width = Math.Min(src.Desc.Width, dst.Desc.Width);
+        uint height = Math.Min(src.Desc.Height, dst.Desc.Height);
+        uint depth = Math.Min(src.Desc.Depth, dst.Desc.Depth);
+
+        CopyTexture(source, sourcePosition, destination, destinationPosition, width, height, depth);
     }
     #endregion
 
@@ -274,8 +331,16 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
 
     public override void SetResourceSet(uint slot, ResourceSet resourceSet)
     {
-        // TODO: Implement argument buffer binding
-        // Metal uses argument buffers for resource sets
+        MTLResourceSet mtlResourceSet = (MTLResourceSet)resourceSet;
+
+        if (renderEncoder is not null)
+        {
+            mtlResourceSet.BindToRenderEncoder(renderEncoder, slot);
+        }
+        else if (computeEncoder is not null)
+        {
+            mtlResourceSet.BindToComputeEncoder(computeEncoder, slot);
+        }
     }
 
     public override void Draw(uint vertexCount,
@@ -509,5 +574,25 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
         EndCurrentEncoder();
 
         computeEncoder = commandBuffer!.ComputeCommandEncoder();
+    }
+
+    private static uint GetPixelSize(PixelFormat format)
+    {
+        return format switch
+        {
+            PixelFormat.R8UNorm or PixelFormat.R8SNorm or PixelFormat.R8UInt or PixelFormat.R8SInt => 1,
+            PixelFormat.R16UNorm or PixelFormat.R16SNorm or PixelFormat.R16UInt or PixelFormat.R16SInt or PixelFormat.R16Float => 2,
+            PixelFormat.R8G8UNorm or PixelFormat.R8G8SNorm or PixelFormat.R8G8UInt or PixelFormat.R8G8SInt => 2,
+            PixelFormat.R32UInt or PixelFormat.R32SInt or PixelFormat.R32Float => 4,
+            PixelFormat.R16G16UNorm or PixelFormat.R16G16SNorm or PixelFormat.R16G16UInt or PixelFormat.R16G16SInt or PixelFormat.R16G16Float => 4,
+            PixelFormat.R8G8B8A8UNorm or PixelFormat.R8G8B8A8UNormSRgb or PixelFormat.R8G8B8A8SNorm or PixelFormat.R8G8B8A8UInt or PixelFormat.R8G8B8A8SInt => 4,
+            PixelFormat.B8G8R8A8UNorm or PixelFormat.B8G8R8A8UNormSRgb => 4,
+            PixelFormat.R32G32UInt or PixelFormat.R32G32SInt or PixelFormat.R32G32Float => 8,
+            PixelFormat.R16G16B16A16UNorm or PixelFormat.R16G16B16A16SNorm or PixelFormat.R16G16B16A16UInt or PixelFormat.R16G16B16A16SInt or PixelFormat.R16G16B16A16Float => 8,
+            PixelFormat.R32G32B32UInt or PixelFormat.R32G32B32SInt or PixelFormat.R32G32B32Float => 12,
+            PixelFormat.R32G32B32A32UInt or PixelFormat.R32G32B32A32SInt or PixelFormat.R32G32B32A32Float => 16,
+            PixelFormat.D24UNormS8UInt or PixelFormat.D32FloatS8UInt => 4,
+            _ => 4 // Default for compressed formats
+        };
     }
 }

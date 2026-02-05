@@ -35,12 +35,12 @@ internal class MTLResourceFactory(GraphicsContext graphicsContext) : ResourceFac
 
     public override ResourceLayout CreateResourceLayout(ref readonly ResourceLayoutDesc desc)
     {
-        throw new NotImplementedException();
+        return new MTLResourceLayout(Context, in desc);
     }
 
     public override ResourceSet CreateResourceSet(ref readonly ResourceSetDesc desc)
     {
-        throw new NotImplementedException();
+        return new MTLResourceSet(Context, in desc);
     }
 
     public override FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc)
