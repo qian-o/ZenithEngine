@@ -10,7 +10,7 @@ internal class MTLResourceFactory(GraphicsContext graphicsContext) : ResourceFac
 
     public override SwapChain CreateSwapChain(ref readonly SwapChainDesc desc)
     {
-        throw new NotImplementedException();
+        return new MTLSwapChain(Context, in desc);
     }
 
     public override Buffer CreateBuffer(ref readonly BufferDesc desc)
@@ -45,7 +45,7 @@ internal class MTLResourceFactory(GraphicsContext graphicsContext) : ResourceFac
 
     public override FrameBuffer CreateFrameBuffer(ref readonly FrameBufferDesc desc)
     {
-        throw new NotImplementedException();
+        return new MTLFrameBuffer(Context, in desc);
     }
 
     public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc)
@@ -55,7 +55,7 @@ internal class MTLResourceFactory(GraphicsContext graphicsContext) : ResourceFac
 
     public override ComputePipeline CreateComputePipeline(ref readonly ComputePipelineDesc desc)
     {
-        throw new NotImplementedException();
+        return new MTLComputePipeline(Context, in desc);
     }
 
     public override RayTracingPipeline CreateRayTracingPipeline(ref readonly RayTracingPipelineDesc desc)
