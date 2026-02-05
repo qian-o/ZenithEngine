@@ -84,6 +84,31 @@ internal static class MTLFormats
         };
     }
 
+    /// <summary>
+    /// Validates if a pixel format is supported by the given device.
+    /// </summary>
+    /// <param name="device">The Metal device to check.</param>
+    /// <param name="format">The pixel format to validate.</param>
+    /// <returns>True if the format is supported, false otherwise.</returns>
+    internal static bool IsPixelFormatSupported(IMTLDevice device, PixelFormat format)
+    {
+        try
+        {
+            MTLPixelFormat mtlFormat = GetMTLPixelFormat(format);
+            if (mtlFormat == MTLPixelFormat.Invalid)
+            {
+                return false;
+            }
+
+            // Check if the device supports the pixel format
+            return device.SupportsTextureSampleCount(1, mtlFormat);
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+    }
+
     internal static MTLTextureUsage GetMTLTextureUsage(TextureUsage usage)
     {
         MTLTextureUsage mtlUsage = MTLTextureUsage.Unknown;

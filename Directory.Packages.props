@@ -7,7 +7,7 @@
     <ItemGroup>
         <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
         <PackageVersion Include="CommunityToolkit.WinUI.Behaviors" Version="8.2.250402" />
-        <PackageVersion Include="Evergine.Metal" Version="2025.10.21.59" />
+
         <PackageVersion Include="Hexa.NET.ImGui" Version="2.2.9" />
         <PackageVersion Include="Roslynator.Analyzers" Version="4.15.0" />
         <PackageVersion Include="Silk.NET.Direct3D12" Version="2.22.0" />

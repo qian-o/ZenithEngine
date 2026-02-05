@@ -5,10 +5,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Evergine.Metal" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\ZenithEngine.Common\ZenithEngine.Common.csproj" />
     </ItemGroup>
 
