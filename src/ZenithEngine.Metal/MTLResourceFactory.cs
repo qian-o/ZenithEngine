@@ -30,7 +30,7 @@ internal class MTLResourceFactory(GraphicsContext graphicsContext) : ResourceFac
 
     public override Shader CreateShader(ref readonly ShaderDesc desc)
     {
-        throw new NotImplementedException();
+        return new MTLShader(Context, in desc);
     }
 
     public override ResourceLayout CreateResourceLayout(ref readonly ResourceLayoutDesc desc)
@@ -50,7 +50,7 @@ internal class MTLResourceFactory(GraphicsContext graphicsContext) : ResourceFac
 
     public override GraphicsPipeline CreateGraphicsPipeline(ref readonly GraphicsPipelineDesc desc)
     {
-        throw new NotImplementedException();
+        return new MTLGraphicsPipeline(Context, in desc);
     }
 
     public override ComputePipeline CreateComputePipeline(ref readonly ComputePipelineDesc desc)

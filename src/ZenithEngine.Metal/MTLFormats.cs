@@ -191,19 +191,125 @@ internal static class MTLFormats
         };
     }
 
-    internal static MTLCompareFunction GetMTLCompareFunction(ComparisonFunction comparisonFunction)
+    internal static MTLColorWriteMask GetMTLColorWriteMask(ColorWriteChannels channels)
     {
-        return comparisonFunction switch
+        MTLColorWriteMask mask = MTLColorWriteMask.None;
+
+        if (channels.HasFlag(ColorWriteChannels.Red))
+            mask |= MTLColorWriteMask.Red;
+        if (channels.HasFlag(ColorWriteChannels.Green))
+            mask |= MTLColorWriteMask.Green;
+        if (channels.HasFlag(ColorWriteChannels.Blue))
+            mask |= MTLColorWriteMask.Blue;
+        if (channels.HasFlag(ColorWriteChannels.Alpha))
+            mask |= MTLColorWriteMask.Alpha;
+
+        return mask;
+    }
+
+    internal static MTLBlendFactor GetMTLBlendFactor(Blend blend)
+    {
+        return blend switch
         {
-            ComparisonFunction.Never => MTLCompareFunction.Never,
-            ComparisonFunction.Less => MTLCompareFunction.Less,
-            ComparisonFunction.Equal => MTLCompareFunction.Equal,
-            ComparisonFunction.LessEqual => MTLCompareFunction.LessEqual,
-            ComparisonFunction.Greater => MTLCompareFunction.Greater,
-            ComparisonFunction.NotEqual => MTLCompareFunction.NotEqual,
-            ComparisonFunction.GreaterEqual => MTLCompareFunction.GreaterEqual,
-            ComparisonFunction.Always => MTLCompareFunction.Always,
-            _ => throw new NotSupportedException($"Comparison function {comparisonFunction} is not supported.")
+            Blend.Zero => MTLBlendFactor.Zero,
+            Blend.One => MTLBlendFactor.One,
+            Blend.SourceColor => MTLBlendFactor.SourceColor,
+            Blend.InverseSourceColor => MTLBlendFactor.OneMinusSourceColor,
+            Blend.SourceAlpha => MTLBlendFactor.SourceAlpha,
+            Blend.InverseSourceAlpha => MTLBlendFactor.OneMinusSourceAlpha,
+            Blend.DestinationColor => MTLBlendFactor.DestinationColor,
+            Blend.InverseDestinationColor => MTLBlendFactor.OneMinusDestinationColor,
+            Blend.DestinationAlpha => MTLBlendFactor.DestinationAlpha,
+            Blend.InverseDestinationAlpha => MTLBlendFactor.OneMinusDestinationAlpha,
+            Blend.BlendFactor => MTLBlendFactor.BlendColor,
+            Blend.InverseBlendFactor => MTLBlendFactor.OneMinusBlendColor,
+            _ => throw new NotSupportedException($"Blend factor {blend} is not supported.")
+        };
+    }
+
+    internal static MTLBlendOperation GetMTLBlendOperation(BlendOperation operation)
+    {
+        return operation switch
+        {
+            BlendOperation.Add => MTLBlendOperation.Add,
+            BlendOperation.Subtract => MTLBlendOperation.Subtract,
+            BlendOperation.ReverseSubtract => MTLBlendOperation.ReverseSubtract,
+            BlendOperation.Min => MTLBlendOperation.Min,
+            BlendOperation.Max => MTLBlendOperation.Max,
+            _ => throw new NotSupportedException($"Blend operation {operation} is not supported.")
+        };
+    }
+
+    internal static MTLStencilOperation GetMTLStencilOperation(StencilOperation operation)
+    {
+        return operation switch
+        {
+            StencilOperation.Keep => MTLStencilOperation.Keep,
+            StencilOperation.Zero => MTLStencilOperation.Zero,
+            StencilOperation.Replace => MTLStencilOperation.Replace,
+            StencilOperation.IncrementAndClamp => MTLStencilOperation.IncrementClamp,
+            StencilOperation.DecrementAndClamp => MTLStencilOperation.DecrementClamp,
+            StencilOperation.Invert => MTLStencilOperation.Invert,
+            StencilOperation.IncrementAndWrap => MTLStencilOperation.IncrementWrap,
+            StencilOperation.DecrementAndWrap => MTLStencilOperation.DecrementWrap,
+            _ => throw new NotSupportedException($"Stencil operation {operation} is not supported.")
+        };
+    }
+
+    internal static MTLVertexFormat GetMTLVertexFormat(ElementFormat format)
+    {
+        return format switch
+        {
+            ElementFormat.UByte1 => MTLVertexFormat.UChar,
+            ElementFormat.UByte2 => MTLVertexFormat.UChar2,
+            ElementFormat.UByte4 => MTLVertexFormat.UChar4,
+            ElementFormat.Byte1 => MTLVertexFormat.Char,
+            ElementFormat.Byte2 => MTLVertexFormat.Char2,
+            ElementFormat.Byte4 => MTLVertexFormat.Char4,
+            ElementFormat.UByte1Normalized => MTLVertexFormat.UCharNormalized,
+            ElementFormat.UByte2Normalized => MTLVertexFormat.UChar2Normalized,
+            ElementFormat.UByte4Normalized => MTLVertexFormat.UChar4Normalized,
+            ElementFormat.Byte1Normalized => MTLVertexFormat.CharNormalized,
+            ElementFormat.Byte2Normalized => MTLVertexFormat.Char2Normalized,
+            ElementFormat.Byte4Normalized => MTLVertexFormat.Char4Normalized,
+            ElementFormat.UShort1 => MTLVertexFormat.UShort,
+            ElementFormat.UShort2 => MTLVertexFormat.UShort2,
+            ElementFormat.UShort4 => MTLVertexFormat.UShort4,
+            ElementFormat.Short1 => MTLVertexFormat.Short,
+            ElementFormat.Short2 => MTLVertexFormat.Short2,
+            ElementFormat.Short4 => MTLVertexFormat.Short4,
+            ElementFormat.UShort1Normalized => MTLVertexFormat.UShortNormalized,
+            ElementFormat.UShort2Normalized => MTLVertexFormat.UShort2Normalized,
+            ElementFormat.UShort4Normalized => MTLVertexFormat.UShort4Normalized,
+            ElementFormat.Short1Normalized => MTLVertexFormat.ShortNormalized,
+            ElementFormat.Short2Normalized => MTLVertexFormat.Short2Normalized,
+            ElementFormat.Short4Normalized => MTLVertexFormat.Short4Normalized,
+            ElementFormat.Half1 => MTLVertexFormat.Half,
+            ElementFormat.Half2 => MTLVertexFormat.Half2,
+            ElementFormat.Half4 => MTLVertexFormat.Half4,
+            ElementFormat.Float1 => MTLVertexFormat.Float,
+            ElementFormat.Float2 => MTLVertexFormat.Float2,
+            ElementFormat.Float3 => MTLVertexFormat.Float3,
+            ElementFormat.Float4 => MTLVertexFormat.Float4,
+            ElementFormat.UInt1 => MTLVertexFormat.UInt,
+            ElementFormat.UInt2 => MTLVertexFormat.UInt2,
+            ElementFormat.UInt3 => MTLVertexFormat.UInt3,
+            ElementFormat.UInt4 => MTLVertexFormat.UInt4,
+            ElementFormat.Int1 => MTLVertexFormat.Int,
+            ElementFormat.Int2 => MTLVertexFormat.Int2,
+            ElementFormat.Int3 => MTLVertexFormat.Int3,
+            ElementFormat.Int4 => MTLVertexFormat.Int4,
+            _ => throw new NotSupportedException($"Element format {format} is not supported.")
+        };
+    }
+
+    internal static MTLVertexStepFunction GetMTLVertexStepFunction(VertexStepFunction stepFunction)
+    {
+        return stepFunction switch
+        {
+            VertexStepFunction.PerVertexData => MTLVertexStepFunction.PerVertex,
+            VertexStepFunction.PerInstanceData => MTLVertexStepFunction.PerInstance,
+            _ => throw new NotSupportedException($"Vertex step function {stepFunction} is not supported.")
         };
     }
 }
