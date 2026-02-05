@@ -30,11 +30,27 @@ internal unsafe class MTLGraphicsContext : GraphicsContext
         Capabilities = new MTLDeviceCapabilities(device);
         Factory = new MTLResourceFactory(this);
 
+        // Create command queues
+        GraphicsQueue = device.CreateCommandQueue()!;
+        GraphicsQueue.Label = "Graphics Queue";
+
+        ComputeQueue = device.CreateCommandQueue()!;
+        ComputeQueue.Label = "Compute Queue";
+
+        CopyQueue = device.CreateCommandQueue()!;
+        CopyQueue.Label = "Copy Queue";
+
         // Log Metal device capabilities for debugging
         LogDeviceCapabilities();
     }
 
     public IMTLDevice Device { get; }
+
+    public IMTLCommandQueue GraphicsQueue { get; private set; }
+
+    public IMTLCommandQueue ComputeQueue { get; private set; }
+
+    public IMTLCommandQueue CopyQueue { get; private set; }
 
     public override Backend Backend { get; }
 
@@ -65,7 +81,9 @@ internal unsafe class MTLGraphicsContext : GraphicsContext
 
     protected override void DestroyInternal()
     {
-        throw new NotImplementedException();
+        GraphicsQueue?.Dispose();
+        ComputeQueue?.Dispose();
+        CopyQueue?.Dispose();
     }
 
     private void LogDeviceCapabilities()

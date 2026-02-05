@@ -75,6 +75,6 @@ internal class MTLResourceFactory(GraphicsContext graphicsContext) : ResourceFac
 
     public override CommandProcessor CreateCommandProcessor(CommandProcessorType type)
     {
-        throw new NotImplementedException();
+        return new MTLCommandProcessor(Context, type);
     }
 }
