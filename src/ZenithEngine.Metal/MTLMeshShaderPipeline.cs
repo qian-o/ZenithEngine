@@ -142,7 +142,8 @@ internal class MTLMeshShaderPipeline : MeshShaderPipeline
 
     protected override void SetName(string name)
     {
-        PipelineState.Label = name;
+        // PipelineState.Label is readonly in SharpMetal
+        // Label must be set on the descriptor before pipeline creation
     }
 
     protected override void Destroy()

@@ -31,7 +31,8 @@ internal class MTLSampler : Sampler
 
     protected override void SetName(string name)
     {
-        Sampler.Label = name;
+        // Sampler.Label is readonly in SharpMetal
+        // Label must be set on the descriptor before sampler creation
     }
 
     protected override void Destroy()

@@ -76,7 +76,7 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
 
         EnsureBlitEncoder();
 
-        blitEncoder!.CopyFromBuffer(src.Buffer, sourceOffsetInBytes,
+        blitEncoder.CopyFromBuffer(src.Buffer, sourceOffsetInBytes,
                                     dst.Buffer, destinationOffsetInBytes,
                                     sizeInBytes);
     }
@@ -107,7 +107,7 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
         MTLOrigin origin = new() { x = (ulong)region.Position.X, y = (ulong)region.Position.Y, z = (ulong)region.Position.Z };
         MTLSize size = new() { width = (ulong)region.Width, height = (ulong)region.Height, depth = (ulong)region.Depth };
 
-        blitEncoder!.CopyFromBuffer(
+        blitEncoder.CopyFromBuffer(
             tempBuffer.Buffer,
             0,
             bytesPerRow,
@@ -136,7 +136,7 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
         MTLSize size = new() { width = (ulong)width, height = (ulong)height, depth = (ulong)depth };
         MTLOrigin dstOrigin = new() { x = (ulong)destinationPosition.X, y = (ulong)destinationPosition.Y, z = (ulong)destinationPosition.Z };
 
-        blitEncoder!.CopyFromTexture(
+        blitEncoder.CopyFromTexture(
             src.Texture,
             sourcePosition.ArrayLayer,
             sourcePosition.MipLevel,
@@ -214,12 +214,12 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
         
         MTLViewport mtlViewport = new()
         {
-            OriginX = viewport.X,
-            OriginY = viewport.Y,
+            originX = viewport.X,
+            originY = viewport.Y,
             Width = viewport.Width,
             Height = viewport.Height,
-            ZNear = viewport.MinDepth,
-            ZFar = viewport.MaxDepth
+            znear = viewport.MinDepth,
+            zfar = viewport.MaxDepth
         };
 
         renderEncoder.SetViewport(mtlViewport);
