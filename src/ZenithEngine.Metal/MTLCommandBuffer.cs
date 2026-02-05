@@ -170,17 +170,17 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
     #region Acceleration Structure Operations
     public override BottomLevelAS BuildAccelerationStructure(ref readonly BottomLevelASDesc desc)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException("Acceleration structures (ray tracing) are not implemented in the Metal backend");
     }
 
     public override TopLevelAS BuildAccelerationStructure(ref readonly TopLevelASDesc desc)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException("Acceleration structures (ray tracing) are not implemented in the Metal backend");
     }
 
     public override void UpdateAccelerationStructure(ref TopLevelAS tlas, ref readonly TopLevelASDesc newDesc)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException("Acceleration structures (ray tracing) are not implemented in the Metal backend");
     }
     #endregion
 
@@ -282,12 +282,33 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
 
     public override void SetRayTracingPipeline(RayTracingPipeline pipeline)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException("Ray tracing pipelines are not implemented in the Metal backend");
     }
 
     public override void SetMeshShaderPipeline(MeshShaderPipeline pipeline)
     {
-        throw new NotImplementedException();
+        activePipeline = pipeline;
+        
+        MTLMeshShaderPipeline mtlPipeline = (MTLMeshShaderPipeline)pipeline;
+
+        if (renderEncoder is not null)
+        {
+            renderEncoder.SetRenderPipelineState(mtlPipeline.PipelineState);
+
+            if (mtlPipeline.DepthStencilState is not null)
+            {
+                renderEncoder.SetDepthStencilState(mtlPipeline.DepthStencilState);
+            }
+
+            // Set cull mode
+            renderEncoder.SetCullMode(MTLFormats.GetMTLCullMode(mtlPipeline.CullMode));
+
+            // Set front face winding
+            renderEncoder.SetFrontFacingWinding(MTLFormats.GetMTLWinding(mtlPipeline.FrontFace));
+
+            // Set primitive topology
+            currentPrimitiveType = MTLFormats.GetMTLPrimitiveType(mtlPipeline.PrimitiveTopology);
+        }
     }
 
     public override void PrepareResources(ResourceSet[] resourceSets)
@@ -479,17 +500,38 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
 
     public override void DispatchRays(uint width, uint height, uint depth)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException("Ray tracing (DispatchRays) is not implemented in the Metal backend");
     }
 
     public override void DispatchMesh(uint groupCountX, uint groupCountY, uint groupCountZ)
     {
-        throw new NotImplementedException();
+        if (renderEncoder is null)
+        {
+            return;
+        }
+
+        MTLSize threadgroups = new(groupCountX, groupCountY, groupCountZ);
+        
+        // For mesh shaders, we dispatch threadgroups directly
+        // The threadgroup size is defined in the mesh shader itself
+        renderEncoder.DrawMeshThreadgroups(threadgroups, new MTLSize(1, 1, 1), new MTLSize(1, 1, 1));
     }
 
     public override void DispatchMeshIndirect(Buffer argBuffer, uint offset, uint drawCount)
     {
-        throw new NotImplementedException();
+        if (renderEncoder is null || drawCount == 0)
+        {
+            return;
+        }
+
+        MTLBuffer mtlBuffer = (MTLBuffer)argBuffer;
+        
+        // Metal doesn't support multi-draw mesh indirect, iterate
+        for (uint i = 0; i < drawCount; i++)
+        {
+            renderEncoder.DrawMeshThreadgroups(mtlBuffer.Buffer, offset + (i * 12), // 12 bytes per draw (3 uints)
+                                               new MTLSize(1, 1, 1), new MTLSize(1, 1, 1));
+        }
     }
     #endregion
 
@@ -513,17 +555,38 @@ internal unsafe class MTLCommandBuffer : CommandBuffer
 
     public override void BeginQuery(QueryHeap queryHeap, uint queryIndex)
     {
-        throw new NotImplementedException();
+        // In Metal, queries are recorded via sample boundaries
+        // BeginQuery is not directly applicable - we use WriteTimestamp instead
     }
 
     public override void EndQuery(QueryHeap queryHeap, uint queryIndex)
     {
-        throw new NotImplementedException();
+        // In Metal, queries are recorded via sample boundaries
+        // EndQuery is not directly applicable - we use WriteTimestamp instead
     }
 
     public override void WriteTimestamp(QueryHeap queryHeap, uint queryIndex)
     {
-        throw new NotImplementedException();
+        MTLQueryHeap mtlQueryHeap = (MTLQueryHeap)queryHeap;
+
+        if (mtlQueryHeap.CounterSampleBuffer is null)
+        {
+            return;
+        }
+
+        // Sample the counter at this point
+        if (renderEncoder is not null)
+        {
+            renderEncoder.SampleCounters(mtlQueryHeap.CounterSampleBuffer, queryIndex, true);
+        }
+        else if (computeEncoder is not null)
+        {
+            computeEncoder.SampleCounters(mtlQueryHeap.CounterSampleBuffer, queryIndex, true);
+        }
+        else if (blitEncoder is not null)
+        {
+            blitEncoder.SampleCounters(mtlQueryHeap.CounterSampleBuffer, queryIndex, true);
+        }
     }
     #endregion
 

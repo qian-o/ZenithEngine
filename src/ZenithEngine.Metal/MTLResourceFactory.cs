@@ -60,17 +60,17 @@ internal class MTLResourceFactory(GraphicsContext graphicsContext) : ResourceFac
 
     public override RayTracingPipeline CreateRayTracingPipeline(ref readonly RayTracingPipelineDesc desc)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException("Ray tracing pipelines are not implemented in the Metal backend");
     }
 
     public override MeshShaderPipeline CreateMeshShaderPipeline(ref readonly MeshShaderPipelineDesc desc)
     {
-        throw new NotImplementedException();
+        return new MTLMeshShaderPipeline(Context, in desc);
     }
 
     public override QueryHeap CreateQueryHeap(ref readonly QueryHeapDesc desc)
     {
-        throw new NotImplementedException();
+        return new MTLQueryHeap(Context, in desc);
     }
 
     public override CommandProcessor CreateCommandProcessor(CommandProcessorType type)
