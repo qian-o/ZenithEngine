@@ -1,3 +1,5 @@
+using System;
+using System.Text;
 using Metal;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Graphics;
@@ -33,7 +35,7 @@ internal unsafe class MTLShader : Shader
         catch
         {
             // If loading as library fails, try as source code
-            string source = System.Text.Encoding.UTF8.GetString(desc.ShaderBytes);
+            string source = Encoding.UTF8.GetString(desc.ShaderBytes);
             library = Context.Device.CreateLibrary(source, null, out NSError? error);
             
             if (library is null && error is not null)

@@ -1,4 +1,5 @@
-﻿using ZenithEngine.Common.Descriptions;
+﻿using System;
+using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;
 using ZenithEngine.Common.Graphics;
 

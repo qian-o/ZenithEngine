@@ -1,3 +1,4 @@
+using System;
 using Metal;
 using ZenithEngine.Common.Descriptions;
 using ZenithEngine.Common.Enums;

@@ -1,4 +1,5 @@
-﻿using Metal;
+﻿using System;
+using Metal;
 using ZenithEngine.Common.Enums;
 
 namespace ZenithEngine.Metal;
