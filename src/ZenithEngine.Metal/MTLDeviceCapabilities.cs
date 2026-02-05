@@ -34,7 +34,7 @@ internal class MTLDeviceCapabilities(IMTLDevice device) : DeviceCapabilities
     /// <summary>
     /// Gets the maximum framebuffer storage bit depth.
     /// </summary>
-    public nuint MaxFramebufferStorageBitDepth { get; } = (nuint)device.MaxFramebufferStorageBitDepth;
+    public ulong MaxFramebufferStorageBitDepth { get; } = device.MaxFramebufferStorageBitDepth;
 
     /// <summary>
     /// Gets a value indicating whether the device supports variable rasterization rate (VRS).

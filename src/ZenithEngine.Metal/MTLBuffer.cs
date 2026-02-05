@@ -30,9 +30,12 @@ internal class MTLBuffer : Buffer
             options |= MTLResourceOptions.CPUCacheModeWriteCombined;
         }
 
-        // Disable hazard tracking for buffers that don't need automatic synchronization
-        // This is beneficial for compute UAV buffers that manage their own synchronization
-        if (usage.HasFlag(BufferUsage.UnorderedAccess) && !usage.HasFlag(BufferUsage.Dynamic))
+        // Apply hazard tracking mode optimization
+        bool hasUnorderedAccess = usage.HasFlag(BufferUsage.UnorderedAccess);
+        bool isDynamic = usage.HasFlag(BufferUsage.Dynamic);
+        bool shouldDisableTracking = MTLResourceHelper.ShouldDisableHazardTracking(hasUnorderedAccess, isDynamic, isRenderTarget: false);
+        
+        if (shouldDisableTracking)
         {
             options |= MTLResourceOptions.HazardTrackingModeUntracked;
         }

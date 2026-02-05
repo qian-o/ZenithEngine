@@ -39,8 +39,12 @@ internal class MTLTexture : Texture
         // Default to private storage for optimal GPU performance
         MTLResourceOptions options = MTLResourceOptions.StorageModePrivate;
 
-        // Disable hazard tracking for compute UAV textures that manage their own synchronization
-        if (usage.HasFlag(TextureUsage.UnorderedAccess) && !usage.HasFlag(TextureUsage.RenderTarget))
+        // Apply hazard tracking mode optimization
+        bool hasUnorderedAccess = usage.HasFlag(TextureUsage.UnorderedAccess);
+        bool isRenderTarget = usage.HasFlag(TextureUsage.RenderTarget);
+        bool shouldDisableTracking = MTLResourceHelper.ShouldDisableHazardTracking(hasUnorderedAccess, isDynamic: false, isRenderTarget);
+        
+        if (shouldDisableTracking)
         {
             options |= MTLResourceOptions.HazardTrackingModeUntracked;
         }
