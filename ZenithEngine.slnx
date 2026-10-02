@@ -1,2 +1,7 @@
-﻿<Solution>
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="sources/Directory.Build.props" />
+    <File Path="sources/Directory.Packages.props" />
+  </Folder>
+  <Project Path="sources/ZenithEngine/ZenithEngine.csproj" Id="1539f1b8-9c93-4e89-b81c-f1548e55de7b" />
 </Solution>

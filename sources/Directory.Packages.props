@@ -1,0 +1,11 @@
+﻿<Project>
+
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageVersion Include="Roslynator.Analyzers" Version="5.0.0" />
+    </ItemGroup>
+
+</Project>
